@@ -2,6 +2,9 @@
   "name": "society-protocol-client",
   "version": "0.1.0",
   "private": true,
+  "description": "Society Protocol - A framework for creating Synchronized Network States. The future of human coordination.",
+  "author": "Society Protocol Foundation",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,12 +14,18 @@
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@mui/material-nextjs": "^7.3.6",
     "@rainbow-me/rainbowkit": "^2.2.9",
     "@tanstack/react-query": "^5.90.10",
     "graphql": "^16.12.0",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-top-loading-bar": "^3.0.2",
     "viem": "^2.39.0",
     "wagmi": "^2.19.4"
   },

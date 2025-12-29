@@ -1,3 +1,4 @@
+import { AuctionStatus } from "@/components/Auction/AuctionStatus";
 import { Box, Typography, Chip } from "@mui/material";
 
 export default function AuctionPage() {
@@ -8,25 +9,13 @@ export default function AuctionPage() {
           Auction
         </Typography>
         <Chip
-          label={
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <Box
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  backgroundColor: "white",
-                }}
-              />
-              Active
-            </Box>
-          }
+          label={<AuctionStatus />}
           size="small"
           sx={{
             height: 20,
             fontSize: "0.75rem",
             backgroundColor: "success.main",
-            color: "white",
+            color: "common.white",
           }}
         />
       </Box>

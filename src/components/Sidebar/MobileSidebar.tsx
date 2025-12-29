@@ -1,5 +1,4 @@
-import { Box, Drawer, IconButton } from "@mui/material";
-import KeyboardTabIcon from "@mui/icons-material/KeyboardTab";
+import { Drawer } from "@mui/material";
 import { SidebarContent } from "./SidebarContent";
 
 const EXPANDED_WIDTH = 312;

@@ -12,27 +12,18 @@ interface ConnectButtonProps {
 export const ConnectButton = ({ avatarSrc }: ConnectButtonProps) => {
   return (
     <RainbowConnectButton.Custom>
-      {({ account, openAccountModal, openConnectModal, mounted }) => {
-        const ready = mounted;
-
+      {({ account, openAccountModal, openConnectModal, mounted: ready }) => {
         if (!ready || !account) {
           return (
             <Button
               disabled={!ready}
               variant="outlined"
               onClick={openConnectModal}
-              sx={{
-                fontSize: { xs: "0.7rem", sm: "0.875rem", md: "1rem" },
-                padding: { xs: "4px 8px", sm: "8px 16px" },
-                minWidth: { xs: "auto", sm: "100px" },
-                height: { xs: "32px", sm: "40px", md: "48px" },
-              }}
             >
-              <span style={{ display: "inline-block" }}>
-                <Typography style={{ display: "inline", whiteSpace: "nowrap" }}>
-                  Connect
-                </Typography>
+              <Typography component="span" whiteSpace="nowrap">
+                Connect
                 <Typography
+                  component="span"
                   sx={{
                     display: { xs: "none", sm: "inline" },
                   }}
@@ -40,40 +31,25 @@ export const ConnectButton = ({ avatarSrc }: ConnectButtonProps) => {
                   {" "}
                   Wallet
                 </Typography>
-              </span>
+              </Typography>
             </Button>
           );
         }
 
         return (
-          <Button
-            variant="wallet"
-            onClick={openAccountModal}
-            sx={{
-              fontSize: { xs: "0.7rem", sm: "0.875rem", md: "1rem" },
-              padding: { xs: "2px 6px", sm: "6px 12px", md: "8px 16px" },
-              minWidth: { xs: "auto", sm: "100px" },
-              height: { xs: "32px", sm: "40px", md: "48px" },
-              "& .wallet-text": {
-                display: { xs: "none", sm: "inline" },
-              },
-            }}
-          >
+          <Button variant="wallet" onClick={openAccountModal}>
             <Stack
               direction="row"
               alignItems="center"
-              spacing={{ xs: 0.25, sm: 0.75, md: 1 }}
+              spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
             >
               <Avatar
                 address={account.address}
                 ensImage={avatarSrc || null}
                 size={20}
               />
-              <Typography
-                whiteSpace="nowrap"
-                sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem", md: "1rem" } }}
-              >
-                {account ? `${account.displayName}` : "Connect"}
+              <Typography component="span" whiteSpace="nowrap">
+                {account.displayName}
               </Typography>
               <ExpandMoreIcon
                 fontSize="small"

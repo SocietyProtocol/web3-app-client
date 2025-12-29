@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Drawer } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { SidebarContent } from "./SidebarContent";
@@ -8,6 +7,8 @@ const COLLAPSED_WIDTH = 86;
 
 interface DesktopSidebarProps {
   headerHeight: number;
+  open: boolean;
+  onToggle: () => void;
 }
 
 const StyledDrawer = styled(Drawer, {
@@ -70,13 +71,11 @@ const StyledDrawer = styled(Drawer, {
   },
 }));
 
-export const DesktopSidebar = ({ headerHeight }: DesktopSidebarProps) => {
-  const [open, setOpen] = useState(true);
-
-  const toggleSidebar = () => {
-    setOpen(!open);
-  };
-
+export const DesktopSidebar = ({
+  headerHeight,
+  open,
+  onToggle,
+}: DesktopSidebarProps) => {
   return (
     <StyledDrawer
       variant="permanent"
@@ -85,11 +84,7 @@ export const DesktopSidebar = ({ headerHeight }: DesktopSidebarProps) => {
       headerHeight={headerHeight}
       sx={{ display: { xs: "none", md: "flex" } }}
     >
-      <SidebarContent
-        isExpanded={open}
-        onToggle={toggleSidebar}
-        showToggleButton={true}
-      />
+      <SidebarContent isExpanded={open} onToggle={onToggle} />
     </StyledDrawer>
   );
 };

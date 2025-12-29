@@ -17,10 +17,10 @@ export const MuiButton: Components<
   variants: [
     {
       props: { variant: "wallet" },
-      style: {
-        background: "#0000001A",
+      style: ({ theme }) => ({
+        background: theme.palette.background.subtle,
         border: "none",
-      },
+      }),
     },
   ],
   styleOverrides: {
@@ -32,23 +32,61 @@ export const MuiButton: Components<
       border: "none",
       borderRadius: 50,
     },
-    sizeLarge: ({ theme }) => ({
+    sizeSmall: ({ theme }) => ({
+      height: 28,
+      lineHeight: "20px",
+      padding: theme.spacing(0.5, 1),
+      fontSize: theme.typography.pxToRem(11),
+      minWidth: "auto",
+      [theme.breakpoints.up("sm")]: {
+        height: 32,
+        lineHeight: "24px",
+        padding: theme.spacing(0.75, 1.5),
+        fontSize: theme.typography.pxToRem(12),
+      },
+      [theme.breakpoints.up("md")]: {
+        height: 36,
+        padding: theme.spacing(1, 2),
+        fontSize: theme.typography.pxToRem(13),
+      },
+    }),
+    sizeMedium: ({ theme }) => ({
       height: 32,
       lineHeight: "24px",
       padding: theme.spacing(0.5, 1),
       fontSize: theme.typography.pxToRem(12),
+      minWidth: "auto",
+      [theme.breakpoints.up("sm")]: {
+        height: 40,
+        padding: theme.spacing(1, 2),
+        fontSize: theme.typography.pxToRem(14),
+        minWidth: "100px",
+      },
+      [theme.breakpoints.up("md")]: {
+        height: 48,
+        padding: theme.spacing(1.5, 2),
+        fontSize: theme.typography.pxToRem(16),
+      },
     }),
-    sizeMedium: ({ theme }) => ({
-      height: 48,
-      lineHeight: "24px",
-      padding: theme.spacing(1.5, 2),
-      fontSize: theme.typography.pxToRem(16),
-    }),
-    sizeSmall: ({ theme }) => ({
-      height: 56,
-      lineHeight: "24px",
-      padding: theme.spacing(2, 2.25),
-      fontSize: theme.typography.pxToRem(18),
+    sizeLarge: ({ theme }) => ({
+      height: 40,
+      lineHeight: "28px",
+      padding: theme.spacing(1, 1.5),
+      fontSize: theme.typography.pxToRem(14),
+      minWidth: "auto",
+      [theme.breakpoints.up("sm")]: {
+        height: 48,
+        lineHeight: "32px",
+        padding: theme.spacing(1.5, 2),
+        fontSize: theme.typography.pxToRem(16),
+        minWidth: "120px",
+      },
+      [theme.breakpoints.up("md")]: {
+        height: 56,
+        lineHeight: "36px",
+        padding: theme.spacing(2, 2.25),
+        fontSize: theme.typography.pxToRem(18),
+      },
     }),
   },
 };

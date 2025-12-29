@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     "web3",
     "decentralized",
   ],
+  icons: {
+    icon: "/logo/logo-icon-dark.svg",
+    apple: "/logo/logo-icon-dark.svg",
+  },
 };
 
 export default function RootLayout({

@@ -32,8 +32,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
               }}
               modalSize="compact"
               theme={darkTheme({
-                accentColor: "#FFFFFF",
-                accentColorForeground: "#09090B",
+                accentColor: theme.palette.primary.main,
+                accentColorForeground: theme.palette.primary.contrastText,
                 borderRadius: "medium",
                 fontStack: "system",
                 overlayBlur: "small",

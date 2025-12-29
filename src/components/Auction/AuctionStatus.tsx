@@ -1,3 +1,5 @@
+"use client";
+
 import { Box, Chip } from "@mui/material";
 
 export const AuctionStatus = () => {

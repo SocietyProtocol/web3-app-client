@@ -6,13 +6,11 @@ import { NavigationItem } from "./NavigationItem";
 interface SidebarContentProps {
   isExpanded: boolean;
   onToggle?: () => void;
-  showToggleButton?: boolean;
 }
 
 export const SidebarContent = ({
   isExpanded,
   onToggle,
-  showToggleButton = true,
 }: SidebarContentProps) => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -24,7 +22,7 @@ export const SidebarContent = ({
 
       <Box sx={{ flexGrow: 1 }} />
 
-      {showToggleButton && onToggle && (
+      {onToggle && (
         <Box
           sx={{
             display: "flex",

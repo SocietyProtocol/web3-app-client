@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/Sidebar/Sidebar";
 import { ReactNode } from "react";
 import { MainContentArea } from "./MainContentArea";
 import { useHeaderHeight } from "@/hooks/useHeaderHeight";
-import { useMobileDrawer } from "@/hooks/useMobileDrawer";
+import { useSidebar as useSidebar } from "@/hooks/useSidebar";
 
 interface LayoutContentProps {
   children: ReactNode;
@@ -14,7 +14,7 @@ interface LayoutContentProps {
 
 export const LayoutContent = ({ children }: LayoutContentProps) => {
   const { headerRef, headerHeight } = useHeaderHeight();
-  const { mobileOpen, handleDrawerToggle } = useMobileDrawer();
+  const { isOpen: sidebarIsOpen, toggle: toggleSidebar } = useSidebar();
 
   return (
     <Box
@@ -27,7 +27,7 @@ export const LayoutContent = ({ children }: LayoutContentProps) => {
       }}
     >
       <Box ref={headerRef} sx={{ flexShrink: 0 }}>
-        <Header onMenuClick={handleDrawerToggle} />
+        <Header onMenuClick={toggleSidebar} />
       </Box>
 
       <Box
@@ -41,8 +41,8 @@ export const LayoutContent = ({ children }: LayoutContentProps) => {
       >
         <Sidebar
           headerHeight={headerHeight}
-          mobileOpen={mobileOpen}
-          onMobileClose={handleDrawerToggle}
+          isOpen={sidebarIsOpen}
+          onToggle={toggleSidebar}
         />
         <MainContentArea>{children}</MainContentArea>
       </Box>

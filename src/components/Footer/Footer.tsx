@@ -6,7 +6,7 @@ const StyledFooter = styled(Box)(({ theme }) => ({
   width: "100%",
   padding: theme.spacing(0, 2),
   backgroundColor: theme.palette.background.paper,
-  borderTop: `1px solid #ffffff14`,
+  borderTop: `1px solid ${theme.palette.border.light}`,
   position: "relative",
   flex: "0 0 auto",
   [theme.breakpoints.up("sm")]: {
@@ -39,7 +39,7 @@ export const Footer = () => {
           />
         </Stack>
       </Stack>
-      <Divider />
+      <Divider sx={{ borderColor: "divider" }} />
       <Typography
         variant="body2"
         color="text.secondary"

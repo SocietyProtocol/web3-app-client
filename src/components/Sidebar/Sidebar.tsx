@@ -1,27 +1,28 @@
 "use client";
 
-import { useMediaQuery, useTheme } from "@mui/material";
 import { MobileSidebar } from "./MobileSidebar";
 import { DesktopSidebar } from "./DesktopSidebar";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface SidebarProps {
   headerHeight: number;
-  mobileOpen: boolean;
-  onMobileClose: () => void;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-export const Sidebar = ({
-  headerHeight,
-  mobileOpen,
-  onMobileClose,
-}: SidebarProps) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+export const Sidebar = ({ headerHeight, isOpen, onToggle }: SidebarProps) => {
+  const isMobile = useIsMobile();
 
   return (
     <>
-      <MobileSidebar open={mobileOpen} onClose={onMobileClose} />
-      {!isMobile && <DesktopSidebar headerHeight={headerHeight} />}
+      <MobileSidebar open={isOpen} onClose={onToggle} />
+      {!isMobile && (
+        <DesktopSidebar
+          headerHeight={headerHeight}
+          open={isOpen}
+          onToggle={onToggle}
+        />
+      )}
     </>
   );
 };

@@ -39,6 +39,7 @@ export const Avatar = ({ address, ensImage, size }: AvatarProps) => {
   return (
     <MUIAvatar
       {...(ensImage && { src: ensImage })}
+      aria-label={`Avatar for ${address}`}
       sx={{
         width: size,
         height: size,

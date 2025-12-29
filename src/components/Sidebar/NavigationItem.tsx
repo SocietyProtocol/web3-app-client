@@ -33,25 +33,12 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
       position: "absolute",
       inset: 1, // ⬅️ matches border thickness
       borderRadius: 9, // ⬅️ radius - border
-      background: "#ffffff0c",
+      background: theme.palette.action.selected,
       zIndex: -1,
       pointerEvents: "none",
     },
 
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      inset: 0,
-      borderRadius: "10px",
-      padding: "1px",
-      background: "linear-gradient(to bottom, #FFFFFFFF, #FFFFFF50) border-box",
-      WebkitMask:
-        "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-      WebkitMaskComposite: "xor",
-      maskComposite: "exclude",
-      pointerEvents: "none",
-      zIndex: -1,
-    },
+    ...theme.mixins.borderGradient("10px"),
 
     "&:hover": {
       backgroundColor: "transparent",
@@ -61,7 +48,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
         position: "absolute",
         inset: 1, // ⬅️ matches border thickness
         borderRadius: 9, // ⬅️ radius - border
-        background: "#ffffff1c",
+        background: theme.palette.action.hover,
         zIndex: -1,
         pointerEvents: "none",
       },
@@ -76,7 +63,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
       position: "absolute",
       inset: 1, // ⬅️ matches border thickness
       borderRadius: 9, // ⬅️ radius - border
-      background: "#ffffff1c",
+      background: theme.palette.action.hover,
       zIndex: -1,
       pointerEvents: "none",
     },

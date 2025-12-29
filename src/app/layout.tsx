@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
+import { Suspense } from "react";
 import { Providers } from "./providers";
 import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
@@ -45,7 +46,9 @@ export default function RootLayout({
       <body className={`${spaceGrotesk.variable}`} suppressHydrationWarning>
         <InitColorSchemeScript attribute="class" />
         <Providers>
-          <TopLoader />
+          <Suspense fallback={null}>
+            <TopLoader />
+          </Suspense>
           <LayoutContent>{children}</LayoutContent>
         </Providers>
       </body>

@@ -17,9 +17,9 @@ export const navigationItems: NavigationItem[] = [
     url: "/",
   },
   {
-    text: "Accounts",
-    icon: <Image src="/icons/box.svg" alt="Accounts" width={24} height={24} />,
-    url: "/accounts",
+    text: "Account",
+    icon: <Image src="/icons/box.svg" alt="Account" width={24} height={24} />,
+    url: "/account",
   },
   {
     text: "Badges",

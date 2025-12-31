@@ -1,10 +1,13 @@
-import { Avatar as MUIAvatar } from "@mui/material";
+import { Avatar as MUIAvatar, SxProps } from "@mui/material";
 import { useMemo } from "react";
+import { useProfile } from "../AccountSetup/useProfile";
+import { Hex } from "viem";
 
 export interface AvatarProps {
-  address: string;
+  address?: string;
   ensImage?: string | null;
-  size: number;
+  size?: number | { xs?: number; sm?: number; md?: number; lg?: number };
+  sx?: SxProps;
 }
 
 const generateColorsFromAddress = (address: string): [string, string] => {
@@ -30,20 +33,27 @@ const generateColorsFromAddress = (address: string): [string, string] => {
   ];
 };
 
-export const Avatar = ({ address, ensImage, size }: AvatarProps) => {
+export const Avatar = ({ address, ensImage, size = 40, sx }: AvatarProps) => {
+  const {
+    profileData: { data: profileData },
+  } = useProfile(address ? (address as Hex) : undefined);
+
+  const image = profileData?.avatar || ensImage;
+
   const colors = useMemo(
-    () => (!ensImage ? generateColorsFromAddress(address) : []),
-    [address, ensImage]
+    () => (!image && address ? generateColorsFromAddress(address) : []),
+    [address, image]
   );
 
   return (
     <MUIAvatar
-      {...(ensImage && { src: ensImage })}
+      {...(image && { src: image })}
       aria-label={`Avatar for ${address}`}
       sx={{
+        ...sx,
         width: size,
         height: size,
-        ...(!ensImage && {
+        ...(!image && {
           background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
         }),
 

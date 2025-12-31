@@ -50,7 +50,7 @@ export const MuiButton: Components<
         fontSize: theme.typography.pxToRem(13),
       },
     }),
-    sizeMedium: ({ theme }) => ({
+    sizeMedium: ({ theme, ownerState }) => ({
       height: 32,
       lineHeight: "24px",
       padding: theme.spacing(0.5, 1),
@@ -60,15 +60,16 @@ export const MuiButton: Components<
         height: 40,
         padding: theme.spacing(1, 2),
         fontSize: theme.typography.pxToRem(14),
-        minWidth: "100px",
+        minWidth: ownerState.fullWidth ? "auto" : "100px",
       },
       [theme.breakpoints.up("md")]: {
         height: 48,
         padding: theme.spacing(1.5, 2),
         fontSize: theme.typography.pxToRem(16),
+        minWidth: ownerState.fullWidth ? "auto" : "180px",
       },
     }),
-    sizeLarge: ({ theme }) => ({
+    sizeLarge: ({ theme, ownerState }) => ({
       height: 40,
       lineHeight: "28px",
       padding: theme.spacing(1, 1.5),
@@ -79,7 +80,7 @@ export const MuiButton: Components<
         lineHeight: "32px",
         padding: theme.spacing(1.5, 2),
         fontSize: theme.typography.pxToRem(16),
-        minWidth: "120px",
+        minWidth: ownerState.fullWidth ? "auto" : "120px",
       },
       [theme.breakpoints.up("md")]: {
         height: 56,

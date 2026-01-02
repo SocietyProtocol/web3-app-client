@@ -36,7 +36,7 @@ export const AccountSetupBubble = ({
         Welcome! Let&apos;s get started by setting up your account.
       </Typography>
       <br />
-      <Typography variant="h6">No KYC needed. </Typography>
+      <Typography variant="h6">No KYC needed.</Typography>
     </BubbleBase>
   );
 };

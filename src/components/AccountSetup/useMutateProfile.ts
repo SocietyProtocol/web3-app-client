@@ -33,7 +33,7 @@ export const useMutateProfile = (overrideAddress?: Hex) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Auth-Payload": JSON.stringify(authPayload),
+          "x-auth-payload": JSON.stringify(authPayload),
         },
         body: JSON.stringify({
           ...data,

@@ -1,7 +1,7 @@
 import { Box, Stack, Typography, Button, TextField } from "@mui/material";
-import { useProfile } from "./useProfile";
-import { useEffect } from "react";
-import { useUpdateProfile } from "./useUpdateProfile";
+import { useEffect, useRef } from "react";
+import { useSnackbar } from "notistack";
+import { Controller } from "react-hook-form";
 import { AvatarInput } from "./AvatarInput";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -16,49 +16,72 @@ export const AccountDetailsEdit = ({
   onCancel,
   onSave,
 }: AccountDetailsEditProps) => {
-  const { profileData, refetch } = useProfile();
-  const { data: profile, isLoading } = profileData;
+  const { enqueueSnackbar } = useSnackbar();
+  const hasCompletedRef = useRef(false);
   const {
-    createProfile,
-    isMutating,
-    isTransactionPending,
+    form,
+    refetch,
+    isLoading,
+    onSubmit,
+    reset,
+    isMutatingProfile,
+    isUploadingToIpfs,
+    isWritingContract,
     isTransactionConfirmed,
-  } = useUpdateProfile();
-
-  const { avatar, name, bio, setAvatar, setName, setBio } = useAccountSetup();
-
-  const hasChanges =
-    name !== (profile?.name || "") ||
-    bio !== (profile?.bio || "") ||
-    avatar !== (profile?.avatar || null);
+    isTransactionPending,
+    getServerFieldError,
+  } = useAccountSetup();
 
   // Watch for transaction confirmation
   useEffect(() => {
-    if (isTransactionConfirmed) {
+    if (isTransactionConfirmed && !hasCompletedRef.current) {
+      hasCompletedRef.current = true;
       // Transaction confirmed, refetch profile data
       refetch().then(() => {
+        enqueueSnackbar("Profile updated successfully!", {
+          variant: "success",
+          key: "account-update-success",
+        });
         onSave();
+        form.reset();
+        reset();
       });
     }
-  }, [isTransactionConfirmed, refetch, onSave]);
+  }, [isTransactionConfirmed, refetch, onSave, form, enqueueSnackbar, reset]);
 
   const handleCancelClick = () => {
+    form.reset();
     onCancel();
   };
 
   const handleSaveClick = async () => {
     try {
-      await createProfile({
-        name,
-        bio,
-        avatar,
-      });
+      await onSubmit();
     } catch (error) {
       console.error("Failed to update profile:", error);
     }
   };
 
-  const disabled = isMutating || isTransactionPending || isLoading;
+  const disabled =
+    isLoading ||
+    form.formState.isSubmitting ||
+    isMutatingProfile ||
+    isTransactionPending ||
+    isTransactionConfirmed;
+
+  // Determine button text based on state
+  const getButtonText = () => {
+    if (isUploadingToIpfs) {
+      return "Uploading to IPFS...";
+    }
+    if (isWritingContract) {
+      return "Confirm transaction...";
+    }
+    if (isTransactionPending) {
+      return "Confirming...";
+    }
+    return "Save";
+  };
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -79,14 +102,12 @@ export const AccountDetailsEdit = ({
             onClick={handleSaveClick}
             variant="contained"
             size="small"
-            disabled={disabled || !hasChanges}
+            disabled={
+              disabled || !form.formState.isDirty || !form.formState.isValid
+            }
             sx={{ width: { xs: "100%", sm: "auto" } }}
           >
-            {isTransactionPending
-              ? "Confirming..."
-              : isMutating
-              ? "Saving..."
-              : "Save"}
+            {getButtonText()}
           </Button>
           <Button
             startIcon={<CancelIcon />}
@@ -103,14 +124,53 @@ export const AccountDetailsEdit = ({
 
       {/* Avatar and Name Section */}
 
-      <AvatarInput value={avatar} onChange={setAvatar} disabled={disabled} />
-      <TextField
-        label="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        fullWidth
-        required
-        disabled={disabled}
+      <Controller
+        name="avatar"
+        control={form.control}
+        render={({ field, fieldState }) => {
+          const serverError = getServerFieldError("avatar");
+          const error = fieldState.error?.message || serverError;
+          const onChange = (value: string | null) => {
+            field.onChange(value);
+            reset();
+          };
+
+          return (
+            <AvatarInput
+              value={field.value ?? null}
+              onChange={onChange}
+              disabled={disabled}
+              error={Boolean(error)}
+              helperText={error}
+            />
+          );
+        }}
+      />
+
+      {/* Name Section */}
+      <Controller
+        name="name"
+        control={form.control}
+        render={({ field, fieldState }) => {
+          const serverError = getServerFieldError("name");
+          const error = fieldState.error?.message || serverError;
+          const onChange = (value: string) => {
+            field.onChange(value);
+            reset();
+          };
+
+          return (
+            <TextField
+              label="Name"
+              fullWidth
+              disabled={disabled}
+              {...field}
+              onChange={(e) => onChange(e.target.value)}
+              error={Boolean(error)}
+              helperText={error}
+            />
+          );
+        }}
       />
 
       {/* Bio Section */}
@@ -123,13 +183,29 @@ export const AccountDetailsEdit = ({
           Bio
         </Typography>
 
-        <TextField
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          fullWidth
-          multiline
-          rows={4}
-          disabled={disabled}
+        <Controller
+          name="bio"
+          control={form.control}
+          render={({ field, fieldState }) => {
+            const serverError = getServerFieldError("bio");
+            const error = fieldState.error?.message || serverError;
+            const onChange = (value: string) => {
+              field.onChange(value);
+              reset();
+            };
+            return (
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                disabled={disabled}
+                {...field}
+                onChange={(e) => onChange(e.target.value)}
+                error={Boolean(error)}
+                helperText={error}
+              />
+            );
+          }}
         />
       </Box>
     </Stack>

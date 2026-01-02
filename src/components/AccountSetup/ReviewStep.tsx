@@ -4,8 +4,10 @@ import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { useAccountSetup } from "./AccountSetupContext";
 
 export const ReviewStep = () => {
-  const { referralCode, name, bio, avatar, profileId } = useAccountSetup();
+  const { form, profileId } = useAccountSetup();
   const { address } = useAccount();
+
+  const formValues = form.watch();
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }} alignItems="flex-start">
@@ -21,11 +23,11 @@ export const ReviewStep = () => {
       </Typography>
 
       <ProfileCard
-        avatar={avatar}
-        name={name || `User #${profileId ?? "N/A"}`}
+        avatar={formValues.avatar ?? null}
+        name={formValues.name || `User #${profileId ?? "N/A"}`}
         address={address}
-        bio={bio}
-        referralCode={referralCode}
+        bio={formValues.bio || ""}
+        referralCode={formValues.referralCode}
       />
     </Stack>
   );

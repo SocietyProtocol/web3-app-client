@@ -1,25 +1,34 @@
 import {
   createContext,
   useContext,
-  useState,
   ReactNode,
   useEffect,
   useMemo,
 } from "react";
-import { useAccount } from "wagmi";
-import { useProfile } from "@/components/AccountSetup/useProfile";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutateProfile } from "./useMutateProfile";
+import { UseQueryResult } from "@tanstack/react-query";
+import { ProfileData } from "./useProfile";
+import { ValidationError } from "@/errors/ValidationError";
+import { AccountData, accountValidationSchema } from "@/validation/account";
 
 interface AccountSetupContextType {
-  referralCode: string;
-  setReferralCode: (code: string) => void;
-  name: string;
-  setName: (name: string) => void;
-  bio: string;
-  setBio: (bio: string) => void;
-  avatar: string | null;
-  setAvatar: (avatar: string | null) => void;
+  form: UseFormReturn<AccountData>;
   profileId?: number;
+  profileData: UseQueryResult<ProfileData | null, Error>;
   isFetched: boolean;
+  isLoading: boolean;
+  isMutatingProfile: boolean;
+  isUploadingToIpfs: boolean;
+  isWritingContract: boolean;
+  isTransactionPending: boolean;
+  isTransactionConfirmed: boolean;
+  onSubmit: () => void;
+  serverError: Error | null;
+  refetch: () => Promise<void>;
+  reset: () => void;
+  getServerFieldError: (field: keyof AccountData) => string | undefined;
 }
 
 const AccountSetupContext = createContext<AccountSetupContextType | undefined>(
@@ -41,60 +50,93 @@ interface AccountSetupProviderProps {
 export const AccountSetupProvider = ({
   children,
 }: AccountSetupProviderProps) => {
-  const { address } = useAccount();
-  const profile = useProfile(address);
-  const [referralCode, setReferralCode] = useState("");
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatar, setAvatar] = useState<string | null>(null);
+  const {
+    profileId,
+    profileUri,
+    profileData,
+    isLoading,
+    mutate,
+    isMutating,
+    isUploadingToIpfs,
+    isWritingContract,
+    isTransactionPending,
+    isTransactionConfirmed,
+    error: serverError,
+    reset,
+    refetch,
+  } = useMutateProfile();
+
+  const form = useForm<AccountData>({
+    resolver: zodResolver(accountValidationSchema),
+    defaultValues: {
+      name: "",
+      bio: "",
+      avatar: null,
+      referralCode: "",
+    },
+    mode: "onChange",
+  });
+
+  const onSubmit = form.handleSubmit(mutate);
+
+  // Get server-side validation error for a field
+  const getServerFieldError = (
+    field: keyof AccountData
+  ): string | undefined => {
+    if (serverError instanceof ValidationError) {
+      return serverError.details?.[field]?.[0];
+    }
+    return undefined;
+  };
 
   const isFetched = useMemo(
     () =>
-      profile.profileId.isFetched &&
-      (!Boolean(profile.profileId.data) ||
-        profile.profileId.data === BigInt(0) ||
-        (profile.uri.isFetched && !Boolean(profile.uri.data)) ||
-        profile.profileData.isFetched),
+      profileId.isFetched &&
+      (!Boolean(profileId.data) ||
+        profileId.data === BigInt(0) ||
+        (profileUri.isFetched && !Boolean(profileUri.data)) ||
+        profileData.isFetched),
     [
-      profile.profileData.isFetched,
-      profile.profileId.data,
-      profile.profileId.isFetched,
-      profile.uri.data,
-      profile.uri.isFetched,
+      profileData.isFetched,
+      profileId.data,
+      profileId.isFetched,
+      profileUri.data,
+      profileUri.isFetched,
     ]
   );
 
-  // Prefill context state from profile data if available and context is empty
+  // Prefill form from profile data if available
   useEffect(() => {
-    if (isFetched) {
-      if (profile.profileData.data) {
-        const data = profile.profileData.data;
-        setName((prev) => (prev ? prev : data.name || ""));
-        setBio((prev) => (prev ? prev : data.bio || ""));
-        setAvatar((prev) => (prev ? prev : data.avatar || null));
-        if (data.referralCode) {
-          setReferralCode((prev) => (prev ? prev : data.referralCode || ""));
-        }
-      }
+    if (isFetched && profileData.data) {
+      const data = profileData.data;
+      form.reset({
+        name: data.name || "",
+        bio: data.bio || "",
+        avatar: data.avatar || null,
+        referralCode: data.referralCode || "",
+      });
     }
-  }, [isFetched, profile.profileData.data]);
+  }, [isFetched, profileData.data, form]);
 
   return (
     <AccountSetupContext.Provider
       value={{
-        referralCode,
-        setReferralCode,
-        name,
-        setName,
-        bio,
-        setBio,
-        avatar,
-        setAvatar,
+        form,
         isFetched,
         profileId:
-          profile.profileId.data !== undefined
-            ? Number(profile.profileId.data)
-            : undefined,
+          profileId.data !== undefined ? Number(profileId.data) : undefined,
+        profileData,
+        onSubmit,
+        isLoading,
+        isMutatingProfile: isMutating,
+        isUploadingToIpfs,
+        isWritingContract,
+        isTransactionPending,
+        isTransactionConfirmed,
+        serverError,
+        refetch,
+        reset,
+        getServerFieldError,
       }}
     >
       {children}

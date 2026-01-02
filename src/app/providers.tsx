@@ -2,7 +2,7 @@
 
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { wagmiConfig } from "@/lib/wagmi";
+import { initializeWagmiWatcher, wagmiConfig } from "@/lib/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
@@ -13,15 +13,21 @@ import { SnackbarProvider } from "notistack";
 import { StyledMaterialDesignContent } from "@/components/Snackbar/Snackbar";
 import { Provider as JotaiProvider } from "jotai";
 import { jotaiStore } from "@/lib/jotai";
+import { useEffect } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    initializeWagmiWatcher();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AppRouterCacheProvider>
-        <JotaiProvider store={jotaiStore}>
-          <WagmiProvider config={wagmiConfig}>
+        <WagmiProvider config={wagmiConfig}>
+          <JotaiProvider store={jotaiStore}>
             <ThemeProvider theme={theme} defaultMode="dark">
               <CssBaseline enableColorScheme />
               <RainbowKitProvider
@@ -47,12 +53,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 <SnackbarProvider
                   Components={{ default: StyledMaterialDesignContent }}
                 >
-                  {children}
+                  <ErrorBoundary>{children}</ErrorBoundary>
                 </SnackbarProvider>
               </RainbowKitProvider>
             </ThemeProvider>
-          </WagmiProvider>
-        </JotaiProvider>
+          </JotaiProvider>
+        </WagmiProvider>
       </AppRouterCacheProvider>
     </QueryClientProvider>
   );

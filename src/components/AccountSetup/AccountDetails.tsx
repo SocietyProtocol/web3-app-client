@@ -84,7 +84,9 @@ export const AccountDetails = () => {
               >
                 {profile?.name || `User #${profileId!.data!}`}
               </Typography>
-              <Address address={address!} showCopy showLink truncate />
+              {address && (
+                <Address address={address} showCopy showLink truncate />
+              )}
             </Stack>
           </Stack>
 

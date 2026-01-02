@@ -25,6 +25,9 @@ interface WizardProps {
   onBack?: () => void;
   onReset?: () => void;
   onFinish?: () => void;
+  nextDisabled?: boolean;
+  backDisabled?: boolean;
+  finishDisabled?: boolean;
   showActions?: boolean;
   showReset?: boolean;
   minHeight?:
@@ -37,6 +40,7 @@ interface WizardProps {
         lg?: number | string;
       };
   isLoading?: boolean;
+  loadingText?: string;
 }
 
 export const Wizard = ({
@@ -48,10 +52,14 @@ export const Wizard = ({
   onBack,
   onReset,
   onFinish,
+  nextDisabled,
+  backDisabled,
+  finishDisabled,
   showActions = true,
   showReset = true,
   minHeight,
   isLoading = false,
+  loadingText = "Saving...",
 }: WizardProps) => {
   const isMobile = useIsMobile();
 
@@ -147,6 +155,7 @@ export const Wizard = ({
                   variant="outlined"
                   onClick={onBack}
                   sx={{ width: { xs: "100%", sm: "auto" } }}
+                  disabled={backDisabled || isLoading}
                 >
                   Back
                 </WizardButton>
@@ -169,7 +178,7 @@ export const Wizard = ({
                   <WizardButton
                     variant="contained"
                     onClick={onFinish || onReset}
-                    disabled={isLoading}
+                    disabled={isLoading || finishDisabled}
                     startIcon={
                       isLoading ? (
                         <CircularProgress size={16} color="inherit" />
@@ -177,13 +186,14 @@ export const Wizard = ({
                     }
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                   >
-                    {isLoading ? "Saving..." : "Finish"}
+                    {isLoading ? loadingText : "Finish"}
                   </WizardButton>
                 ) : (
                   <WizardButton
                     variant="contained"
                     onClick={onNext}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
+                    disabled={nextDisabled}
                   >
                     Next
                   </WizardButton>

@@ -4,7 +4,7 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { BubbleBase } from "./BubbleBase";
 import { useAccount } from "wagmi";
 
-export const WrtongNetworkBubble: React.FC = () => {
+export const WrongNetworkBubble: React.FC = () => {
   const { isConnected } = useAccount();
   const { expectedNetwork, isWrongNetwork, switchChain, isSwitching } =
     useCheckWrongNetwork();

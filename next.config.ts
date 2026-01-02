@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     "pino",
     "thread-stream",
     "@walletconnect/ethereum-provider",
+    "pinata",
   ],
 };
 

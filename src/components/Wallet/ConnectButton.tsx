@@ -25,22 +25,32 @@ export const ConnectButton = ({
   variant,
 }: ConnectButtonProps) => {
   const {
-    profileId: { isLoading: profileIdLoading },
-    uri: { isLoading: uriLoading },
+    profileId: { data: profileId, isLoading: profileIdLoading },
+    uri: { data: uri, isLoading: uriLoading },
     profileData: { data: profileData, isLoading: profileDataLoading },
   } = useProfile();
 
+  const isInitialLoading =
+    (profileId === undefined && profileIdLoading) ||
+    (uri === undefined && uriLoading) ||
+    (profileData === undefined && profileDataLoading);
+
   return (
     <RainbowConnectButton.Custom>
-      {({ account, openAccountModal, mounted: ready, openConnectModal }) => {
-        if (!ready || profileIdLoading || uriLoading || profileDataLoading) {
+      {({
+        account,
+        openAccountModal,
+        mounted: wagmiReady,
+        openConnectModal,
+      }) => {
+        if (!wagmiReady || isInitialLoading) {
           return <ConnectButtonSkeleton fullWidth={fullWidth} sx={sx} />;
         }
 
         if (!account) {
           return (
             <Button
-              disabled={!ready}
+              disabled={!wagmiReady}
               variant="outlined"
               onClick={openConnectModal}
               sx={sx}

@@ -10,7 +10,8 @@ import { Stack } from "@mui/material";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
-import { WrtongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
+import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
+import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 
 export default function AccountPage() {
   const [accountSetupOpen, setAccountSetupOpen] = useState(false);
@@ -18,27 +19,29 @@ export default function AccountPage() {
   const { address } = useAccount();
   const profile = useProfile(address);
 
-  if (
-    !wagmiReady ||
+  const inInitialLoading =
     (profile.profileId.data === undefined && profile.profileId.isLoading) ||
     (profile.uri.data === undefined && profile.uri.isLoading) ||
-    (profile.profileData.data === undefined && profile.profileData.isLoading)
-  ) {
+    (profile.profileData.data === undefined && profile.profileData.isLoading);
+
+  if (!wagmiReady || inInitialLoading) {
     return <AccountSkeleton />;
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <Stack alignItems="center" justifyContent="center">
         <ConnectWalletBubble />
-        <WrtongNetworkBubble />
+        <WrongNetworkBubble />
         <AccountSetupBubble
-          show={!accountSetupOpen}
+          show={!accountSetupOpen && !profile.profileData.data}
           onActionClick={() => setAccountSetupOpen(true)}
         />
       </Stack>
-      {accountSetupOpen && <AccountSetupWizard />}
+      {accountSetupOpen && (
+        <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
+      )}
       {profile.profileData.data && <AccountDetails />}
-    </>
+    </ErrorBoundary>
   );
 }

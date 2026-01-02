@@ -3,12 +3,14 @@ import { useAccount, useDisconnect } from "wagmi";
 import { useAccountSetup } from "./AccountSetupContext";
 import { Address } from "../Address/Address";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { Controller } from "react-hook-form";
 
 export const ReferralStep = () => {
-  const { referralCode, setReferralCode } = useAccountSetup();
+  const { form, getServerFieldError, reset } = useAccountSetup();
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
   const isMobile = useIsMobile();
+
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
       {/* Account Info */}
@@ -29,7 +31,14 @@ export const ReferralStep = () => {
           sx={{ minWidth: 0 }}
         >
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Address address={address!} showCopy showLink truncate={isMobile} />
+            {address && (
+              <Address
+                address={address}
+                showCopy
+                showLink
+                truncate={isMobile}
+              />
+            )}
           </Box>
 
           <Button
@@ -57,11 +66,31 @@ export const ReferralStep = () => {
             (OPTIONAL)
           </Typography>
         </Typography>
-        <TextField
-          fullWidth
-          placeholder="Enter your referral code"
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value)}
+        <Controller
+          control={form.control}
+          name="referralCode"
+          render={({ field, fieldState }) => {
+            const serverError = getServerFieldError("referralCode");
+            const error = fieldState.error?.message || serverError;
+            const onChange = (value: string) => {
+              field.onChange(value);
+              reset();
+            };
+
+            return (
+              <TextField
+                fullWidth
+                placeholder="Enter your referral code"
+                {...field}
+                onChange={(e) => onChange(e.target.value)}
+                error={Boolean(error)}
+                helperText={
+                  error ||
+                  `${(form.watch("referralCode") || "").length}/50 characters`
+                }
+              />
+            );
+          }}
         />
       </Box>
     </Stack>

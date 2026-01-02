@@ -43,13 +43,24 @@ export const ProfileCard = ({
         {/* Name */}
         <Typography
           variant="body2"
-          sx={{ fontWeight: 700, color: "text.primary", opacity: 0.8 }}
+          sx={{
+            fontWeight: 700,
+            color: "text.primary",
+            opacity: 0.8,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            maxWidth: "100%",
+          }}
+          title={name}
         >
           {name || `User`}
         </Typography>
 
         {/* Address */}
-        <Address address={address!} showCopy truncate showLink size="small" />
+        {address && (
+          <Address address={address} showCopy truncate showLink size="small" />
+        )}
 
         {/* Extra margin */}
         <Box />

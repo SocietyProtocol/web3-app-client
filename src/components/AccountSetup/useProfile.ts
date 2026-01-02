@@ -4,7 +4,7 @@ import { useIpfsJson } from "@/hooks/useIpfsJson";
 import { useProfileId } from "@/hooks/useProfileId";
 import { useProfileUri } from "@/hooks/useProfileUri";
 
-interface ProfileData {
+export interface ProfileData {
   address: string;
   name: string;
   bio: string;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { Wizard, WizardStep } from "../Wizard";
 import { ReferralStep } from "./ReferralStep";
@@ -6,9 +6,10 @@ import { AccountInfoStep } from "./AccountInfoStep";
 import { ReviewStep } from "./ReviewStep";
 import { AccountSetupProvider, useAccountSetup } from "./AccountSetupContext";
 import { useAccount } from "wagmi";
-import { useUpdateProfile } from "./useUpdateProfile";
 import { Box } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
+import { ValidationError } from "@/errors/ValidationError";
+import { parseErrorMessage } from "@/utils/errors";
 
 const steps: WizardStep[] = [
   { label: "Referral", description: "Enter your referral code" },
@@ -16,15 +17,77 @@ const steps: WizardStep[] = [
   { label: "Review", description: "Review your information" },
 ];
 
-const AccountSetupWizardContent = () => {
+const AccountSetupWizardContent = ({
+  onComplete,
+}: {
+  onComplete?: () => void;
+}) => {
   const [activeStep, setActiveStep] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
-  const { referralCode, name, bio, avatar } = useAccountSetup();
-  const { createProfile, isMutating: isCreating } = useUpdateProfile();
+  const hasCompletedRef = useRef(false);
+  const {
+    form,
+    onSubmit,
+    isMutatingProfile,
+    isUploadingToIpfs,
+    isWritingContract,
+    isTransactionPending,
+    isTransactionConfirmed,
+    refetch,
+    reset,
+  } = useAccountSetup();
+
   const { address } = useAccount();
+
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
 
-  const handleNext = () => {
+  // Watch for transaction confirmation and refetch profile
+  useEffect(() => {
+    if (isTransactionConfirmed && !hasCompletedRef.current) {
+      hasCompletedRef.current = true;
+      // Transaction confirmed, refetch profile data
+      refetch().then(() => {
+        enqueueSnackbar("Profile setup completed successfully!", {
+          variant: "success",
+          key: "account-setup-success",
+        });
+        form.reset();
+        reset();
+        onComplete?.();
+      });
+    }
+  }, [
+    isTransactionConfirmed,
+    refetch,
+    onComplete,
+    form,
+    enqueueSnackbar,
+    reset,
+  ]);
+
+  const nextDisabled =
+    !form.formState.isValid &&
+    (Boolean(activeStep === 0 && form.formState.errors.referralCode) ||
+      Boolean(
+        activeStep === 1 &&
+          (form.formState.errors.name ||
+            form.formState.errors.bio ||
+            form.formState.errors.avatar)
+      ));
+
+  const handleNext = async () => {
+    // Validate account info step before moving forward
+    if (activeStep === 1) {
+      const isValid = await form.trigger();
+
+      if (!isValid) {
+        enqueueSnackbar("Please fix the validation errors before proceeding.", {
+          variant: "error",
+        });
+        return;
+      }
+    }
+
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
 
@@ -37,30 +100,64 @@ const AccountSetupWizardContent = () => {
       enqueueSnackbar("No wallet connected", { variant: "error" });
       return;
     }
+
     if (isWrongNetwork) {
       enqueueSnackbar(`Please switch to ${expectedNetwork.name} network.`, {
         variant: "error",
       });
       return;
     }
+
     try {
-      await createProfile({
-        name,
-        bio,
-        avatar,
-        referralCode: referralCode || undefined,
-      });
-      enqueueSnackbar("Profile created or updated successfully!", {
-        variant: "success",
-      });
-      // TODO: Wait for transaction confirmation and navigate to profile page
+      // The submit function already handles calling mutateProfile with the form data
+      await onSubmit();
+
+      // Success message will be shown after transaction confirmation
+      // by the useEffect hook above
     } catch (err) {
       console.error("Error creating/updating profile:", err);
-      enqueueSnackbar(
-        err instanceof Error ? err.message : "Failed to create profile",
-        { variant: "error" }
-      );
+
+      if (err instanceof ValidationError) {
+        const hasReferralError = err.details?.referralCode;
+
+        if (hasReferralError) {
+          setActiveStep(0);
+        }
+
+        const hasAccountInfoError =
+          err.details?.name || err.details?.bio || err.details?.avatar;
+
+        if (hasAccountInfoError) {
+          setActiveStep(1);
+        }
+
+        enqueueSnackbar("Validation error occurred. Please check your input.", {
+          variant: "error",
+        });
+      } else {
+        enqueueSnackbar(
+          parseErrorMessage(
+            err,
+            "An unexpected error occurred while creating/updating profile."
+          ),
+          { variant: "error" }
+        );
+      }
     }
+  };
+
+  // Determine loading text based on state
+  const getLoadingText = () => {
+    if (isUploadingToIpfs) {
+      return "Uploading to IPFS...";
+    }
+    if (isWritingContract) {
+      return "Confirm transaction...";
+    }
+    if (isTransactionPending) {
+      return "Confirming...";
+    }
+    return "Saving...";
   };
 
   return (
@@ -77,9 +174,11 @@ const AccountSetupWizardContent = () => {
         onNext={handleNext}
         onBack={handleBack}
         onFinish={handleFinish}
+        nextDisabled={nextDisabled}
         showReset={false}
         minHeight={{ xs: 400, sm: 554 }}
-        isLoading={isCreating}
+        isLoading={isMutatingProfile}
+        loadingText={getLoadingText()}
         showActions={!isWrongNetwork}
       >
         {activeStep === 0 && <ReferralStep />}
@@ -91,7 +190,11 @@ const AccountSetupWizardContent = () => {
   );
 };
 
-export const AccountSetupWizard = () => {
+export const AccountSetupWizard = ({
+  onComplete,
+}: {
+  onComplete?: () => void;
+}) => {
   const { isConnected } = useAccount();
 
   if (!isConnected) {
@@ -100,7 +203,7 @@ export const AccountSetupWizard = () => {
 
   return (
     <AccountSetupProvider>
-      <AccountSetupWizardContent />
+      <AccountSetupWizardContent onComplete={onComplete} />
     </AccountSetupProvider>
   );
 };

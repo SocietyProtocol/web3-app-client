@@ -11,8 +11,6 @@ export const useProfileId = (address?: `0x${string}`) => {
     [chainId]
   );
 
-  console.log({ address, contractAddress });
-
   const profileIdResult = useReadContract({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,

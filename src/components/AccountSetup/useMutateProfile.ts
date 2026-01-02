@@ -1,45 +1,26 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { AccountData, AccountResponse } from "@/app/api/account/route";
+import { AccountResponse } from "@/app/api/account/route";
+import { ValidationError } from "@/errors/ValidationError";
 import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useMutation } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { Hex } from "viem";
 import {
   useAccount,
   useChainId,
-  useReadContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
+import { useProfile } from "./useProfile";
+import { AccountData } from "@/validation/account";
 
-export const useUpdateProfile = (overrideAddress?: Hex) => {
+export const useMutateProfile = (overrideAddress?: Hex) => {
   const chainId = useChainId();
   const contractAddress = getBadgesContractAddress(chainId);
   const { address } = useAccount();
   const userAddress = overrideAddress || address;
 
-  const profileIdResult = useReadContract({
-    address: contractAddress,
-    abi: SocietyProtocolBadgesABI,
-    functionName: "userProfileId",
-    args: userAddress ? [userAddress] : undefined,
-    query: {
-      enabled: Boolean(userAddress && contractAddress),
-    },
-  });
-
-  const profileUriResult = useReadContract({
-    address: contractAddress,
-    abi: SocietyProtocolBadgesABI,
-    functionName: "uri",
-    args: profileIdResult.data ? [profileIdResult.data] : undefined,
-    query: {
-      enabled: Boolean(
-        profileIdResult.data &&
-          profileIdResult.data !== BigInt(0) &&
-          contractAddress
-      ),
-    },
-  });
+  const profile = useProfile(userAddress);
 
   const uploadIpfsResult = useMutation<AccountResponse, Error, AccountData>({
     mutationFn: async (data) => {
@@ -53,9 +34,12 @@ export const useUpdateProfile = (overrideAddress?: Hex) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData?.error || "Failed to create profile. Please try again."
-        );
+
+        if (response.status === 400 && errorData?.details) {
+          throw new ValidationError("Validation failed", errorData.details);
+        }
+
+        throw new Error(errorData?.error || "Failed to upload profile data");
       }
 
       return response.json() as Promise<AccountResponse>;
@@ -69,19 +53,22 @@ export const useUpdateProfile = (overrideAddress?: Hex) => {
     confirmations: 1,
   });
 
-  const exec = async (data: AccountData) => {
-    if (!profileIdResult.isFetched || !profileUriResult.isFetched) return;
+  const mutate = async (data: AccountData) => {
+    if (
+      !profile.profileId.isFetched ||
+      (profile.profileId.data !== BigInt(0) && !profile.uri.isFetched)
+    ) {
+      throw new Error("Profile data is still loading. Please try again.");
+    }
 
     const profileExists =
-      Boolean(profileIdResult.data) && profileIdResult.data !== BigInt(0);
+      Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
 
-    const uriExists = Boolean(
-      profileUriResult.data && profileUriResult.data.length > 0
-    );
+    const uriExists = Boolean(profile.uri.data && profile.uri.data.length > 0);
 
     const ipfsData = await uploadIpfsResult.mutateAsync({
       ...data,
-      cid: uriExists ? profileUriResult.data! : undefined,
+      cid: uriExists ? profile.uri.data! : undefined,
     });
 
     return await writeContract.writeContractAsync({
@@ -89,23 +76,38 @@ export const useUpdateProfile = (overrideAddress?: Hex) => {
       abi: SocietyProtocolBadgesABI,
       functionName: profileExists ? "updateProfileURI" : "createProfile",
       args: profileExists
-        ? [profileIdResult.data!, ipfsData.cid]
+        ? [profile.profileId.data!, ipfsData.cid]
         : [ipfsData.cid],
     });
   };
 
+  const reset = useCallback(() => {
+    uploadIpfsResult.reset();
+    writeContract.reset();
+  }, [uploadIpfsResult, writeContract]);
+
   return {
-    createProfile: exec,
-    isLoading: profileIdResult.isLoading || profileUriResult.isLoading,
+    profileId: profile.profileId,
+    profileUri: profile.uri,
+    profileData: profile.profileData,
+    isLoading:
+      profile.profileId.isLoading ||
+      profile.uri.isLoading ||
+      profile.profileData.isLoading,
     isMutating:
       uploadIpfsResult.isPending ||
       writeContract.isPending ||
-      (writeContract.data && receipt.isPending),
+      Boolean(writeContract.data && receipt.isPending),
+    isUploadingToIpfs: uploadIpfsResult.isPending,
+    isWritingContract: writeContract.isPending,
     error: uploadIpfsResult.error || writeContract.error || receipt.error,
     ipfsData: uploadIpfsResult.data,
     transactionReceipt: receipt.data,
     transactionHash: writeContract.data,
     isTransactionPending: Boolean(writeContract.data && receipt.isPending),
     isTransactionConfirmed: Boolean(receipt.data && receipt.isSuccess),
+    refetch: profile.refetch,
+    mutate,
+    reset,
   };
 };

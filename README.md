@@ -2,6 +2,27 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Environment Variables
+
+Before running the application, you need to set up your environment variables. Copy the `.env.example` file to `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Then configure the following required variables:
+
+| Variable                    | Description                                     | Required | Where to Get                                                                            |
+| --------------------------- | ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_WC_PROJECT_ID` | WalletConnect project ID for wallet connection  | Yes      | [WalletConnect Cloud](https://cloud.walletconnect.com/)                                 |
+| `NEXT_PUBLIC_GRAPH_URL`     | The Graph subgraph endpoint URL                 | No       | Your deployed subgraph                                                                  |
+| `PINATA_JWT`                | Pinata JWT token for IPFS uploads (server-side) | Yes      | [Pinata Dashboard](https://pinata.cloud/)                                               |
+| `NEXT_PUBLIC_GATEWAY_URL`   | Pinata gateway URL for IPFS content retrieval   | Yes      | [Pinata Dashboard](https://pinata.cloud/) (e.g., `https://your-gateway.mypinata.cloud`) |
+
+**Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Server-only variables (like `PINATA_JWT`) are only accessible on the server side.
+
+### Development Server
+
 First, run the development server:
 
 ```bash

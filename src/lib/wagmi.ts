@@ -29,13 +29,31 @@ export const wagmiConfig = getDefaultConfig({
   ssr: true,
 });
 
-export const unwatch = watchAccount(wagmiConfig, {
-  onChange(data) {
-    if (!jotaiStore.get(wagmiConnectionAttemptedAtom) && data.isConnecting) {
-      jotaiStore.set(wagmiConnectionAttemptedAtom, true);
-    } else if (!jotaiStore.get(wagmiReadyAtom) && !data.isConnecting) {
-      jotaiStore.set(wagmiReadyAtom, true);
-      unwatch();
-    }
-  },
-});
+let unwatchAccount: (() => void) | null = null;
+
+/**
+ * Initializes wagmi account watching to track connection state.
+ * Should be called once during app initialization.
+ * Automatically unwatches once wagmi is ready.
+ */
+export function initializeWagmiWatcher() {
+  if (unwatchAccount) {
+    // Already initialized
+    return;
+  }
+
+  unwatchAccount = watchAccount(wagmiConfig, {
+    onChange(data) {
+      if (!jotaiStore.get(wagmiConnectionAttemptedAtom) && data.isConnecting) {
+        jotaiStore.set(wagmiConnectionAttemptedAtom, true);
+      } else if (!jotaiStore.get(wagmiReadyAtom) && !data.isConnecting) {
+        jotaiStore.set(wagmiReadyAtom, true);
+
+        if (unwatchAccount) {
+          unwatchAccount();
+          unwatchAccount = null;
+        }
+      }
+    },
+  });
+}

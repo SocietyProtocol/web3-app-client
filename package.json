@@ -16,6 +16,7 @@
     "@apollo/client": "^4.0.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@mui/material-nextjs": "^7.3.6",
@@ -31,9 +32,11 @@
     "pinata": "^2.5.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-hook-form": "^7.69.0",
     "react-top-loading-bar": "^3.0.2",
     "viem": "^2.39.0",
-    "wagmi": "^2.19.4"
+    "wagmi": "^2.19.4",
+    "zod": "^4.3.3"
   },
   "devDependencies": {
     "@types/node": "^20",

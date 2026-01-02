@@ -6,6 +6,7 @@ import { AvatarInput } from "./AvatarInput";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useAccountSetup } from "./AccountSetupContext";
+import { parseErrorMessage } from "@/utils/errors";
 
 interface AccountDetailsEditProps {
   onCancel: () => void;
@@ -59,6 +60,14 @@ export const AccountDetailsEdit = ({
       await onSubmit();
     } catch (error) {
       console.error("Failed to update profile:", error);
+
+      enqueueSnackbar(
+        parseErrorMessage(
+          error,
+          "An unexpected error occurred while creating/updating profile."
+        ),
+        { variant: "error" }
+      );
     }
   };
 
@@ -102,9 +111,7 @@ export const AccountDetailsEdit = ({
             onClick={handleSaveClick}
             variant="contained"
             size="small"
-            disabled={
-              disabled || !form.formState.isDirty || !form.formState.isValid
-            }
+            disabled={disabled || !form.formState.isDirty}
             sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {getButtonText()}

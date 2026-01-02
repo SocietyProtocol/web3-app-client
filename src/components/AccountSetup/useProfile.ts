@@ -5,10 +5,9 @@ import { useProfileId } from "@/hooks/useProfileId";
 import { useProfileUri } from "@/hooks/useProfileUri";
 
 export interface ProfileData {
-  address: string;
-  name: string;
-  bio: string;
-  avatar: string | null;
+  name?: string;
+  bio?: string;
+  avatar?: string | null;
   referralCode?: string;
 }
 

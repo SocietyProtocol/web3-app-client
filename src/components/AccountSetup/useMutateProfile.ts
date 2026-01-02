@@ -1,7 +1,7 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { AccountResponse } from "@/app/api/account/route";
-import { ValidationError } from "@/errors/ValidationError";
 import { getBadgesContractAddress } from "@/lib/wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { Hex } from "viem";
@@ -13,36 +13,41 @@ import {
 } from "wagmi";
 import { useProfile } from "./useProfile";
 import { AccountData } from "@/validation/account";
+import { throwResponseError } from "@/utils/errors";
 
 export const useMutateProfile = (overrideAddress?: Hex) => {
   const chainId = useChainId();
   const contractAddress = getBadgesContractAddress(chainId);
   const { address } = useAccount();
   const userAddress = overrideAddress || address;
+  const { generateAuthPayload } = useAuth();
 
   const profile = useProfile(userAddress);
 
   const uploadIpfsResult = useMutation<AccountResponse, Error, AccountData>({
     mutationFn: async (data) => {
+      // Generate authentication payload
+      const authPayload = await generateAuthPayload();
+
       const response = await fetch("/api/account", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Auth-Payload": JSON.stringify(authPayload),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          cid: profile.uri.data || undefined,
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-
-        if (response.status === 400 && errorData?.details) {
-          throw new ValidationError("Validation failed", errorData.details);
-        }
-
-        throw new Error(errorData?.error || "Failed to upload profile data");
+        await throwResponseError(response);
       }
 
-      return response.json() as Promise<AccountResponse>;
+      const responseData: AccountResponse = await response.json();
+
+      return responseData;
     },
   });
 

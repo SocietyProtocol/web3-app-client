@@ -1,3 +1,4 @@
+import { ResponseError } from "@/errors/ResponseError";
 import {
   ValidationError,
   ValidationErrorDetails,
@@ -44,6 +45,11 @@ export function parseErrorMessage(
     return error.message;
   } else if (error instanceof BaseError) {
     return error.shortMessage;
+  } else if (
+    error instanceof SyntaxError &&
+    error.message === "Unexpected end of JSON input"
+  ) {
+    return "Server error";
   } else if (error instanceof Error) {
     return error.message;
   } else if (
@@ -57,4 +63,61 @@ export function parseErrorMessage(
   }
 
   return defaultMessage;
+}
+
+/**
+ * Throws appropriate ResponseError or ValidationError based on the response status
+ *
+ * @param response
+ */
+export async function throwResponseError(response: Response): Promise<never> {
+  if (response.status === 429) {
+    const errorData = await response.json();
+
+    throw new ResponseError(
+      `Rate limit exceeded. Please try again at ${new Date(
+        errorData.resetTime
+      ).toLocaleTimeString()}`,
+      429,
+      response.statusText,
+      errorData
+    );
+  }
+
+  if (response.status === 401) {
+    const errorData = await response.json();
+    throw new ResponseError(
+      errorData.error || "Authentication failed.",
+      401,
+      response.statusText,
+      errorData
+    );
+  }
+
+  if (response.status === 400) {
+    const errorData = await response.json();
+    if (errorData?.details) {
+      throw new ValidationError("Validation failed", errorData.details);
+    } else {
+      throw new ResponseError(
+        errorData.error || "Bad request.",
+        400,
+        response.statusText,
+        errorData
+      );
+    }
+  }
+
+  if (response.status >= 500) {
+    throw new ResponseError(
+      "Server error occurred. Please try again later.",
+      response.status,
+      response.statusText,
+      await response.text()
+    );
+  }
+
+  throw new Error("Unknown error occurred", {
+    cause: await response.text(),
+  });
 }

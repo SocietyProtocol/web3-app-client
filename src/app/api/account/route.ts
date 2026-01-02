@@ -1,4 +1,5 @@
 import { pinata } from "@/lib/pinata";
+import { authenticateRequest } from "@/lib/auth";
 import { accountValidationSchema } from "@/validation/account";
 import { NextRequest, NextResponse } from "next/server";
 import { flattenError } from "zod";
@@ -13,6 +14,16 @@ export interface AccountErrorResponse {
 }
 
 export async function POST(request: NextRequest) {
+  // Authenticate the request
+  const auth = await authenticateRequest(request);
+
+  if (!auth.authenticated) {
+    return NextResponse.json(
+      { error: auth.error || "Authentication required" },
+      { status: 401 }
+    );
+  }
+
   let body: unknown;
 
   try {
@@ -51,7 +62,13 @@ export async function POST(request: NextRequest) {
   if (data.cid) {
     // If CID is provided, we are updating existing data
     try {
-      await pinata.files.public.delete([data.cid]);
+      const filesResponse = await pinata.files.public.list().cid(data.cid);
+      const id = filesResponse.files[0]?.id;
+
+      if (id) {
+        await pinata.files.public.delete([id]);
+        console.log(`Deleted old IPFS data with CID ${data.cid} and ID ${id}`);
+      }
     } catch (error) {
       console.error("Failed to delete old IPFS data:", error);
       // Proceeding even if deletion fails

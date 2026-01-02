@@ -16,8 +16,6 @@ interface AvatarInputProps {
   helperText?: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
-
 export const AvatarInput = ({
   value,
   onChange,
@@ -35,30 +33,6 @@ export const AvatarInput = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      enqueueSnackbar(`File size exceeds 5MB. Please choose a smaller image.`, {
-        variant: "error",
-      });
-      // Reset input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      enqueueSnackbar("Please select a valid image file.", {
-        variant: "error",
-      });
-      // Reset input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -80,7 +54,7 @@ export const AvatarInput = ({
     <Stack
       direction={{ xs: "column", sm: "row" }}
       spacing={{ xs: 2, sm: 2 }}
-      alignItems={{ xs: "center", sm: "center" }}
+      alignItems="flex-start"
     >
       <Avatar
         src={value || "/icons/upload-img.svg"}

@@ -26,7 +26,9 @@ export const accountValidationSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
-        const mimeMatch = value.match(/^data:(image\/[a-z0-9+.-]+);base64,/i);
+        const mimeMatch = value.match(
+          /^data:(image\/[a-zA-Z0-9+.-]+);base64,/i
+        );
         if (!mimeMatch) return false;
         return ALLOWED_IMAGE_TYPES.includes(mimeMatch[1]);
       },
@@ -38,9 +40,8 @@ export const accountValidationSchema = z.object({
         const base64Match = value.match(/^data:image\/[a-z+]+;base64,(.+)$/);
         if (!base64Match) return false;
         const base64String = base64Match[1];
-        const sizeInBytes = Math.ceil(
-          ((base64String.length - base64String.split("=").length + 1) * 3) / 4
-        );
+        const paddingCount = (base64String.match(/=/g) || []).length;
+        const sizeInBytes = (base64String.length * 3) / 4 - paddingCount;
         return sizeInBytes <= MAX_AVATAR_SIZE;
       },
       {

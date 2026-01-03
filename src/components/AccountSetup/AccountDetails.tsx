@@ -86,7 +86,8 @@ export const AccountDetails = () => {
                   fontSize: { xs: "1rem", sm: "1.25rem" },
                 }}
               >
-                {profile?.name || `User #${profileId!.data!}`}
+                {profile?.name ||
+                  (profileId?.data ? `User #${profileId.data}` : "User")}
               </Typography>
               {address && (
                 <Address address={address} showCopy showLink truncate />

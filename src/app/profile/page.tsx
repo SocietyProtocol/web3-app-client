@@ -51,7 +51,7 @@ export default function ProfilePage() {
           )
         )}
       </Stack>
-      {profile.profileData.data ? (
+      {!isConnected || isWrongNetwork ? null : profile.profileData.data ? (
         <AccountDetails />
       ) : (
         accountSetupOpen && (

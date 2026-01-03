@@ -38,6 +38,9 @@ export const AvatarInput = ({
     reader.onload = (event) => {
       if (typeof event.target?.result === "string") {
         onChange(event.target.result);
+      } else {
+        enqueueSnackbar("Failed to read image file.", { variant: "error" });
+        onChange(null);
       }
     };
     reader.onerror = () => {

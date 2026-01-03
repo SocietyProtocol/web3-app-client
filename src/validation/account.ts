@@ -27,7 +27,7 @@ export const accountValidationSchema = z.object({
       (value) => {
         if (!value) return true;
         const mimeMatch = value.match(
-          /^data:(image\/[a-zA-Z0-9+.-]+);base64,/i
+          /^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/i
         );
         if (!mimeMatch) return false;
         return ALLOWED_IMAGE_TYPES.includes(mimeMatch[1]);

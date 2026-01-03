@@ -8,7 +8,8 @@ export const URLS = {
   ETHERSCAN_SEPOLIA: "https://sepolia.etherscan.io",
 
   // IPFS gateways
-  IPFS_GATEWAY: "https://ipfs.io/ipfs",
+  IPFS_GATEWAY:
+    process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL || "https://ipfs.io/ipfs",
 
   // The Graph subgraphs
   SUBGRAPH: {

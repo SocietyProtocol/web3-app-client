@@ -29,7 +29,7 @@ export const useMutateProfile = (overrideAddress?: Hex) => {
       // Generate authentication payload
       const authPayload = await generateAuthPayload();
 
-      const response = await fetch("/api/account", {
+      const response = await fetch("/api/profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

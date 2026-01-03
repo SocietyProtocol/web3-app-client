@@ -49,8 +49,6 @@ export const AuctionStatus = ({
   status,
   size = "small",
 }: AuctionStatusProps) => {
-  console.log("Rendering AuctionStatus with status:", status);
-
   return (
     <Chip
       color={getColor(status)}

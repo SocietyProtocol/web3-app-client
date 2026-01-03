@@ -5,12 +5,10 @@ import { useProfileId } from "@/hooks/useProfileId";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 
 interface AccountSetupBubbleProps {
-  show?: boolean;
   onActionClick?: () => void;
 }
 
 export const AccountSetupBubble = ({
-  show,
   onActionClick,
 }: AccountSetupBubbleProps) => {
   const { isConnected, address } = useAccount();
@@ -25,7 +23,6 @@ export const AccountSetupBubble = ({
         </Button>
       }
       show={
-        show &&
         isConnected &&
         !isWrongNetwork &&
         (profileId === undefined || profileId === BigInt(0)) &&

@@ -1,34 +1,28 @@
-import { styled } from "@mui/material/styles";
+import { alpha, styled } from "@mui/material/styles";
 import { MaterialDesignContent } from "notistack";
 
 // Custom styled MaterialDesignContent for notistack toasts
 export const StyledMaterialDesignContent = styled(MaterialDesignContent)(
   ({ theme }) => ({
     "&.notistack-MuiContent-success": {
-      backgroundColor: theme.palette.success.main,
-      color: theme.palette.success.contrastText,
-      boxShadow: theme.shadows[3],
-      borderRadius: theme.shape.borderRadius,
+      color: theme.palette.success.light,
     },
     "&.notistack-MuiContent-error": {
-      backgroundColor: theme.palette.error.main,
-      color: theme.palette.error.contrastText,
-      boxShadow: theme.shadows[3],
-      borderRadius: theme.shape.borderRadius,
+      color: theme.palette.error.main,
     },
     "&.notistack-MuiContent-warning": {
-      backgroundColor: theme.palette.warning.main,
-      color: theme.palette.warning.contrastText,
-      boxShadow: theme.shadows[3],
-      borderRadius: theme.shape.borderRadius,
+      color: theme.palette.warning.light,
     },
     "&.notistack-MuiContent-info": {
-      backgroundColor: theme.palette.info.main,
-      color: theme.palette.info.contrastText,
-      boxShadow: theme.shadows[3],
-      borderRadius: theme.shape.borderRadius,
+      color: theme.palette.info.light,
     },
+
     // General toast styling
+    borderRadius: "16px",
+    boxShadow: theme.shadows[3],
+    backgroundColor: alpha(theme.palette.background.bubble, 0.7),
+    backgroundClip: "padding-box",
+    backdropFilter: "blur(12px)",
     minWidth: 320,
     fontWeight: 500,
     fontSize: "1rem",

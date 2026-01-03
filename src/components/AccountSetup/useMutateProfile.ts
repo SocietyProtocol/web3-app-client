@@ -1,5 +1,5 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { AccountResponse } from "@/app/api/account/route";
+import { ProfileResponse } from "@/app/api/profile/route";
 import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ export const useMutateProfile = (overrideAddress?: Hex) => {
 
   const profile = useProfile(userAddress);
 
-  const uploadIpfsResult = useMutation<AccountResponse, Error, AccountData>({
+  const uploadIpfsResult = useMutation<ProfileResponse, Error, AccountData>({
     mutationFn: async (data) => {
       // Generate authentication payload
       const authPayload = await generateAuthPayload();
@@ -45,7 +45,7 @@ export const useMutateProfile = (overrideAddress?: Hex) => {
         await throwResponseError(response);
       }
 
-      const responseData: AccountResponse = await response.json();
+      const responseData: ProfileResponse = await response.json();
 
       return responseData;
     },

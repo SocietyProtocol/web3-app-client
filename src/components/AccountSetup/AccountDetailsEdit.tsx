@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, Button, TextField } from "@mui/material";
+import { Stack, Typography, Button, TextField } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { Controller } from "react-hook-form";
@@ -7,6 +7,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useAccountSetup } from "./AccountSetupContext";
 import { parseErrorMessage } from "@/utils/errors";
+import { useAccount } from "wagmi";
+import { truncateAddress } from "@/utils/string";
 
 interface AccountDetailsEditProps {
   onCancel: () => void;
@@ -17,6 +19,7 @@ export const AccountDetailsEdit = ({
   onCancel,
   onSave,
 }: AccountDetailsEditProps) => {
+  const { address } = useAccount();
   const { enqueueSnackbar } = useSnackbar();
   const hasCompletedRef = useRef(false);
   const {
@@ -101,8 +104,9 @@ export const AccountDetailsEdit = ({
         alignItems={{ xs: "stretch", sm: "center" }}
         spacing={{ xs: 1.5, sm: 0 }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Account Details
+        {/* Account Details Header */}
+        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+          Account details {address && truncateAddress(address)}
         </Typography>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
@@ -174,47 +178,42 @@ export const AccountDetailsEdit = ({
               {...field}
               onChange={(e) => onChange(e.target.value)}
               error={Boolean(error)}
-              helperText={error}
+              helperText={
+                error || `${(form.watch("name") || "").length}/100 characters`
+              }
             />
           );
         }}
       />
 
       {/* Bio Section */}
-      <Box>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mb: 1, fontWeight: 600 }}
-        >
-          Bio
-        </Typography>
-
-        <Controller
-          name="bio"
-          control={form.control}
-          render={({ field, fieldState }) => {
-            const serverError = getServerFieldError("bio");
-            const error = fieldState.error?.message || serverError;
-            const onChange = (value: string) => {
-              field.onChange(value);
-              reset();
-            };
-            return (
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                disabled={disabled}
-                {...field}
-                onChange={(e) => onChange(e.target.value)}
-                error={Boolean(error)}
-                helperText={error}
-              />
-            );
-          }}
-        />
-      </Box>
+      <Controller
+        name="bio"
+        control={form.control}
+        render={({ field, fieldState }) => {
+          const serverError = getServerFieldError("bio");
+          const error = fieldState.error?.message || serverError;
+          const onChange = (value: string) => {
+            field.onChange(value);
+            reset();
+          };
+          return (
+            <TextField
+              label="Bio"
+              fullWidth
+              multiline
+              rows={4}
+              disabled={disabled}
+              {...field}
+              onChange={(e) => onChange(e.target.value)}
+              error={Boolean(error)}
+              helperText={
+                error || `${(form.watch("bio") || "").length}/500 characters`
+              }
+            />
+          );
+        }}
+      />
     </Stack>
   );
 };

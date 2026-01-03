@@ -6,56 +6,114 @@ export const MuiTextField: Components<
 >["MuiTextField"] = {
   defaultProps: {
     variant: "outlined",
+    InputLabelProps: {
+      shrink: true,
+    },
   },
   styleOverrides: {
     root: ({ theme }) => ({
       "& .MuiOutlinedInput-root": {
         borderRadius: "8px",
         backgroundColor: theme.palette.background.input,
-        fontSize: "14px",
-        lineHeight: "20px",
+        fontSize: theme.typography.pxToRem(14),
+        lineHeight: theme.typography.pxToRem(20),
         fontWeight: 400,
         color: theme.palette.text.primary,
+        height: "56px",
 
         "&.MuiInputBase-multiline": {
           padding: theme.spacing(1, 1.5),
+          height: "auto",
+
           "& > .MuiOutlinedInput-input": {
             padding: 0,
           },
         },
 
-        ".MuiOutlinedInput-notchedOutline": {
-          transition: theme.transitions.create(
-            ["border-color", "background-color", "box-shadow"],
-            {
+        "& .MuiOutlinedInput-input": {
+          padding: theme.spacing(2.25, 1.5),
+          "&::placeholder": {
+            color: alpha(theme.palette.text.primary, 0.5),
+            opacity: 1,
+            transition: theme.transitions.create("color", {
               duration: theme.transitions.duration.shorter,
               easing: theme.transitions.easing.easeInOut,
-            }
-          ),
+            }),
+          },
         },
 
-        "&:hover .MuiOutlinedInput-notchedOutline": {
-          borderColor: alpha(theme.palette.primary.main, 0.25),
-        },
-        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+        ".MuiOutlinedInput-notchedOutline": {
+          borderColor: theme.palette.background.subtle,
           borderWidth: "1px",
-          borderColor: alpha(theme.palette.primary.main, 0.5),
+          top: 0,
+
+          transition: theme.transitions.create("border-color", {
+            duration: theme.transitions.duration.shorter,
+            easing: theme.transitions.easing.easeInOut,
+          }),
         },
-      },
-      "& .MuiOutlinedInput-notchedOutline": {
-        borderWidth: "1px",
-        borderColor: theme.palette.border.input,
-      },
-      "& .MuiOutlinedInput-input": {
-        "&::placeholder": {
-          color: alpha(theme.palette.text.primary, 0.5),
-          opacity: 1,
+
+        "&:hover:not(.Mui-disabled)": {
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: alpha(theme.palette.primary.main, 0.75),
+          },
+
+          "& .MuiOutlinedInput-input": {
+            "&::placeholder": {
+              color: alpha(theme.palette.text.primary, 0.75),
+              opacity: 1,
+            },
+          },
+        },
+
+        "&.Mui-focused:not(.Mui-disabled)": {
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: theme.palette.primary.main,
+            borderWidth: "1px",
+          },
+
+          "& .MuiOutlinedInput-input": {
+            "&::placeholder": {
+              color: alpha(theme.palette.text.primary, 0.9),
+              opacity: 1,
+            },
+          },
+        },
+
+        "&.Mui-disabled": {
+          opacity: 0.5,
+
+          "& .MuiOutlinedInput-input": {
+            "&::placeholder": {
+              color: alpha(theme.palette.text.primary, 0.3),
+              opacity: 1,
+            },
+          },
+        },
+
+        "&.Mui-error:not(.Mui-disabled)": {
+          color: theme.palette.error.main,
+
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: theme.palette.background.subtle,
+          },
         },
       },
       "& .MuiInputLabel-root": {
-        "&.Mui-focused": {
-          color: theme.palette.primary.main,
-        },
+        position: "relative",
+        transform: "none",
+        marginBottom: theme.spacing(2),
+        fontSize: theme.typography.pxToRem(16),
+        fontWeight: 400,
+        color: theme.palette.text.primary,
+      },
+
+      "& .MuiOutlinedInput-notchedOutline legend": {
+        display: "none",
+      },
+
+      "& .MuiFormHelperText-root.Mui-error": {
+        color: theme.palette.error.main,
       },
     }),
   },

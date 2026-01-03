@@ -3,7 +3,7 @@
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
 import { AccountSetupBubble } from "@/components/Bubbles/AccountSetupBubble";
 import { ConnectWalletBubble } from "@/components/Bubbles/ConnectWalletBubble";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useProfile } from "@/components/AccountSetup/useProfile";
 import { Stack } from "@mui/material";
@@ -12,36 +12,52 @@ import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
+import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 
-export default function AccountPage() {
+export default function ProfilePage() {
   const [accountSetupOpen, setAccountSetupOpen] = useState(false);
   const wagmiReady = useWagmiReady();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
 
-  const inInitialLoading =
+  const isInitialLoading =
     (profile.profileId.data === undefined && profile.profileId.isLoading) ||
     (profile.uri.data === undefined && profile.uri.isLoading) ||
     (profile.profileData.data === undefined && profile.profileData.isLoading);
 
-  if (!wagmiReady || inInitialLoading) {
+  // reset accountSetupOpen when user connects/disconnects or address changes
+  useEffect(() => {
+    setTimeout(() => setAccountSetupOpen(false));
+  }, [isConnected, address]);
+
+  if (!wagmiReady || isInitialLoading) {
     return <AccountSkeleton />;
   }
 
   return (
     <ErrorBoundary>
       <Stack alignItems="center" justifyContent="center">
-        <ConnectWalletBubble />
-        <WrongNetworkBubble />
-        <AccountSetupBubble
-          show={!accountSetupOpen && !profile.profileData.data}
-          onActionClick={() => setAccountSetupOpen(true)}
-        />
+        {!isConnected ? (
+          <ConnectWalletBubble />
+        ) : isWrongNetwork ? (
+          <WrongNetworkBubble />
+        ) : (
+          !profile.profileData.data &&
+          !accountSetupOpen && (
+            <AccountSetupBubble
+              onActionClick={() => setAccountSetupOpen(true)}
+            />
+          )
+        )}
       </Stack>
-      {accountSetupOpen && (
-        <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
+      {profile.profileData.data ? (
+        <AccountDetails />
+      ) : (
+        accountSetupOpen && (
+          <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
+        )
       )}
-      {profile.profileData.data && <AccountDetails />}
     </ErrorBoundary>
   );
 }

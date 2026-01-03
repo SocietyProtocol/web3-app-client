@@ -14,7 +14,7 @@ export const MuiCard: Components<
     {
       props: { variant: "bubble" },
       style: ({ theme }) => ({
-        background: theme.palette.background.bubble,
+        backgroundColor: theme.palette.background.bubble,
         border: `1px solid ${theme.palette.border.bubble}`,
         borderRadius: 38,
         boxShadow: "none",

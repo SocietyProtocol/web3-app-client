@@ -1,5 +1,6 @@
 import { AuctionStatus } from "@/components/Auction/AuctionStatus";
-import { Box, Typography, Chip } from "@mui/material";
+import { AuctionStatusEnum } from "@/components/Auction/types";
+import { Box, Typography } from "@mui/material";
 
 export default function AuctionPage() {
   return (
@@ -8,16 +9,8 @@ export default function AuctionPage() {
         <Typography variant="h4" component="h1">
           Auction
         </Typography>
-        <Chip
-          label={<AuctionStatus />}
-          size="small"
-          sx={{
-            height: 20,
-            fontSize: "0.75rem",
-            backgroundColor: "success.main",
-            color: "common.white",
-          }}
-        />
+
+        <AuctionStatus status={AuctionStatusEnum.ACTIVE} size="medium" />
       </Box>
       <Typography variant="body1">
         This is the auction page. Participate in active auctions and view

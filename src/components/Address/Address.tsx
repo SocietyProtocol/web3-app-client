@@ -84,6 +84,7 @@ export const Address = ({
           <IconButton
             size="small"
             onClick={handleCopy}
+            disabled={copied}
             sx={{
               p: size === "small" ? 0.25 : 0.5,
               color: "text.secondary",
@@ -95,7 +96,10 @@ export const Address = ({
           >
             {copied ? (
               <CheckIcon
-                sx={{ fontSize: size === "small" ? "0.625rem" : 16 }}
+                sx={{
+                  fontSize: size === "small" ? "0.625rem" : 16,
+                  color: "success.main",
+                }}
               />
             ) : (
               <ContentCopyIcon

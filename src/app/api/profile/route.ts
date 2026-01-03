@@ -4,11 +4,11 @@ import { accountValidationSchema } from "@/validation/account";
 import { NextRequest, NextResponse } from "next/server";
 import { flattenError } from "zod";
 
-export interface AccountResponse {
+export interface ProfileResponse {
   cid: string;
 }
 
-export interface AccountErrorResponse {
+export interface ProfileErrorResponse {
   error: string;
   details?: Record<string, string[]>;
 }

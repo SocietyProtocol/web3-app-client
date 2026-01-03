@@ -62,7 +62,7 @@ export const AvatarInput = ({
           width: { xs: 64, sm: 80 },
           height: { xs: 64, sm: 80 },
           bgcolor: "primary.contrastText",
-          borderRadius: "46px 27px 56px 56px",
+          borderRadius: 16,
           padding: value ? 0 : { xs: 2, sm: 3 },
           ...(disabled && { opacity: 0.5 }),
           ...(error && {

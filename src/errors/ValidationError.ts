@@ -1,10 +1,10 @@
-import { AccountErrorResponse } from "@/app/api/account/route";
+import { ProfileErrorResponse } from "@/app/api/profile/route";
 import { ResponseError } from "./ResponseError";
 
 /**
  * Represents validation errors for form fields
  */
-export type ValidationErrorDetails = AccountErrorResponse["details"];
+export type ValidationErrorDetails = ProfileErrorResponse["details"];
 
 export class ValidationError extends ResponseError<ValidationErrorDetails> {
   details: ValidationErrorDetails;

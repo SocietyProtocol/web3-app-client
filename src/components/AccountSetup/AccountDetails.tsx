@@ -32,6 +32,10 @@ export const AccountDetails = () => {
         borderRadius: 2,
         boxShadow: "none",
         overflow: "hidden",
+        ...(isEditing && {
+          backgroundColor: "background.paper",
+          backgroundImage: "none",
+        }),
       }}
     >
       {isEditing ? (

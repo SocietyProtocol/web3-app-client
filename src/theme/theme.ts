@@ -16,6 +16,9 @@ const baseTheme = createTheme({
       palette: dark,
     },
   },
+  shape: {
+    borderRadius: 4,
+  },
   components: {
     MuiButton,
     MuiStepper,

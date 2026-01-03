@@ -5,16 +5,17 @@ import { WagmiProvider } from "wagmi";
 import { initializeWagmiWatcher, wagmiConfig } from "@/lib/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, IconButton } from "@mui/material";
 import { theme } from "@/theme/theme";
 import { Avatar } from "@/components/Avatar/Avatar";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import { SnackbarProvider } from "notistack";
+import { closeSnackbar, SnackbarProvider } from "notistack";
 import { StyledMaterialDesignContent } from "@/components/Snackbar/Snackbar";
 import { Provider as JotaiProvider } from "jotai";
 import { jotaiStore } from "@/lib/jotai";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 
 const queryClient = new QueryClient();
 
@@ -51,7 +52,23 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 })}
               >
                 <SnackbarProvider
-                  Components={{ default: StyledMaterialDesignContent }}
+                  anchorOrigin={{
+                    horizontal: "center",
+                    vertical: "bottom",
+                  }}
+                  Components={{
+                    default: StyledMaterialDesignContent,
+                    error: StyledMaterialDesignContent,
+                    success: StyledMaterialDesignContent,
+                    warning: StyledMaterialDesignContent,
+                    info: StyledMaterialDesignContent,
+                  }}
+                  maxSnack={3}
+                  action={(key) => (
+                    <IconButton onClick={() => closeSnackbar(key)} size="small">
+                      <CloseOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 >
                   <ErrorBoundary>{children}</ErrorBoundary>
                 </SnackbarProvider>

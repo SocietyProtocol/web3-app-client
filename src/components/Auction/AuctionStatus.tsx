@@ -1,29 +1,74 @@
 "use client";
 
 import { Box, Chip } from "@mui/material";
+import { AuctionStatusEnum, AuctionStatusProps } from "./types";
 
-export const AuctionStatus = () => {
+const getColor = (status: AuctionStatusEnum) => {
+  switch (status) {
+    case AuctionStatusEnum.ACTIVE:
+      return "success";
+    case AuctionStatusEnum.INACTIVE:
+      return "warning";
+    case AuctionStatusEnum.ENDED:
+      return "info";
+    default:
+      return "info";
+  }
+};
+
+const getDiskColor = (status: AuctionStatusEnum) => {
+  switch (status) {
+    case AuctionStatusEnum.ACTIVE:
+      return "success.contrastText";
+    case AuctionStatusEnum.INACTIVE:
+      return "warning.contrastText";
+    case AuctionStatusEnum.ENDED:
+      return "info.contrastText";
+    default:
+      return "info.contrastText";
+  }
+};
+
+export const AuctionStatusDisk = ({
+  status,
+  size = "small",
+}: AuctionStatusProps) => {
+  return (
+    <Box
+      sx={{
+        width: size === "small" ? 8 : 10,
+        height: size === "small" ? 8 : 10,
+        borderRadius: "50%",
+        backgroundColor: getDiskColor(status),
+      }}
+    />
+  );
+};
+
+export const AuctionStatus = ({
+  status,
+  size = "small",
+}: AuctionStatusProps) => {
   return (
     <Chip
-      color="success"
-      size="small"
+      color={getColor(status)}
+      size={size}
       label={
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              backgroundColor: "success.contrastText",
-            }}
-          />
-          Active
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: size === "small" ? 0.5 : 1,
+          }}
+        >
+          <AuctionStatusDisk status={status} size={size} />
+          {status}
         </Box>
       }
       sx={{
-        height: 20,
+        height: size === "small" ? 20 : 24,
         fontSize: "0.75rem",
-        padding: ({ spacing }) => spacing(0.5),
+        padding: ({ spacing }) => spacing(size === "small" ? 0.5 : 1),
         "& .MuiChip-label": {
           padding: 0,
         },

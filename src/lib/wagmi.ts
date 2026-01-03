@@ -8,18 +8,18 @@ import {
 } from "@/atoms/wagmiReady";
 import { jotaiStore } from "./jotai";
 
-export const isDev = process.env.NODE_ENV === "development";
+export const isProd = process.env.NODE_ENV === "production";
 export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
 
 export function getExpectedNetwork() {
-  return isDev ? sepolia : mainnet;
+  return isProd ? mainnet : sepolia;
 }
 
 export function getBadgesContractAddress(chainId?: number) {
   if (chainId === sepolia.id) return contracts.sepolia.badges;
   if (chainId === mainnet.id) return contracts.mainnet.badges;
   // fallback to env
-  return isDev ? contracts.sepolia.badges : contracts.mainnet.badges;
+  return isProd ? contracts.mainnet.badges : contracts.sepolia.badges;
 }
 
 export const wagmiConfig = getDefaultConfig({

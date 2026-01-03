@@ -1,4 +1,4 @@
-import { Hex, zeroAddress } from "viem";
+import { Hex } from "viem";
 
 interface ContractAddresses {
   badges: Hex;
@@ -17,7 +17,7 @@ export const contracts: Contracts = {
   },
   mainnet: {
     // Placeholder addresses; replace with actual contract addresses when deployed
-    badges: zeroAddress,
+    badges: "0x",
     auction: "0x0b7fFc1f4AD541A4Ed16b40D8c37f0929158D101",
   },
 };

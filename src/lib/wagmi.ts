@@ -1,7 +1,7 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { mainnet, sepolia } from "wagmi/chains";
 import { contracts } from "@/config/contracts";
-import { watchAccount } from "@wagmi/core";
+import { http, watchAccount } from "@wagmi/core";
 import {
   wagmiConnectionAttemptedAtom,
   wagmiReadyAtom,
@@ -27,6 +27,14 @@ export const wagmiConfig = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID!,
   chains: SUPPORTED_CHAINS,
   ssr: true,
+  transports: {
+    [mainnet.id]: http(
+      `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
+    ),
+    [sepolia.id]: http(
+      `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
+    ),
+  },
 });
 
 let unwatchAccount: (() => void) | null = null;

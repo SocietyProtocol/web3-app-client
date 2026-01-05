@@ -612,6 +612,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hookform/resolvers@npm:^5.2.2":
+  version: 5.2.2
+  resolution: "@hookform/resolvers@npm:5.2.2"
+  dependencies:
+    "@standard-schema/utils": "npm:^0.3.0"
+  peerDependencies:
+    react-hook-form: ^7.55.0
+  checksum: 10c0/0692cd61dcc2a70cbb27b88a37f733c39e97f555c036ba04a81bd42b0467461cfb6bafacb46c16f173672f9c8a216bd7928a2330d4e49c700d130622bf1defaf
+  languageName: node
+  linkType: hard
+
 "@humanfs/core@npm:^0.19.1":
   version: 0.19.1
   resolution: "@humanfs/core@npm:0.19.1"
@@ -2544,6 +2555,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@standard-schema/utils@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@standard-schema/utils@npm:0.3.0"
+  checksum: 10c0/6eb74cd13e52d5fc74054df51e37d947ef53f3ab9e02c085665dcca3c38c60ece8d735cebbdf18fbb13c775fbcb9becb3f53109b0e092a63f0f7389ce0993fd0
+  languageName: node
+  linkType: hard
+
 "@swc/helpers@npm:0.5.15":
   version: 0.5.15
   resolution: "@swc/helpers@npm:0.5.15"
@@ -2566,6 +2584,13 @@ __metadata:
   version: 5.90.10
   resolution: "@tanstack/query-core@npm:5.90.10"
   checksum: 10c0/c51762d4413f99886af24d0a4897e286233fae305131df2db8294c26b1375e74e87d0cd7dafbe1b7d23338221fca0304c05058dd9a909c0988a8829d8f7283e6
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-core@npm:^5.90.16":
+  version: 5.90.16
+  resolution: "@tanstack/query-core@npm:5.90.16"
+  checksum: 10c0/f6a4827feeed2b4118323056bbda8d5099823202d1f29b538204ae2591be4e80f2946f3311eed30fefe866643f431c04b560457f03415d40caf2f353ba1efac0
   languageName: node
   linkType: hard
 
@@ -4212,7 +4237,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:1.2.1, clsx@npm:^1.2.1":
+"clsx@npm:1.2.1, clsx@npm:^1.1.0, clsx@npm:^1.2.1":
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 10c0/34dead8bee24f5e96f6e7937d711978380647e936a22e76380290e35486afd8634966ce300fc4b74a32f3762c7d4c0303f442c3e259f4ce02374eb0c82834f27
@@ -5713,6 +5738,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"goober@npm:^2.0.33":
+  version: 2.1.18
+  resolution: "goober@npm:2.1.18"
+  peerDependencies:
+    csstype: ^3.0.10
+  checksum: 10c0/de9bf7b6f57417900afac81a479b85d8c0bcb0322ba8b174f9287d10e7891ba7e33db5fe2b0cdd75281c69130e76eb0c694345acf45ea57e4e4a2db8e4c4f021
+  languageName: node
+  linkType: hard
+
 "gopd@npm:^1.0.1, gopd@npm:^1.2.0":
   version: 1.2.0
   resolution: "gopd@npm:1.2.0"
@@ -6369,6 +6403,53 @@ __metadata:
   version: 6.1.3
   resolution: "jose@npm:6.1.3"
   checksum: 10c0/b9577b4a7a5e84131011c23823db9f5951eae3ba796771a6a2401ae5dd50daf71104febc8ded9c38146aa5ebe94a92ac09c725e699e613ef26949b9f5a8bc30f
+  languageName: node
+  linkType: hard
+
+"jotai-family@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "jotai-family@npm:1.0.1"
+  peerDependencies:
+    jotai: ">=2.9.0"
+  checksum: 10c0/0608c251b3b5fd17fff7f7d7e04b0f23028900d9515481f18b6b425a494786eb21348788e7782ea485f23517e7c6ee53b7f29cb893e1c71487904fa204ee81da
+  languageName: node
+  linkType: hard
+
+"jotai-tanstack-query@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "jotai-tanstack-query@npm:0.11.0"
+  peerDependencies:
+    "@tanstack/query-core": "*"
+    "@tanstack/react-query": "*"
+    jotai: ">=2.0.0"
+    react: ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@tanstack/react-query":
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/9c87d69cb2a401eb55e796d1aa7241bd42db787f2647e1f43c7c9279a153af0ed04569930c7c85a461d63e15e3959972cbdf7c83a3cc145330739b8a0ca5c458
+  languageName: node
+  linkType: hard
+
+"jotai@npm:^2.16.1":
+  version: 2.16.1
+  resolution: "jotai@npm:2.16.1"
+  peerDependencies:
+    "@babel/core": ">=7.0.0"
+    "@babel/template": ">=7.0.0"
+    "@types/react": ">=17.0.0"
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    "@babel/core":
+      optional: true
+    "@babel/template":
+      optional: true
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/01959f4be64f5455ee1b7d95af31b8aacfbdbc47a65753f67a2627f0cd59bbc262f2b2b091e14a77f8841d65688ecd41e6a9fe37ce96baafb732cd4a54881e00
   languageName: node
   linkType: hard
 
@@ -7061,6 +7142,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"notistack@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "notistack@npm:3.0.2"
+  dependencies:
+    clsx: "npm:^1.1.0"
+    goober: "npm:^2.0.33"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/82a0270ee1b9e70bc1dfad4d7e1d2bbb6dc08ac887b920986dcfa58cc2aa975bd48b71f7cf3afc2e11badd142ba9ade5f708c858ee2080b9d4cd950b80c43811
+  languageName: node
+  linkType: hard
+
 "obj-multiplex@npm:^1.0.0":
   version: 1.0.0
   resolution: "obj-multiplex@npm:1.0.0"
@@ -7481,6 +7575,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pinata@npm:^2.5.2":
+  version: 2.5.2
+  resolution: "pinata@npm:2.5.2"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  peerDependenciesMeta:
+    react:
+      optional: true
+    react-dom:
+      optional: true
+  checksum: 10c0/89d040c3094525f9064fdd104e3df64896689d2ef2357570102fd92c5fe2950b9ac8261b70ddf0e65350f3d8bad1eb7d303c8096a67590c8b0e08d2ee2dea8d4
+  languageName: node
+  linkType: hard
+
 "pino-abstract-transport@npm:v0.5.0":
   version: 0.5.0
   resolution: "pino-abstract-transport@npm:0.5.0"
@@ -7758,6 +7867,15 @@ __metadata:
   peerDependencies:
     react: ^19.2.0
   checksum: 10c0/fa2cae05248d01288e91523b590ce4e7635b1e13f1344e225f850d722a8da037bf0782f63b1c1d46353334e0c696909b82e582f8cad607948fde6f7646cc18d9
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.69.0":
+  version: 7.69.0
+  resolution: "react-hook-form@npm:7.69.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  checksum: 10c0/99440aac1edbbda1f1704e31bea72dd75130d09593f5fce037596d381fb3dbf5a9864b28f49ecd52bd6dfabceb437905578fe2efc20c69411500fbdbc8647df6
   languageName: node
   linkType: hard
 
@@ -8371,10 +8489,12 @@ __metadata:
     "@apollo/client": "npm:^4.0.9"
     "@emotion/react": "npm:^11.14.0"
     "@emotion/styled": "npm:^11.14.1"
+    "@hookform/resolvers": "npm:^5.2.2"
     "@mui/icons-material": "npm:^7.3.6"
     "@mui/material": "npm:^7.3.6"
     "@mui/material-nextjs": "npm:^7.3.6"
     "@rainbow-me/rainbowkit": "npm:^2.2.9"
+    "@tanstack/query-core": "npm:^5.90.16"
     "@tanstack/react-query": "npm:^5.90.10"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
@@ -8382,13 +8502,20 @@ __metadata:
     eslint: "npm:^9"
     eslint-config-next: "npm:16.0.3"
     graphql: "npm:^16.12.0"
+    jotai: "npm:^2.16.1"
+    jotai-family: "npm:^1.0.1"
+    jotai-tanstack-query: "npm:^0.11.0"
     next: "npm:16.0.10"
+    notistack: "npm:^3.0.2"
+    pinata: "npm:^2.5.2"
     react: "npm:19.2.0"
     react-dom: "npm:19.2.0"
+    react-hook-form: "npm:^7.69.0"
     react-top-loading-bar: "npm:^3.0.2"
     typescript: "npm:^5"
     viem: "npm:^2.39.0"
     wagmi: "npm:^2.19.4"
+    zod: "npm:^4.3.3"
   languageName: unknown
   linkType: soft
 
@@ -9669,6 +9796,13 @@ __metadata:
   version: 4.2.1
   resolution: "zod@npm:4.2.1"
   checksum: 10c0/ecb5219bddf76a42d092a843fb98ad4cb78f1e1077082772b03ef032ee5cbc80790a4051836b962d26fb4af854323bc784d628bd1b8d9898149eba7af21c5560
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "zod@npm:4.3.3"
+  checksum: 10c0/c875a69450c67a14a305054d44db39cd30a568cf88b90b3da915a84ef2d475728ed0193162ac774d8c8de54f1166f52b69e35dce1b4cd34ff52b1468b33102b2
   languageName: node
   linkType: hard
 

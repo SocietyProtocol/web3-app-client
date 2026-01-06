@@ -1,17 +1,20 @@
 import { Link } from "@mui/material";
 import NextLink from "next/link";
-import { cloneElement, CSSProperties, isValidElement } from "react";
+import {
+  AnchorHTMLAttributes,
+  cloneElement,
+  CSSProperties,
+  isValidElement,
+} from "react";
 
-interface OptionalLinkProps {
+interface OptionalLinkProps
+  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
   href?: string | false;
   children: React.ReactNode;
   target?: string;
   rel?: string;
   external?: boolean;
   style?: CSSProperties;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onMouseMove?: () => void;
 }
 
 export const OptionalLink = ({

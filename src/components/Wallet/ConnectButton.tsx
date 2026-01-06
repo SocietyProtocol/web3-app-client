@@ -89,6 +89,7 @@ export const ConnectButton = ({
                 address={account.address}
                 ensImage={profileData?.avatar}
                 size={24}
+                loading={profileIdLoading || uriLoading || profileDataLoading}
               />
               <Typography
                 component="span"

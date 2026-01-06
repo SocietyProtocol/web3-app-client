@@ -92,6 +92,7 @@ export const useMutateProfile = (overrideAddress?: Hex) => {
   }, [uploadIpfsResult, writeContract]);
 
   return {
+    username: profile.username,
     profileId: profile.profileId,
     profileUri: profile.uri,
     profileData: profile.profileData,

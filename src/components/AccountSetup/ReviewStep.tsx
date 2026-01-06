@@ -4,7 +4,7 @@ import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { useAccountSetup } from "./AccountSetupContext";
 
 export const ReviewStep = () => {
-  const { form, profileId } = useAccountSetup();
+  const { form, username } = useAccountSetup();
   const { address } = useAccount();
 
   const formValues = form.watch();
@@ -23,8 +23,8 @@ export const ReviewStep = () => {
       </Typography>
 
       <ProfileCard
-        avatar={formValues.avatar ?? null}
-        name={formValues.name || `User #${profileId ?? "N/A"}`}
+        avatar={formValues.avatar}
+        name={formValues.name || username || "New User"}
         address={address}
         bio={formValues.bio || "Your bio goes here."}
         showAddress

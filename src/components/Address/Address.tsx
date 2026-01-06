@@ -59,7 +59,6 @@ export const Address = ({
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
-          ...(size === "small" ? { fontSize: "0.625rem" } : {}),
           ...sx,
         }}
         title={address}

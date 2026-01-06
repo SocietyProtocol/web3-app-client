@@ -5,7 +5,7 @@ import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
-import { Hex } from "viem";
+import { Hex, isAddress } from "viem";
 import { use } from "react";
 
 export default function UserProfilePage({
@@ -16,6 +16,14 @@ export default function UserProfilePage({
   const { address } = use(params);
   const wagmiReady = useWagmiReady();
   const profile = useProfile(address as Hex);
+
+  if (!isAddress(address)) {
+    return (
+      <ErrorBoundary>
+        <div>Invalid address</div>
+      </ErrorBoundary>
+    );
+  }
 
   const isInitialLoading =
     (profile.profileId.data === undefined && profile.profileId.isLoading) ||

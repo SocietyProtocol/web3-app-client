@@ -17,6 +17,7 @@ import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Hex } from "viem";
+import { mockAccountStats } from "./accountStats";
 
 interface AccountDetailsProps {
   address?: Hex;
@@ -70,7 +71,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 1.5, sm: 0 }}
           >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {`${username}'s Profile` || <Skeleton width={100} />}
+              {username ? `${username}'s Profile` : <Skeleton width={100} />}
             </Typography>
           </Stack>
 
@@ -83,26 +84,14 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 2, sm: 3 }}
             overflow="hidden"
           >
-            <AccountStat
-              label="Total Balance"
-              value="0 SPEC"
-              tooltip="Your total SPEC token balance."
-            />
-            <AccountStat
-              label="Communities"
-              value={2}
-              tooltip="Number of communities you are a member of."
-            />
-            <AccountStat
-              label="Badges"
-              value={10}
-              tooltip="Number of badges you have earned."
-            />
-            <AccountStat
-              label="Reputation Score"
-              value={1200}
-              tooltip="Your overall reputation score on the platform."
-            />
+            {mockAccountStats.map((stat) => (
+              <AccountStat
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+                tooltip={stat.tooltip}
+              />
+            ))}
           </Grid>
 
           <Grid
@@ -118,12 +107,12 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             overflow="hidden"
           >
             <ProfileCard
-              avatar={profile?.avatar || null}
-              bio={profile?.bio || ""}
+              avatar={profile?.avatar}
+              bio={profile?.bio}
               name={username}
               address={overrideAddress}
             >
-              {readonly ? null : (
+              {!readonly && (
                 <Button
                   onClick={toggleEditing}
                   variant="outlined"

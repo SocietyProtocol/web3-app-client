@@ -22,7 +22,7 @@ export const CopyButton = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy address:", err);
+      console.error("Failed to copy text:", err);
     }
   }, [textToCopy]);
 

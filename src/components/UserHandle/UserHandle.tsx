@@ -18,8 +18,10 @@ export const UserHandle = ({
   link = false,
 }: UserHandleProps) => {
   const {
-    profileId: { data: profileId },
-    profileData: { data: profileData },
+    username,
+    profileId: { data: profileId, isLoading: profileIdLoading },
+    uri: { isLoading: uriLoading },
+    profileData: { data: profileData, isLoading: profileDataLoading },
   } = useProfile(address);
 
   return (
@@ -27,9 +29,10 @@ export const UserHandle = ({
       content={
         previewCard ? (
           <ProfileCard
+            loading={profileIdLoading || uriLoading || profileDataLoading}
             address={address}
-            avatar={profileData?.avatar || null}
-            name={profileData?.name || `User #${profileId}`}
+            avatar={profileData?.avatar}
+            name={username}
             bio={profileData?.bio}
             showAddress
             readonly
@@ -56,7 +59,12 @@ export const UserHandle = ({
             flex: 0,
           }}
         >
-          <Avatar address={address} size={24} ensImage={profileData?.avatar} />
+          <Avatar
+            address={address}
+            size={24}
+            ensImage={profileData?.avatar}
+            loading={profileIdLoading || uriLoading || profileDataLoading}
+          />
 
           <Typography
             component="span"

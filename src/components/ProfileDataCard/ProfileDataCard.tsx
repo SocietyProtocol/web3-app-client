@@ -14,6 +14,7 @@ interface ProfileDataCardProps {
 export const ProfileDataCard = ({
   address,
   profileId,
+  // This is a placeholder until referral system is implemented
   referredBy = "0xA52bdb9c052ef1365DA10E87a114e42dAa487576",
 }: ProfileDataCardProps) => {
   return (
@@ -70,7 +71,7 @@ export const ProfileDataCard = ({
                 gap: 1,
               }}
             >
-              #{profileId}{" "}
+              #{profileId}
               <CopyButton
                 textToCopy={`#${profileId}`}
                 tooltipText="Copy profile ID"

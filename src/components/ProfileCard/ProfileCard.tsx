@@ -5,12 +5,13 @@ import { Address } from "../Address/Address";
 
 interface ProfileCardProps {
   avatar?: string | null;
-  name: string | undefined;
+  name?: string;
   address?: Hex;
   bio?: string;
   children?: React.ReactNode;
   showAddress?: boolean;
   readonly?: boolean;
+  loading?: boolean;
 }
 
 export const ProfileCard = ({
@@ -21,6 +22,7 @@ export const ProfileCard = ({
   children,
   showAddress = false,
   readonly = false,
+  loading = false,
 }: ProfileCardProps) => {
   return (
     <Paper
@@ -40,14 +42,17 @@ export const ProfileCard = ({
       <Stack spacing={2} alignItems="center">
         {/* Avatar and Name Section */}
 
-        {address ? (
-          <Avatar ensImage={avatar} address={address} size={54} />
-        ) : (
-          <Skeleton variant="circular" width={54} height={54} />
-        )}
+        <Avatar
+          ensImage={avatar}
+          address={address}
+          size={54}
+          loading={loading}
+        />
 
         {/* Name */}
-        {name ? (
+        {loading ? (
+          <Skeleton width={100} />
+        ) : (
           <Typography
             variant="body2"
             sx={{
@@ -63,32 +68,37 @@ export const ProfileCard = ({
           >
             {name}
           </Typography>
-        ) : (
-          <Skeleton width={100} />
         )}
 
         {/* Address */}
-        {showAddress && address && (
-          <Address
-            address={address}
-            showCopy={!readonly}
-            showLink={!readonly}
-            truncate
-            size="small"
-          />
-        )}
+        {showAddress &&
+          (address && !loading ? (
+            <Address
+              address={address}
+              showCopy={!readonly}
+              showLink={!readonly}
+              truncate
+              size="small"
+            />
+          ) : (
+            <Skeleton width={100} />
+          ))}
 
-        <Typography
-          variant="body2"
-          sx={{
-            whiteSpace: "pre-wrap",
-            px: 1,
-            color: "text.primary",
-            opacity: 0.6,
-          }}
-        >
-          {bio}
-        </Typography>
+        {loading ? (
+          <Skeleton variant="text" width={100} />
+        ) : (
+          <Typography
+            variant="body2"
+            sx={{
+              whiteSpace: "pre-wrap",
+              px: 1,
+              color: "text.primary",
+              opacity: 0.6,
+            }}
+          >
+            {bio}
+          </Typography>
+        )}
 
         {children}
       </Stack>

@@ -1,4 +1,4 @@
-import { Avatar as MUIAvatar, SxProps } from "@mui/material";
+import { Avatar as MUIAvatar, Skeleton, SxProps } from "@mui/material";
 import { useMemo } from "react";
 import { useProfile } from "../AccountSetup/useProfile";
 import { checksumAddress, Hex } from "viem";
@@ -8,10 +8,11 @@ export interface AvatarProps {
   ensImage?: string | null;
   size?: number | { xs?: number; sm?: number; md?: number; lg?: number };
   sx?: SxProps;
+  loading?: boolean;
 }
 
-const generateColorsFromAddress = (address: string): [string, string] => {
-  const unifiedAddress = checksumAddress(address as Hex);
+const generateColorsFromAddress = (address: Hex): [string, string] => {
+  const unifiedAddress = checksumAddress(address);
 
   // Simple hash function to generate deterministic colors from address
   let hash = 0;
@@ -35,7 +36,13 @@ const generateColorsFromAddress = (address: string): [string, string] => {
   ];
 };
 
-export const Avatar = ({ address, ensImage, size = 40, sx }: AvatarProps) => {
+export const Avatar = ({
+  address,
+  ensImage,
+  size = 40,
+  sx,
+  loading,
+}: AvatarProps) => {
   const {
     profileData: { data: profileData },
   } = useProfile(address ? (address as Hex) : undefined);
@@ -43,9 +50,22 @@ export const Avatar = ({ address, ensImage, size = 40, sx }: AvatarProps) => {
   const image = profileData?.avatar || ensImage;
 
   const colors = useMemo(
-    () => (!image && address ? generateColorsFromAddress(address) : []),
+    () => (!image && address ? generateColorsFromAddress(address as Hex) : []),
     [address, image]
   );
+
+  if (loading) {
+    return (
+      <Skeleton
+        variant="circular"
+        sx={{
+          ...sx,
+          width: size,
+          height: size,
+        }}
+      />
+    );
+  }
 
   return (
     <MUIAvatar

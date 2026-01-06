@@ -27,10 +27,10 @@ export const DataItem = ({ label, children, tooltip }: DataItemProps) => {
           color: "text.label",
         }}
       >
-        {label}{" "}
+        {label}
         {tooltip && (
           <Tooltip title={tooltip} arrow placement="top">
-            <InfoOutlineIcon style={{ cursor: "help", fontSize: 16 }} />
+            <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
           </Tooltip>
         )}
       </Typography>

@@ -29,7 +29,7 @@ export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
 
         {tooltip && (
           <Tooltip title={tooltip} arrow placement="top">
-            <InfoOutlineIcon style={{ cursor: "help", fontSize: 16 }} />
+            <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
           </Tooltip>
         )}
       </Typography>

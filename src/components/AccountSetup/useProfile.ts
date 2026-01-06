@@ -3,6 +3,7 @@ import { useAccount } from "wagmi";
 import { useIpfsJson } from "@/hooks/useIpfsJson";
 import { useProfileId } from "@/hooks/useProfileId";
 import { useProfileUri } from "@/hooks/useProfileUri";
+import { useMemo } from "react";
 
 export interface ProfileData {
   name?: string;
@@ -30,10 +31,24 @@ export function useProfile(addressOverride?: Hex) {
     await profileDataResult.refetch();
   };
 
+  const username = useMemo(() => {
+    if (
+      profileDataResult.data?.name &&
+      profileDataResult.data.name.trim() !== ""
+    ) {
+      return profileDataResult.data.name;
+    }
+    if (profileIdResult.data) {
+      return `User #${profileIdResult.data}`;
+    }
+    return undefined;
+  }, [profileDataResult.data, profileIdResult.data]);
+
   return {
     profileId: profileIdResult,
     uri: uriResult,
     profileData: profileDataResult,
+    username,
     refetch,
   };
 }

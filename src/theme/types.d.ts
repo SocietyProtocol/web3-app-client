@@ -9,6 +9,10 @@ declare module "@mui/material/styles" {
     input: string;
   }
 
+  interface TypeText {
+    label: string;
+  }
+
   interface Palette {
     border: {
       light: string;

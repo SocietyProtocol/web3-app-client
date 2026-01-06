@@ -1,4 +1,5 @@
 import {
+  alpha,
   IconButton,
   Link,
   Stack,
@@ -6,13 +7,12 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CheckIcon from "@mui/icons-material/Check";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Hex } from "viem";
 import { truncateAddress } from "@/utils/string";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { CopyButton } from "../CopyButton/CopyButton";
 
 interface AddressProps {
   address: Hex;
@@ -31,7 +31,6 @@ export const Address = ({
   size = "medium",
   sx,
 }: AddressProps) => {
-  const [copied, setCopied] = useState(false);
   const buildExplorerLink = useExplorerLinkBuilder();
 
   const displayAddress = useMemo(
@@ -44,16 +43,6 @@ export const Address = ({
     [buildExplorerLink, address]
   );
 
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy address:", err);
-    }
-  }, [address]);
-
   return (
     <Stack
       direction="row"
@@ -65,49 +54,25 @@ export const Address = ({
         variant="body2"
         sx={{
           fontFamily: "monospace",
-          color: "text.primary",
-          opacity: 0.7,
-          fontSize: "14px",
+          color: (theme) => alpha(theme.palette.text.primary, 0.7),
+          fontSize: size === "small" ? "0.875rem" : "1rem",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
           ...(size === "small" ? { fontSize: "0.625rem" } : {}),
           ...sx,
         }}
-        title={truncate ? address : undefined}
+        title={address}
       >
         {displayAddress}
       </Typography>
 
       {showCopy && (
-        <Tooltip title={copied ? "Copied!" : "Copy address"}>
-          <IconButton
-            size="small"
-            onClick={handleCopy}
-            disabled={copied}
-            sx={{
-              p: size === "small" ? 0.25 : 0.5,
-              color: "text.secondary",
-              "&:hover": {
-                color: "text.primary",
-                opacity: 0.8,
-              },
-            }}
-          >
-            {copied ? (
-              <CheckIcon
-                sx={{
-                  fontSize: size === "small" ? "0.625rem" : 16,
-                  color: "success.main",
-                }}
-              />
-            ) : (
-              <ContentCopyIcon
-                sx={{ fontSize: size === "small" ? "0.625rem" : 16 }}
-              />
-            )}
-          </IconButton>
-        </Tooltip>
+        <CopyButton
+          textToCopy={address}
+          size={size}
+          tooltipText="Copy address"
+        />
       )}
 
       {showLink && (

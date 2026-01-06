@@ -1,14 +1,16 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Paper, Skeleton, Stack, Typography } from "@mui/material";
 import { Avatar } from "../Avatar/Avatar";
 import { Hex } from "viem";
 import { Address } from "../Address/Address";
 
 interface ProfileCardProps {
   avatar: string | null;
-  name: string;
+  name: string | undefined;
   address?: Hex;
-  bio: string;
-  referralCode?: string;
+  bio?: string;
+  children?: React.ReactNode;
+  showAddress?: boolean;
+  readonly?: boolean;
 }
 
 export const ProfileCard = ({
@@ -16,7 +18,9 @@ export const ProfileCard = ({
   name,
   address,
   bio,
-  referralCode,
+  children,
+  showAddress = false,
+  readonly = false,
 }: ProfileCardProps) => {
   return (
     <Paper
@@ -26,69 +30,66 @@ export const ProfileCard = ({
         py: 2,
         borderRadius: 2,
         boxShadow: "none",
-        minHeight: 200,
+        minHeight: 220,
         width: {
           xs: "100%",
           sm: "214px",
         },
       }}
     >
-      <Stack spacing={1} alignItems="center">
+      <Stack spacing={2} alignItems="center">
         {/* Avatar and Name Section */}
-        <Avatar ensImage={avatar} address={address} size={54} />
-
-        {/* Extra margin */}
-        <Box />
-
-        {/* Name */}
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            opacity: 0.8,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            maxWidth: "100%",
-          }}
-          title={name}
-        >
-          {name || `User`}
-        </Typography>
-
-        {/* Address */}
-        {address && (
-          <Address address={address} showCopy truncate showLink size="small" />
+        {avatar ? (
+          <Avatar ensImage={avatar} address={address} size={54} />
+        ) : (
+          <Skeleton variant="circular" width={54} height={54} />
         )}
 
-        {/* Extra margin */}
-        <Box />
-
-        {/* Bio Section */}
-        <Box>
+        {/* Name */}
+        {name ? (
           <Typography
             variant="body2"
             sx={{
-              whiteSpace: "pre-wrap",
-              px: 1,
+              fontWeight: 700,
               color: "text.primary",
-              opacity: 0.6,
+              opacity: 0.8,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "100%",
             }}
+            title={name}
           >
-            {bio || "Your bio goes here."}
+            {name}
           </Typography>
-        </Box>
-
-        {/* Referral Code Section */}
-        {referralCode && (
-          <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Referral Code
-            </Typography>
-            <Typography variant="body1">{referralCode}</Typography>
-          </Box>
+        ) : (
+          <Skeleton width={100} />
         )}
+
+        {/* Address */}
+        {showAddress && address && (
+          <Address
+            address={address}
+            showCopy={!readonly}
+            showLink={!readonly}
+            truncate
+            size="small"
+          />
+        )}
+
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: "pre-wrap",
+            px: 1,
+            color: "text.primary",
+            opacity: 0.6,
+          }}
+        >
+          {bio}
+        </Typography>
+
+        {children}
       </Stack>
     </Paper>
   );

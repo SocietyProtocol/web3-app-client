@@ -26,8 +26,8 @@ export const ReviewStep = () => {
         avatar={formValues.avatar ?? null}
         name={formValues.name || `User #${profileId ?? "N/A"}`}
         address={address}
-        bio={formValues.bio || ""}
-        referralCode={formValues.referralCode}
+        bio={formValues.bio || "Your bio goes here."}
+        showAddress
       />
     </Stack>
   );

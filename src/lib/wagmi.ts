@@ -8,7 +8,9 @@ import {
 } from "@/atoms/wagmiReady";
 import { jotaiStore } from "./jotai";
 
-export const isProd = process.env.NODE_ENV === "production";
+import { env } from "@/lib/env";
+
+export const isProd = env.environment === "production";
 export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
 
 export function getExpectedNetwork() {
@@ -24,15 +26,15 @@ export function getBadgesContractAddress(chainId?: number) {
 
 export const wagmiConfig = getDefaultConfig({
   appName: "Society Protocol",
-  projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID!,
+  projectId: env.wcProjectId,
   chains: SUPPORTED_CHAINS,
   ssr: true,
   transports: {
     [mainnet.id]: http(
-      `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
+      `https://eth-mainnet.g.alchemy.com/v2/${env.alchemyApiKey}`
     ),
     [sepolia.id]: http(
-      `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`
+      `https://eth-sepolia.g.alchemy.com/v2/${env.alchemyApiKey}`
     ),
   },
 });

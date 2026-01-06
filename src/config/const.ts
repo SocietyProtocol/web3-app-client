@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 /**
  * External URLs and endpoints used throughout the application
  */
@@ -8,7 +9,7 @@ export const URLS = {
   ETHERSCAN_SEPOLIA: "https://sepolia.etherscan.io",
 
   // IPFS gateways
-  IPFS_GATEWAY: `https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL}/ipfs`,
+  IPFS_GATEWAY: `https://${env.pinataGateway}/ipfs`,
   IPFS_FALLBACK_GATEWAY: "https://ipfs.io/ipfs",
 
   // The Graph subgraphs

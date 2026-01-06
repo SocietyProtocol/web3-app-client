@@ -1,8 +1,10 @@
+const isServer = typeof window === "undefined";
+
 if (!process.env.NEXT_PUBLIC_ENVIRONMENT) {
   throw new Error("NEXT_PUBLIC_ENVIRONMENT environment variable is not set");
 }
 
-if (!process.env.PINATA_JWT) {
+if (isServer && !process.env.PINATA_JWT) {
   throw new Error("PINATA_JWT environment variable is not set");
 }
 
@@ -24,8 +26,8 @@ if (!process.env.NEXT_PUBLIC_ALCHEMY_API_KEY) {
 
 export const env = {
   environment: process.env.NEXT_PUBLIC_ENVIRONMENT,
-  pinataJwt: process.env.PINATA_JWT,
   pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL,
   wcProjectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
   alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
+  ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
 };

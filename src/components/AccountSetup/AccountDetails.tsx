@@ -16,10 +16,18 @@ import { AccountStat } from "./AccountStat";
 import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
+import { Hex } from "viem";
 
-export const AccountDetails = () => {
-  const { address } = useAccount();
-  const { profileId, profileData, username } = useProfile();
+interface AccountDetailsProps {
+  address?: Hex;
+  readonly?: boolean;
+}
+
+export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
+  const { address: accountAddress } = useAccount();
+  const overrideAddress = address || accountAddress;
+
+  const { profileId, profileData, username } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -28,7 +36,7 @@ export const AccountDetails = () => {
     setIsEditing((prev) => !prev);
   };
 
-  if (!address) {
+  if (!overrideAddress) {
     return null;
   }
 
@@ -113,24 +121,25 @@ export const AccountDetails = () => {
               avatar={profile?.avatar || null}
               bio={profile?.bio || ""}
               name={username}
-              address={address}
+              address={overrideAddress}
             >
-              {" "}
-              <Button
-                onClick={toggleEditing}
-                variant="outlined"
-                size="small"
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-              >
-                Edit
-              </Button>
+              {readonly ? null : (
+                <Button
+                  onClick={toggleEditing}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: { xs: "100%", sm: "auto" } }}
+                >
+                  Edit
+                </Button>
+              )}
             </ProfileCard>
 
             {profileId.isLoading ? (
               <ProfileDataCardSkeleton />
             ) : (
               <ProfileDataCard
-                address={address}
+                address={overrideAddress}
                 profileId={Number(profileId.data)}
               />
             )}

@@ -4,7 +4,7 @@ import { Hex } from "viem";
 import { Address } from "../Address/Address";
 
 interface ProfileCardProps {
-  avatar: string | null;
+  avatar?: string | null;
   name: string | undefined;
   address?: Hex;
   bio?: string;
@@ -39,7 +39,8 @@ export const ProfileCard = ({
     >
       <Stack spacing={2} alignItems="center">
         {/* Avatar and Name Section */}
-        {avatar ? (
+
+        {address ? (
           <Avatar ensImage={avatar} address={address} size={54} />
         ) : (
           <Skeleton variant="circular" width={54} height={54} />

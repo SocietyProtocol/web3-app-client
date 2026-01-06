@@ -1,7 +1,7 @@
 import { Avatar as MUIAvatar, SxProps } from "@mui/material";
 import { useMemo } from "react";
 import { useProfile } from "../AccountSetup/useProfile";
-import { Hex } from "viem";
+import { checksumAddress, Hex } from "viem";
 
 export interface AvatarProps {
   address?: string;
@@ -11,10 +11,12 @@ export interface AvatarProps {
 }
 
 const generateColorsFromAddress = (address: string): [string, string] => {
+  const unifiedAddress = checksumAddress(address as Hex);
+
   // Simple hash function to generate deterministic colors from address
   let hash = 0;
-  for (let i = 0; i < address.length; i++) {
-    hash = address.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < unifiedAddress.length; i++) {
+    hash = unifiedAddress.charCodeAt(i) + ((hash << 5) - hash);
   }
 
   // Generate first color

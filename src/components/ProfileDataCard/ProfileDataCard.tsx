@@ -14,7 +14,7 @@ interface ProfileDataCardProps {
 export const ProfileDataCard = ({
   address,
   profileId,
-  referredBy = "0x34Cbd9f323Ca1681134474767cECC42d23eF39DC",
+  referredBy = "0xA52bdb9c052ef1365DA10E87a114e42dAa487576",
 }: ProfileDataCardProps) => {
   return (
     <Paper

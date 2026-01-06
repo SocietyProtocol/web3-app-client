@@ -9,6 +9,7 @@ export const URLS = {
 
   // IPFS gateways
   IPFS_GATEWAY: `https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL}/ipfs`,
+  IPFS_FALLBACK_GATEWAY: "https://ipfs.io/ipfs",
 
   // The Graph subgraphs
   SUBGRAPH: {

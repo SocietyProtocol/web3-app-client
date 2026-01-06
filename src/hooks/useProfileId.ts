@@ -1,10 +1,10 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useMemo } from "react";
-import { isAddress } from "viem";
+import { Hex, isAddress } from "viem";
 import { useChainId, useReadContract } from "wagmi";
 
-export const useProfileId = (address?: `0x${string}`) => {
+export const useProfileId = (address?: Hex) => {
   const chainId = useChainId();
   const contractAddress = useMemo(
     () => getBadgesContractAddress(chainId),

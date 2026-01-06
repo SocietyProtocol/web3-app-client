@@ -8,7 +8,7 @@ import {
 } from "@/atoms/wagmiReady";
 import { jotaiStore } from "./jotai";
 
-export const isProd = process.env.NODE_ENV === "production";
+export const isProd = process.env.NEXT_PUBLIC_ENVIRONMENT === "production";
 export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
 
 export function getExpectedNetwork() {

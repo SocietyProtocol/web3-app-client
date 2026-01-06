@@ -12,13 +12,14 @@ cp .env.example .env.local
 
 Then configure the following required variables:
 
-| Variable                         | Description                                     | Required | Where to Get                                                                            |
-| -------------------------------- | ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection  | Yes      | [WalletConnect Cloud](https://cloud.walletconnect.com/)                                 |
-| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API Key for Ethereum RPC                | Yes      | [Alchemy Dashboard](https://www.alchemy.com/)                                           |
-| `NEXT_PUBLIC_GRAPH_URL`          | The Graph subgraph endpoint URL                 | No       | Your deployed subgraph                                                                  |
-| `PINATA_JWT`                     | Pinata JWT token for IPFS uploads (server-side) | Yes      | [Pinata Dashboard](https://pinata.cloud/)                                               |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata gateway URL for IPFS content retrieval   | Yes      | [Pinata Dashboard](https://pinata.cloud/) (e.g., `https://your-gateway.mypinata.cloud`) |
+| Variable                         | Description                                             | Required | Where to Get                                                                            |
+| -------------------------------- | ------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_ENVIRONMENT`        | Application environment (e.g., development, production) | Yes      | Set to `development` for local development or `production` for live deployment          |
+| `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection          | Yes      | [WalletConnect Cloud](https://cloud.walletconnect.com/)                                 |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API Key for Ethereum RPC                        | Yes      | [Alchemy Dashboard](https://www.alchemy.com/)                                           |
+| `NEXT_PUBLIC_GRAPH_URL`          | The Graph subgraph endpoint URL                         | Yes      | Your deployed subgraph                                                                  |
+| `PINATA_JWT`                     | Pinata JWT token for IPFS uploads (server-side)         | Yes      | [Pinata Dashboard](https://pinata.cloud/)                                               |
+| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata gateway URL for IPFS content retrieval           | Yes      | [Pinata Dashboard](https://pinata.cloud/) (e.g., `https://your-gateway.mypinata.cloud`) |
 
 **Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Server-only variables (like `PINATA_JWT`) are only accessible on the server side.
 

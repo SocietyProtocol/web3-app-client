@@ -86,12 +86,6 @@ export const useMutateProfile = (overrideAddress?: Hex) => {
     });
   };
 
-  console.log({
-    profile,
-    fetched: profile.profileId.isFetched,
-    data: profile.profileId.data,
-  });
-
   const reset = useCallback(() => {
     uploadIpfsResult.reset();
     writeContract.reset();

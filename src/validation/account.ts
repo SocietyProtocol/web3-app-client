@@ -30,7 +30,8 @@ export const accountValidationSchema = z.object({
           /^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/i
         );
         if (!mimeMatch) return false;
-        return ALLOWED_IMAGE_TYPES.includes(mimeMatch[1]);
+        const fullMimeType = `image/${mimeMatch[1]}`;
+        return ALLOWED_IMAGE_TYPES.includes(fullMimeType);
       },
       { message: "Avatar must be a JPEG, PNG, WebP, SVG, or GIF image" }
     )

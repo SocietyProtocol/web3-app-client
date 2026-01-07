@@ -1,8 +1,8 @@
-import { Hex } from "viem";
 import { mainnet, sepolia } from "wagmi/chains";
 import { URLS } from "@/config/const";
+import { Address, Hex } from "viem";
 
-type ExplorerLinkParams = { tx: Hex } | { address: Hex };
+type ExplorerLinkParams = { tx: Hex } | { address: Address };
 
 /**
  * Creates a function that builds explorer links for a specific chain.

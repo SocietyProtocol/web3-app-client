@@ -11,6 +11,7 @@ import { jotaiStore } from "./jotai";
 import { env } from "@/lib/env";
 
 export const isProd = env.environment === "production";
+
 export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
 
 export function getExpectedNetwork() {

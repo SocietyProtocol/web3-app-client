@@ -16,11 +16,11 @@ import { AccountStat } from "./AccountStat";
 import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
-import { Hex } from "viem";
+import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
 
 interface AccountDetailsProps {
-  address?: Hex;
+  address?: Address;
   readonly?: boolean;
 }
 
@@ -62,7 +62,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           <AccountDetailsEdit onCancel={toggleEditing} onSave={toggleEditing} />
         </AccountSetupProvider>
       ) : (
-        <Stack spacing={{ xs: 2, sm: 5.5 }}>
+        <Stack spacing={{ xs: 2, sm: 5 }}>
           {/* Header with Edit Button */}
           <Stack
             direction={{ xs: "column", sm: "row" }}

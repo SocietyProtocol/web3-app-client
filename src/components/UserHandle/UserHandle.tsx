@@ -1,14 +1,14 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
-import { Hex } from "viem";
 import { Avatar } from "../Avatar/Avatar";
 import { useProfile } from "../AccountSetup/useProfile";
 import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { PreviewPopover } from "../PreviewPopover/PreviewPopover";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useAccount } from "wagmi";
+import { Address } from "viem";
 
 interface UserHandleProps {
-  address: Hex;
+  address: Address;
   previewCard?: boolean;
   link?: boolean;
 }

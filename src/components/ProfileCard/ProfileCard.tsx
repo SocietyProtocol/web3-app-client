@@ -1,12 +1,12 @@
 import { Paper, Skeleton, Stack, Typography } from "@mui/material";
 import { Avatar } from "../Avatar/Avatar";
-import { Hex } from "viem";
-import { Address } from "../Address/Address";
+import { AddressDisplay as AddressDisplay } from "../AddressDisplay/AddressDisplay";
+import { Address } from "viem";
 
 interface ProfileCardProps {
   avatar?: string | null;
   name?: string;
-  address?: Hex;
+  address?: Address;
   bio?: string;
   children?: React.ReactNode;
   showAddress?: boolean;
@@ -73,7 +73,7 @@ export const ProfileCard = ({
         {/* Address */}
         {showAddress &&
           (address && !loading ? (
-            <Address
+            <AddressDisplay
               address={address}
               showCopy={!readonly}
               showLink={!readonly}

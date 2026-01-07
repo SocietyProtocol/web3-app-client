@@ -1,4 +1,4 @@
-import { Hex } from "viem";
+import { Address } from "viem";
 import { useAccount } from "wagmi";
 import { useIpfsJson } from "@/hooks/useIpfsJson";
 import { useProfileId } from "@/hooks/useProfileId";
@@ -12,7 +12,7 @@ export interface ProfileData {
   referralCode?: string;
 }
 
-export function useProfile(addressOverride?: Hex) {
+export function useProfile(addressOverride?: Address) {
   const { address } = useAccount();
   const userAddress = addressOverride || address;
 

@@ -4,7 +4,6 @@ import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { Hex } from "viem";
 import {
   useAccount,
   useChainId,
@@ -14,8 +13,9 @@ import {
 import { useProfile } from "./useProfile";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
+import { Address } from "viem";
 
-export const useMutateProfile = (overrideAddress?: Hex) => {
+export const useMutateProfile = (overrideAddress?: Address) => {
   const chainId = useChainId();
   const contractAddress = getBadgesContractAddress(chainId);
   const { address } = useAccount();

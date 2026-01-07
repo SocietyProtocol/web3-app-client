@@ -1,14 +1,14 @@
 import { Grid, Paper, Typography } from "@mui/material";
-import { Hex } from "viem";
-import { Address } from "../Address/Address";
+import { AddressDisplay } from "../AddressDisplay/AddressDisplay";
 import { DataItem } from "./DataItem";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { CopyButton } from "../CopyButton/CopyButton";
+import { Address } from "viem";
 
 interface ProfileDataCardProps {
-  address: Hex;
+  address: Address;
   profileId: number;
-  referredBy?: Hex;
+  referredBy?: Address;
 }
 
 export const ProfileDataCard = ({
@@ -48,7 +48,7 @@ export const ProfileDataCard = ({
           overflow="hidden"
         >
           <DataItem label="Associated address:">
-            <Address
+            <AddressDisplay
               address={address}
               sx={{
                 color: "text.label",

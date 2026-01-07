@@ -1,8 +1,8 @@
-import { Hex } from "viem";
+import { Address } from "viem";
 
 interface ContractAddresses {
-  badges: Hex;
-  auction: Hex;
+  badges: Address;
+  auction: Address;
 }
 
 interface Contracts {

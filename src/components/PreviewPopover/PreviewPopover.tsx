@@ -64,6 +64,8 @@ export const PreviewPopover = ({
     : null;
 
   const onMouseEnter = (e: React.MouseEvent) => {
+    children.props.onMouseEnter?.(e);
+
     const { clientX, clientY } = e;
 
     const timer = setTimeout(() => {
@@ -75,11 +77,13 @@ export const PreviewPopover = ({
   };
 
   const onMouseMove = (e: React.MouseEvent) => {
+    children.props.onMouseMove?.(e);
     if (!open) return;
     setPosition({ x: e.clientX, y: e.clientY });
   };
 
-  const onMouseLeave = () => {
+  const onMouseLeave = (e: React.MouseEvent) => {
+    children.props.onMouseLeave?.(e);
     if (timerState) {
       clearTimeout(timerState);
       setTimerState(undefined);

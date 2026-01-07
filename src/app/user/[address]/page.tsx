@@ -5,10 +5,13 @@ import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
-import { Hex, isAddress } from "viem";
+import { checksumAddress, isAddress } from "viem";
 import { use } from "react";
 import { redirect } from "next/navigation";
 import { useAccount } from "wagmi";
+import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
+import { Button } from "@mui/material";
+import { ValidationError } from "@/errors/ValidationError";
 
 export default function UserProfilePage({
   params,
@@ -19,15 +22,27 @@ export default function UserProfilePage({
   const { address } = use(params);
   const wagmiReady = useWagmiReady();
 
-  const isValidAddress = isAddress(address);
+  const _checksumAddress = isAddress(address)
+    ? checksumAddress(address)
+    : undefined;
 
-  const profile = useProfile(isValidAddress ? (address as Hex) : undefined);
+  const profile = useProfile(_checksumAddress);
 
-  if (!isValidAddress) {
+  if (!_checksumAddress) {
     return (
-      <ErrorBoundary>
-        <div>Invalid address</div>
-      </ErrorBoundary>
+      <ErrorDisplay
+        error={new ValidationError("Invalid address provided")}
+        action={
+          <Button
+            variant="contained"
+            onClick={() => {
+              redirect("/");
+            }}
+          >
+            Go to Home
+          </Button>
+        }
+      />
     );
   }
 
@@ -46,7 +61,7 @@ export default function UserProfilePage({
 
   return (
     <ErrorBoundary>
-      <AccountDetails address={address as Hex} readonly />
+      <AccountDetails address={_checksumAddress} readonly />
     </ErrorBoundary>
   );
 }

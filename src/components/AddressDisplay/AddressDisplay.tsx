@@ -8,14 +8,14 @@ import {
   Typography,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Hex } from "viem";
 import { truncateAddress } from "@/utils/string";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import { useMemo } from "react";
 import { CopyButton } from "../CopyButton/CopyButton";
+import { Address } from "viem";
 
 interface AddressProps {
-  address: Hex;
+  address: Address;
   truncate?: boolean;
   showCopy?: boolean;
   showLink?: boolean;
@@ -23,7 +23,7 @@ interface AddressProps {
   sx?: SxProps;
 }
 
-export const Address = ({
+export const AddressDisplay = ({
   address,
   truncate = false,
   showCopy = false,

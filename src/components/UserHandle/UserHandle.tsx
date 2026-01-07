@@ -5,6 +5,7 @@ import { useProfile } from "../AccountSetup/useProfile";
 import { ProfileCard } from "../ProfileCard/ProfileCard";
 import { PreviewPopover } from "../PreviewPopover/PreviewPopover";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
+import { useAccount } from "wagmi";
 
 interface UserHandleProps {
   address: Hex;
@@ -17,6 +18,7 @@ export const UserHandle = ({
   previewCard = false,
   link = false,
 }: UserHandleProps) => {
+  const { address: connectedAddress } = useAccount();
   const {
     username,
     profileId: { isLoading: profileIdLoading },
@@ -76,9 +78,25 @@ export const UserHandle = ({
             {profileIdLoading || uriLoading || profileDataLoading ? (
               <Skeleton width={50} />
             ) : (
-              username ?? "Unknown User"
+              `${username ?? "Unknown User"}`
             )}
           </Typography>
+
+          {!profileIdLoading &&
+            !uriLoading &&
+            !profileDataLoading &&
+            connectedAddress?.toLowerCase() === address.toLowerCase() && (
+              <Typography
+                component="span"
+                sx={{
+                  fontWeight: 500,
+                  fontSize: (theme) => theme.typography.pxToRem(10),
+                  color: "info.main",
+                }}
+              >
+                (You)
+              </Typography>
+            )}
         </Stack>
       </OptionalLink>
     </PreviewPopover>

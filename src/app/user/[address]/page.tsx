@@ -7,12 +7,15 @@ import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { Hex, isAddress } from "viem";
 import { use } from "react";
+import { redirect } from "next/navigation";
+import { useAccount } from "wagmi";
 
 export default function UserProfilePage({
   params,
 }: {
   params: Promise<{ address: string }>;
 }) {
+  const { address: connectedAddress } = useAccount();
   const { address } = use(params);
   const wagmiReady = useWagmiReady();
 
@@ -26,6 +29,10 @@ export default function UserProfilePage({
         <div>Invalid address</div>
       </ErrorBoundary>
     );
+  }
+
+  if (connectedAddress?.toLowerCase() === address.toLowerCase()) {
+    return redirect("/profile");
   }
 
   const isInitialLoading =

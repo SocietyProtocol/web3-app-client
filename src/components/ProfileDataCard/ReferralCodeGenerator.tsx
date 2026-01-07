@@ -41,10 +41,23 @@ export const ReferralCodeGenerator = () => {
   });
 
   const onPaste = useCallback(async () => {
-    const text = await navigator.clipboard.readText();
-    form.setValue("address", text);
-    form.trigger("address");
-  }, [form]);
+    if (!navigator?.clipboard?.readText) {
+      enqueueSnackbar("Clipboard access is not available in this browser.", {
+        variant: "error",
+      });
+      return;
+    }
+
+    try {
+      const text = await navigator.clipboard.readText();
+      form.setValue("address", text);
+      form.trigger("address");
+    } catch {
+      enqueueSnackbar("Unable to read from clipboard. Please paste manually.", {
+        variant: "error",
+      });
+    }
+  }, [enqueueSnackbar, form]);
 
   const onCancel = useCallback(() => {
     form.resetField("address");
@@ -55,7 +68,7 @@ export const ReferralCodeGenerator = () => {
     useCallback(
       async (data) => {
         try {
-          const message = await generateReferralMessage(data.address);
+          const message = generateReferralMessage(data.address);
 
           const signature = await signMessageAsync({ message });
 

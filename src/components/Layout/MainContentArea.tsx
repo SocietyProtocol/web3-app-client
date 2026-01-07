@@ -24,8 +24,9 @@ export const MainContentArea = ({ children }: MainContentAreaProps) => {
       <Box
         component="main"
         sx={{
-          p: { xs: 2, sm: 2.5, md: 3 },
-          backgroundColor: ({ palette }) => palette.background.paper,
+          px: { xs: 2, md: 3 },
+          py: { xs: 2, md: 5 },
+          backgroundColor: ({ palette }) => palette.background.page,
           borderRadius: { xs: 0, md: "10px" },
           flexGrow: 1,
         }}

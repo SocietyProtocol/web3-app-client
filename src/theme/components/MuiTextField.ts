@@ -11,7 +11,7 @@ export const MuiTextField: Components<
     },
   },
   styleOverrides: {
-    root: ({ theme }) => ({
+    root: ({ theme, ownerState }) => ({
       "& .MuiOutlinedInput-root": {
         borderRadius: "8px",
         backgroundColor: theme.palette.background.input,
@@ -19,7 +19,7 @@ export const MuiTextField: Components<
         lineHeight: theme.typography.pxToRem(20),
         fontWeight: 400,
         color: theme.palette.text.primary,
-        height: "56px",
+        height: ownerState.size === "small" ? "42px" : "56px",
 
         "&.MuiInputBase-multiline": {
           padding: theme.spacing(1, 1.5),

@@ -1,11 +1,4 @@
-import {
-  Paper,
-  Stack,
-  Typography,
-  Button,
-  Grid,
-  Skeleton,
-} from "@mui/material";
+import { Stack, Typography, Button, Grid, Skeleton, Box } from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
 import { useState } from "react";
@@ -46,15 +39,10 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   }
 
   return (
-    <Paper
-      elevation={1}
+    <Box
       sx={{
         p: { xs: 2, sm: 3 },
-        borderRadius: 2,
-        boxShadow: "none",
         overflow: "hidden",
-        backgroundColor: "background.paper",
-        backgroundImage: "none",
       }}
     >
       {isEditing ? (
@@ -135,6 +123,6 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           </Grid>
         </Stack>
       )}
-    </Paper>
+    </Box>
   );
 };

@@ -11,7 +11,7 @@ interface DataItemProps {
 export const DataItem = ({ label, children, tooltip }: DataItemProps) => {
   return (
     <Stack
-      spacing={2}
+      spacing={1}
       sx={{
         width: "100%",
       }}

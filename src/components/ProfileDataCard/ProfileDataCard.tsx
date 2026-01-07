@@ -4,6 +4,7 @@ import { DataItem } from "./DataItem";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
+import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
 
 interface ProfileDataCardProps {
   address: Address;
@@ -43,8 +44,7 @@ export const ProfileDataCard = ({
           size={1}
           container
           direction="column"
-          justifyContent="space-between"
-          spacing={2}
+          spacing={4}
           overflow="hidden"
         >
           <DataItem label="Associated address:">
@@ -79,19 +79,15 @@ export const ProfileDataCard = ({
             </Typography>
           </DataItem>
         </Grid>
-        <Grid
-          size={1}
-          container
-          direction="column"
-          justifyContent="space-between"
-          spacing={2}
-        >
+        <Grid size={1} container direction="column" spacing={4}>
           <DataItem
             label="Referred by"
             tooltip="The user who referred this account."
           >
             <UserHandle address={referredBy} previewCard link />
           </DataItem>
+
+          <ReferralCodeGenerator />
         </Grid>
       </Grid>
     </Paper>

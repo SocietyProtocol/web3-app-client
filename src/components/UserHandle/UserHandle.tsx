@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Skeleton, Stack, Typography } from "@mui/material";
 import { Hex } from "viem";
 import { Avatar } from "../Avatar/Avatar";
 import { useProfile } from "../AccountSetup/useProfile";
@@ -19,7 +19,7 @@ export const UserHandle = ({
 }: UserHandleProps) => {
   const {
     username,
-    profileId: { data: profileId, isLoading: profileIdLoading },
+    profileId: { isLoading: profileIdLoading },
     uri: { isLoading: uriLoading },
     profileData: { data: profileData, isLoading: profileDataLoading },
   } = useProfile(address);
@@ -73,7 +73,11 @@ export const UserHandle = ({
               fontSize: (theme) => theme.typography.pxToRem(12),
             }}
           >
-            {profileData?.name || `User #${profileId}`}
+            {profileIdLoading || uriLoading || profileDataLoading ? (
+              <Skeleton width={50} />
+            ) : (
+              username ?? "Unknown User"
+            )}
           </Typography>
         </Stack>
       </OptionalLink>

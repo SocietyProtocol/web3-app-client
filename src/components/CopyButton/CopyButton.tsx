@@ -2,6 +2,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { useCallback, useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
+import { useSnackbar } from "notistack";
 
 interface CopyButtonProps {
   textToCopy: string;
@@ -15,16 +16,18 @@ export const CopyButton = ({
   tooltipText,
 }: CopyButtonProps) => {
   const [copied, setCopied] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text:", err);
+    } catch (error) {
+      console.error("Failed to copy text: ", error);
+      enqueueSnackbar("Failed to copy to clipboard", { variant: "error" });
     }
-  }, [textToCopy]);
+  }, [textToCopy, enqueueSnackbar]);
 
   return (
     <Tooltip title={copied ? "Copied!" : tooltipText}>

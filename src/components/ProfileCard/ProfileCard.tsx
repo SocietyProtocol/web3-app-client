@@ -81,24 +81,20 @@ export const ProfileCard = ({
               size="small"
             />
           ) : (
-            <Skeleton width={100} />
+            <Skeleton variant="text" width={100} />
           ))}
 
-        {loading ? (
-          <Skeleton variant="text" width={100} />
-        ) : (
-          <Typography
-            variant="body2"
-            sx={{
-              whiteSpace: "pre-wrap",
-              px: 1,
-              color: "text.primary",
-              opacity: 0.6,
-            }}
-          >
-            {bio}
-          </Typography>
-        )}
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: "pre-wrap",
+            px: 1,
+            color: "text.primary",
+            opacity: 0.6,
+          }}
+        >
+          {loading ? <Skeleton variant="text" width={150} /> : bio}
+        </Typography>
 
         {children}
       </Stack>

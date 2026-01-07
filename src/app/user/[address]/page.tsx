@@ -15,9 +15,12 @@ export default function UserProfilePage({
 }) {
   const { address } = use(params);
   const wagmiReady = useWagmiReady();
-  const profile = useProfile(address as Hex);
 
-  if (!isAddress(address)) {
+  const isValidAddress = isAddress(address);
+
+  const profile = useProfile(isValidAddress ? (address as Hex) : undefined);
+
+  if (!isValidAddress) {
     return (
       <ErrorBoundary>
         <div>Invalid address</div>

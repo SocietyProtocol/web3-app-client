@@ -71,7 +71,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 1.5, sm: 0 }}
           >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {username ? `${username}'s Profile` : <Skeleton width={100} />}
+              {username ? `${username}'s Profile` : <Skeleton width={150} />}
             </Typography>
           </Stack>
 

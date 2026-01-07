@@ -105,7 +105,7 @@ export const Wizard = ({
                 }}
                 sx={{
                   "& .MuiStepLabel-label": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    fontSize: { xs: "0.75rem", sm: "1rem" },
                     fontWeight: 500,
                   },
                 }}
@@ -134,9 +134,7 @@ export const Wizard = ({
       <Box
         sx={{
           p: { xs: 2, sm: 3, md: 4 },
-          backgroundColor: (theme) => theme.palette.background.paper,
-          borderRadius: "10px",
-          minHeight: minHeight,
+          minHeight,
         }}
       >
         <Stack spacing={{ xs: 2, sm: 3 }}>

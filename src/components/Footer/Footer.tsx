@@ -5,7 +5,7 @@ import Image from "next/image";
 const StyledFooter = styled(Box)(({ theme }) => ({
   width: "100%",
   padding: theme.spacing(0, 2),
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: theme.palette.background.page,
   borderTop: `1px solid ${theme.palette.border.light}`,
   position: "relative",
   flex: "0 0 auto",

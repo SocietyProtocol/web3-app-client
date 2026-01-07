@@ -34,7 +34,6 @@ export const CopyButton = ({
       <IconButton
         size="small"
         onClick={handleCopy}
-        disabled={copied}
         sx={{
           p: size === "small" ? 0.25 : 0.5,
           color: "text.secondary",

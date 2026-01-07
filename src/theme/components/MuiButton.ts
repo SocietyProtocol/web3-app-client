@@ -60,13 +60,13 @@ export const MuiButton: Components<
         height: 40,
         padding: theme.spacing(1, 2),
         fontSize: theme.typography.pxToRem(14),
-        minWidth: ownerState.fullWidth ? "auto" : "100px",
+        minWidth: ownerState.fullWidth ? "auto" : "60px",
       },
       [theme.breakpoints.up("md")]: {
         height: 48,
         padding: theme.spacing(1.5, 2),
         fontSize: theme.typography.pxToRem(16),
-        minWidth: ownerState.fullWidth ? "auto" : "180px",
+        minWidth: ownerState.fullWidth ? "auto" : "80px",
       },
     }),
     sizeLarge: ({ theme, ownerState }) => ({

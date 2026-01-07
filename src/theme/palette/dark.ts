@@ -7,8 +7,9 @@ export const dark: PaletteOptions = {
     contrastText: "#09090B",
   },
   background: {
-    default: "#2c2c2c",
-    paper: "#222222",
+    default: "#2C2D30",
+    page: "#222222",
+    paper: "#333333",
     subtle: "#0000001A",
     input: "#2F2F2F",
     bubble: "#151515",

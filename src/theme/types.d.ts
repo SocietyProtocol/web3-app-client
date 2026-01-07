@@ -3,6 +3,7 @@ import "@mui/material/styles";
 declare module "@mui/material/styles" {
   interface TypeBackground {
     default: string;
+    page: string;
     paper: string;
     subtle: string;
     bubble: string;

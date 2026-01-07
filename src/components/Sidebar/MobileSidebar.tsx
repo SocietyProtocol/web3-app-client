@@ -24,7 +24,6 @@ export const MobileSidebar = ({ open, onClose }: MobileSidebarProps) => {
         "& .MuiDrawer-paper": {
           boxSizing: "border-box",
           width: EXPANDED_WIDTH,
-          backgroundColor: (theme) => theme.palette.background.paper,
           padding: (theme) => theme.spacing(2),
           display: "flex",
           flexDirection: "column",

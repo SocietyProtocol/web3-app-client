@@ -75,7 +75,7 @@ export const AddressDisplay = ({
       )}
 
       {showLink && (
-        <Tooltip title="View on Etherscan">
+        <Tooltip title="View on Block Explorer">
           <IconButton
             size="small"
             component={Link}

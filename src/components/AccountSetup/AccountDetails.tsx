@@ -1,4 +1,4 @@
-import { Stack, Typography, Button, Grid, Skeleton, Box } from "@mui/material";
+import { Stack, Typography, Button, Grid, Box } from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
 import { useState } from "react";
@@ -11,6 +11,8 @@ import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
+import { mockBadgesData } from "./badges";
+import { BadgeCard } from "../BadgeCard/BadgeCard";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -59,10 +61,10 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 1.5, sm: 0 }}
           >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {username ? `${username}'s Profile` : <Skeleton width={150} />}
+              {username ? `${username}'s Profile` : "Unkpnown User's Profile"}
             </Typography>
           </Stack>
-
+          {/* Stats and Profile Cards */}
           <Grid
             container
             columns={{
@@ -81,7 +83,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               />
             ))}
           </Grid>
-
+          {/* Profile and Data Cards */}
           <Grid
             container
             columns={{
@@ -97,7 +99,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             <ProfileCard
               avatar={profile?.avatar}
               bio={profile?.bio}
-              name={username}
+              name={username ?? "Unknown User"}
               address={overrideAddress}
             >
               {!readonly && (
@@ -120,6 +122,32 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 profileId={Number(profileId.data)}
               />
             )}
+          </Grid>
+
+          <Grid
+            container
+            columns={{
+              xs: 1,
+              sm: 2,
+              md: 4,
+            }}
+            spacing={{
+              xs: 2,
+              sm: 3,
+            }}
+          >
+            {mockBadgesData.map((badge) => (
+              <BadgeCard
+                key={badge.id}
+                id={badge.id}
+                title={badge.title}
+                badgeImageUrl={badge.badgeImageUrl}
+                isOfficial={badge.isOfficial}
+                createdBy={badge.createdBy}
+                numberOfHolders={badge.numberOfHolders}
+                metadata={badge.metadata}
+              />
+            ))}
           </Grid>
         </Stack>
       )}

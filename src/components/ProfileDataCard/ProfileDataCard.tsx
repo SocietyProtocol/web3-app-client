@@ -5,6 +5,7 @@ import { UserHandle } from "../UserHandle/UserHandle";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
 import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
+import { readonly } from "zod";
 
 interface ProfileDataCardProps {
   address: Address;
@@ -71,11 +72,13 @@ export const ProfileDataCard = ({
                 gap: 1,
               }}
             >
-              #{profileId}
-              <CopyButton
-                textToCopy={`#${profileId}`}
-                tooltipText="Copy profile ID"
-              />
+              {profileId === 0 ? "N/A" : `#${profileId}`}
+              {profileId !== 0 && (
+                <CopyButton
+                  textToCopy={`#${profileId}`}
+                  tooltipText="Copy profile ID"
+                />
+              )}
             </Typography>
           </DataItem>
         </Grid>
@@ -87,7 +90,7 @@ export const ProfileDataCard = ({
             <UserHandle address={referredBy} previewCard link />
           </DataItem>
 
-          <ReferralCodeGenerator />
+          {!readonly && <ReferralCodeGenerator />}
         </Grid>
       </Grid>
     </Paper>

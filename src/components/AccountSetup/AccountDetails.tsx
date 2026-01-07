@@ -1,17 +1,34 @@
-import { Box, Paper, Stack, Typography, Button } from "@mui/material";
-import { Avatar } from "../Avatar/Avatar";
+import {
+  Paper,
+  Stack,
+  Typography,
+  Button,
+  Grid,
+  Skeleton,
+} from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
 import { useState } from "react";
-import EditIcon from "@mui/icons-material/Edit";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
 import { AccountSkeleton } from "./AccountSkeleton";
 import { AccountSetupProvider } from "./AccountSetupContext";
-import { Address } from "../Address/Address";
+import { AccountStat } from "./AccountStat";
+import { ProfileCard } from "../ProfileCard/ProfileCard";
+import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
+import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
+import { Address } from "viem";
+import { mockAccountStats } from "./accountStats";
 
-export const AccountDetails = () => {
-  const { address } = useAccount();
-  const { profileId, profileData } = useProfile();
+interface AccountDetailsProps {
+  address?: Address;
+  readonly?: boolean;
+}
+
+export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
+  const { address: accountAddress } = useAccount();
+  const overrideAddress = address || accountAddress;
+
+  const { profileId, profileData, username } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -19,6 +36,10 @@ export const AccountDetails = () => {
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
   };
+
+  if (!overrideAddress) {
+    return null;
+  }
 
   if (!profile && isLoading) {
     return <AccountSkeleton />;
@@ -32,10 +53,8 @@ export const AccountDetails = () => {
         borderRadius: 2,
         boxShadow: "none",
         overflow: "hidden",
-        ...(isEditing && {
-          backgroundColor: "background.paper",
-          backgroundImage: "none",
-        }),
+        backgroundColor: "background.paper",
+        backgroundImage: "none",
       }}
     >
       {isEditing ? (
@@ -43,7 +62,7 @@ export const AccountDetails = () => {
           <AccountDetailsEdit onCancel={toggleEditing} onSave={toggleEditing} />
         </AccountSetupProvider>
       ) : (
-        <Stack spacing={{ xs: 2, sm: 3 }}>
+        <Stack spacing={{ xs: 2, sm: 5 }}>
           {/* Header with Edit Button */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -52,91 +71,68 @@ export const AccountDetails = () => {
             spacing={{ xs: 1.5, sm: 0 }}
           >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              Account Details
+              {username ? `${username}'s Profile` : <Skeleton width={150} />}
             </Typography>
-            <Button
-              startIcon={<EditIcon />}
-              onClick={toggleEditing}
-              variant="outlined"
-              size="small"
-              sx={{ width: { xs: "100%", sm: "auto" } }}
-            >
-              Edit Profile
-            </Button>
           </Stack>
 
-          {/* Avatar and Name Section */}
-          <Stack
-            direction="row"
-            spacing={{ xs: 1.5, sm: 2 }}
-            alignItems="flex-start"
+          <Grid
+            container
+            columns={{
+              xs: 2,
+              md: 4,
+            }}
+            spacing={{ xs: 2, sm: 3 }}
+            overflow="hidden"
           >
-            <Avatar
-              ensImage={profile?.avatar || null}
-              address={address}
-              size={{ xs: 48, sm: 64 }}
-            />
-            <Stack spacing={0.5} flex={1} minWidth={0}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  color: "text.primary",
-                  opacity: 0.9,
-                  fontSize: { xs: "1rem", sm: "1.25rem" },
-                }}
-              >
-                {profile?.name ||
-                  (profileId?.data ? `User #${profileId.data}` : "User")}
-              </Typography>
-              {address && (
-                <Address address={address} showCopy showLink truncate />
+            {mockAccountStats.map((stat) => (
+              <AccountStat
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+                tooltip={stat.tooltip}
+              />
+            ))}
+          </Grid>
+
+          <Grid
+            container
+            columns={{
+              xs: 1,
+              sm: 2,
+            }}
+            spacing={{
+              xs: 2,
+              sm: 3,
+            }}
+            overflow="hidden"
+          >
+            <ProfileCard
+              avatar={profile?.avatar}
+              bio={profile?.bio}
+              name={username}
+              address={overrideAddress}
+            >
+              {!readonly && (
+                <Button
+                  onClick={toggleEditing}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: { xs: "100%", sm: "auto" } }}
+                >
+                  Edit
+                </Button>
               )}
-            </Stack>
-          </Stack>
+            </ProfileCard>
 
-          {/* Bio Section */}
-          <Box>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mb: 1, fontWeight: 600 }}
-            >
-              Bio
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                whiteSpace: "pre-wrap",
-                color: "text.primary",
-                opacity: 0.7,
-              }}
-            >
-              {profile?.bio || "No bio added yet."}
-            </Typography>
-          </Box>
-
-          {/* Referral Code Section */}
-          <Box>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mb: 1, fontWeight: 600 }}
-            >
-              Referral Code
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                fontFamily: "monospace",
-                color: "text.primary",
-                opacity: 0.9,
-                fontWeight: 500,
-              }}
-            >
-              {profile?.referralCode || "No referral code set."}
-            </Typography>
-          </Box>
+            {profileId.isLoading ? (
+              <ProfileDataCardSkeleton />
+            ) : (
+              <ProfileDataCard
+                address={overrideAddress}
+                profileId={Number(profileId.data)}
+              />
+            )}
+          </Grid>
         </Stack>
       )}
     </Paper>

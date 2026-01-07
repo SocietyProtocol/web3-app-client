@@ -15,6 +15,7 @@ import { AccountData, accountValidationSchema } from "@/validation/account";
 
 interface AccountSetupContextType {
   form: UseFormReturn<AccountData>;
+  username?: string;
   profileId?: number;
   profileData: UseQueryResult<ProfileData | null, Error>;
   isFetched: boolean;
@@ -51,6 +52,7 @@ export const AccountSetupProvider = ({
   children,
 }: AccountSetupProviderProps) => {
   const {
+    username,
     profileId,
     profileUri,
     profileData,
@@ -123,6 +125,7 @@ export const AccountSetupProvider = ({
       value={{
         form,
         isFetched,
+        username,
         profileId:
           profileId.data !== undefined ? Number(profileId.data) : undefined,
         profileData,

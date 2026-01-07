@@ -28,7 +28,6 @@ export const WrongNetworkBubble: React.FC = () => {
         You are connected to the wrong network.
       </Typography>
       <Typography variant="h6" gutterBottom>
-        {" "}
         Please switch to <strong>{expectedNetwork.name}</strong> to continue.
       </Typography>
     </BubbleBase>

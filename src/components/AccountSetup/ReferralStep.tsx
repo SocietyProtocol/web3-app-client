@@ -1,7 +1,7 @@
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { useAccount, useDisconnect } from "wagmi";
 import { useAccountSetup } from "./AccountSetupContext";
-import { Address } from "../Address/Address";
+import { AddressDisplay } from "../AddressDisplay/AddressDisplay";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Controller } from "react-hook-form";
 
@@ -32,7 +32,7 @@ export const ReferralStep = () => {
         >
           <Box sx={{ minWidth: 0, flex: 1 }}>
             {address && (
-              <Address
+              <AddressDisplay
                 address={address}
                 showCopy
                 showLink

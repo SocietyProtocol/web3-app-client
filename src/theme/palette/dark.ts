@@ -16,6 +16,7 @@ export const dark: PaletteOptions = {
   text: {
     primary: "#FFFFFF",
     secondary: "rgba(255, 255, 255, 0.4)",
+    label: "#CACACA",
   },
   success: {
     main: "#008C73",

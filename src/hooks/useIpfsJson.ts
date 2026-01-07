@@ -8,16 +8,35 @@ export function useIpfsJson<T = unknown>(cid?: string | null) {
       if (!cid || typeof cid !== "string") {
         return null;
       }
-      const url = `${URLS.IPFS_GATEWAY}/${cid}`;
-      const res = await fetch(url);
-      if (!res.ok) {
+      const primaryUrl = `${URLS.IPFS_GATEWAY}/${cid}`;
+
+      try {
+        const res = await fetch(primaryUrl);
+
+        if (res.ok) {
+          const json = (await res.json()) as T;
+          return json;
+        }
+
+        // If primary gateway responds with a non-ok status, fall through to fallback.
+      } catch {
+        // If primary gateway fetch fails, fall through to fallback.
+      }
+
+      const fallbackUrl = `${URLS.IPFS_FALLBACK_GATEWAY}/${cid}`;
+
+      const fallbackRes = await fetch(fallbackUrl);
+
+      if (!fallbackRes.ok) {
         throw new Error("Failed to fetch profile data from IPFS");
       }
-      const json = (await res.json()) as T;
+
+      const json = (await fallbackRes.json()) as T;
+
       return json;
     },
     enabled: Boolean(cid),
     staleTime: Infinity,
-    retry: 1,
+    retry: 2,
   });
 }

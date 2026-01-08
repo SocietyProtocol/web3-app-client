@@ -48,6 +48,7 @@ export const BadgeCard = ({
           xs: "100%",
           sm: "200px",
         },
+        height: 180,
         ...(!loading &&
           isOfficial && {
             border: (theme) =>

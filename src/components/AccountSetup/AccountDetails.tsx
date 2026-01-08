@@ -13,6 +13,7 @@ import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
 import { mockBadgesData } from "./badges";
 import { BadgeCard } from "../BadgeCard/BadgeCard";
+import { BadgesModal } from "../BadgesModal/BadgesModal";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -23,13 +24,26 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   const { address: accountAddress } = useAccount();
   const overrideAddress = address || accountAddress;
 
-  const { profileId, profileData, username } = useProfile(overrideAddress);
+  const {
+    profileId,
+    profileData,
+    username = "Unknown User",
+  } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
+  };
+
+  const handleOpenBadgesModal = () => {
+    setIsBadgesModalOpen(true);
+  };
+
+  const handleCloseBadgesModal = () => {
+    setIsBadgesModalOpen(false);
   };
 
   if (!overrideAddress) {
@@ -99,7 +113,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             <ProfileCard
               avatar={profile?.avatar}
               bio={profile?.bio}
-              name={username ?? "Unknown User"}
+              name={username}
               address={overrideAddress}
             >
               {!readonly && (
@@ -124,31 +138,70 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             )}
           </Grid>
 
-          <Grid
-            container
-            columns={{
-              xs: 1,
-              sm: 2,
-              md: 4,
-            }}
-            spacing={{
-              xs: 2,
-              sm: 3,
-            }}
-          >
-            {mockBadgesData.map((badge) => (
-              <BadgeCard
-                key={badge.id}
-                id={badge.id}
-                title={badge.title}
-                badgeImageUrl={badge.badgeImageUrl}
-                isOfficial={badge.isOfficial}
-                createdBy={badge.createdBy}
-                numberOfHolders={badge.numberOfHolders}
-                metadata={badge.metadata}
-              />
-            ))}
-          </Grid>
+          <Box>
+            <Stack direction="row" justifyContent="space-between" mb={2}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Badges held by {username}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleOpenBadgesModal}
+              >
+                View All Badges ({mockBadgesData.length})
+              </Button>
+            </Stack>
+            <Grid
+              container
+              columns={{
+                xs: 1,
+                sm: 2,
+                md: 4,
+              }}
+              spacing={{
+                xs: 2,
+                sm: 3,
+              }}
+            >
+              {mockBadgesData.slice(0, 6).map((badge) => (
+                <BadgeCard
+                  key={badge.id}
+                  id={badge.id}
+                  title={badge.title}
+                  badgeImageUrl={badge.badgeImageUrl}
+                  isOfficial={badge.isOfficial}
+                  createdBy={badge.createdBy}
+                  numberOfHolders={badge.numberOfHolders}
+                  metadata={badge.metadata}
+                />
+              ))}
+
+              {mockBadgesData.length === 0 && (
+                <Typography variant="body1" color="text.secondary">
+                  No badges found
+                </Typography>
+              )}
+
+              {mockBadgesData.length > 6 && (
+                <Stack justifyContent="center" alignItems="center">
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ textAlign: "center" }}
+                  >
+                    And {mockBadgesData.length - 6} more badges...
+                  </Typography>
+                </Stack>
+              )}
+            </Grid>
+          </Box>
+
+          <BadgesModal
+            open={isBadgesModalOpen}
+            onClose={handleCloseBadgesModal}
+            badges={mockBadgesData}
+            username={username}
+          />
         </Stack>
       )}
     </Box>

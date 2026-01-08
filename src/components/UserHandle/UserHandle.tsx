@@ -83,7 +83,7 @@ export const UserHandle = ({
               maxWidth: size === "small" ? 50 : 150,
               fontWeight: 800,
               fontSize: (theme) =>
-                theme.typography.pxToRem(size === "small" ? 8 : 16),
+                theme.typography.pxToRem(size === "small" ? 8 : 12),
             }}
           >
             {profileIdLoading || uriLoading || profileDataLoading ? (

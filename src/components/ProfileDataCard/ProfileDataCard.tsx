@@ -5,12 +5,12 @@ import { UserHandle } from "../UserHandle/UserHandle";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
 import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
-import { readonly } from "zod";
 
 interface ProfileDataCardProps {
   address: Address;
   profileId: number;
   referredBy?: Address;
+  readonly?: boolean;
 }
 
 export const ProfileDataCard = ({
@@ -18,6 +18,7 @@ export const ProfileDataCard = ({
   profileId,
   // This is a placeholder until referral system is implemented
   referredBy = "0xA52bdb9c052ef1365DA10E87a114e42dAa487576",
+  readonly = false,
 }: ProfileDataCardProps) => {
   return (
     <Paper

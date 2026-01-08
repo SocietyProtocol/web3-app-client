@@ -14,6 +14,7 @@ import { mockAccountStats } from "./accountStats";
 import { mockBadgesData } from "./badges";
 import { BadgeCard } from "../BadgeCard/BadgeCard";
 import { BadgesModal } from "../BadgesModal/BadgesModal";
+import { truncateAddress } from "@/utils/string";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -27,7 +28,9 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   const {
     profileId,
     profileData,
-    username = "Unknown User",
+    username = overrideAddress
+      ? truncateAddress(overrideAddress)
+      : "Unknown User",
   } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
 
@@ -75,7 +78,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 1.5, sm: 0 }}
           >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {username ? `${username}'s Profile` : "Unkpnown User's Profile"}
+              {`${username}'s Profile`}
             </Typography>
           </Stack>
           {/* Stats and Profile Cards */}
@@ -134,6 +137,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               <ProfileDataCard
                 address={overrideAddress}
                 profileId={Number(profileId.data)}
+                readonly={readonly}
               />
             )}
           </Grid>
@@ -164,16 +168,18 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               }}
             >
               {mockBadgesData.slice(0, 6).map((badge) => (
-                <BadgeCard
-                  key={badge.id}
-                  id={badge.id}
-                  title={badge.title}
-                  badgeImageUrl={badge.badgeImageUrl}
-                  isOfficial={badge.isOfficial}
-                  createdBy={badge.createdBy}
-                  numberOfHolders={badge.numberOfHolders}
-                  metadata={badge.metadata}
-                />
+                <Grid key={badge.id} size={1}>
+                  <BadgeCard
+                    key={badge.id}
+                    id={badge.id}
+                    title={badge.title}
+                    badgeImageUrl={badge.badgeImageUrl}
+                    isOfficial={badge.isOfficial}
+                    createdBy={badge.createdBy}
+                    numberOfHolders={badge.numberOfHolders}
+                    metadata={badge.metadata}
+                  />
+                </Grid>
               ))}
 
               {mockBadgesData.length === 0 && (

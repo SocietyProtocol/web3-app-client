@@ -168,7 +168,16 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               }}
             >
               {mockBadgesData.slice(0, 6).map((badge) => (
-                <Grid key={badge.id} size={1}>
+                <Grid
+                  key={badge.id}
+                  size={1}
+                  sx={{
+                    width: {
+                      xs: "100%",
+                      sm: "200px",
+                    },
+                  }}
+                >
                   <BadgeCard
                     key={badge.id}
                     id={badge.id}

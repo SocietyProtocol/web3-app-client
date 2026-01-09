@@ -109,7 +109,6 @@ export const PreviewPopover = ({
           { name: "preventOverflow", options: { padding: 8 } },
         ]}
         transition
-        disablePortal
         sx={{ pointerEvents: "none", zIndex: 1300 }}
       >
         {({ TransitionProps }) => (

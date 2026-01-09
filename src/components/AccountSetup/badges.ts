@@ -7,7 +7,7 @@ interface BadgeData {
   isOfficial?: boolean;
   createdBy?: Address;
   numberOfHolders?: number;
-  metadata?: Record<string, string>;
+  metadataUrl?: string;
 }
 
 export const mockBadgesData: BadgeData[] = [
@@ -18,12 +18,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who actively participate in crypto communities.",
-      country: "Mexico",
-      level: "Bronze",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-enthusiast",
   },
   {
     id: 2,
@@ -33,12 +28,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://res.cloudinary.com/teepublic/image/private/s--L1-J3i16--/c_crop,x_10,y_10/c_fit,w_830/c_crop,g_north_west,h_1038,w_1038,x_-104,y_-219/l_upload:v1565806151:production:blanks:vdbwo35fw6qtflw9kezw/fl_layer_apply,g_north_west,x_-215,y_-330/b_rgb:191919/c_limit,f_jpg,h_630,q_90,w_630/v1514467138/production/designs/2229601_1.jpg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who demonstrate exceptional enthusiasm for cryptocurrencies",
-      country: "Argentina",
-      chain: "Ethereum",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-maniac",
   },
   {
     id: 3,
@@ -48,9 +38,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://s3.coinmarketcap.com/static-gravity/image/dff7764bc47d4467874fce8f3670d206.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Filecoin project.",
-    },
+    metadataUrl: "https://example.com/metadata/filecoin-contributors",
   },
   {
     id: 4,
@@ -59,9 +47,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Protofire project.",
-    },
+    metadataUrl: "https://example.com/metadata/protofire-contributors",
   },
   {
     id: 5,
@@ -70,12 +56,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who actively participate in crypto communities.",
-      country: "Mexico",
-      level: "Bronze",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-enthusiast",
   },
   {
     id: 6,
@@ -85,12 +66,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://res.cloudinary.com/teepublic/image/private/s--L1-J3i16--/c_crop,x_10,y_10/c_fit,w_830/c_crop,g_north_west,h_1038,w_1038,x_-104,y_-219/l_upload:v1565806151:production:blanks:vdbwo35fw6qtflw9kezw/fl_layer_apply,g_north_west,x_-215,y_-330/b_rgb:191919/c_limit,f_jpg,h_630,q_90,w_630/v1514467138/production/designs/2229601_1.jpg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who demonstrate exceptional enthusiasm for cryptocurrencies",
-      country: "Argentina",
-      chain: "Ethereum",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-maniac",
   },
   {
     id: 7,
@@ -100,9 +76,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://s3.coinmarketcap.com/static-gravity/image/dff7764bc47d4467874fce8f3670d206.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Filecoin project.",
-    },
+    metadataUrl: "https://example.com/metadata/filecoin-contributors",
   },
   {
     id: 8,
@@ -111,9 +85,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Protofire project.",
-    },
+    metadataUrl: "https://example.com/metadata/protofire-contributors",
   },
   {
     id: 9,
@@ -122,12 +94,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who actively participate in crypto communities.",
-      country: "Mexico",
-      level: "Bronze",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-enthusiast",
   },
   {
     id: 10,
@@ -137,12 +104,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://res.cloudinary.com/teepublic/image/private/s--L1-J3i16--/c_crop,x_10,y_10/c_fit,w_830/c_crop,g_north_west,h_1038,w_1038,x_-104,y_-219/l_upload:v1565806151:production:blanks:vdbwo35fw6qtflw9kezw/fl_layer_apply,g_north_west,x_-215,y_-330/b_rgb:191919/c_limit,f_jpg,h_630,q_90,w_630/v1514467138/production/designs/2229601_1.jpg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who demonstrate exceptional enthusiasm for cryptocurrencies",
-      country: "Argentina",
-      chain: "Ethereum",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-maniac",
   },
   {
     id: 11,
@@ -152,9 +114,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://s3.coinmarketcap.com/static-gravity/image/dff7764bc47d4467874fce8f3670d206.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Filecoin project.",
-    },
+    metadataUrl: "https://example.com/metadata/filecoin-contributors",
   },
   {
     id: 12,
@@ -163,9 +123,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Protofire project.",
-    },
+    metadataUrl: "https://example.com/metadata/protofire-contributors",
   },
   {
     id: 13,
@@ -174,12 +132,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who actively participate in crypto communities.",
-      country: "Mexico",
-      level: "Bronze",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-enthusiast",
   },
   {
     id: 14,
@@ -189,12 +142,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://res.cloudinary.com/teepublic/image/private/s--L1-J3i16--/c_crop,x_10,y_10/c_fit,w_830/c_crop,g_north_west,h_1038,w_1038,x_-104,y_-219/l_upload:v1565806151:production:blanks:vdbwo35fw6qtflw9kezw/fl_layer_apply,g_north_west,x_-215,y_-330/b_rgb:191919/c_limit,f_jpg,h_630,q_90,w_630/v1514467138/production/designs/2229601_1.jpg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who demonstrate exceptional enthusiasm for cryptocurrencies",
-      country: "Argentina",
-      chain: "Ethereum",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-maniac",
   },
   {
     id: 15,
@@ -204,9 +152,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://s3.coinmarketcap.com/static-gravity/image/dff7764bc47d4467874fce8f3670d206.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Filecoin project.",
-    },
+    metadataUrl: "https://example.com/metadata/filecoin-contributors",
   },
   {
     id: 16,
@@ -215,9 +161,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Protofire project.",
-    },
+    metadataUrl: "https://example.com/metadata/protofire-contributors",
   },
 
   {
@@ -227,12 +171,7 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who actively participate in crypto communities.",
-      country: "Mexico",
-      level: "Bronze",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-enthusiast",
   },
   {
     id: 18,
@@ -242,12 +181,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://res.cloudinary.com/teepublic/image/private/s--L1-J3i16--/c_crop,x_10,y_10/c_fit,w_830/c_crop,g_north_west,h_1038,w_1038,x_-104,y_-219/l_upload:v1565806151:production:blanks:vdbwo35fw6qtflw9kezw/fl_layer_apply,g_north_west,x_-215,y_-330/b_rgb:191919/c_limit,f_jpg,h_630,q_90,w_630/v1514467138/production/designs/2229601_1.jpg",
     isOfficial: false,
-    metadata: {
-      description:
-        "Awarded to users who demonstrate exceptional enthusiasm for cryptocurrencies",
-      country: "Argentina",
-      chain: "Ethereum",
-    },
+    metadataUrl: "https://example.com/metadata/crypto-maniac",
   },
   {
     id: 19,
@@ -257,9 +191,7 @@ export const mockBadgesData: BadgeData[] = [
     badgeImageUrl:
       "https://s3.coinmarketcap.com/static-gravity/image/dff7764bc47d4467874fce8f3670d206.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Filecoin project.",
-    },
+    metadataUrl: "https://example.com/metadata/filecoin-contributors",
   },
   {
     id: 20,
@@ -268,8 +200,6 @@ export const mockBadgesData: BadgeData[] = [
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
     isOfficial: true,
-    metadata: {
-      description: "Awarded to contributors of the Protofire project.",
-    },
+    metadataUrl: "https://example.com/metadata/protofire-contributors",
   },
 ];

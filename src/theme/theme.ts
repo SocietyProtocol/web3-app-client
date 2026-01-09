@@ -10,6 +10,7 @@ import { MuiDialogTitle } from "./components/MuiDialogTitle";
 import { MuiDialogContent } from "./components/MuiDialogContent";
 import { breakpoints } from "./breakpoints";
 import { MuiPaginationItem } from "./components/MuiPaginationItem";
+import { MuiChip } from "./components/MuiChip";
 
 const baseTheme = createTheme({
   cssVariables: {
@@ -34,6 +35,7 @@ const baseTheme = createTheme({
     MuiDialogTitle,
     MuiDialogContent,
     MuiPaginationItem,
+    MuiChip,
   },
   typography: {
     fontFamily: "var(--font-space-grotesk), sans-serif",

@@ -36,18 +36,14 @@ export const CopyButton = ({
         onClick={handleCopy}
         sx={{
           p: size === "small" ? 0.25 : 0.5,
-          color: "text.secondary",
-          "&:hover": {
-            color: "text.primary",
-            opacity: 0.8,
-          },
+          color: "text.primary",
         }}
       >
         {copied ? (
           <CheckIcon
             sx={{
               fontSize: size === "small" ? "0.625rem" : 16,
-              color: "success.main",
+              color: "success.light",
             }}
           />
         ) : (

@@ -41,13 +41,7 @@ export const BadgesModal = ({
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
           All Badges held by {username} ({badges.length})
         </Typography>
-        <IconButton
-          onClick={onClose}
-          size="small"
-          sx={{
-            color: "text.secondary",
-          }}
-        >
+        <IconButton onClick={onClose} size="small" color="primary">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -70,7 +64,7 @@ export const BadgesModal = ({
                 minHeight: 200,
               }}
             >
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1" color="text.primary">
                 No badges found
               </Typography>
             </Box>
@@ -80,7 +74,7 @@ export const BadgesModal = ({
                 <BadgeCard {...badge} key={badge.id} />
               ))}
               itemWidth={200}
-              itemHeight={180}
+              itemHeight={200}
               currentPage={currentPage}
               onPageChange={setCurrentPage}
             />

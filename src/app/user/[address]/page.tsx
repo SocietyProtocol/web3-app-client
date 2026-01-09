@@ -7,11 +7,8 @@ import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { checksumAddress, isAddress } from "viem";
 import { use } from "react";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { useAccount } from "wagmi";
-import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
-import { Button } from "@mui/material";
-import { ValidationError } from "@/errors/ValidationError";
 
 export default function UserProfilePage({
   params,
@@ -29,21 +26,7 @@ export default function UserProfilePage({
   const profile = useProfile(_checksumAddress);
 
   if (!_checksumAddress) {
-    return (
-      <ErrorDisplay
-        error={new ValidationError("Invalid address provided")}
-        action={
-          <Button
-            variant="contained"
-            onClick={() => {
-              redirect("/");
-            }}
-          >
-            Go to Home
-          </Button>
-        }
-      />
-    );
+    return notFound();
   }
 
   if (connectedAddress?.toLowerCase() === address.toLowerCase()) {

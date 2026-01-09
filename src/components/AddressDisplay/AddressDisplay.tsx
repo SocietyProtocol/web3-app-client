@@ -1,5 +1,4 @@
 import {
-  alpha,
   IconButton,
   Link,
   Stack,
@@ -54,7 +53,7 @@ export const AddressDisplay = ({
         variant="body2"
         sx={{
           fontFamily: "monospace",
-          color: (theme) => alpha(theme.palette.text.primary, 0.7),
+          color: "text.primary",
           fontSize: size === "small" ? "0.875rem" : "1rem",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -84,11 +83,7 @@ export const AddressDisplay = ({
             rel="noopener noreferrer"
             sx={{
               p: size === "small" ? 0.25 : 0.5,
-              color: "text.secondary",
-              "&:hover": {
-                color: "text.primary",
-                opacity: 0.8,
-              },
+              color: "text.primary",
             }}
           >
             <OpenInNewIcon

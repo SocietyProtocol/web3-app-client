@@ -53,7 +53,7 @@ export const ProfileDataCard = ({
             <AddressDisplay
               address={address}
               sx={{
-                color: "text.label",
+                color: "text.primary",
               }}
               showCopy
               showLink
@@ -67,7 +67,7 @@ export const ProfileDataCard = ({
               sx={{
                 fontSize: (theme) => theme.typography.pxToRem(16),
                 fontWeight: 500,
-                color: "text.label",
+                color: "text.primary",
                 display: "flex",
                 alignItems: "center",
                 gap: 1,

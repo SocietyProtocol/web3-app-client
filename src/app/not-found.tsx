@@ -27,7 +27,7 @@ export default function NotFound() {
       <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
         Page Not Found
       </Typography>
-      <Typography variant="body1" sx={{ mb: 4, color: "text.secondary" }}>
+      <Typography variant="body1" sx={{ mb: 4 }}>
         The page you are looking for doesn&apos;t exist or has been moved.
       </Typography>
       <Button

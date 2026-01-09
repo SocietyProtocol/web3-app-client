@@ -68,7 +68,7 @@ export const UserHandle = ({
         >
           <Avatar
             address={address}
-            size={size === "small" ? 12 : 24}
+            size={size === "small" ? 16 : 24}
             ensImage={profileData?.avatar}
             loading={profileIdLoading || uriLoading || profileDataLoading}
           />
@@ -83,7 +83,8 @@ export const UserHandle = ({
               maxWidth: size === "small" ? 50 : 150,
               fontWeight: 800,
               fontSize: (theme) =>
-                theme.typography.pxToRem(size === "small" ? 8 : 12),
+                theme.typography.pxToRem(size === "small" ? 10 : 12),
+              lineHeight: 1,
             }}
           >
             {profileIdLoading || uriLoading || profileDataLoading ? (

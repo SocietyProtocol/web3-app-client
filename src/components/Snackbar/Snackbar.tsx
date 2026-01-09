@@ -6,15 +6,19 @@ export const StyledMaterialDesignContent = styled(MaterialDesignContent)(
   ({ theme }) => ({
     "&.notistack-MuiContent-success": {
       color: theme.palette.success.light,
+      border: `1px solid ${theme.palette.success.main}`,
     },
     "&.notistack-MuiContent-error": {
-      color: theme.palette.error.main,
+      color: theme.palette.error.light,
+      border: `1px solid ${theme.palette.error.main}`,
     },
     "&.notistack-MuiContent-warning": {
       color: theme.palette.warning.light,
+      border: `1px solid ${theme.palette.warning.light}`,
     },
     "&.notistack-MuiContent-info": {
       color: theme.palette.info.light,
+      border: `1px solid ${theme.palette.info.main}`,
     },
 
     // General toast styling

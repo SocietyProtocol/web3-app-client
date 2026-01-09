@@ -31,7 +31,7 @@ export const BubbleBase = ({
   return (
     <Card
       variant="bubble"
-      sx={variant === "warning" ? { borderColor: "warning.main" } : {}}
+      sx={variant === "warning" ? { borderColor: "warning.light" } : {}}
     >
       <CardHeader
         title={
@@ -48,7 +48,7 @@ export const BubbleBase = ({
             ) : (
               <WarningAmberOutlinedIcon
                 fontSize="large"
-                sx={{ color: "warning.main" }}
+                sx={{ color: "warning.light" }}
               />
             )}
             {title || ""}

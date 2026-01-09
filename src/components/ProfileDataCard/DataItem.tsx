@@ -24,7 +24,7 @@ export const DataItem = ({ label, children, tooltip }: DataItemProps) => {
           display: "flex",
           gap: 1,
           alignItems: "center",
-          color: "text.label",
+          color: "text.primary",
         }}
       >
         {label}

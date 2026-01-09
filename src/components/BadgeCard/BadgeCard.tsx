@@ -1,17 +1,19 @@
 import {
   alpha,
   Avatar,
-  Badge,
   Chip,
   Paper,
   Skeleton,
   Stack,
+  styled,
   Typography,
 } from "@mui/material";
 import { Address } from "viem";
 import { OfficialBadge } from "../icons/OfficialBadge";
 import { UserHandle } from "../UserHandle/UserHandle";
-import { Holder } from "../icons/Holder";
+import { Logo } from "../icons/Logo";
+import Link from "next/link";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 export interface BadgeCardProps {
   id: number;
@@ -20,9 +22,38 @@ export interface BadgeCardProps {
   isOfficial?: boolean;
   createdBy?: Address;
   numberOfHolders?: number;
-  metadata?: Record<string, string>;
+  metadataUrl?: string;
   loading?: boolean;
 }
+
+const StyledBadgeCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "isOfficial",
+})<{
+  isOfficial?: boolean;
+}>(({ theme, isOfficial = false }) => ({
+  position: "relative",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: theme.spacing(1),
+  padding: theme.spacing(1),
+  borderRadius: 8,
+  boxShadow: "none",
+  width: "100%",
+  height: "200px",
+
+  background: theme.palette.background.page,
+  border: `1px solid ${theme.palette.border.card}`,
+
+  [theme.breakpoints.up("sm")]: {
+    width: "200px",
+  },
+
+  ...(isOfficial && {
+    ...theme.mixins.borderGradient("12px", "official"),
+    background: theme.palette.gradients.darkOfficial,
+  }),
+}));
 
 export const BadgeCard = ({
   id,
@@ -30,53 +61,48 @@ export const BadgeCard = ({
   badgeImageUrl,
   isOfficial,
   createdBy,
-  numberOfHolders,
-  //   metadata,
+  metadataUrl,
   loading = false,
 }: BadgeCardProps) => {
   return (
-    <Paper
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 1,
-        p: 1,
-        borderRadius: 2,
-        boxShadow: "none",
-        width: {
-          xs: "100%",
-          sm: "200px",
-        },
-        height: 180,
-        ...(!loading &&
-          isOfficial && {
-            border: (theme) =>
-              `2px solid ${theme.palette.success.contrastText}`,
-          }),
-      }}
-    >
+    <StyledBadgeCard isOfficial={isOfficial}>
       {/* Badge ID and Official Label */}
       <Stack
         width="100%"
         p={0.5}
         direction="row"
-        spacing={2}
         alignItems="center"
         justifyContent="space-between"
+        position="relative"
       >
         {loading ? (
           <Skeleton width={50} />
         ) : (
           <Chip
-            label={`ID: ${id}`}
+            color={isOfficial ? "gold" : "default"}
+            label={`ID: #${id}`}
             size="small"
             sx={{
-              fontSize: (theme) => theme.typography.pxToRem(8),
-              height: 16,
+              fontSize: (theme) => theme.typography.pxToRem(10),
+              letterSpacing: "2%",
+              height: 18,
+              minWidth: 58,
               "& .MuiChip-label": {
-                px: 0.5,
+                px: 1.5,
+                lineHeight: "18px",
               },
+            }}
+          />
+        )}
+
+        {loading || !isOfficial ? null : (
+          <Logo
+            sx={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              fontSize: 20,
+              color: "text.primary",
             }}
           />
         )}
@@ -85,16 +111,28 @@ export const BadgeCard = ({
           <Skeleton width={50} />
         ) : (
           isOfficial && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: "success.contrastText",
-                fontWeight: 700,
-                fontSize: (theme) => theme.typography.pxToRem(8),
-              }}
-            >
-              OFFICIAL
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Typography
+                variant="caption"
+                color="textPrimary"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: (theme) => theme.typography.pxToRem(10),
+                }}
+              >
+                OFFICIAL
+              </Typography>
+              <OfficialBadge
+                sx={{
+                  fontSize: 12,
+                  filter: (theme) =>
+                    `drop-shadow(0 0 1px ${alpha(
+                      theme.palette.gold.main,
+                      0.8
+                    )})`,
+                }}
+              />
+            </Stack>
           )
         )}
       </Stack>
@@ -110,43 +148,11 @@ export const BadgeCard = ({
           }}
         />
       ) : (
-        <Badge
-          color="success"
-          badgeContent={
-            isOfficial ? (
-              <OfficialBadge
-                sx={{
-                  color: "success.contrastText",
-                  fontSize: 12,
-                  backdropFilter: (theme) =>
-                    `drop-shadow(0 0 1px ${alpha(
-                      theme.palette.success.contrastText,
-                      0.8
-                    )})`,
-                }}
-              />
-            ) : undefined
-          }
-          overlap="circular"
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          sx={{
-            "& .MuiBadge-badge": {
-              background: "transparent",
-              minWidth: "unset",
-              height: "unset",
-              padding: 0,
-            },
-          }}
-        >
-          <Avatar
-            src={badgeImageUrl}
-            alt={title}
-            sx={{ width: 52, height: 52 }}
-          />
-        </Badge>
+        <Avatar
+          src={badgeImageUrl}
+          alt={title}
+          sx={{ width: 52, height: 52 }}
+        />
       )}
 
       {/* Title */}
@@ -154,10 +160,11 @@ export const BadgeCard = ({
         <Skeleton width="80%" />
       ) : (
         <Typography
+          component="span"
           variant="body2"
           sx={{
             fontWeight: 700,
-            color: (theme) => alpha(theme.palette.text.primary, 0.8),
+            color: "text.primary",
             textAlign: "center",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -171,119 +178,81 @@ export const BadgeCard = ({
         </Typography>
       )}
 
-      {/* Created By and Number of Holders */}
-      <Stack
-        width="100%"
-        p={0.5}
-        direction="row"
-        spacing={2}
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <Typography
-          component="div"
-          variant="caption"
-          sx={{
-            color: "text.secondary",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            fontWeight: 500,
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            fontSize: (theme) => theme.typography.pxToRem(8),
-          }}
-        >
-          {loading ? (
-            <Skeleton variant="text" width={70} height={10} />
-          ) : (
-            <>
-              Created by:{" "}
-              {createdBy ? (
-                <UserHandle
-                  address={createdBy}
-                  size="small"
-                  showYouLabel={false}
-                  previewCard
-                  link
-                />
-              ) : (
-                "Unknown"
-              )}{" "}
-            </>
-          )}
-        </Typography>
+      {/* Created By */}
 
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          {loading ? (
-            <Skeleton variant="text" width={20} height={10} />
-          ) : (
-            <>
-              <Holder
-                sx={{
-                  fontSize: 12,
-                }}
-              />
-              <Typography
-                component="span"
-                sx={{
-                  color: (theme) => alpha(theme.palette.text.primary, 0.8),
-                  fontWeight: 500,
-                  fontSize: (theme) => theme.typography.pxToRem(8),
-                }}
-              >
-                {numberOfHolders ?? 0}
-              </Typography>
-            </>
-          )}
-        </Stack>
-      </Stack>
-
-      {/* {loading ? (
-        <Skeleton width="100%" />
-      ) : metadata ? (
-        <Stack
-          width="100%"
-          p={0.5}
-          spacing={0.5}
-          sx={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          <Typography
-            component="div"
-            variant="caption"
-            sx={{
-              color: "text.secondary",
-              fontWeight: 600,
-              fontSize: (theme) => theme.typography.pxToRem(9),
-              mb: 0.5,
-            }}
+      {loading ? (
+        <Skeleton variant="text" width={70} height={10} />
+      ) : (
+        createdBy && (
+          <Stack
+            width="100%"
+            p={0.5}
+            direction="row"
+            spacing={0.5}
+            alignItems="center"
+            justifyContent="center"
           >
-            Metadata:
-          </Typography>
-
-          {Object.entries(metadata).map(([key, value]) => (
             <Typography
-              key={key}
-              component="div"
+              component="span"
               variant="caption"
               sx={{
-                color: "text.secondary",
+                lineHeight: 1,
+                color: "text.primary",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 fontWeight: 500,
-                fontSize: (theme) => theme.typography.pxToRem(8),
+                fontSize: (theme) => theme.typography.pxToRem(10),
               }}
             >
-              {`${key}: ${value}`}
+              CREATED BY
             </Typography>
-          ))}
-        </Stack>
-      ) : null} */}
-    </Paper>
+            {createdBy ? (
+              <UserHandle
+                address={createdBy}
+                size="small"
+                showYouLabel={false}
+                previewCard
+                link
+              />
+            ) : (
+              "Unknown"
+            )}{" "}
+          </Stack>
+        )
+      )}
+
+      {/* Metadata URL */}
+      {loading ? (
+        <Skeleton variant="text" width="90%" height={10} />
+      ) : (
+        metadataUrl && (
+          <Link
+            href={metadataUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              textDecoration: "none",
+              width: "100%",
+              textAlign: "center",
+              fontSize: "0.75rem",
+            }}
+          >
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{
+                lineHeight: 1,
+                color: "text.primary",
+                fontSize: "0.75rem",
+              }}
+            >
+              View Metadata{" "}
+            </Typography>
+            <OpenInNewIcon sx={{ fontSize: 12, verticalAlign: "middle" }} />
+          </Link>
+        )
+      )}
+    </StyledBadgeCard>
   );
 };

@@ -197,7 +197,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                       isOfficial={badge.isOfficial}
                       createdBy={badge.createdBy}
                       numberOfHolders={badge.numberOfHolders}
-                      metadata={badge.metadata}
+                      metadataUrl={badge.metadataUrl}
                     />
                   </Grid>
                 ))}
@@ -217,7 +217,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   >
                     <Typography
                       variant="body2"
-                      color="text.secondary"
+                      color="text.primary"
                       sx={{ textAlign: "center" }}
                     >
                       And {mockBadgesData.length - 6} more badges...

@@ -110,7 +110,7 @@ export const ReferralCodeGenerator = () => {
                     <CancelIcon
                       fontSize="small"
                       sx={{
-                        color: "error.light",
+                        color: "error.main",
                       }}
                     />
                   </IconButton>
@@ -127,14 +127,14 @@ export const ReferralCodeGenerator = () => {
 
       {referralCode ? (
         <Stack spacing={1} sx={{ mt: 2 }}>
-          <Typography component="div" color="text.label">
+          <Typography component="div" color="text.primary">
             Share this Referral Code:
           </Typography>
           <Stack direction="row" spacing={1} alignItems="flex-start">
             <Typography
               component="div"
               variant="body2"
-              sx={{ wordBreak: "break-all", color: "success.contrastText" }}
+              sx={{ wordBreak: "break-all", color: "success.light" }}
             >
               {referralCode}
             </Typography>

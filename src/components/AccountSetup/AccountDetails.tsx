@@ -151,64 +151,81 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 variant="outlined"
                 size="small"
                 onClick={handleOpenBadgesModal}
+                disabled={mockBadgesData.length === 0}
               >
                 View All Badges ({mockBadgesData.length})
               </Button>
             </Stack>
-            <Grid
-              container
-              columns={{
-                xs: 1,
-                sm: 2,
-                md: 4,
-              }}
-              spacing={{
-                xs: 2,
-                sm: 3,
-              }}
-            >
-              {mockBadgesData.slice(0, 6).map((badge) => (
-                <Grid
-                  key={badge.id}
-                  size={1}
-                  sx={{
-                    width: {
-                      xs: "100%",
-                      sm: "200px",
-                    },
-                  }}
-                >
-                  <BadgeCard
-                    key={badge.id}
-                    id={badge.id}
-                    title={badge.title}
-                    badgeImageUrl={badge.badgeImageUrl}
-                    isOfficial={badge.isOfficial}
-                    createdBy={badge.createdBy}
-                    numberOfHolders={badge.numberOfHolders}
-                    metadata={badge.metadata}
-                  />
-                </Grid>
-              ))}
-
-              {mockBadgesData.length === 0 && (
+            {mockBadgesData.length === 0 ? (
+              <Stack
+                justifyContent="center"
+                alignItems="center"
+                minHeight={100}
+              >
                 <Typography variant="body1" color="text.secondary">
                   No badges found
                 </Typography>
-              )}
-
-              {mockBadgesData.length > 6 && (
-                <Stack justifyContent="center" alignItems="center">
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ textAlign: "center" }}
+              </Stack>
+            ) : (
+              <Grid
+                container
+                columns={{
+                  xs: 1,
+                  sm: 2,
+                  md: 4,
+                }}
+                spacing={{
+                  xs: 2,
+                  sm: 3,
+                }}
+              >
+                {mockBadgesData.slice(0, 6).map((badge) => (
+                  <Grid
+                    key={badge.id}
+                    size={1}
+                    sx={{
+                      width: {
+                        xs: "100%",
+                        sm: "200px",
+                      },
+                    }}
                   >
-                    And {mockBadgesData.length - 6} more badges...
-                  </Typography>
-                </Stack>
-              )}
-            </Grid>
+                    <BadgeCard
+                      id={badge.id}
+                      title={badge.title}
+                      badgeImageUrl={badge.badgeImageUrl}
+                      isOfficial={badge.isOfficial}
+                      createdBy={badge.createdBy}
+                      numberOfHolders={badge.numberOfHolders}
+                      metadata={badge.metadata}
+                    />
+                  </Grid>
+                ))}
+
+                {mockBadgesData.length > 6 && (
+                  <Grid
+                    size={1}
+                    sx={{
+                      width: {
+                        xs: "100%",
+                        sm: "200px",
+                      },
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ textAlign: "center" }}
+                    >
+                      And {mockBadgesData.length - 6} more badges...
+                    </Typography>
+                  </Grid>
+                )}
+              </Grid>
+            )}
           </Box>
 
           <BadgesModal

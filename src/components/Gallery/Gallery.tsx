@@ -1,6 +1,6 @@
 import { usePrevious } from "@/hooks/usePrevious";
-import { useReponsiveHeightValue } from "@/hooks/useResponsiveHeightValue";
-import { useReponsiveValue } from "@/hooks/useResponsiveValue";
+import { useResponsiveHeightValue } from "@/hooks/useResponsiveHeightValue";
+import { useResponsiveValue } from "@/hooks/useResponsiveValue";
 
 import { Grid, Pagination, PaginationItem, Stack } from "@mui/material";
 import { ReactNode, useEffect, useMemo, useRef } from "react";
@@ -12,7 +12,7 @@ const gallerySizeBreakpoints = {
   lg: 872,
 };
 
-export interface ResponsiveGalleryProps {
+export interface GalleryProps {
   items: ReactNode[];
   itemWidth: number;
   itemHeight: number;
@@ -26,7 +26,7 @@ export const Gallery = ({
   itemHeight,
   currentPage,
   onPageChange,
-}: ResponsiveGalleryProps) => {
+}: GalleryProps) => {
   const containerRef = useRef(null);
 
   const itemsPerSize = useMemo(
@@ -39,26 +39,26 @@ export const Gallery = ({
     [itemWidth]
   );
 
-  const columnsPerPage = useReponsiveValue(itemsPerSize);
-  const rowsPerPage = useReponsiveHeightValue(itemsPerSize);
-  const paginationSize = useReponsiveValue({
+  const columnsPerPage = useResponsiveValue(itemsPerSize);
+  const rowsPerPage = useResponsiveHeightValue(itemsPerSize);
+  const paginationSize = useResponsiveValue({
     xs: "small",
     sm: "medium",
     md: "large",
   }) as "small" | "medium" | "large";
 
-  const boundaryCount = useReponsiveValue({
+  const boundaryCount = useResponsiveValue({
     xs: 0,
     sm: 1,
     md: 1,
     lg: 2,
   });
-  const showPaginationButtons = useReponsiveValue({
+  const showPaginationButtons = useResponsiveValue({
     xs: false,
     sm: true,
   });
 
-  const spacing = useReponsiveValue({
+  const spacing = useResponsiveValue({
     xs: 1,
     sm: 2,
     md: 3,
@@ -89,8 +89,8 @@ export const Gallery = ({
     if (prevFirstItemIndex === null || currentPage !== prevPage) return;
 
     if (
-      prevFirstItemIndex < currentPage * itemsPerPage ||
-      prevFirstItemIndex > currentPage * itemsPerPage - 1
+      prevFirstItemIndex < (currentPage - 1) * itemsPerPage ||
+      prevFirstItemIndex >= currentPage * itemsPerPage
     ) {
       const newPage = Math.floor(prevFirstItemIndex / itemsPerPage) + 1;
 

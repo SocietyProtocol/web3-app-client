@@ -1,6 +1,6 @@
 import { useMediaQuery } from "@mui/material";
 
-interface UseReponsiveValueProps<T> {
+interface UseResponsiveValueProps<T> {
   xs: T;
   sm?: T;
   md?: T;
@@ -8,7 +8,7 @@ interface UseReponsiveValueProps<T> {
   xl?: T;
 }
 
-export const useReponsiveValue = <T>(props: UseReponsiveValueProps<T>): T => {
+export const useResponsiveValue = <T>(props: UseResponsiveValueProps<T>): T => {
   const { xs, sm, md, lg, xl } = props;
   const isSm = useMediaQuery((theme) => theme.breakpoints.only("sm"));
   const isMd = useMediaQuery((theme) => theme.breakpoints.only("md"));

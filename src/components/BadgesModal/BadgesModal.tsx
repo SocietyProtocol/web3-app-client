@@ -84,60 +84,6 @@ export const BadgesModal = ({
               currentPage={currentPage}
               onPageChange={setCurrentPage}
             />
-
-            // <>
-            //   <Grid
-            //     container
-            //     columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
-            //     spacing={{ xs: 2, md: 3 }}
-            //     sx={{
-            //       justifyContent: "flex-start",
-            //       alignItems: "flex-start",
-            //       alignContent: "flex-start",
-            //       width: {
-            //         xs: "auto",
-            //         sm: columnsPerPage * 200 + (columnsPerPage - 1) * 24,
-            //       },
-            //       height: {
-            //         xs: "auto",
-            //         sm: rowsPerPage * 180 + (rowsPerPage - 1) * 24,
-            //       },
-            //     }}
-            //   >
-            //     {currentBadges.map((badge) => (
-            //       <Grid
-            //         size={1}
-            //         key={badge.id}
-            //         sx={{
-            //           display: "flex",
-            //           justifyContent: "center",
-            //         }}
-            //       >
-            //         <BadgeCard {...badge} />
-            //       </Grid>
-            //     ))}
-            //   </Grid>
-
-            //   {totalPages > 1 && (
-            //     <Box
-            //       sx={{
-            //         display: "flex",
-            //         justifyContent: "center",
-            //         pt: 2,
-            //       }}
-            //     >
-            //       <Pagination
-            //         count={totalPages}
-            //         page={currentPage}
-            //         onChange={handlePageChange}
-            //         color="primary"
-            //         size="large"
-            //         showFirstButton
-            //         showLastButton
-            //       />
-            //     </Box>
-            //   )}
-            // </>
           )}
         </Stack>
       </DialogContent>

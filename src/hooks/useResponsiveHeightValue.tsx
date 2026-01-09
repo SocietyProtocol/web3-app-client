@@ -1,6 +1,6 @@
 import { useMediaQuery } from "@mui/material";
 
-interface UseReponsiveHeightValueProps<T> {
+interface UseResponsiveHeightValueProps<T> {
   xs: T;
   sm?: T;
   md?: T;
@@ -16,8 +16,8 @@ const HeightBreakpoints = {
   xl: 1536,
 };
 
-export const useReponsiveHeightValue = <T,>(
-  props: UseReponsiveHeightValueProps<T>
+export const useResponsiveHeightValue = <T,>(
+  props: UseResponsiveHeightValueProps<T>
 ): T => {
   const { xs, sm, md, lg, xl } = props;
   const isSm = useMediaQuery(`(min-height:${HeightBreakpoints.sm}px)`);

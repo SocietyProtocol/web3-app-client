@@ -3,7 +3,7 @@ import { useResponsiveHeightValue } from "@/hooks/useResponsiveHeightValue";
 import { useResponsiveValue } from "@/hooks/useResponsiveValue";
 
 import { Grid, Pagination, PaginationItem, Stack } from "@mui/material";
-import { ReactNode, useEffect, useMemo, useRef } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 
 const gallerySizeBreakpoints = {
   xs: 200,
@@ -27,8 +27,6 @@ export const Gallery = ({
   currentPage,
   onPageChange,
 }: GalleryProps) => {
-  const containerRef = useRef(null);
-
   const itemsPerSize = useMemo(
     () => ({
       xs: Math.floor(gallerySizeBreakpoints.xs / itemWidth),
@@ -39,8 +37,11 @@ export const Gallery = ({
     [itemWidth]
   );
 
-  const columnsPerPage = useResponsiveValue(itemsPerSize);
-  const rowsPerPage = useResponsiveHeightValue(itemsPerSize);
+  const rawColumnsPerPage = useResponsiveValue(itemsPerSize);
+  const rawRowsPerPage = useResponsiveHeightValue(itemsPerSize);
+  const columnsPerPage = Math.max(1, rawColumnsPerPage || 0);
+  const rowsPerPage = Math.max(1, rawRowsPerPage || 0);
+
   const paginationSize = useResponsiveValue({
     xs: "small",
     sm: "medium",
@@ -65,7 +66,6 @@ export const Gallery = ({
   });
 
   const itemsPerPage = columnsPerPage * rowsPerPage;
-  const prevItemsPerPage = usePrevious(itemsPerPage);
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -94,15 +94,16 @@ export const Gallery = ({
     ) {
       const newPage = Math.floor(prevFirstItemIndex / itemsPerPage) + 1;
 
-      onPageChange(newPage);
+      const clampedNewPage = Math.min(Math.max(newPage, 1), totalPages || 1);
+      onPageChange(clampedNewPage);
     }
   }, [
     itemsPerPage,
     prevFirstItemIndex,
     currentPage,
     prevPage,
-    prevItemsPerPage,
     onPageChange,
+    totalPages,
   ]);
 
   return (
@@ -113,7 +114,6 @@ export const Gallery = ({
       width="100%"
     >
       <Grid
-        ref={containerRef}
         container
         columns={columnsPerPage}
         spacing={spacing}

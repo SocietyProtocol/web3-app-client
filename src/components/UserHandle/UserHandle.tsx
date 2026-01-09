@@ -104,7 +104,7 @@ export const UserHandle = ({
                 sx={{
                   fontWeight: 500,
                   fontSize: (theme) =>
-                    theme.typography.pxToRem(size === "small" ? 8 : 12),
+                    theme.typography.pxToRem(size === "small" ? 10 : 12),
                   color: "info.main",
                 }}
               >

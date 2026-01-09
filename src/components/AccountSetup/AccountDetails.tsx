@@ -136,7 +136,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             ) : (
               <ProfileDataCard
                 address={overrideAddress}
-                profileId={Number(profileId.data)}
+                profileId={profileId.data == null ? 0 : Number(profileId.data)}
                 readonly={readonly}
               />
             )}

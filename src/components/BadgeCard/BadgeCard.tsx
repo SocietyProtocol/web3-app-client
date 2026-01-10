@@ -247,9 +247,11 @@ export const BadgeCard = ({
                 fontSize: "0.75rem",
               }}
             >
-              View Metadata{" "}
+              View Metadata
             </Typography>
-            <OpenInNewIcon sx={{ fontSize: 12, verticalAlign: "middle" }} />
+            <OpenInNewIcon
+              sx={{ fontSize: 12, verticalAlign: "middle", ml: 0.5 }}
+            />
           </Link>
         )
       )}

@@ -1,4 +1,4 @@
-import { useMediaQuery } from "@mui/material";
+import { Theme, useMediaQuery } from "@mui/material";
 
 interface UseResponsiveValueProps<T> {
   xs: T;
@@ -10,25 +10,29 @@ interface UseResponsiveValueProps<T> {
 
 export const useResponsiveValue = <T>(props: UseResponsiveValueProps<T>): T => {
   const { xs, sm, md, lg, xl } = props;
-  const isSm = useMediaQuery((theme) => theme.breakpoints.only("sm"));
-  const isMd = useMediaQuery((theme) => theme.breakpoints.only("md"));
-  const isLg = useMediaQuery((theme) => theme.breakpoints.only("lg"));
-  const isXl = useMediaQuery((theme) => theme.breakpoints.only("xl"));
+  
+  // Check breakpoints from largest to smallest using up() queries
+  // This ensures only one media query matches at a time, improving performance
+  const isXlUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("xl"));
+  const isLgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("lg"));
+  const isMdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("md"));
+  const isSmUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("sm"));
 
-  if (isXl) {
-    return xl ?? lg ?? md ?? sm ?? xs;
+  // Return the first available value for the current breakpoint
+  if (isXlUp && xl !== undefined) {
+    return xl;
   }
 
-  if (isLg) {
-    return lg ?? md ?? sm ?? xs;
+  if (isLgUp && lg !== undefined) {
+    return lg;
   }
 
-  if (isMd) {
-    return md ?? sm ?? xs;
+  if (isMdUp && md !== undefined) {
+    return md;
   }
 
-  if (isSm) {
-    return sm ?? xs;
+  if (isSmUp && sm !== undefined) {
+    return sm;
   }
 
   return xs;

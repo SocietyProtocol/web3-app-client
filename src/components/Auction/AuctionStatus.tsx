@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Chip, Skeleton } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 import { AuctionStatusEnum, AuctionStatusProps } from "./types";
 
 export const mapStatusToColor = (status: AuctionStatusEnum) => {
@@ -15,7 +15,9 @@ export const mapStatusToColor = (status: AuctionStatusEnum) => {
   }
 };
 
-export const AuctionStatusDisk = ({ size = "small" }: AuctionStatusProps) => {
+export const AuctionStatusDisk = ({
+  size = "small",
+}: Pick<AuctionStatusProps, "size">) => {
   return (
     <Box
       sx={{
@@ -44,13 +46,7 @@ export const AuctionStatus = ({
             gap: size === "small" ? 0.5 : 1,
           }}
         >
-          <Skeleton
-            variant="circular"
-            width={size === "small" ? 8 : 10}
-            height={size === "small" ? 8 : 10}
-            sx={{ backgroundColor: "currentColor" }}
-            animation={false}
-          />
+          <AuctionStatusDisk size={size} />
           {status}
         </Box>
       }

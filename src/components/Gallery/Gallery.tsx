@@ -12,21 +12,23 @@ const gallerySizeBreakpoints = {
   lg: 872,
 };
 
-export interface GalleryProps {
-  items: ReactNode[];
+export interface GalleryProps<T extends { id: number | string }> {
+  items: T[];
+  renderItem: (item: T) => ReactNode;
   itemWidth: number;
   itemHeight: number;
   currentPage: number;
   onPageChange: (page: number) => void;
 }
 
-export const Gallery = ({
+export const Gallery = <T extends { id: number | string }>({
   items,
+  renderItem,
   itemWidth,
   itemHeight,
   currentPage,
   onPageChange,
-}: GalleryProps) => {
+}: GalleryProps<T>) => {
   const itemsPerSize = useMemo(
     () => ({
       xs: Math.floor(gallerySizeBreakpoints.xs / itemWidth),
@@ -131,10 +133,10 @@ export const Gallery = ({
             )})`,
         }}
       >
-        {currentItems.map((item, index) => (
+        {currentItems.map((item) => (
           <Grid
             size={1}
-            key={index}
+            key={item.id}
             sx={{
               display: "flex",
               justifyContent: "center",
@@ -143,7 +145,7 @@ export const Gallery = ({
               overflow: "hidden",
             }}
           >
-            {item}
+            {renderItem(item)}
           </Grid>
         ))}
       </Grid>

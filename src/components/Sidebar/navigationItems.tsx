@@ -55,7 +55,7 @@ export const navigationItems: NavigationItem[] = [
       <Image src="/icons/auction.svg" alt="Auction" width={24} height={24} />
     ),
     url: "/auction",
-    badge: <AuctionStatus status={AuctionStatusEnum.INACTIVE} />,
+    badge: <AuctionStatus status={AuctionStatusEnum.INACTIVE} size="medium" />,
     status: AuctionStatusEnum.INACTIVE,
   },
 ];

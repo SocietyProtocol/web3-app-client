@@ -95,7 +95,7 @@ export const BadgeCard = ({
           />
         )}
 
-        {loading || !isOfficial ? null : (
+        {isOfficial && !loading && (
           <Logo
             sx={{
               position: "absolute",
@@ -235,7 +235,6 @@ export const BadgeCard = ({
               textDecoration: "none",
               width: "100%",
               textAlign: "center",
-              fontSize: "0.75rem",
             }}
           >
             <Typography

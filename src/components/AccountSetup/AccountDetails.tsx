@@ -11,7 +11,7 @@ import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
-import { mockBadgesData } from "./badges";
+import { mockBadgesData } from "../../data/badges";
 import { BadgeCard } from "../BadgeCard/BadgeCard";
 import { BadgesModal } from "../BadgesModal/BadgesModal";
 import { truncateAddress } from "@/utils/string";

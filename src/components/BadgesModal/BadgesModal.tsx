@@ -70,9 +70,8 @@ export const BadgesModal = ({
             </Box>
           ) : (
             <Gallery
-              items={badges.map((badge) => (
-                <BadgeCard {...badge} key={badge.id} />
-              ))}
+              items={badges}
+              renderItem={(badge) => <BadgeCard {...badge} />}
               itemWidth={200}
               itemHeight={200}
               currentPage={currentPage}

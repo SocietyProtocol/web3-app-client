@@ -57,6 +57,10 @@ export const CountDown = ({ endTimestamp }: CountDownProps) => {
   });
 
   useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
     intervalRef.current = setInterval(() => {
       const remaining = calculateTimeRemaining(endTimestamp);
       setTimeLeft(remaining);
@@ -102,25 +106,25 @@ export const CountDown = ({ endTimestamp }: CountDownProps) => {
         ENDS IN
       </Typography>
       <Stack direction="row" spacing={1} aria-live="polite" aria-atomic="true">
-        <Cell>
+        <Cell aria-label={`${days} days`}>
           <StyledNumber component="span">
             {days}
             <StyledLetter component="span">d</StyledLetter>
           </StyledNumber>
         </Cell>
-        <Cell>
+        <Cell aria-label={`${hours} hours`}>
           <StyledNumber component="span">
             {hours}
             <StyledLetter component="span">h</StyledLetter>
           </StyledNumber>
         </Cell>
-        <Cell>
+        <Cell aria-label={`${minutes} minutes`}>
           <StyledNumber component="span">
             {minutes}
             <StyledLetter component="span">m</StyledLetter>
           </StyledNumber>
         </Cell>
-        <Cell>
+        <Cell aria-label={`${seconds} seconds`}>
           <StyledNumber component="span">
             {seconds}
             <StyledLetter component="span">s</StyledLetter>

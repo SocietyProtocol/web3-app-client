@@ -13,7 +13,7 @@ import { formatUnits, parseUnits } from "viem";
 import { SafeImage } from "../SafeImage/SafeImage";
 
 export interface AmountInputProps
-  extends Omit<TextFieldProps<"filled">, "onChange" | "value" | "variant"> {
+  extends Omit<TextFieldProps<"outlined">, "onChange" | "value" | "variant"> {
   label?: string;
   value?: bigint;
   onChange?: (value: bigint | undefined) => void;
@@ -48,8 +48,6 @@ export const AmountInput = ({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = event.target.value;
 
-      cursorRef.current = event.target.selectionStart;
-
       // check if it's empty
       if (inputValue === "") {
         onChange?.(undefined);
@@ -61,7 +59,15 @@ export const AmountInput = ({
         return;
       }
 
-      const bigintValue = parseUnits(inputValue || "0", decimals);
+      let bigintValue;
+
+      try {
+        bigintValue = parseUnits(inputValue || "0", decimals);
+      } catch {
+        return;
+      }
+
+      cursorRef.current = event.target.selectionStart;
 
       if (max !== undefined && bigintValue > max) {
         setIntermediateValue(formatUnits(max, decimals));
@@ -79,19 +85,26 @@ export const AmountInput = ({
 
   const onBlur = useCallback(() => {
     if (stringValue !== intermediateValue) {
-      const bigIntValue = parseUnits(intermediateValue || "0", decimals);
+      let bigintValue;
 
-      if (bigIntValue === value) {
+      try {
+        bigintValue = parseUnits(intermediateValue || "0", decimals);
+      } catch {
         setIntermediateValue(stringValue);
         return;
       }
 
-      if (max !== undefined && bigIntValue > max) {
+      if (bigintValue === value) {
+        setIntermediateValue(stringValue);
+        return;
+      }
+
+      if (max !== undefined && bigintValue > max) {
         onChange?.(max);
         return;
       }
 
-      onChange?.(bigIntValue);
+      onChange?.(bigintValue);
     }
   }, [intermediateValue, stringValue, value, decimals, max, onChange]);
 
@@ -109,6 +122,7 @@ export const AmountInput = ({
   return (
     <TextField
       {...props}
+      variant="outlined"
       label={label}
       placeholder={`0.0 ${tokenSymbol.toUpperCase()}`}
       onChange={handleChange}

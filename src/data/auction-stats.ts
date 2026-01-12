@@ -1,11 +1,6 @@
-interface AuctionStat {
-  icon?: string;
-  label: string;
-  value: string;
-  tooltip?: string;
-}
+import { AuctionStatProps } from "../components/Auction/AuctionStat";
 
-export const mockAuctionStats: AuctionStat[] = [
+export const mockAuctionStats: AuctionStatProps[] = [
   {
     label: "Current Price",
     value: "100 USDC/SPEC",

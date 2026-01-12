@@ -42,6 +42,7 @@ const baseTheme = createTheme({
     allVariants: {
       letterSpacing: "0.89px",
     },
+
     h4: {
       fontWeight: 400,
       fontSize: "2.375rem",
@@ -51,6 +52,11 @@ const baseTheme = createTheme({
       fontWeight: 400,
       fontSize: "2rem",
       lineHeight: "120%",
+    },
+    h6: {
+      fontWeight: 500,
+      fontSize: "1.25rem",
+      lineHeight: 1.6,
     },
   },
 });

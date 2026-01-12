@@ -30,6 +30,7 @@ declare module "@mui/material/styles" {
       input: string;
       bubble: string;
       card: string;
+      counter: string;
     };
     gradients: {
       official: string;
@@ -44,6 +45,7 @@ declare module "@mui/material/styles" {
       input?: string;
       bubble?: string;
       card?: string;
+      counter?: string;
     };
     gradients?: {
       official?: string;

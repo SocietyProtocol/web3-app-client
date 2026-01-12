@@ -54,6 +54,7 @@ export const NEUTRAL_MAIN = "#454545";
 // Border colors
 export const BORDER_BUBBLE = "#4F4F4F";
 export const BORDER_CARD = "#595959";
+export const BORDER_COUNTER = "#4E4E4E";
 
 // Divider
 export const DIVIDER = "rgba(255, 255, 255, 0.4)";

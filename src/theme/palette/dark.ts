@@ -59,6 +59,7 @@ export const dark: PaletteOptions = {
     card: colors.BORDER_CARD,
     bubble: colors.BORDER_BUBBLE,
     counter: colors.BORDER_COUNTER,
+    area: colors.BORDER_AREA,
   },
   action: {
     hover: alpha(colors.WHITE, 0.11),

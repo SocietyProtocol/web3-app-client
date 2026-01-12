@@ -3,6 +3,7 @@ import { Box, Stack } from "@mui/material";
 import { AuctionHeader } from "@/components/Auction/AuctionHeader";
 import { mockAuctionStats } from "@/data/auction-stats";
 import { AuctionStat } from "@/components/Auction/AuctionStat";
+import { BidControl } from "@/components/Auction/BidControl";
 
 export default function AuctionPage() {
   return (
@@ -44,6 +45,8 @@ export default function AuctionPage() {
             />
           ))}
         </Stack>
+
+        <BidControl />
       </Box>
     </Box>
   );

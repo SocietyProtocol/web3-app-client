@@ -31,6 +31,7 @@ declare module "@mui/material/styles" {
       bubble: string;
       card: string;
       counter: string;
+      area: string;
     };
     gradients: {
       official: string;
@@ -46,6 +47,7 @@ declare module "@mui/material/styles" {
       bubble?: string;
       card?: string;
       counter?: string;
+      area?: string;
     };
     gradients?: {
       official?: string;

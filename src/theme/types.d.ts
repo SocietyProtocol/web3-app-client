@@ -38,6 +38,11 @@ declare module "@mui/material/styles" {
       primary: string;
       darkOfficial: string;
     };
+
+    chart: {
+      stroke: string;
+      fill: string;
+    };
   }
 
   interface PaletteOptions {
@@ -53,6 +58,10 @@ declare module "@mui/material/styles" {
       official?: string;
       primary?: string;
       darkOfficial?: string;
+    };
+    chart?: {
+      stroke?: string;
+      fill?: string;
     };
   }
 

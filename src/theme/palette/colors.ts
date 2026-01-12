@@ -4,8 +4,8 @@
  */
 
 // Primary colors
-export const WHITE = "#FFFFFF";
-export const BLACK = "#09090B";
+export const PRIMARY_MAIN = "#FFFFFF";
+export const PRIMARY_CONTRAST_TEXT = "#09090B";
 
 // Background colors
 export const BACKGROUND_DEFAULT = "#2c2d30";
@@ -59,3 +59,7 @@ export const BORDER_AREA = "#616161";
 
 // Divider
 export const DIVIDER = "rgba(255, 255, 255, 0.4)";
+
+export const CHART_STROKE = "#73B46A";
+
+export const CHART_FILL = "#31B47A";

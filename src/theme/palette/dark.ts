@@ -4,14 +4,14 @@ import * as colors from "./colors";
 export const dark: PaletteOptions = {
   mode: "dark",
   primary: {
-    main: colors.WHITE,
-    contrastText: colors.BLACK,
+    main: colors.PRIMARY_MAIN,
+    contrastText: colors.PRIMARY_CONTRAST_TEXT,
   },
   background: {
     default: colors.BACKGROUND_DEFAULT,
     page: colors.BACKGROUND_PAGE,
     paper: colors.BACKGROUND_PAPER,
-    subtle: alpha(colors.BLACK, 0.1),
+    subtle: alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1),
     input: colors.BACKGROUND_INPUT,
     bubble: colors.BACKGROUND_BUBBLE,
   },
@@ -54,26 +54,30 @@ export const dark: PaletteOptions = {
   },
   divider: colors.DIVIDER,
   border: {
-    light: alpha(colors.WHITE, 0.1),
-    input: alpha(colors.BLACK, 0.1),
+    light: alpha(colors.PRIMARY_MAIN, 0.1),
+    input: alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1),
     card: colors.BORDER_CARD,
     bubble: colors.BORDER_BUBBLE,
     counter: colors.BORDER_COUNTER,
     area: colors.BORDER_AREA,
   },
   action: {
-    hover: alpha(colors.WHITE, 0.11),
-    selected: alpha(colors.WHITE, 0.047),
+    hover: alpha(colors.PRIMARY_MAIN, 0.11),
+    selected: alpha(colors.PRIMARY_MAIN, 0.047),
   },
   gradients: {
     official: `linear-gradient(180deg, ${colors.GOLD_LIGHT} 0%, ${colors.GOLD_MAIN} 100%)`,
     darkOfficial: `linear-gradient(90deg, ${alpha(
       colors.GOLD_LIGHT,
       0.1
-    )} 0%, ${alpha(colors.BLACK, 0.1)} 100%)`,
-    primary: `linear-gradient(to bottom, ${colors.WHITE}, ${alpha(
-      colors.WHITE,
+    )} 0%, ${alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1)} 100%)`,
+    primary: `linear-gradient(to bottom, ${colors.PRIMARY_MAIN}, ${alpha(
+      colors.PRIMARY_MAIN,
       0.31
     )})`,
+  },
+  chart: {
+    stroke: colors.CHART_STROKE,
+    fill: colors.CHART_FILL,
   },
 };

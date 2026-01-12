@@ -1,9 +1,11 @@
 import { CountDown } from "@/components/Auction/CountDown";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { AuctionHeader } from "@/components/Auction/AuctionHeader";
 import { mockAuctionStats } from "@/data/auction-stats";
 import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
+import { HistoricalRate } from "@/components/Auction/Chart/HistoricalRate";
+import { mockHistoricalRate } from "@/data/historical-rate";
 
 export default function AuctionPage() {
   return (
@@ -46,7 +48,22 @@ export default function AuctionPage() {
           ))}
         </Stack>
 
-        <BidControl />
+        <Stack>
+          <Typography variant="h6" gutterBottom color="primary.main">
+            Place Bid
+          </Typography>
+
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="stretch"
+            alignItems="stretch"
+            flex={1}
+          >
+            <BidControl />
+            <HistoricalRate series={mockHistoricalRate} />
+          </Stack>
+        </Stack>
       </Box>
     </Box>
   );

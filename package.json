@@ -34,6 +34,7 @@
     "react-dom": "19.2.0",
     "react-hook-form": "^7.69.0",
     "react-top-loading-bar": "^3.0.2",
+    "recharts": "^3.6.0",
     "viem": "^2.39.0",
     "wagmi": "^2.19.4",
     "zod": "^4.3.3"

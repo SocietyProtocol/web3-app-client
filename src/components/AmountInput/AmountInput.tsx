@@ -21,6 +21,7 @@ export interface AmountInputProps
   disabled?: boolean;
   tokenSymbol: string;
   decimals?: number;
+  readonly?: boolean;
 }
 
 export const AmountInput = ({
@@ -31,6 +32,7 @@ export const AmountInput = ({
   tokenSymbol,
   decimals = 18,
   disabled = false,
+  readonly = false,
   ...props
 }: AmountInputProps) => {
   const stringValue = useMemo(
@@ -132,6 +134,7 @@ export const AmountInput = ({
       slotProps={{
         input: {
           inputRef,
+          readOnly: readonly,
           startAdornment: (
             <SafeImage
               src={`/tokens/${tokenSymbol?.toLowerCase()}.svg`}
@@ -142,7 +145,7 @@ export const AmountInput = ({
             />
           ),
 
-          endAdornment: max && (
+          endAdornment: max && !readonly && (
             <Button
               variant="outlined"
               onClick={() => {

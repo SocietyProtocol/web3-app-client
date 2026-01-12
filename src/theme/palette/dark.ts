@@ -1,36 +1,77 @@
-import { PaletteOptions } from "@mui/material/styles";
+import { alpha, PaletteOptions } from "@mui/material/styles";
+import * as colors from "./colors";
 
 export const dark: PaletteOptions = {
   mode: "dark",
   primary: {
-    main: "#FFFFFF",
-    contrastText: "#09090B",
+    main: colors.WHITE,
+    contrastText: colors.BLACK,
   },
   background: {
-    default: "#2c2d30",
-    page: "#222222",
-    paper: "#333333",
-    subtle: "#0000001A",
-    input: "#2F2F2F",
-    bubble: "#151515",
+    default: colors.BACKGROUND_DEFAULT,
+    page: colors.BACKGROUND_PAGE,
+    paper: colors.BACKGROUND_PAPER,
+    subtle: alpha(colors.BLACK, 0.1),
+    input: colors.BACKGROUND_INPUT,
+    bubble: colors.BACKGROUND_BUBBLE,
   },
   text: {
-    primary: "#FFFFFF",
-    secondary: "rgba(255, 255, 255, 0.4)",
-    label: "#CACACA",
+    primary: colors.TEXT_PRIMARY,
+    secondary: colors.TEXT_SECONDARY,
   },
   success: {
-    main: "#008C73",
-    contrastText: "#2BFFD9",
+    main: colors.SUCCESS_MAIN,
+    dark: colors.SUCCESS_DARK,
+    light: colors.SUCCESS_LIGHT,
+    contrastText: colors.SUCCESS_CONTRAST,
   },
-  divider: "rgba(255, 255, 255, 0.4)",
+  error: {
+    main: colors.ERROR_MAIN,
+    dark: colors.ERROR_DARK,
+    light: colors.ERROR_LIGHT,
+    contrastText: colors.ERROR_CONTRAST,
+  },
+  warning: {
+    main: colors.WARNING_MAIN,
+    dark: colors.WARNING_DARK,
+    light: colors.WARNING_LIGHT,
+    contrastText: colors.WARNING_CONTRAST,
+  },
+  info: {
+    main: colors.INFO_MAIN,
+    dark: colors.INFO_DARK,
+    light: colors.INFO_LIGHT,
+    contrastText: colors.INFO_CONTRAST,
+  },
+  gold: {
+    main: colors.GOLD_MAIN,
+    light: colors.GOLD_LIGHT,
+    dark: colors.GOLD_DARK,
+    contrastText: colors.GOLD_CONTRAST,
+  },
+  neutral: {
+    main: colors.NEUTRAL_MAIN,
+  },
+  divider: colors.DIVIDER,
   border: {
-    light: "rgba(255, 255, 255, 0.1)",
-    input: "rgba(0, 0, 0, 0.1)",
-    bubble: "#4F4F4F",
+    light: alpha(colors.WHITE, 0.1),
+    input: alpha(colors.BLACK, 0.1),
+    card: colors.BORDER_CARD,
+    bubble: colors.BORDER_BUBBLE,
   },
   action: {
-    hover: "#ffffff1c",
-    selected: "#ffffff0c",
+    hover: alpha(colors.WHITE, 0.11),
+    selected: alpha(colors.WHITE, 0.047),
+  },
+  gradients: {
+    official: `linear-gradient(180deg, ${colors.GOLD_LIGHT} 0%, ${colors.GOLD_MAIN} 100%)`,
+    darkOfficial: `linear-gradient(90deg, ${alpha(
+      colors.GOLD_LIGHT,
+      0.1
+    )} 0%, ${alpha(colors.BLACK, 0.1)} 100%)`,
+    primary: `linear-gradient(to bottom, ${colors.WHITE}, ${alpha(
+      colors.WHITE,
+      0.31
+    )})`,
   },
 };

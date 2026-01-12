@@ -11,6 +11,7 @@ import {
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { NavigationItem as NavigationItemType } from "./navigationItems";
 import { styled } from "@mui/material/styles";
+import { mapStatusToColor } from "../Auction/AuctionStatus";
 
 interface NavigationItemProps {
   item: NavigationItemType;
@@ -91,9 +92,9 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
           justifyContent: "center",
         }}
       >
-        {item.badge && !isExpanded ? (
+        {item.status && !isExpanded ? (
           <Badge
-            color="success"
+            color={mapStatusToColor(item.status)}
             variant="dot"
             overlap="circular"
             anchorOrigin={{
@@ -102,9 +103,10 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
             }}
             sx={{
               "& .MuiBadge-badge": {
-                width: 12,
-                height: 12,
+                top: 12,
+                left: 24,
                 borderRadius: "50%",
+                opacity: 0.85,
               },
             }}
           >
@@ -114,7 +116,15 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
           item.icon
         )}
       </ListItemIcon>
-      <ListItemText primary={item.text} sx={{ opacity: isExpanded ? 1 : 0 }} />
+      <ListItemText
+        primary={item.text}
+        sx={{
+          opacity: isExpanded ? 1 : 0,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      />
       {item.isExternal && isExpanded && (
         <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
           <OpenInNewIcon sx={{ fontSize: 16, opacity: 0.6 }} />

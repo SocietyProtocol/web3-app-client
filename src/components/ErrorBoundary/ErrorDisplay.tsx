@@ -73,7 +73,7 @@ export const ErrorDisplay = ({ error, action }: ErrorDisplayProps) => {
                       <Typography
                         key={idx}
                         variant="body2"
-                        color="text.secondary"
+                        color="primary"
                         sx={{ ml: 2 }}
                       >
                         • {msg}

@@ -1,6 +1,20 @@
 import "@mui/material/styles";
 
 declare module "@mui/material/styles" {
+  interface Palette {
+    gold: Palette["primary"];
+    neutral: {
+      main: string;
+    };
+  }
+
+  interface PaletteOptions {
+    gold?: PaletteOptions["primary"];
+    neutral?: {
+      main?: string;
+    };
+  }
+
   interface TypeBackground {
     default: string;
     page: string;
@@ -10,15 +24,17 @@ declare module "@mui/material/styles" {
     input: string;
   }
 
-  interface TypeText {
-    label: string;
-  }
-
   interface Palette {
     border: {
       light: string;
       input: string;
       bubble: string;
+      card: string;
+    };
+    gradients: {
+      official: string;
+      primary: string;
+      darkOfficial: string;
     };
   }
 
@@ -27,6 +43,12 @@ declare module "@mui/material/styles" {
       light?: string;
       input?: string;
       bubble?: string;
+      card?: string;
+    };
+    gradients?: {
+      official?: string;
+      primary?: string;
+      darkOfficial?: string;
     };
   }
 
@@ -36,6 +58,15 @@ declare module "@mui/material/styles" {
   }
 
   interface Mixins {
-    borderGradient: (borderRadius?: string | number) => Record<string, unknown>;
+    borderGradient: (
+      borderRadius?: string | number,
+      gradient?: keyof Palette["gradients"]
+    ) => Record<string, unknown>;
+  }
+}
+
+declare module "@mui/material/Chip" {
+  interface ChipPropsColorOverrides {
+    gold: true;
   }
 }

@@ -1,4 +1,4 @@
-import { Stack, Typography, Button, Grid, Skeleton, Box } from "@mui/material";
+import { Stack, Typography, Button, Grid, Box } from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
 import { useState } from "react";
@@ -11,6 +11,10 @@ import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
+import { mockBadgesData } from "../../data/badges";
+import { BadgeCard } from "../BadgeCard/BadgeCard";
+import { BadgesModal } from "../BadgesModal/BadgesModal";
+import { truncateAddress } from "@/utils/string";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -21,13 +25,28 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   const { address: accountAddress } = useAccount();
   const overrideAddress = address || accountAddress;
 
-  const { profileId, profileData, username } = useProfile(overrideAddress);
+  const {
+    profileId,
+    profileData,
+    username = overrideAddress
+      ? truncateAddress(overrideAddress)
+      : "Unknown User",
+  } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
+  };
+
+  const handleOpenBadgesModal = () => {
+    setIsBadgesModalOpen(true);
+  };
+
+  const handleCloseBadgesModal = () => {
+    setIsBadgesModalOpen(false);
   };
 
   if (!overrideAddress) {
@@ -59,10 +78,10 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 1.5, sm: 0 }}
           >
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {username ? `${username}'s Profile` : <Skeleton width={150} />}
+              {`${username}'s Profile`}
             </Typography>
           </Stack>
-
+          {/* Stats and Profile Cards */}
           <Grid
             container
             columns={{
@@ -81,7 +100,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               />
             ))}
           </Grid>
-
+          {/* Profile and Data Cards */}
           <Grid
             container
             columns={{
@@ -117,10 +136,104 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             ) : (
               <ProfileDataCard
                 address={overrideAddress}
-                profileId={Number(profileId.data)}
+                profileId={profileId.data == null ? 0 : Number(profileId.data)}
+                readonly={readonly}
               />
             )}
           </Grid>
+
+          <Box>
+            <Stack direction="row" justifyContent="space-between" mb={2}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Badges held by {username}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleOpenBadgesModal}
+                disabled={mockBadgesData.length === 0}
+              >
+                View All Badges ({mockBadgesData.length})
+              </Button>
+            </Stack>
+            {mockBadgesData.length === 0 ? (
+              <Stack
+                justifyContent="center"
+                alignItems="center"
+                minHeight={100}
+              >
+                <Typography variant="body1" color="text.secondary">
+                  No badges found
+                </Typography>
+              </Stack>
+            ) : (
+              <Grid
+                container
+                columns={{
+                  xs: 1,
+                  sm: 2,
+                  md: 4,
+                }}
+                spacing={{
+                  xs: 2,
+                  sm: 3,
+                }}
+              >
+                {mockBadgesData.slice(0, 6).map((badge) => (
+                  <Grid
+                    key={badge.id}
+                    size={1}
+                    sx={{
+                      width: {
+                        xs: "100%",
+                        sm: "200px",
+                      },
+                    }}
+                  >
+                    <BadgeCard
+                      id={badge.id}
+                      title={badge.title}
+                      badgeImageUrl={badge.badgeImageUrl}
+                      isOfficial={badge.isOfficial}
+                      createdBy={badge.createdBy}
+                      numberOfHolders={badge.numberOfHolders}
+                      metadataUrl={badge.metadataUrl}
+                    />
+                  </Grid>
+                ))}
+
+                {mockBadgesData.length > 6 && (
+                  <Grid
+                    size={1}
+                    sx={{
+                      width: {
+                        xs: "100%",
+                        sm: "200px",
+                      },
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.primary"
+                      sx={{ textAlign: "center" }}
+                    >
+                      And {mockBadgesData.length - 6} more badges...
+                    </Typography>
+                  </Grid>
+                )}
+              </Grid>
+            )}
+          </Box>
+
+          <BadgesModal
+            open={isBadgesModalOpen}
+            onClose={handleCloseBadgesModal}
+            badges={mockBadgesData}
+            username={username}
+          />
         </Stack>
       )}
     </Box>

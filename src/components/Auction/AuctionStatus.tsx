@@ -3,43 +3,28 @@
 import { Box, Chip } from "@mui/material";
 import { AuctionStatusEnum, AuctionStatusProps } from "./types";
 
-const getColor = (status: AuctionStatusEnum) => {
+export const mapStatusToColor = (status: AuctionStatusEnum) => {
   switch (status) {
     case AuctionStatusEnum.ACTIVE:
       return "success";
     case AuctionStatusEnum.INACTIVE:
       return "warning";
     case AuctionStatusEnum.ENDED:
-      return "info";
     default:
       return "info";
-  }
-};
-
-const getDiskColor = (status: AuctionStatusEnum) => {
-  switch (status) {
-    case AuctionStatusEnum.ACTIVE:
-      return "success.contrastText";
-    case AuctionStatusEnum.INACTIVE:
-      return "warning.contrastText";
-    case AuctionStatusEnum.ENDED:
-      return "info.contrastText";
-    default:
-      return "info.contrastText";
   }
 };
 
 export const AuctionStatusDisk = ({
-  status,
   size = "small",
-}: AuctionStatusProps) => {
+}: Pick<AuctionStatusProps, "size">) => {
   return (
     <Box
       sx={{
         width: size === "small" ? 8 : 10,
         height: size === "small" ? 8 : 10,
         borderRadius: "50%",
-        backgroundColor: getDiskColor(status),
+        backgroundColor: "currentColor",
       }}
     />
   );
@@ -51,7 +36,7 @@ export const AuctionStatus = ({
 }: AuctionStatusProps) => {
   return (
     <Chip
-      color={getColor(status)}
+      color={mapStatusToColor(status)}
       size={size}
       label={
         <Box
@@ -61,7 +46,7 @@ export const AuctionStatus = ({
             gap: size === "small" ? 0.5 : 1,
           }}
         >
-          <AuctionStatusDisk status={status} size={size} />
+          <AuctionStatusDisk size={size} />
           {status}
         </Box>
       }

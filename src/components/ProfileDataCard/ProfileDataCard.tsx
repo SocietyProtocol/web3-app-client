@@ -10,6 +10,7 @@ interface ProfileDataCardProps {
   address: Address;
   profileId: number;
   referredBy?: Address;
+  readonly?: boolean;
 }
 
 export const ProfileDataCard = ({
@@ -17,6 +18,7 @@ export const ProfileDataCard = ({
   profileId,
   // This is a placeholder until referral system is implemented
   referredBy = "0xA52bdb9c052ef1365DA10E87a114e42dAa487576",
+  readonly = false,
 }: ProfileDataCardProps) => {
   return (
     <Paper
@@ -51,7 +53,7 @@ export const ProfileDataCard = ({
             <AddressDisplay
               address={address}
               sx={{
-                color: "text.label",
+                color: "text.primary",
               }}
               showCopy
               showLink
@@ -65,17 +67,19 @@ export const ProfileDataCard = ({
               sx={{
                 fontSize: (theme) => theme.typography.pxToRem(16),
                 fontWeight: 500,
-                color: "text.label",
+                color: "text.primary",
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
               }}
             >
-              #{profileId}
-              <CopyButton
-                textToCopy={`#${profileId}`}
-                tooltipText="Copy profile ID"
-              />
+              {profileId === 0 ? "N/A" : `#${profileId}`}
+              {profileId !== 0 && (
+                <CopyButton
+                  textToCopy={`#${profileId}`}
+                  tooltipText="Copy profile ID"
+                />
+              )}
             </Typography>
           </DataItem>
         </Grid>
@@ -87,7 +91,7 @@ export const ProfileDataCard = ({
             <UserHandle address={referredBy} previewCard link />
           </DataItem>
 
-          <ReferralCodeGenerator />
+          {!readonly && <ReferralCodeGenerator />}
         </Grid>
       </Grid>
     </Paper>

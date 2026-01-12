@@ -42,7 +42,7 @@ export const Footer = () => {
       <Divider sx={{ borderColor: "divider" }} />
       <Typography
         variant="body2"
-        color="text.secondary"
+        color="primary"
         align="center"
         paddingY={{ xs: 2, md: 3 }}
         sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}

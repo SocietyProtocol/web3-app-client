@@ -6,17 +6,22 @@ import { PreviewPopover } from "../PreviewPopover/PreviewPopover";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
+import { truncateAddress } from "@/utils/string";
 
 interface UserHandleProps {
   address: Address;
   previewCard?: boolean;
   link?: boolean;
+  showYouLabel?: boolean;
+  size?: "small" | "medium";
 }
 
 export const UserHandle = ({
   address,
   previewCard = false,
   link = false,
+  showYouLabel = true,
+  size = "medium",
 }: UserHandleProps) => {
   const { address: connectedAddress } = useAccount();
   const {
@@ -55,7 +60,7 @@ export const UserHandle = ({
         <Stack
           direction="row"
           alignItems="center"
-          spacing={1}
+          spacing={size === "small" ? 0.5 : 1}
           sx={{
             width: "fit-content",
             flex: 0,
@@ -63,7 +68,7 @@ export const UserHandle = ({
         >
           <Avatar
             address={address}
-            size={24}
+            size={size === "small" ? 16 : 24}
             ensImage={profileData?.avatar}
             loading={profileIdLoading || uriLoading || profileDataLoading}
           />
@@ -71,26 +76,35 @@ export const UserHandle = ({
           <Typography
             component="span"
             sx={{
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: size === "small" ? 50 : 150,
               fontWeight: 800,
-              fontSize: (theme) => theme.typography.pxToRem(12),
+              fontSize: (theme) =>
+                theme.typography.pxToRem(size === "small" ? 10 : 12),
+              lineHeight: 1,
             }}
           >
             {profileIdLoading || uriLoading || profileDataLoading ? (
               <Skeleton width={50} />
             ) : (
-              `${username ?? "Unknown User"}`
+              `${username ?? truncateAddress(address)}`
             )}
           </Typography>
 
           {!profileIdLoading &&
             !uriLoading &&
             !profileDataLoading &&
+            showYouLabel &&
             connectedAddress?.toLowerCase() === address.toLowerCase() && (
               <Typography
                 component="span"
                 sx={{
                   fontWeight: 500,
-                  fontSize: (theme) => theme.typography.pxToRem(10),
+                  fontSize: (theme) =>
+                    theme.typography.pxToRem(size === "small" ? 10 : 12),
                   color: "info.main",
                 }}
               >

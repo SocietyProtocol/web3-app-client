@@ -1,4 +1,4 @@
-import { styled } from "@mui/material/styles";
+import { alpha, styled } from "@mui/material/styles";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Button, StepIconProps } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
@@ -24,12 +24,12 @@ export const ArrowConnector = styled(ArrowForwardIcon, {
 const CustomStepIconRoot = styled("div")<{
   ownerState: { completed?: boolean; active?: boolean };
 }>(({ theme, ownerState }) => ({
-  width: 40,
-  height: 40,
-  minWidth: 40,
-  minHeight: 40,
-  maxWidth: 40,
-  maxHeight: 40,
+  width: 24,
+  height: 24,
+  minWidth: 24,
+  minHeight: 24,
+  maxWidth: 24,
+  maxHeight: 24,
   aspectRatio: "1/1",
   display: "flex",
   borderRadius: "50%",
@@ -39,22 +39,22 @@ const CustomStepIconRoot = styled("div")<{
   fontWeight: 600,
   fontSize: "1rem",
   backgroundColor: theme.palette.action.disabledBackground,
-  color: theme.palette.text.disabled,
+  color: theme.palette.text.primary,
   ...(ownerState.active && {
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.primary.contrastText,
   }),
   ...(ownerState.completed && {
-    backgroundColor: theme.palette.success.main,
-    color: theme.palette.success.contrastText,
+    backgroundColor: alpha(theme.palette.success.main, 0.5),
+    color: theme.palette.success.main,
   }),
   [theme.breakpoints.down("sm")]: {
-    width: 32,
-    height: 32,
-    minWidth: 32,
-    minHeight: 32,
-    maxWidth: 32,
-    maxHeight: 32,
+    width: 16,
+    height: 16,
+    minWidth: 16,
+    minHeight: 16,
+    maxWidth: 16,
+    maxHeight: 16,
     fontSize: "0.875rem",
   },
 }));

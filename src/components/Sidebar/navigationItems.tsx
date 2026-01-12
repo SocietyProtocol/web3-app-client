@@ -9,6 +9,7 @@ export interface NavigationItem {
   url: string;
   isExternal?: boolean;
   badge?: ReactNode;
+  status?: AuctionStatusEnum;
 }
 
 export const navigationItems: NavigationItem[] = [
@@ -19,26 +20,28 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     text: "Profile",
-    icon: <Image src="/icons/box.svg" alt="Profile" width={24} height={24} />,
+    icon: (
+      <Image src="/icons/profile.svg" alt="Profile" width={24} height={24} />
+    ),
     url: "/profile",
   },
   {
     text: "Badges",
-    icon: <Image src="/icons/layers.svg" alt="Badges" width={24} height={24} />,
+    icon: <Image src="/icons/badges.svg" alt="Badges" width={24} height={24} />,
     url: "/badges",
   },
   {
-    text: "Information",
+    text: "SPEC Token",
     icon: (
-      <Image src="/icons/info.svg" alt="Information" width={24} height={24} />
+      <Image src="/icons/spec.svg" alt="SPEC Token" width={24} height={24} />
     ),
-    url: "/information",
+    url: "/spec-token",
   },
   {
     text: "Governance",
     icon: (
       <Image
-        src="/icons/file-text.svg"
+        src="/icons/governance.svg"
         alt="Governance"
         width={24}
         height={24}
@@ -49,9 +52,10 @@ export const navigationItems: NavigationItem[] = [
   {
     text: "Auction",
     icon: (
-      <Image src="/icons/target.svg" alt="Auction" width={24} height={24} />
+      <Image src="/icons/auction.svg" alt="Auction" width={24} height={24} />
     ),
     url: "/auction",
-    badge: <AuctionStatus status={AuctionStatusEnum.ACTIVE} />,
+    badge: <AuctionStatus status={AuctionStatusEnum.INACTIVE} size="medium" />,
+    status: AuctionStatusEnum.INACTIVE,
   },
 ];

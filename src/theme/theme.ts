@@ -5,11 +5,18 @@ import { MuiStepper } from "./components/MuiStepper";
 import { MuiTextField } from "./components/MuiTextField";
 import { createCustomMixins } from "./mixins";
 import { MuiCard } from "./components/MuiCard";
+import { MuiDialog } from "./components/MuiDialog";
+import { MuiDialogTitle } from "./components/MuiDialogTitle";
+import { MuiDialogContent } from "./components/MuiDialogContent";
+import { breakpoints } from "./breakpoints";
+import { MuiPaginationItem } from "./components/MuiPaginationItem";
+import { MuiChip } from "./components/MuiChip";
 
 const baseTheme = createTheme({
   cssVariables: {
     colorSchemeSelector: "class",
   },
+  breakpoints,
   palette: dark,
   colorSchemes: {
     dark: {
@@ -24,6 +31,11 @@ const baseTheme = createTheme({
     MuiStepper,
     MuiTextField,
     MuiCard,
+    MuiDialog,
+    MuiDialogTitle,
+    MuiDialogContent,
+    MuiPaginationItem,
+    MuiChip,
   },
   typography: {
     fontFamily: "var(--font-space-grotesk), sans-serif",

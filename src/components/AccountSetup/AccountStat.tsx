@@ -22,7 +22,7 @@ export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
           display: "flex",
           alignItems: "center",
           gap: 1,
-          color: "text.label",
+          color: "text.primary",
         }}
       >
         {label}
@@ -39,7 +39,7 @@ export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          color: "text.label",
+          color: "text.primary",
           fontSize: (theme) => theme.typography.pxToRem(28),
           fontWeight: 500,
         }}

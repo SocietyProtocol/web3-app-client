@@ -7,7 +7,9 @@ import {
   Typography,
   TypographyProps,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { calculateTimeRemaining, TimeRemaining } from "./countdownUtils";
+import { MILLISECONDS_PER_SECOND } from "@/consts/time";
 
 interface CountDownProps {
   endTimestamp: number;
@@ -45,12 +47,9 @@ const StyledLetter = styled(Typography)<TypographyProps<"span">>(
 );
 
 export const CountDown = ({ endTimestamp }: CountDownProps) => {
-  const [{ days, hours, minutes, seconds }, setTimeLeft] = useState<{
-    days: string;
-    hours: string;
-    minutes: string;
-    seconds: string;
-  }>({
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [timeLeft, setTimeLeft] = useState<TimeRemaining>({
     days: "00",
     hours: "00",
     minutes: "00",
@@ -58,41 +57,41 @@ export const CountDown = ({ endTimestamp }: CountDownProps) => {
   });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const distance = endTimestamp * 1000 - now;
+    intervalRef.current = setInterval(() => {
+      const remaining = calculateTimeRemaining(endTimestamp);
+      setTimeLeft(remaining);
 
-      if (distance < 0) {
-        clearInterval(interval);
-        setTimeLeft({
-          days: "00",
-          hours: "00",
-          minutes: "00",
-          seconds: "00",
-        });
-        return;
+      // Clear interval if countdown has finished
+      if (
+        remaining.days === "00" &&
+        remaining.hours === "00" &&
+        remaining.minutes === "00" &&
+        remaining.seconds === "00"
+      ) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       }
+    }, MILLISECONDS_PER_SECOND);
 
-      const d = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const h = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setTimeLeft({
-        days: String(d).padStart(2, "0"),
-        hours: String(h).padStart(2, "0"),
-        minutes: String(m).padStart(2, "0"),
-        seconds: String(s).padStart(2, "0"),
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [endTimestamp]);
 
+  const { days, hours, minutes, seconds } = timeLeft;
+
   return (
-    <Stack spacing={1} alignItems="center">
+    <Stack
+      spacing={1}
+      alignItems="center"
+      role="timer"
+      aria-label="Auction end countdown timer"
+    >
       <Typography
         color="primary"
         fontWeight={400}
@@ -102,7 +101,7 @@ export const CountDown = ({ endTimestamp }: CountDownProps) => {
       >
         ENDS IN
       </Typography>
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} aria-live="polite" aria-atomic="true">
         <Cell>
           <StyledNumber component="span">
             {days}

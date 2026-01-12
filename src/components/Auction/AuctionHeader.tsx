@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, Stack, Typography } from "@mui/material";
 import LanguageIcon from "@mui/icons-material/Language";
 import Image from "next/image";
@@ -17,7 +19,12 @@ export const AuctionHeader = ({ networkName, id }: AuctionHeaderProps) => {
       width="100%"
     >
       <Stack direction="row" spacing={3} alignItems="center">
-        <Image src="/tokens/spec.svg" alt="Logo" width={54} height={54} />
+        <Image
+          src="/tokens/spec.svg"
+          alt="SPEC Token Logo"
+          width={54}
+          height={54}
+        />
 
         <Stack spacing={1}>
           <Typography variant="h4" component="h1" color="primary.main">

@@ -1,8 +1,8 @@
-'use client"';
+"use client";
 
 import { Stack, Tooltip, Typography } from "@mui/material";
 import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
-import Image from "next/image";
+import { SafeImage } from "../SafeImage/SafeImage";
 
 export interface AuctionStatProps {
   icon?: string;
@@ -20,7 +20,7 @@ export const AuctionStat = ({
   return (
     <Stack spacing={1} alignItems="center">
       <Stack direction="row" alignItems="center" spacing={1}>
-        {icon && <Image src={icon} alt={label} width={24} height={24} />}
+        {icon && <SafeImage src={icon} alt={label} width={24} height={24} />}
         <Typography
           component="div"
           color="primary.main"

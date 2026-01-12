@@ -1,5 +1,6 @@
+"use client";
+
 import { Button, TextField, TextFieldProps } from "@mui/material";
-import Image from "next/image";
 import {
   useCallback,
   useEffect,
@@ -9,6 +10,7 @@ import {
   useState,
 } from "react";
 import { formatUnits, parseUnits } from "viem";
+import { SafeImage } from "../SafeImage/SafeImage";
 
 export interface AmountInputProps
   extends Omit<TextFieldProps<"filled">, "onChange" | "value" | "variant"> {
@@ -61,20 +63,14 @@ export const AmountInput = ({
 
       const bigintValue = parseUnits(inputValue || "0", decimals);
 
-      // check if it's an intermediate valid value (e.g., empty string, just a dot, ends with a dot, ends with zeros after decimal)
-      if (
-        inputValue === "." ||
-        inputValue.endsWith(".") ||
-        /\.\d*0+$/.test(inputValue)
-      ) {
-        setIntermediateValue(inputValue);
-        return;
-      }
-
       if (max !== undefined && bigintValue > max) {
+        setIntermediateValue(formatUnits(max, decimals));
+
         onChange?.(max);
         return;
       }
+
+      setIntermediateValue(inputValue);
 
       onChange?.(bigintValue);
     },
@@ -108,7 +104,7 @@ export const AmountInput = ({
       inputRef.current.setSelectionRange(cursorRef.current, cursorRef.current);
       cursorRef.current = null;
     }
-  }, [stringValue]);
+  }, [intermediateValue]);
 
   return (
     <TextField
@@ -121,8 +117,9 @@ export const AmountInput = ({
       disabled={disabled}
       slotProps={{
         input: {
+          inputRef,
           startAdornment: (
-            <Image
+            <SafeImage
               src={`/tokens/${tokenSymbol?.toLowerCase()}.svg`}
               alt={tokenSymbol}
               width={36}
@@ -134,7 +131,11 @@ export const AmountInput = ({
           endAdornment: max && (
             <Button
               variant="outlined"
-              onClick={() => onChange?.(max)}
+              onClick={() => {
+                if (value !== max) {
+                  onChange?.(max);
+                }
+              }}
               size="small"
               disabled={disabled || value === max}
             >

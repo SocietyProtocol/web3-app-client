@@ -1,4 +1,11 @@
-export const mockAuctionStats = [
+interface AuctionStat {
+  icon?: string;
+  label: string;
+  value: string;
+  tooltip?: string;
+}
+
+export const mockAuctionStats: AuctionStat[] = [
   {
     label: "Current Price",
     value: "100 USDC/SPEC",

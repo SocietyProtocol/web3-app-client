@@ -50,7 +50,8 @@ const StyledBadgeCard = styled(Paper, {
   },
 
   ...(isOfficial && {
-    ...theme.mixins.borderGradient("12px", "official"),
+    border: "none",
+    ...theme.mixins.borderGradient("8px", "official"),
     background: theme.palette.gradients.darkOfficial,
   }),
 }));

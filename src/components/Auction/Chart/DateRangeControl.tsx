@@ -33,7 +33,7 @@ export const DateRangeControl = ({
             minWidth: 48,
             height: 32,
             border: "none !important",
-            bgcolor: "#201E1D",
+            bgcolor: "background.toggleButton",
             color: "text.secondary",
             "&.Mui-selected": {
               bgcolor: "primary.main",
@@ -43,7 +43,7 @@ export const DateRangeControl = ({
               },
             },
             "&:hover": {
-              bgcolor: "#2A2827",
+              bgcolor: "background.toggleButtonHover",
             },
           }}
         >

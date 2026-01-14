@@ -7,9 +7,14 @@ import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 export interface AuctionHeaderProps {
   networkName: string;
   id: number;
+  active?: boolean;
 }
 
-export const AuctionHeader = ({ networkName, id }: AuctionHeaderProps) => {
+export const AuctionHeader = ({
+  networkName,
+  id,
+  active = false,
+}: AuctionHeaderProps) => {
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
@@ -30,32 +35,36 @@ export const AuctionHeader = ({ networkName, id }: AuctionHeaderProps) => {
           >
             SPEC Token Auction
           </Typography>
-          <Typography
-            variant="subtitle1"
-            color="primary.main"
-            component="div"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-            }}
-          >
-            <LanguageIcon fontSize="small" />
-            {networkName} - Auction id #{id}
-          </Typography>
+          {active && (
+            <Typography
+              variant="subtitle1"
+              color="primary.main"
+              component="div"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+              }}
+            >
+              <LanguageIcon fontSize="small" />
+              {networkName} - Auction id #{id}
+            </Typography>
+          )}
         </Stack>
       </Stack>
 
-      <Button
-        variant="outlined"
-        sx={{
-          width: { xs: "100%", md: "auto" },
-          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-        }}
-      >
-        SPEC TOKENOMICS (PDF)
-      </Button>
+      {active && (
+        <Button
+          variant="outlined"
+          sx={{
+            width: { xs: "100%", md: "auto" },
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          }}
+        >
+          SPEC TOKENOMICS (PDF)
+        </Button>
+      )}
     </Stack>
   );
 };

@@ -13,6 +13,8 @@ export const BACKGROUND_PAGE = "#222222";
 export const BACKGROUND_PAPER = "#333333";
 export const BACKGROUND_INPUT = "#2F2F2F";
 export const BACKGROUND_BUBBLE = "#151515";
+export const BACKGROUND_TOGGLE_BUTTON = "#201E1D";
+export const BACKGROUND_TOGGLE_BUTTON_HOVER = "#2A2827";
 
 // Text colors
 export const TEXT_PRIMARY = "#CACACA";

@@ -14,6 +14,8 @@ export const dark: PaletteOptions = {
     subtle: alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1),
     input: colors.BACKGROUND_INPUT,
     bubble: colors.BACKGROUND_BUBBLE,
+    toggleButton: colors.BACKGROUND_TOGGLE_BUTTON,
+    toggleButtonHover: colors.BACKGROUND_TOGGLE_BUTTON_HOVER,
   },
   text: {
     primary: colors.TEXT_PRIMARY,

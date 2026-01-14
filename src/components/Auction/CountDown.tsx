@@ -13,6 +13,7 @@ import { MILLISECONDS_PER_SECOND } from "@/consts/time";
 
 interface CountDownProps {
   endTimestamp: number;
+  title: string;
 }
 
 const Cell = styled("div")(({ theme }) => ({
@@ -56,7 +57,7 @@ const StyledLetter = styled(Typography)<TypographyProps<"span">>(
   })
 );
 
-export const CountDown = ({ endTimestamp }: CountDownProps) => {
+export const CountDown = ({ endTimestamp, title }: CountDownProps) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [timeLeft, setTimeLeft] = useState<TimeRemaining>({
@@ -114,7 +115,7 @@ export const CountDown = ({ endTimestamp }: CountDownProps) => {
           fontSize: { xs: 14, sm: 16 },
         }}
       >
-        ENDS IN
+        {title}
       </Typography>
       <Stack
         direction="row"

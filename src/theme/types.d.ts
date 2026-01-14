@@ -22,6 +22,8 @@ declare module "@mui/material/styles" {
     subtle: string;
     bubble: string;
     input: string;
+    toggleButton: string;
+    toggleButtonHover: string;
   }
 
   interface Palette {

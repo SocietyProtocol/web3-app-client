@@ -94,8 +94,6 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
     return ticks;
   }, [filteredData, nTicks]);
 
-  console.log({ xTicks });
-
   return (
     <Stack
       sx={{
@@ -177,7 +175,7 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
                 ticks={xTicks}
                 interval="preserveStartEnd"
                 label={{
-                  value: "Price (USDC)",
+                  value: "Date",
                   position: "insideBottom",
                   offset: -10,
                   style: { fill: theme.palette.primary.main },
@@ -191,7 +189,7 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
                 tickLine={false}
                 tick={false}
                 label={{
-                  value: "Volume (SPEC)",
+                  value: "Price (USDC per SPEC)",
                   angle: -90,
                   position: "insideLeft",
                   style: { fill: theme.palette.primary.main },

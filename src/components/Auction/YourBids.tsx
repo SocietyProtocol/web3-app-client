@@ -69,10 +69,6 @@ const Status = styled(Typography)<{
 }));
 
 export const YourBids = () => {
-  const handleCancel = (index: number) => {
-    console.log("Cancel bid", index);
-  };
-
   return (
     <Paper
       elevation={0}
@@ -187,7 +183,6 @@ export const YourBids = () => {
               <Button
                 size="small"
                 variant="contained"
-                onClick={() => handleCancel(index)}
                 sx={{
                   width: { xs: "100%", sm: "200px", md: "auto" },
                 }}

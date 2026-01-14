@@ -6,6 +6,7 @@ import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
 import { HistoricalRate } from "@/components/Auction/Chart/HistoricalRate";
 import { mockHistoricalRate } from "@/data/historical-rate";
+import { YourBids } from "@/components/Auction/YourBids";
 
 export default function AuctionPage() {
   return (
@@ -15,14 +16,14 @@ export default function AuctionPage() {
           display: "flex",
           flexDirection: "column",
           alignItems: "stretch",
-          gap: 6,
+          gap: { xs: 3, sm: 4, md: 6 },
         }}
       >
         <AuctionHeader networkName="Mainnet" id={1} />
 
         <Stack
-          direction="row"
-          spacing={1}
+          direction={{ xs: "column", md: "row" }}
+          spacing={{ xs: 2, md: 1 }}
           alignItems="center"
           justifyContent="space-between"
         >
@@ -54,7 +55,7 @@ export default function AuctionPage() {
           </Typography>
 
           <Stack
-            direction="row"
+            direction={{ xs: "column", lg: "row" }}
             spacing={2}
             justifyContent="stretch"
             alignItems="stretch"
@@ -64,6 +65,8 @@ export default function AuctionPage() {
             <HistoricalRate series={mockHistoricalRate} />
           </Stack>
         </Stack>
+
+        <YourBids />
       </Box>
     </Box>
   );

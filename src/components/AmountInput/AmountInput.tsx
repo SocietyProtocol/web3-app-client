@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { formatUnits, parseUnits } from "viem";
-import { SafeImage } from "../SafeImage/SafeImage";
+import { TokenIcon } from "../TokenIcon/TokenIcon";
 
 export interface AmountInputProps
   extends Omit<TextFieldProps<"outlined">, "onChange" | "value" | "variant"> {
@@ -136,11 +136,9 @@ export const AmountInput = ({
           inputRef,
           readOnly: readonly,
           startAdornment: (
-            <SafeImage
-              src={`/tokens/${tokenSymbol?.toLowerCase()}.svg`}
-              alt={tokenSymbol}
-              width={36}
-              height={36}
+            <TokenIcon
+              symbol={tokenSymbol}
+              size={36}
               style={{ marginRight: 4 }}
             />
           ),

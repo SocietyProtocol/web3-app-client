@@ -26,6 +26,10 @@ const Cell = styled("div")(({ theme }) => ({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  [theme.breakpoints.down("sm")]: {
+    width: 48,
+    height: 48,
+  },
 }));
 
 const StyledNumber = styled(Typography)<TypographyProps<"span">>(
@@ -34,6 +38,9 @@ const StyledNumber = styled(Typography)<TypographyProps<"span">>(
     fontWeight: 700,
     textAlign: "center",
     color: theme.palette.primary.main,
+    [theme.breakpoints.down("sm")]: {
+      fontSize: theme.typography.pxToRem(18),
+    },
   })
 );
 
@@ -43,6 +50,9 @@ const StyledLetter = styled(Typography)<TypographyProps<"span">>(
     fontWeight: 200,
     textAlign: "center",
     color: theme.palette.primary.main,
+    [theme.breakpoints.down("sm")]: {
+      fontSize: theme.typography.pxToRem(18),
+    },
   })
 );
 
@@ -95,17 +105,23 @@ export const CountDown = ({ endTimestamp }: CountDownProps) => {
       alignItems="center"
       role="timer"
       aria-label="Auction end countdown timer"
+      sx={{ width: { xs: "100%", md: "auto" } }}
     >
       <Typography
         color="primary"
         fontWeight={400}
         sx={{
-          fontSize: (theme) => theme.typography.pxToRem(16),
+          fontSize: { xs: 14, sm: 16 },
         }}
       >
         ENDS IN
       </Typography>
-      <Stack direction="row" spacing={1} aria-live="polite" aria-atomic="true">
+      <Stack
+        direction="row"
+        spacing={{ xs: 0.5, sm: 1 }}
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <Cell aria-label={`${days} days`}>
           <StyledNumber component="span">
             {days}

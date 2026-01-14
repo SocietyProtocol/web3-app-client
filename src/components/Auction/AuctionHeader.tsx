@@ -2,7 +2,7 @@
 
 import { Button, Stack, Typography } from "@mui/material";
 import LanguageIcon from "@mui/icons-material/Language";
-import Image from "next/image";
+import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 
 export interface AuctionHeaderProps {
   networkName: string;
@@ -12,22 +12,22 @@ export interface AuctionHeaderProps {
 export const AuctionHeader = ({ networkName, id }: AuctionHeaderProps) => {
   return (
     <Stack
-      direction="row"
-      spacing={1}
-      alignItems="center"
+      direction={{ xs: "column", md: "row" }}
+      spacing={{ xs: 2, md: 1 }}
+      alignItems={{ xs: "flex-start", md: "center" }}
       justifyContent="space-between"
       width="100%"
     >
-      <Stack direction="row" spacing={3} alignItems="center">
-        <Image
-          src="/tokens/spec.svg"
-          alt="SPEC Token Logo"
-          width={54}
-          height={54}
-        />
+      <Stack direction="row" spacing={{ xs: 2, sm: 3 }} alignItems="center">
+        <TokenIcon symbol="spec" size={54} />
 
         <Stack spacing={1}>
-          <Typography variant="h4" component="h1" color="primary.main">
+          <Typography
+            variant="h4"
+            component="h1"
+            color="primary.main"
+            sx={{ fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" } }}
+          >
             SPEC Token Auction
           </Typography>
           <Typography
@@ -38,6 +38,7 @@ export const AuctionHeader = ({ networkName, id }: AuctionHeaderProps) => {
               display: "flex",
               alignItems: "center",
               gap: 0.5,
+              fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
             <LanguageIcon fontSize="small" />
@@ -46,7 +47,15 @@ export const AuctionHeader = ({ networkName, id }: AuctionHeaderProps) => {
         </Stack>
       </Stack>
 
-      <Button variant="outlined">SPEC TOKENOMICS (PDF)</Button>
+      <Button
+        variant="outlined"
+        sx={{
+          width: { xs: "100%", md: "auto" },
+          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+        }}
+      >
+        SPEC TOKENOMICS (PDF)
+      </Button>
     </Stack>
   );
 };

@@ -19,8 +19,9 @@ export const BidControl = () => {
     <Paper
       elevation={0}
       sx={{
-        padding: (theme) => theme.spacing(3, 2),
-        maxWidth: 400,
+        padding: { xs: 2, sm: 3 },
+        maxWidth: { xs: "100%", lg: 400 },
+        width: { xs: "100%", lg: "auto" },
         backgroundColor: "transparent",
         border: (theme) => `1px solid ${theme.palette.border.area}`,
         borderRadius: "12px",

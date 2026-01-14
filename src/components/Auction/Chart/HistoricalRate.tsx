@@ -1,6 +1,6 @@
 "use client";
 
-import { Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Paper, Stack, Typography, useTheme, Box } from "@mui/material";
 import { useMemo, useState } from "react";
 import {
   Area,
@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { DateRangeControl } from "./DateRangeControl";
+import { useResponsiveValue } from "@/hooks/useResponsiveValue";
 
 export interface HistoricalRateProps {
   series: Array<{ time: number; rate: number }>;
@@ -20,6 +21,8 @@ const now = Date.now() / 1000;
 
 export const HistoricalRate = ({ series }: HistoricalRateProps) => {
   const theme = useTheme();
+  const nTicks = useResponsiveValue({ xs: 3, sm: 5, md: 6, lg: 7 });
+
   const [dateRange, setDateRange] = useState<string>("7D");
 
   const filteredData = useMemo(() => {
@@ -77,7 +80,7 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
     const timestamps = filteredData
       .map((item) => item.time)
       .sort((a, b) => a - b);
-    const tickCount = 7;
+    const tickCount = nTicks;
     const step = Math.floor(timestamps.length / (tickCount - 1));
 
     const ticks = [timestamps[0]];
@@ -89,7 +92,7 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
     ticks.push(timestamps[timestamps.length - 1]);
 
     return ticks;
-  }, [filteredData]);
+  }, [filteredData, nTicks]);
 
   console.log({ xTicks });
 
@@ -102,7 +105,7 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
       <Paper
         elevation={0}
         sx={{
-          padding: (theme) => theme.spacing(3, 2),
+          padding: { xs: 2, sm: 3 },
           backgroundColor: "transparent",
           border: (theme) => `1px solid ${theme.palette.border.area}`,
           borderRadius: "12px",
@@ -116,19 +119,20 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
         <Stack
           direction="row"
           justifyContent="space-between"
-          alignItems="center"
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          spacing={{ xs: 1, sm: 0 }}
           sx={{
             position: "absolute",
-            top: 24,
-            left: 24,
-            right: 24,
+            top: { xs: 16, sm: 24 },
+            left: { xs: 16, sm: 24 },
+            right: { xs: 16, sm: 24 },
             zIndex: 1,
           }}
         >
           <Typography
             color="primary.main"
             sx={{
-              fontSize: 20,
+              fontSize: { xs: 16, sm: 18, md: 20 },
               fontWeight: 600,
             }}
           >
@@ -140,77 +144,84 @@ export const HistoricalRate = ({ series }: HistoricalRateProps) => {
             ranges={["1D", "7D", "30D"]}
           />
         </Stack>
-        <ResponsiveContainer width="100%" height={400}>
-          <AreaChart
-            data={filteredData}
-            margin={{ top: 60, right: 20, bottom: 20, left: 20 }}
-          >
-            <defs>
-              <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor={theme.palette.chart.fill}
-                  stopOpacity={0.2}
-                />
-                <stop
-                  offset="100%"
-                  stopColor={theme.palette.chart.fill}
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
+        <Box sx={{ width: "100%", height: { xs: 300, sm: 350, md: 400 } }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={filteredData}
+              margin={{
+                top: 60,
+                right: 10,
+                bottom: 20,
+                left: 0,
+              }}
+            >
+              <defs>
+                <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor={theme.palette.chart.fill}
+                    stopOpacity={0.2}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={theme.palette.chart.fill}
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
 
-            <XAxis
-              dataKey="time"
-              tickFormatter={formatDate}
-              stroke={theme.palette.primary.main}
-              ticks={xTicks}
-              interval="preserveStartEnd"
-              label={{
-                value: "Price (USDC)",
-                position: "insideBottom",
-                offset: -10,
-                style: { fill: theme.palette.primary.main },
-                fontSize: 12,
-                fontWeight: 400,
-              }}
-              tickLine={false}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={false}
-              label={{
-                value: "Volume (SPEC)",
-                angle: -90,
-                position: "insideLeft",
-                style: { fill: theme.palette.primary.main },
-                fontSize: 12,
-                fontWeight: 400,
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.border.bubble}`,
-                borderRadius: "8px",
-              }}
-              labelStyle={{ color: theme.palette.primary.main }}
-              formatter={(value: number | undefined) => [
-                value?.toFixed(2),
-                "Rate",
-              ]}
-              labelFormatter={formatLabel}
-            />
-            <Area
-              type="monotone"
-              dataKey="rate"
-              stroke={theme.palette.chart.stroke}
-              strokeWidth={2}
-              fill="url(#colorRate)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+              <XAxis
+                dataKey="time"
+                tickFormatter={formatDate}
+                stroke={theme.palette.primary.main}
+                ticks={xTicks}
+                interval="preserveStartEnd"
+                label={{
+                  value: "Price (USDC)",
+                  position: "insideBottom",
+                  offset: -10,
+                  style: { fill: theme.palette.primary.main },
+                  fontSize: 12,
+                  fontWeight: 400,
+                }}
+                tickLine={false}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={false}
+                label={{
+                  value: "Volume (SPEC)",
+                  angle: -90,
+                  position: "insideLeft",
+                  style: { fill: theme.palette.primary.main },
+                  fontSize: 12,
+                  fontWeight: 400,
+                }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: theme.palette.background.paper,
+                  border: `1px solid ${theme.palette.border.bubble}`,
+                  borderRadius: "8px",
+                }}
+                labelStyle={{ color: theme.palette.primary.main }}
+                formatter={(value: number | undefined) => [
+                  value?.toFixed(2),
+                  "Rate",
+                ]}
+                labelFormatter={formatLabel}
+              />
+              <Area
+                type="monotone"
+                dataKey="rate"
+                stroke={theme.palette.chart.stroke}
+                strokeWidth={2}
+                fill="url(#colorRate)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Box>
       </Paper>
     </Stack>
   );

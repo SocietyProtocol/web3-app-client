@@ -65,12 +65,12 @@ export const BidControl = () => {
           <FormattedNumber
             value={amountSpecBigInt}
             scaleDownDecimals={specDecimals}
-            minDecimals={2}
             maxDecimals={4}
             minThreshold={0.0001}
             symbol="SPEC"
             variant="body2"
             color="textPrimary"
+            fontWeight={700}
             component="span"
           />
         </Typography>

@@ -21,6 +21,20 @@ export const formatExact = (
 };
 
 /**
+ * Trims unnecessary trailing zeros from a formatted number string.
+ *
+ * @param formatted The formatted number string
+ * @returns The trimmed number string
+ */
+const trimZeros = (formatted: string): string => {
+  if (!formatted.includes(".")) return formatted;
+
+  return formatted
+    .replace(/(\.\d*?[1-9])0+$/, "$1") // remove trailing zeros
+    .replace(/\.$/, ""); // remove dangling dot
+};
+
+/**
  *  Formats a number with an adaptive number of decimal places based on its magnitude.
  *  Examples:
  *   - 0.00012345 with maxDecimals 6 -> "0.000123"
@@ -48,6 +62,7 @@ export const formatAuto = (
     minDecimals?: number;
     maxDecimals?: number;
     minThreshold?: number;
+    trimTrailingZeros?: boolean;
   }
 ): string => {
   const num = typeof value === "number" ? value : Number(value);
@@ -68,6 +83,7 @@ export const formatAuto = (
     minDecimals = 0,
     maxDecimals = 6,
     minThreshold = 1e-6,
+    trimTrailingZeros = false,
   } = options || {};
 
   // Too small → threshold display
@@ -80,10 +96,12 @@ export const formatAuto = (
     Math.max(minDecimals ?? 0, maxDecimals - magnitude - 1)
   );
 
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: decimalsToShow,
+  const formatted = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: minDecimals,
     maximumFractionDigits: decimalsToShow,
   }).format(num);
+
+  return trimTrailingZeros ? trimZeros(formatted) : formatted;
 };
 
 /**

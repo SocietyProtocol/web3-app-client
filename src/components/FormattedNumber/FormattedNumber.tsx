@@ -10,6 +10,7 @@ export interface FormattedNumberProps
   minDecimals?: number;
   maxDecimals?: number;
   minThreshold?: number;
+  trimTrailingZeros?: boolean;
   symbol?: string;
 }
 
@@ -19,6 +20,7 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
   minDecimals,
   maxDecimals,
   minThreshold,
+  trimTrailingZeros = false,
   symbol,
   ...typographyProps
 }) => {
@@ -37,8 +39,13 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
 
   const formatted = useMemo(() => {
     if (num === undefined) return undefined;
-    return formatAuto(num, { minDecimals, maxDecimals, minThreshold });
-  }, [maxDecimals, minDecimals, minThreshold, num]);
+    return formatAuto(num, {
+      minDecimals,
+      maxDecimals,
+      minThreshold,
+      trimTrailingZeros,
+    });
+  }, [maxDecimals, minDecimals, minThreshold, trimTrailingZeros, num]);
 
   return (
     num !== undefined && (

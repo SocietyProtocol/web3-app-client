@@ -153,7 +153,10 @@ export const YourBids = () => {
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center",
+                  alignItems: {
+                    xs: "center",
+                    md: "flex-start",
+                  },
 
                   gap: { xs: 0.5, md: 0 },
                 }}

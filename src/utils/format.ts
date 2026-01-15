@@ -57,7 +57,7 @@ export const formatAuto = (
 
   const abs = Math.abs(num);
 
-  if (abs == 0) {
+  if (abs === 0) {
     return "0";
   }
 

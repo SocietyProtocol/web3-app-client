@@ -40,13 +40,6 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
     return formatAuto(num, { minDecimals, maxDecimals, minThreshold });
   }, [maxDecimals, minDecimals, minThreshold, num]);
 
-  console.log({
-    value,
-    scaleDownDecimals,
-    num,
-    formatted,
-  });
-
   return (
     num !== undefined && (
       <Tooltip title={num + (symbol ? ` ${symbol}` : "")} arrow>

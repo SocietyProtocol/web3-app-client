@@ -4,8 +4,8 @@ import { AuctionHeader } from "@/components/Auction/AuctionHeader";
 import { mockAuctionStats } from "@/data/auction-stats";
 import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
-import { HistoricalRate } from "@/components/Auction/Chart/HistoricalRate";
-import { mockHistoricalRate } from "@/data/historical-rate";
+import { PriceVolumeChart } from "@/components/Auction/Chart/PriceVolumeChart";
+import { mockPriceVolumeData } from "@/data/price-volume";
 import { YourBids } from "@/components/Auction/YourBids";
 
 export default function ActiveAuction() {
@@ -61,7 +61,7 @@ export default function ActiveAuction() {
           flex={1}
         >
           <BidControl />
-          <HistoricalRate series={mockHistoricalRate} />
+          <PriceVolumeChart series={mockPriceVolumeData} />
         </Stack>
       </Stack>
 

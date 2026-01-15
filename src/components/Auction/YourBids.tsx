@@ -88,111 +88,135 @@ export const YourBids = () => {
         overflowX: "auto",
       }}
     >
-      <Tr
-        sx={{
-          display: { xs: "none", md: "grid" },
-        }}
-      >
-        <HeaderCell label="Amount" tooltip="The amount of tokens in your bid" />
-        <HeaderCell label="Limit Price" tooltip="The maximum price per token" />
-        <HeaderCell label="Status" tooltip="Current status of your bid" />
-        <Box />
-      </Tr>
-      {mockYourBids.map((bid, index) => (
-        <Tr key={index}>
-          <Box
+      {mockYourBids.length === 0 ? (
+        <Typography
+          sx={{
+            padding: (theme) => ({
+              xs: theme.spacing(4, 0),
+              md: theme.spacing(10, 0),
+            }),
+            textAlign: "center",
+            color: "text.secondary",
+          }}
+        >
+          No bids found.
+        </Typography>
+      ) : (
+        <>
+          <Tr
             sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              alignItems: "center",
-              gap: 1,
+              display: { xs: "none", md: "grid" },
             }}
           >
-            <Typography
-              sx={{
-                display: { xs: "block", md: "none" },
-                fontSize: "10px",
-                fontWeight: 400,
-                color: "text.secondary",
-                textTransform: "uppercase",
-                mb: 0.5,
-              }}
-            >
-              Amount
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <TokenIcon symbol={bid.tokenSymbol} size={24} />
-              <Typography fontWeight={700}>
-                {bid.amount} {bid.tokenSymbol}
-              </Typography>
-            </Box>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+            <HeaderCell
+              label="Amount"
+              tooltip="The amount of tokens in your bid"
+            />
+            <HeaderCell
+              label="Limit Price"
+              tooltip="The maximum price per token"
+            />
+            <HeaderCell label="Status" tooltip="Current status of your bid" />
+            <Box />
+          </Tr>
 
-              gap: { xs: 0.5, md: 0 },
-            }}
-          >
-            <Typography
-              sx={{
-                display: { xs: "block", md: "none" },
-                fontSize: "10px",
-                fontWeight: 400,
-                color: "text.secondary",
-                textTransform: "uppercase",
-              }}
-            >
-              Limit Price
-            </Typography>
-            <Typography fontWeight={700}>
-              {bid.price} {bid.tokenSymbol} per SPEC
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: { xs: "flex", md: "block" },
-              flexDirection: "column",
-              alignItems: "center",
-              gap: { xs: 0.5, md: 0 },
-            }}
-          >
-            <Typography
-              sx={{
-                display: { xs: "block", md: "none" },
-                fontSize: "10px",
-                fontWeight: 400,
-                color: "text.secondary",
-                textTransform: "uppercase",
-              }}
-            >
-              Status
-            </Typography>
-            <Status status={bid.status}>{bid.status}</Status>
-          </Box>
-          <Box
-            sx={{
-              display: { xs: "flex", md: "block" },
-              gridColumn: { xs: "1", md: "auto" },
-              justifyContent: "center",
-            }}
-          >
-            {(bid.status === "Placed" || bid.status === "Pending") && (
-              <Button
-                size="small"
-                variant="contained"
+          {mockYourBids.map((bid, index) => (
+            <Tr key={index}>
+              <Box
                 sx={{
-                  width: { xs: "100%", sm: "200px", md: "auto" },
+                  display: "flex",
+                  flexDirection: { xs: "column", md: "row" },
+                  alignItems: "center",
+                  gap: 1,
                 }}
               >
-                Cancel
-              </Button>
-            )}
-          </Box>
-        </Tr>
-      ))}
+                <Typography
+                  sx={{
+                    display: { xs: "block", md: "none" },
+                    fontSize: "10px",
+                    fontWeight: 400,
+                    color: "text.secondary",
+                    textTransform: "uppercase",
+                    mb: 0.5,
+                  }}
+                >
+                  Amount
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <TokenIcon symbol={bid.tokenSymbol} size={24} />
+                  <Typography fontWeight={700}>
+                    {bid.amount} {bid.tokenSymbol}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+
+                  gap: { xs: 0.5, md: 0 },
+                }}
+              >
+                <Typography
+                  sx={{
+                    display: { xs: "block", md: "none" },
+                    fontSize: "10px",
+                    fontWeight: 400,
+                    color: "text.secondary",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Limit Price
+                </Typography>
+                <Typography fontWeight={700}>
+                  {bid.price} {bid.tokenSymbol} per SPEC
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: { xs: "flex", md: "block" },
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: { xs: 0.5, md: 0 },
+                }}
+              >
+                <Typography
+                  sx={{
+                    display: { xs: "block", md: "none" },
+                    fontSize: "10px",
+                    fontWeight: 400,
+                    color: "text.secondary",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Status
+                </Typography>
+                <Status status={bid.status}>{bid.status}</Status>
+              </Box>
+              <Box
+                sx={{
+                  display: { xs: "flex", md: "block" },
+                  gridColumn: { xs: "1", md: "auto" },
+                  justifyContent: "center",
+                }}
+              >
+                {(bid.status === "Placed" || bid.status === "Pending") && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    sx={{
+                      width: { xs: "100%", sm: "200px", md: "auto" },
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </Box>
+            </Tr>
+          ))}
+        </>
+      )}
     </Paper>
   );
 };

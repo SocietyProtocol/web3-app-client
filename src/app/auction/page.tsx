@@ -1,5 +1,5 @@
-import { InactiveAuction } from "@/components/Auction/InactiveAuction";
+import ActiveAuction from "@/components/Auction/ActiveAuction";
 
 export default function AuctionPage() {
-  return <InactiveAuction />;
+  return <ActiveAuction />;
 }

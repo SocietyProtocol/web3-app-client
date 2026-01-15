@@ -8,7 +8,7 @@ import { PriceVolumeChart } from "@/components/Auction/PriceVolumeChart";
 import { mockPriceVolumeData } from "@/data/price-volume";
 import { YourBids } from "@/components/Auction/YourBids";
 
-export default function ActiveAuction() {
+export const ActiveAuction = () => {
   return (
     <Box
       sx={{
@@ -68,4 +68,4 @@ export default function ActiveAuction() {
       <YourBids />
     </Box>
   );
-}
+};

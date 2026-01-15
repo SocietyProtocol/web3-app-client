@@ -48,7 +48,7 @@ const HeaderCell = ({ label, tooltip }: { label: string; tooltip: string }) => (
       {label}
     </Typography>
     <Tooltip title={tooltip} arrow placement="top">
-      <IconButton size="small" sx={{ padding: 0 }}>
+      <IconButton size="small" sx={{ padding: 0 }} aria-label={tooltip}>
         <InfoOutlinedIcon sx={{ fontSize: "14px", color: "text.primary" }} />
       </IconButton>
     </Tooltip>

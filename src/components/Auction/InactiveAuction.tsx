@@ -98,7 +98,7 @@ export const InactiveAuction = () => {
               color="primary.main"
               sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}
             >
-              SPEC Tonken fundamentals
+              SPEC Token fundamentals
             </Typography>
             <Typography
               sx={{ marginTop: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}

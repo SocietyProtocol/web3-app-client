@@ -4,7 +4,7 @@ import { AuctionHeader } from "@/components/Auction/AuctionHeader";
 import { mockAuctionStats } from "@/data/auction-stats";
 import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
-import { PriceVolumeChart } from "@/components/Auction/Chart/PriceVolumeChart";
+import { PriceVolumeChart } from "@/components/Auction/PriceVolumeChart";
 import { mockPriceVolumeData } from "@/data/price-volume";
 import { YourBids } from "@/components/Auction/YourBids";
 

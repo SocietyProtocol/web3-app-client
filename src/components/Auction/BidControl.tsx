@@ -1,23 +1,24 @@
 "use client";
 
-import { Button, Paper } from "@mui/material";
+import { Button, Paper, Typography } from "@mui/material";
 import { AmountInput } from "../AmountInput/AmountInput";
 import { useMemo, useState } from "react";
+import { scaleUp } from "@/utils/bigint";
+import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 
 export const BidControl = () => {
   const [bid, setBid] = useState<bigint | undefined>(undefined);
+  const [price, setPrice] = useState<bigint | undefined>(undefined);
 
-  const price = BigInt(100);
+  const usdcDecimals = 6;
+  const specDecimals = 18;
 
-  const specValue = useMemo(() => {
-    if (bid === undefined) return undefined;
+  const amountSpecBigInt = useMemo(() => {
+    if (bid === undefined || price === undefined || price === BigInt(0)) {
+      return undefined;
+    }
 
-    // Convert USDC-denominated bid (6 decimals) into SPEC amount with 18 decimals.
-    // bid: USDC in smallest units (6 decimals)
-    // price: USDC (6-decimal units) per 1 SPEC
-    // Multiply by 10^18 to express the result in SPEC's 18-decimal units,
-    // then divide by 10^6 to normalize from USDC's 6 decimals.
-    return (bid * price * BigInt(10) ** BigInt(18)) / BigInt(10) ** BigInt(6);
+    return scaleUp(bid, specDecimals) / price;
   }, [bid, price]);
 
   return (
@@ -27,6 +28,10 @@ export const BidControl = () => {
         padding: { xs: 2, sm: 3 },
         maxWidth: { xs: "100%", lg: 400 },
         width: { xs: "100%", lg: "auto" },
+        minWidth: {
+          xs: "100%",
+          sm: 400,
+        },
         backgroundColor: "transparent",
         border: (theme) => `1px solid ${theme.palette.border.area}`,
         borderRadius: "12px",
@@ -38,7 +43,7 @@ export const BidControl = () => {
       <AmountInput
         label="Amount"
         tokenSymbol="USDC"
-        decimals={6}
+        decimals={usdcDecimals}
         value={bid}
         onChange={(value) => setBid(value)}
         max={BigInt(1002006000)} // Example max value
@@ -47,14 +52,36 @@ export const BidControl = () => {
 
       <AmountInput
         label="USDC Per SPEC price"
-        tokenSymbol="SPEC"
-        decimals={18}
-        value={specValue}
+        tokenSymbol="USDC"
+        decimals={usdcDecimals}
+        value={price}
+        onChange={(value) => setPrice(value)}
         fullWidth
-        readonly
       />
 
-      <Button variant="contained" color="primary" fullWidth disabled={!bid}>
+      {amountSpecBigInt !== undefined && (
+        <Typography variant="body2" color="textPrimary">
+          You will receive approximately{" "}
+          <FormattedNumber
+            value={amountSpecBigInt}
+            scaleDownDecimals={specDecimals}
+            minDecimals={2}
+            maxDecimals={4}
+            minThreshold={0.0001}
+            symbol="SPEC"
+            variant="body2"
+            color="textPrimary"
+            component="span"
+          />
+        </Typography>
+      )}
+
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        disabled={bid === undefined || price === undefined}
+      >
         Place Bid
       </Button>
     </Paper>

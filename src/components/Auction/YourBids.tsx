@@ -120,8 +120,8 @@ export const YourBids = () => {
             <Box />
           </Tr>
 
-          {mockYourBids.map((bid, index) => (
-            <Tr key={index}>
+          {mockYourBids.map((bid) => (
+            <Tr key={bid.id}>
               <Box
                 sx={{
                   display: "flex",

@@ -22,7 +22,7 @@ const Cell = styled("div")(({ theme }) => ({
   borderRadius: 12,
   backgroundColor: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.counter}`,
-  boxShadow: `inset 0 4px 4px 0 ${alpha("#656565", 0.25)}`,
+  boxShadow: `inset 0 4px 4px 0 ${alpha(theme.palette.grey[800], 0.25)}`,
   padding: theme.spacing(0.5, 1),
   display: "flex",
   justifyContent: "center",

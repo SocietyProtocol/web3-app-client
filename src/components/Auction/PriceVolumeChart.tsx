@@ -12,11 +12,11 @@ import {
 } from "recharts";
 import { useResponsiveValue } from "@/hooks/useResponsiveValue";
 
-export interface HistoricalRateProps {
+export interface PriceVolumeChartProps {
   series: Array<{ price: number; volume: number }>;
 }
 
-export const PriceVolumeChart = ({ series }: HistoricalRateProps) => {
+export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
   const theme = useTheme();
   const nTicks = useResponsiveValue({ xs: 3, sm: 5, md: 6, lg: 7 });
 
@@ -26,6 +26,8 @@ export const PriceVolumeChart = ({ series }: HistoricalRateProps) => {
     const prices = series.map((item) => item.price).sort((a, b) => a - b);
     const tickCount = nTicks;
     const step = Math.floor(prices.length / (tickCount - 1));
+
+    if (step === 0) return prices;
 
     const ticks = [prices[0]];
 

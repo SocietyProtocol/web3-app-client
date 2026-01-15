@@ -153,6 +153,7 @@ export const AmountInput = ({
               }}
               size="small"
               disabled={disabled || value === max}
+              aria-label="Set to maximum amount"
             >
               Max
             </Button>

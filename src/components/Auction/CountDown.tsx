@@ -60,12 +60,9 @@ const StyledLetter = styled(Typography)<TypographyProps<"span">>(
 export const CountDown = ({ endTimestamp, title }: CountDownProps) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState<TimeRemaining>({
-    days: "00",
-    hours: "00",
-    minutes: "00",
-    seconds: "00",
-  });
+  const [timeLeft, setTimeLeft] = useState<TimeRemaining>(() =>
+    calculateTimeRemaining(endTimestamp)
+  );
 
   useEffect(() => {
     if (intervalRef.current) {

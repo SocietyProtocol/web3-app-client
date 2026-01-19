@@ -20,10 +20,22 @@ export const useResponsiveHeightValue = <T,>(
   props: UseResponsiveHeightValueProps<T>
 ): T => {
   const { xs, sm, md, lg, xl } = props;
-  const isSm = useMediaQuery(`(min-height:${HeightBreakpoints.sm}px)`);
-  const isMd = useMediaQuery(`(min-height:${HeightBreakpoints.md}px)`);
-  const isLg = useMediaQuery(`(min-height:${HeightBreakpoints.lg}px)`);
-  const isXl = useMediaQuery(`(min-height:${HeightBreakpoints.xl}px)`);
+  const isSm = useMediaQuery(`(max-height:${HeightBreakpoints.sm}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isMd = useMediaQuery(`(max-height:${HeightBreakpoints.md}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isLg = useMediaQuery(`(max-height:${HeightBreakpoints.lg}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isXl = useMediaQuery(`(max-height:${HeightBreakpoints.xl}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
 
   if (isXl) {
     return xl ?? lg ?? md ?? sm ?? xs;

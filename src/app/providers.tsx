@@ -3,7 +3,7 @@
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { initializeWagmiWatcher, wagmiConfig } from "@/lib/wagmi";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline, IconButton } from "@mui/material";
 import { theme } from "@/theme/theme";
@@ -13,13 +13,14 @@ import { closeSnackbar, SnackbarProvider } from "notistack";
 import { StyledMaterialDesignContent } from "@/components/Snackbar/Snackbar";
 import { Provider as JotaiProvider } from "jotai";
 import { jotaiStore } from "@/lib/jotai";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-
-const queryClient = new QueryClient();
+import { getQueryClient } from "@/lib/tanstack-query";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const queryClient = useMemo(() => getQueryClient(), []);
+
   useEffect(() => {
     initializeWagmiWatcher();
   }, []);

@@ -1,46 +1,68 @@
 import { usePrevious } from "@/hooks/usePrevious";
 import { useResponsiveHeightValue } from "@/hooks/useResponsiveHeightValue";
 import { useResponsiveValue } from "@/hooks/useResponsiveValue";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
-import { Grid, Pagination, PaginationItem, Stack } from "@mui/material";
-import { ReactNode, useEffect, useMemo } from "react";
+import {
+  Box,
+  Grid,
+  Pagination,
+  PaginationItem,
+  Stack,
+  Typography,
+} from "@mui/material";
+import { ReactNode, useEffect, useMemo, ReactElement } from "react";
 
-const gallerySizeBreakpoints = {
-  xs: 200,
-  sm: 416,
-  md: 648,
-  lg: 872,
-};
+export interface GalleryGridConfig {
+  xs: number;
+  sm?: number;
+  md?: number;
+  lg?: number;
+  xl?: number;
+}
 
 export interface GalleryProps<T extends { id: number | string }> {
   items: T[];
   renderItem: (item: T) => ReactNode;
-  itemWidth: number;
-  itemHeight: number;
+  renderSkeleton?: () => ReactNode;
+  loading?: boolean;
+  emptyMessage?: string;
   currentPage: number;
   onPageChange: (page: number) => void;
+  columns?: GalleryGridConfig;
+  rows?: GalleryGridConfig;
 }
+
+const defaultColumns: GalleryGridConfig = {
+  xs: 1,
+  sm: 2,
+  md: 3,
+  lg: 4,
+  xl: 6,
+};
+
+const defaultRows: GalleryGridConfig = {
+  xs: 2,
+  sm: 3,
+  md: 4,
+  lg: 5,
+};
 
 export const Gallery = <T extends { id: number | string }>({
   items,
   renderItem,
-  itemWidth,
-  itemHeight,
+  renderSkeleton,
+  loading = false,
+  emptyMessage = "No items found",
   currentPage,
   onPageChange,
-}: GalleryProps<T>) => {
-  const itemsPerSize = useMemo(
-    () => ({
-      xs: Math.floor(gallerySizeBreakpoints.xs / itemWidth),
-      sm: Math.floor(gallerySizeBreakpoints.sm / itemWidth),
-      md: Math.floor(gallerySizeBreakpoints.md / itemWidth),
-      lg: Math.floor(gallerySizeBreakpoints.lg / itemWidth),
-    }),
-    [itemWidth]
-  );
+  columns = defaultColumns,
+  rows = defaultRows,
+}: GalleryProps<T>): ReactElement | null => {
+  const isMounted = useIsMounted();
 
-  const rawColumnsPerPage = useResponsiveValue(itemsPerSize);
-  const rawRowsPerPage = useResponsiveHeightValue(itemsPerSize);
+  const rawColumnsPerPage = useResponsiveValue(columns);
+  const rawRowsPerPage = useResponsiveHeightValue(rows);
   const columnsPerPage = Math.max(1, rawColumnsPerPage || 0);
   const rowsPerPage = Math.max(1, rawRowsPerPage || 0);
 
@@ -50,38 +72,37 @@ export const Gallery = <T extends { id: number | string }>({
     md: "large",
   }) as "small" | "medium" | "large";
 
+  const showPaginationButtons = useResponsiveValue({
+    xs: false,
+    sm: true,
+  });
+
   const boundaryCount = useResponsiveValue({
     xs: 0,
     sm: 1,
     md: 1,
     lg: 2,
   });
-  const showPaginationButtons = useResponsiveValue({
-    xs: false,
-    sm: true,
-  });
 
-  const spacing = useResponsiveValue({
-    xs: 1,
-    sm: 2,
-    md: 3,
-  });
-
-  const itemsPerPage = columnsPerPage * rowsPerPage;
+  const itemsPerPage = useMemo(
+    () => columnsPerPage * rowsPerPage,
+    [columnsPerPage, rowsPerPage],
+  );
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = items.slice(startIndex, endIndex);
+  const currentItems = useMemo(
+    () =>
+      items.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [items, currentPage, itemsPerPage],
+  );
 
   const prevPage = usePrevious(currentPage);
-
   const firstItemIndex = (currentPage - 1) * itemsPerPage;
   const prevFirstItemIndex = usePrevious(firstItemIndex);
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
-    page: number
+    page: number,
   ) => {
     onPageChange(page);
   };
@@ -95,7 +116,6 @@ export const Gallery = <T extends { id: number | string }>({
       prevFirstItemIndex >= currentPage * itemsPerPage
     ) {
       const newPage = Math.floor(prevFirstItemIndex / itemsPerPage) + 1;
-
       const clampedNewPage = Math.min(Math.max(newPage, 1), totalPages || 1);
       onPageChange(clampedNewPage);
     }
@@ -108,46 +128,68 @@ export const Gallery = <T extends { id: number | string }>({
     totalPages,
   ]);
 
+  if (!isMounted) {
+    return null;
+  }
+
   return (
-    <Stack
-      spacing={spacing}
-      justifyContent="center"
-      alignItems="center"
-      width="100%"
-    >
+    <Stack spacing={4} alignItems="center" justifyContent="center" width="100%">
       <Grid
         container
-        columns={columnsPerPage}
-        spacing={spacing}
+        columns={columns}
+        spacing={2}
         sx={{
+          width: "100%",
           justifyContent: "flex-start",
           alignItems: "flex-start",
           alignContent: "flex-start",
-          width: (theme) =>
-            `calc(${columnsPerPage * itemWidth}px + ${theme.spacing(
-              spacing * (columnsPerPage - 1)
-            )})`,
-          height: (theme) =>
-            `calc(${rowsPerPage * itemHeight}px + ${theme.spacing(
-              spacing * (rowsPerPage - 1)
-            )})`,
         }}
       >
-        {currentItems.map((item) => (
-          <Grid
-            size={1}
-            key={item.id}
+        {loading ? (
+          renderSkeleton ? (
+            Array.from({ length: itemsPerPage }).map((_, index) => (
+              <Grid
+                size={1}
+                key={`skeleton-${index}`}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {renderSkeleton()}
+              </Grid>
+            ))
+          ) : null
+        ) : items.length === 0 ? (
+          <Box
             sx={{
               display: "flex",
               justifyContent: "center",
-              width: itemWidth,
-              height: itemHeight,
-              overflow: "hidden",
+              alignItems: "center",
+              minHeight: 200,
+              width: "100%",
             }}
           >
-            {renderItem(item)}
-          </Grid>
-        ))}
+            <Typography variant="body1" color="text.primary" component="span">
+              {emptyMessage}
+            </Typography>
+          </Box>
+        ) : (
+          currentItems.map((item) => (
+            <Grid
+              size={1}
+              key={item.id}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {renderItem(item)}
+            </Grid>
+          ))
+        )}
       </Grid>
       {totalPages > 1 && (
         <Pagination

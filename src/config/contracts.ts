@@ -12,7 +12,7 @@ interface Contracts {
 
 export const contracts: Contracts = {
   sepolia: {
-    badges: "0x21d798f885609b228D05a75f8bD9a4De538fbf11",
+    badges: "0x6F72d047eEC67024d2c8BC9FA17fC6659a0dA6d8",
     auction: "0x96aa924EF625bd8eF4A2C4d369408d1491453Ec5",
   },
   mainnet: {

@@ -8,22 +8,19 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { Address } from "viem";
 import { OfficialBadge } from "../icons/OfficialBadge";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
 import Link from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Badge } from "../../../.graphclient";
+import { Hex } from "viem";
+import { useFetch } from "@/hooks/useFetch";
 
-export interface BadgeCardProps {
-  id: number;
-  title?: string;
-  badgeImageUrl?: string;
-  isOfficial?: boolean;
-  createdBy?: Address;
-  numberOfHolders?: number;
-  metadataUrl?: string;
+export interface BadgeCardProps
+  extends Partial<Omit<Badge, "holders" | "createdAt" | "createdBy">> {
   loading?: boolean;
+  createdBy?: { id: string };
 }
 
 const StyledBadgeCard = styled(Paper, {
@@ -45,10 +42,6 @@ const StyledBadgeCard = styled(Paper, {
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 
-  [theme.breakpoints.up("sm")]: {
-    width: "200px",
-  },
-
   ...(isOfficial && {
     border: "none",
     ...theme.mixins.borderGradient("8px", "official"),
@@ -58,13 +51,16 @@ const StyledBadgeCard = styled(Paper, {
 
 export const BadgeCard = ({
   id,
-  title,
-  badgeImageUrl,
+  name,
   isOfficial,
   createdBy,
-  metadataUrl,
+  uri,
   loading = false,
 }: BadgeCardProps) => {
+  const metadata = useFetch<Record<string, string>>(uri);
+
+  const badgeImageUrl = metadata?.data?.avatar;
+
   return (
     <StyledBadgeCard isOfficial={isOfficial}>
       {/* Badge ID and Official Label */}
@@ -150,8 +146,10 @@ export const BadgeCard = ({
         />
       ) : (
         <Avatar
-          src={badgeImageUrl}
-          alt={title}
+          src={
+            badgeImageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
+          }
+          alt={name}
           sx={{ width: 52, height: 52 }}
         />
       )}
@@ -173,9 +171,9 @@ export const BadgeCard = ({
             width: "100%",
             flexShrink: 0,
           }}
-          title={title}
+          title={name}
         >
-          {title}
+          {name}
         </Typography>
       )}
 
@@ -208,9 +206,9 @@ export const BadgeCard = ({
             >
               CREATED BY
             </Typography>
-            {createdBy ? (
+            {createdBy.id ? (
               <UserHandle
-                address={createdBy}
+                address={createdBy.id as Hex}
                 size="small"
                 showYouLabel={false}
                 previewCard
@@ -227,9 +225,9 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton variant="text" width="90%" height={10} />
       ) : (
-        metadataUrl && (
+        uri && (
           <Link
-            href={metadataUrl}
+            href={uri}
             target="_blank"
             rel="noopener noreferrer"
             style={{

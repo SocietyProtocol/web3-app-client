@@ -28,6 +28,12 @@ export const BadgesModal = ({
 }: BadgesModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Transform badges to ensure they have required id
+  const badgesWithId = badges.map((badge, index) => ({
+    ...badge,
+    id: badge.id || `badge-${index}`,
+  }));
+
   useEffect(() => {
     if (open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -39,7 +45,7 @@ export const BadgesModal = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
-          All Badges held by {username} ({badges.length})
+          All Badges held by {username} ({badgesWithId.length})
         </Typography>
         <IconButton onClick={onClose} size="small" color="primary">
           <CloseIcon />
@@ -55,7 +61,7 @@ export const BadgesModal = ({
             },
           }}
         >
-          {badges.length === 0 ? (
+          {badgesWithId.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
@@ -70,12 +76,19 @@ export const BadgesModal = ({
             </Box>
           ) : (
             <Gallery
-              items={badges}
+              items={badgesWithId}
               renderItem={(badge) => <BadgeCard {...badge} />}
-              itemWidth={200}
-              itemHeight={200}
               currentPage={currentPage}
               onPageChange={setCurrentPage}
+              columns={{
+                xs: 1,
+                sm: 2,
+                md: 3,
+              }}
+              rows={{
+                xs: 2,
+                sm: 3,
+              }}
             />
           )}
         </Stack>

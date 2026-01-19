@@ -192,7 +192,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   >
                     <BadgeCard
                       id={badge.id}
-                      title={badge.title}
+                      name={badge.name}
                       badgeImageUrl={badge.badgeImageUrl}
                       isOfficial={badge.isOfficial}
                       createdBy={badge.createdBy}

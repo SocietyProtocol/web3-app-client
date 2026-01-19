@@ -59,25 +59,6 @@ export async function POST(request: NextRequest) {
     timestamp: new Date().toISOString(),
   };
 
-  // Delete old IPFS data if updating existing profile
-  // to be reviewed later
-  //
-  // if (data.cid) {
-  //   // If CID is provided, we are updating existing data
-  //   try {
-  //     const filesResponse = await pinata.files.public.list().cid(data.cid);
-  //     const id = filesResponse.files[0]?.id;
-
-  //     if (id) {
-  //       await pinata.files.public.delete([id]);
-  //       console.log(`Unpinned old IPFS data with CID ${data.cid} and ID ${id}`);
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to unpin old IPFS data:", error);
-  //     // Proceeding even if unpinning fails
-  //   }
-  // }
-
   try {
     const { cid } = await pinata.upload.public.json(metadata);
 

@@ -11,17 +11,14 @@ export const useProfileId = (address?: Address) => {
     [chainId]
   );
 
-  const profileIdResult = useReadContract({
+  return useReadContract({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,
-    functionName: "userProfileId",
+    functionName: "profileBadgeId",
     args: address ? [address] : undefined,
-
     query: {
-      enabled: address && isAddress(contractAddress),
+      enabled: !!address && isAddress(address) && isAddress(contractAddress),
       staleTime: Infinity,
     },
   });
-
-  return profileIdResult;
 };

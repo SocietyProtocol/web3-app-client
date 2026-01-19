@@ -1,9 +1,9 @@
 import { Address } from "viem";
 import { useAccount } from "wagmi";
-import { useIpfsJson } from "@/hooks/useIpfsJson";
 import { useProfileId } from "@/hooks/useProfileId";
 import { useProfileUri } from "@/hooks/useProfileUri";
 import { useMemo } from "react";
+import { useFetch } from "@/hooks/useFetch";
 
 export interface ProfileData {
   name?: string;
@@ -22,8 +22,8 @@ export function useProfile(addressOverride?: Address) {
   // Read uri for the profileId (only if profileId is defined and not zero)
   const uriResult = useProfileUri(profileIdResult.data);
 
-  // Use the new IPFS hook
-  const profileDataResult = useIpfsJson<ProfileData>(uriResult.data);
+  // Read profile data from IPFS using the uri
+  const profileDataResult = useFetch<ProfileData>(uriResult.data);
 
   const refetch = async () => {
     await profileIdResult.refetch();

@@ -2,7 +2,7 @@ import { Address } from "viem";
 
 interface BadgeData {
   id: number;
-  title?: string;
+  name?: string;
   badgeImageUrl?: string;
   isOfficial?: boolean;
   createdBy?: Address;
@@ -13,7 +13,7 @@ interface BadgeData {
 export const mockBadgesData: BadgeData[] = [
   {
     id: 1,
-    title: "Crypto Enthusiast",
+    name: "Crypto Enthusiast",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
@@ -22,7 +22,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 2,
-    title: "Crypto Maniac",
+    name: "Crypto Maniac",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl:
@@ -32,7 +32,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 3,
-    title: "Filecoin Contributors",
+    name: "Filecoin Contributors",
     createdBy: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     numberOfHolders: 1245,
     badgeImageUrl:
@@ -42,7 +42,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 4,
-    title: "Protofire Contributors",
+    name: "Protofire Contributors",
     createdBy: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
@@ -51,7 +51,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 5,
-    title: "Crypto Enthusiast",
+    name: "Crypto Enthusiast",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
@@ -60,7 +60,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 6,
-    title: "Crypto Maniac",
+    name: "Crypto Maniac",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl:
@@ -70,7 +70,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 7,
-    title: "Filecoin Contributors",
+    name: "Filecoin Contributors",
     createdBy: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     numberOfHolders: 1245,
     badgeImageUrl:
@@ -80,7 +80,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 8,
-    title: "Protofire Contributors",
+    name: "Protofire Contributors",
     createdBy: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
@@ -89,7 +89,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 9,
-    title: "Crypto Enthusiast",
+    name: "Crypto Enthusiast",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
@@ -98,7 +98,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 10,
-    title: "Crypto Maniac",
+    name: "Crypto Maniac",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl:
@@ -108,7 +108,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 11,
-    title: "Filecoin Contributors",
+    name: "Filecoin Contributors",
     createdBy: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     numberOfHolders: 1245,
     badgeImageUrl:
@@ -118,7 +118,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 12,
-    title: "Protofire Contributors",
+    name: "Protofire Contributors",
     createdBy: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
@@ -127,7 +127,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 13,
-    title: "Crypto Enthusiast",
+    name: "Crypto Enthusiast",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
@@ -136,7 +136,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 14,
-    title: "Crypto Maniac",
+    name: "Crypto Maniac",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl:
@@ -146,7 +146,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 15,
-    title: "Filecoin Contributors",
+    name: "Filecoin Contributors",
     createdBy: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     numberOfHolders: 1245,
     badgeImageUrl:
@@ -156,7 +156,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 16,
-    title: "Protofire Contributors",
+    name: "Protofire Contributors",
     createdBy: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",
@@ -166,7 +166,7 @@ export const mockBadgesData: BadgeData[] = [
 
   {
     id: 17,
-    title: "Crypto Enthusiast",
+    name: "Crypto Enthusiast",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl: "https://miro.medium.com/v2/1*kSrI8peLrUAsjEsBZ6Y72w.jpeg",
@@ -175,7 +175,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 18,
-    title: "Crypto Maniac",
+    name: "Crypto Maniac",
     createdBy: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     numberOfHolders: 3,
     badgeImageUrl:
@@ -185,7 +185,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 19,
-    title: "Filecoin Contributors",
+    name: "Filecoin Contributors",
     createdBy: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     numberOfHolders: 1245,
     badgeImageUrl:
@@ -195,7 +195,7 @@ export const mockBadgesData: BadgeData[] = [
   },
   {
     id: 20,
-    title: "Protofire Contributors",
+    name: "Protofire Contributors",
     createdBy: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     numberOfHolders: 12,
     badgeImageUrl: "https://protofire.io/logo192.png",

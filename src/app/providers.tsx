@@ -13,13 +13,13 @@ import { closeSnackbar, SnackbarProvider } from "notistack";
 import { StyledMaterialDesignContent } from "@/components/Snackbar/Snackbar";
 import { Provider as JotaiProvider } from "jotai";
 import { jotaiStore } from "@/lib/jotai";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { getQueryClient } from "@/lib/tanstack-query";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const queryClient = useMemo(() => getQueryClient(), []);
+  const queryClient = getQueryClient();
 
   useEffect(() => {
     initializeWagmiWatcher();

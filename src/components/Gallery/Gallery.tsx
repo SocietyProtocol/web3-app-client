@@ -136,7 +136,7 @@ export const Gallery = <T extends { id: number | string }>({
     <Stack spacing={4} alignItems="center" justifyContent="center" width="100%">
       <Grid
         container
-        columns={columns}
+        columns={columnsPerPage}
         spacing={2}
         sx={{
           width: "100%",

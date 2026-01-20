@@ -151,24 +151,17 @@ export const Badges = () => {
     userAddress,
   ]);
 
-  // Derive current page - reset to 1 if filters change
-  const filterKey = `${activeTab}-${sortBy}-${filterBy}-${filterAddress}-${searchQuery}`;
-  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
   const [currentPage, setCurrentPage] = useState(1);
-
-  if (filterKey !== lastFilterKey) {
-    setLastFilterKey(filterKey);
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    }
-  }
 
   return (
     <Stack spacing={3} width="100%" marginTop={3}>
       {/* Tabs */}
       <Tabs
         value={activeTab}
-        onChange={(_, value) => setActiveTab(value)}
+        onChange={(_, value) => {
+          setActiveTab(value);
+          setCurrentPage(1);
+        }}
         variant="fullWidth"
         sx={{
           borderBottom: 1,
@@ -204,7 +197,10 @@ export const Badges = () => {
             label="Sort by"
             value={sortBy}
             options={sortOptions}
-            onChange={setSortBy}
+            onChange={(value) => {
+              setSortBy(value);
+              setCurrentPage(1);
+            }}
           />
 
           {/* Filter */}
@@ -214,13 +210,17 @@ export const Badges = () => {
             options={filterOptions}
             onChange={(value) => {
               setFilterBy(value);
+              setCurrentPage(1);
               if (value !== "address") {
                 setFilterAddress("");
               }
             }}
             customOption="address"
             customInputValue={filterAddress}
-            onCustomInputChange={setFilterAddress}
+            onCustomInputChange={(value) => {
+              setFilterAddress(value);
+              setCurrentPage(1);
+            }}
             customInputPlaceholder="0x..."
             customInputValidate={isAddress}
             customInputErrorText="Invalid address"
@@ -231,7 +231,10 @@ export const Badges = () => {
         <TextField
           placeholder="Search by name or address..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
           size="small"
           sx={{
             flex: {

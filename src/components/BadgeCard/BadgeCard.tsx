@@ -17,8 +17,9 @@ import { Badge } from "../../../.graphclient";
 import { Hex } from "viem";
 import { useFetch } from "@/hooks/useFetch";
 
-export interface BadgeCardProps
-  extends Partial<Omit<Badge, "holders" | "createdAt" | "createdBy">> {
+export interface BadgeCardProps extends Partial<
+  Omit<Badge, "holders" | "createdAt" | "createdBy">
+> {
   loading?: boolean;
   createdBy?: { id: string };
 }
@@ -125,7 +126,7 @@ export const BadgeCard = ({
                   filter: (theme) =>
                     `drop-shadow(0 0 1px ${alpha(
                       theme.palette.gold.main,
-                      0.8
+                      0.8,
                     )})`,
                 }}
               />
@@ -206,7 +207,7 @@ export const BadgeCard = ({
             >
               CREATED BY
             </Typography>
-            {createdBy.id ? (
+            {createdBy?.id ? (
               <UserHandle
                 address={createdBy.id as Hex}
                 size="small"

@@ -47,7 +47,12 @@ export const BadgesModal = ({
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
           All Badges held by {username} ({badgesWithId.length})
         </Typography>
-        <IconButton onClick={onClose} size="small" color="primary">
+        <IconButton
+          onClick={onClose}
+          size="small"
+          color="primary"
+          aria-label="close"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>

@@ -22,6 +22,8 @@ declare module "@mui/material/styles" {
     subtle: string;
     bubble: string;
     input: string;
+    toggleButton: string;
+    toggleButtonHover: string;
   }
 
   interface Palette {
@@ -30,11 +32,18 @@ declare module "@mui/material/styles" {
       input: string;
       bubble: string;
       card: string;
+      counter: string;
+      area: string;
     };
     gradients: {
       official: string;
       primary: string;
       darkOfficial: string;
+    };
+
+    chart: {
+      stroke: string;
+      fill: string;
     };
   }
 
@@ -44,11 +53,17 @@ declare module "@mui/material/styles" {
       input?: string;
       bubble?: string;
       card?: string;
+      counter?: string;
+      area?: string;
     };
     gradients?: {
       official?: string;
       primary?: string;
       darkOfficial?: string;
+    };
+    chart?: {
+      stroke?: string;
+      fill?: string;
     };
   }
 

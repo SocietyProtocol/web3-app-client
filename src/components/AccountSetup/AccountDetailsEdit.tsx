@@ -105,7 +105,7 @@ export const AccountDetailsEdit = ({
         spacing={{ xs: 1.5, sm: 0 }}
       >
         {/* Account Details Header */}
-        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+        <Typography variant="h6">
           Account details {address && truncateAddress(address)}
         </Typography>
 

@@ -12,7 +12,7 @@ export const AccountInfoStep = () => {
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
       {/* Account Details Header */}
-      <Typography variant="h6" sx={{ fontWeight: 500 }}>
+      <Typography variant="h6">
         Account details {address && truncateAddress(address)}
       </Typography>
 

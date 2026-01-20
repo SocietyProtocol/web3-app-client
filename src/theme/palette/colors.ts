@@ -4,8 +4,8 @@
  */
 
 // Primary colors
-export const WHITE = "#FFFFFF";
-export const BLACK = "#09090B";
+export const PRIMARY_MAIN = "#FFFFFF";
+export const PRIMARY_CONTRAST_TEXT = "#09090B";
 
 // Background colors
 export const BACKGROUND_DEFAULT = "#2c2d30";
@@ -13,6 +13,8 @@ export const BACKGROUND_PAGE = "#222222";
 export const BACKGROUND_PAPER = "#333333";
 export const BACKGROUND_INPUT = "#2F2F2F";
 export const BACKGROUND_BUBBLE = "#151515";
+export const BACKGROUND_TOGGLE_BUTTON = "#201E1D";
+export const BACKGROUND_TOGGLE_BUTTON_HOVER = "#2A2827";
 
 // Text colors
 export const TEXT_PRIMARY = "#CACACA";
@@ -54,6 +56,12 @@ export const NEUTRAL_MAIN = "#454545";
 // Border colors
 export const BORDER_BUBBLE = "#4F4F4F";
 export const BORDER_CARD = "#595959";
+export const BORDER_COUNTER = "#4E4E4E";
+export const BORDER_AREA = "#616161";
 
 // Divider
 export const DIVIDER = "rgba(255, 255, 255, 0.4)";
+
+export const CHART_STROKE = "#73B46A";
+
+export const CHART_FILL = "#31B47A";

@@ -154,6 +154,7 @@ export const Badges = () => {
 
           {/* Search */}
           <TextField
+            id="badges-search-input"
             placeholder="Search by name or address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

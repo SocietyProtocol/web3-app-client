@@ -4,6 +4,7 @@ import { useProfileId } from "@/hooks/useProfileId";
 import { useProfileUri } from "@/hooks/useProfileUri";
 import { useMemo } from "react";
 import { useFetch } from "@/hooks/useFetch";
+import { useSubgraphUser } from "@/hooks/useSubgraphUser";
 
 export interface ProfileData {
   name?: string;
@@ -24,6 +25,8 @@ export function useProfile(addressOverride?: Address) {
 
   // Read profile data from IPFS using the uri
   const profileDataResult = useFetch<ProfileData>(uriResult.data);
+
+  const subgraphData = useSubgraphUser(userAddress);
 
   const refetch = async () => {
     await profileIdResult.refetch();
@@ -48,6 +51,7 @@ export function useProfile(addressOverride?: Address) {
     profileId: profileIdResult,
     uri: uriResult,
     profileData: profileDataResult,
+    subgraphData,
     username,
     refetch,
   };

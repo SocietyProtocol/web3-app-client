@@ -11,26 +11,28 @@ import CloseIcon from "@mui/icons-material/Close";
 import { BadgeCard } from "./BadgeCard";
 import { Gallery } from "../Gallery/Gallery";
 import { useState } from "react";
-import { Address } from "viem";
-import { useProfile } from "../AccountSetup/useProfile";
-import { truncateAddress } from "@/utils/string";
+import { BadgeData } from "./types";
 
 interface BadgesModalProps {
   open: boolean;
   onClose: () => void;
-  holder: Address;
+  username: string;
+  badges: BadgeData[];
 }
 
-export const BadgesModal = ({ open, onClose, holder }: BadgesModalProps) => {
-  const { username = truncateAddress(holder) } = useProfile(holder);
-
+export const BadgesModal = ({
+  open,
+  onClose,
+  username,
+  badges,
+}: BadgesModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
-          All Badges held by {username}
+          All Badges held by {username} ({badges.length})
         </Typography>
         <IconButton
           onClick={onClose}
@@ -52,7 +54,7 @@ export const BadgesModal = ({ open, onClose, holder }: BadgesModalProps) => {
             minWidth: 600,
           }}
         >
-          {allBadges.length === 0 ? (
+          {badges.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
@@ -67,7 +69,7 @@ export const BadgesModal = ({ open, onClose, holder }: BadgesModalProps) => {
             </Box>
           ) : (
             <Gallery
-              items={allBadges}
+              items={badges}
               renderItem={(badge) => <BadgeCard {...badge} />}
               columns={{
                 xs: 1,

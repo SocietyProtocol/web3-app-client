@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useLoadingBar } from "react-top-loading-bar";
 
 export const TopLoader = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const { start, complete } = useLoadingBar();
+  const { start, complete, getProgress } = useLoadingBar();
 
   useEffect(() => {
     complete();
-  }, [complete, pathname, searchParams]);
+  }, [complete, pathname]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -21,18 +20,21 @@ export const TopLoader = () => {
 
       if (anchor && anchor.href && !anchor.target) {
         const url = new URL(anchor.href);
+
         if (
           url.pathname !== pathname &&
           url.origin === window.location.origin
         ) {
-          start("continuous", 0);
+          if (getProgress() === 0) {
+            start("continuous", 0);
+          }
         }
       }
     };
 
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
-  }, [pathname, start]);
+  }, [complete, getProgress, pathname, start]);
 
   return null;
 };

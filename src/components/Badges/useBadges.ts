@@ -44,7 +44,10 @@ export const useBadges = () => {
     addressParser,
   );
 
-  const [searchQuery, setSearchQuery] = useQueryState("search", parseAsString);
+  const [searchQuery, setSearchQuery] = useQueryState(
+    "search",
+    parseAsString.withDefault(""),
+  );
 
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
 

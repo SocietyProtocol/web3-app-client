@@ -10,13 +10,15 @@ type BadgeData = Pick<
   | "uri"
   | "hookAddress"
   | "createdAt"
-> & { createdBy: Pick<User, "id">; holders: Array<Pick<User, "id">> };
+  | "imageUrl"
+  | "creatorAddress"
+> & { holders: Array<Pick<User, "id">> };
 
 export const mockBadgesData: BadgeData[] = [
   {
     id: "1",
     name: "Crypto Enthusiast",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -27,7 +29,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "2",
     name: "Crypto Maniac",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -38,7 +40,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "3",
     name: "Filecoin Contributors",
-    createdBy: { id: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address },
+    creatorAddress: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -49,7 +51,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "4",
     name: "Protofire Contributors",
-    createdBy: { id: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address },
+    creatorAddress: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: true,
     createdAt: 1672531200,
@@ -60,7 +62,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "5",
     name: "Crypto Enthusiast",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -71,7 +73,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "6",
     name: "Crypto Maniac",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -82,7 +84,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "7",
     name: "Filecoin Contributors",
-    createdBy: { id: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address },
+    creatorAddress: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -93,7 +95,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "8",
     name: "Protofire Contributors",
-    createdBy: { id: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address },
+    creatorAddress: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: true,
     createdAt: 1672531200,
@@ -104,7 +106,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "9",
     name: "Crypto Enthusiast",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -115,7 +117,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "10",
     name: "Crypto Maniac",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -126,7 +128,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "11",
     name: "Filecoin Contributors",
-    createdBy: { id: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address },
+    creatorAddress: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -137,7 +139,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "12",
     name: "Protofire Contributors",
-    createdBy: { id: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address },
+    creatorAddress: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: true,
     createdAt: 1672531200,
@@ -148,7 +150,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "13",
     name: "Crypto Enthusiast",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -159,7 +161,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "14",
     name: "Crypto Maniac",
-    createdBy: { id: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address },
+    creatorAddress: "0x91555aD19D68c342E76b2a43EA4eBb90b49D27E8" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -170,7 +172,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "15",
     name: "Filecoin Contributors",
-    createdBy: { id: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address },
+    creatorAddress: "0xFB338C5fE584c026270e5DeD1C2e0AcA786a22fe" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: false,
     createdAt: 1672531200,
@@ -181,7 +183,7 @@ export const mockBadgesData: BadgeData[] = [
   {
     id: "16",
     name: "Protofire Contributors",
-    createdBy: { id: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address },
+    creatorAddress: "0x31C2cb2cd72a0a35Bf1839a2e0d383566bf904b0" as Address,
     holders: [{ id: "0x1234567890abcdef1234567890abcdef12345678" as Address }],
     isOfficial: true,
     createdAt: 1672531200,

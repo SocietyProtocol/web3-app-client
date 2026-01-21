@@ -114,7 +114,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             overflow="hidden"
           >
             <ProfileCard
-              avatar={profile?.avatar}
+              imageUrl={profile?.imageUrl}
               bio={profile?.bio}
               name={username}
               address={overrideAddress}
@@ -193,11 +193,10 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                     <BadgeCard
                       id={badge.id}
                       name={badge.name}
-                      badgeImageUrl={badge.badgeImageUrl}
+                      imageUrl={badge.imageUrl}
                       isOfficial={badge.isOfficial}
-                      createdBy={badge.createdBy}
-                      numberOfHolders={badge.numberOfHolders}
-                      metadataUrl={badge.metadataUrl}
+                      creatorAddress={badge.creatorAddress}
+                      uri={badge.uri}
                     />
                   </Grid>
                 ))}

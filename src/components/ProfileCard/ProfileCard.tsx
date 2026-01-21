@@ -4,7 +4,7 @@ import { AddressDisplay as AddressDisplay } from "../AddressDisplay/AddressDispl
 import { Address } from "viem";
 
 interface ProfileCardProps {
-  avatar?: string | null;
+  imageUrl?: string | null;
   name?: string;
   address?: Address;
   bio?: string;
@@ -15,7 +15,7 @@ interface ProfileCardProps {
 }
 
 export const ProfileCard = ({
-  avatar,
+  imageUrl,
   name,
   address,
   bio,
@@ -43,7 +43,7 @@ export const ProfileCard = ({
         {/* Avatar and Name Section */}
 
         <Avatar
-          ensImage={avatar}
+          ensImage={imageUrl}
           address={address}
           size={54}
           loading={loading}

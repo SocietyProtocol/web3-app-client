@@ -17,10 +17,11 @@ import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { getQueryClient } from "@/lib/tanstack-query";
+import { LoadingBarContainer } from "react-top-loading-bar";
+
+const queryClient = getQueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
-
   useEffect(() => {
     initializeWagmiWatcher();
   }, []);
@@ -71,7 +72,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     </IconButton>
                   )}
                 >
-                  <ErrorBoundary>{children}</ErrorBoundary>
+                  <ErrorBoundary>
+                    <LoadingBarContainer
+                      props={{
+                        color: "#ffffff",
+                        style: {
+                          boxShadow:
+                            "rgb(255, 255, 255) 0px 0px 10px, rgb(255, 255, 255) 0px 0px 10px",
+                        },
+                      }}
+                    >
+                      {children}
+                    </LoadingBarContainer>
+                  </ErrorBoundary>
                 </SnackbarProvider>
               </RainbowKitProvider>
             </ThemeProvider>

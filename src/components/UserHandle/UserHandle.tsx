@@ -38,7 +38,7 @@ export const UserHandle = ({
           <ProfileCard
             loading={profileIdLoading || uriLoading || profileDataLoading}
             address={address}
-            avatar={profileData?.avatar}
+            imageUrl={profileData?.imageUrl}
             name={username}
             bio={profileData?.bio}
             showAddress
@@ -69,7 +69,7 @@ export const UserHandle = ({
           <Avatar
             address={address}
             size={size === "small" ? 16 : 24}
-            ensImage={profileData?.avatar}
+            ensImage={profileData?.imageUrl}
             loading={profileIdLoading || uriLoading || profileDataLoading}
           />
 

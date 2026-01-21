@@ -69,7 +69,7 @@ export function get<
 
 /**
  * Searches for a query string within specified fields of objects in a collection.
- * Supports nested fields using dot notation (e.g., "createdBy.id").
+ * Supports nested fields using dot notation.
  *
  * @param collection The array of objects to search within.
  * @param query The search string to look for.

@@ -87,7 +87,7 @@ export const ConnectButton = ({
             >
               <Avatar
                 address={account.address}
-                ensImage={profileData?.avatar}
+                ensImage={profileData?.imageUrl}
                 size={24}
                 loading={profileIdLoading || uriLoading || profileDataLoading}
               />

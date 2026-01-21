@@ -8,7 +8,7 @@ import { useFetch } from "@/hooks/useFetch";
 export interface ProfileData {
   name?: string;
   bio?: string;
-  avatar?: string | null;
+  imageUrl?: string | null;
   referralCode?: string;
 }
 

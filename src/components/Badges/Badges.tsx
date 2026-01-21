@@ -2,8 +2,8 @@
 
 import { useBadges } from "@/hooks/useBadges";
 import { BadgeCard } from "../BadgeCard/BadgeCard";
-import { useMemo, useState } from "react";
-import { Gallery } from "../Gallery/Gallery";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { useLoadingBar } from "react-top-loading-bar";
 import {
   Stack,
   TextField,
@@ -11,6 +11,7 @@ import {
   InputAdornment,
   Tabs,
   Tab,
+  Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useAccount } from "wagmi";
@@ -20,57 +21,97 @@ import {
   type FilterSelectOption,
 } from "../FilterSelect/FilterSelect";
 import { isEqualCaseInsensitive } from "@/utils/string";
-import { searchInCollection } from "@/utils/collection";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 
-type SortOption = "newest" | "holders" | "name";
-type FilterOption = "anyone" | "me" | "address";
-type TabOption = "all" | "managed" | "my-badges";
-
-const gridConfig = {
-  columns: {
-    xs: 1,
-    sm: 2,
-    md: 3,
-    lg: 4,
-    xl: 6,
-  },
-  rows: {
-    xs: 2,
-    sm: 3,
-    md: 4,
-    lg: 5,
-  },
-};
+enum SortOption {
+  Newest = "newest",
+  Holders = "holders",
+  Name = "name",
+}
+enum FilterOption {
+  Anyone = "anyone",
+  Me = "me",
+  Address = "address",
+}
+enum TabOption {
+  All = "all",
+  Managed = "managed",
+  MyBadges = "my-badges",
+}
 
 const sortOptions: FilterSelectOption<SortOption>[] = [
-  { value: "newest", label: "Newest" },
-  { value: "holders", label: "Holders" },
-  { value: "name", label: "Name" },
+  { value: SortOption.Newest, label: "Newest" },
+  { value: SortOption.Holders, label: "Holders" },
+  { value: SortOption.Name, label: "Name" },
 ];
 
 const filterOptions: FilterSelectOption<FilterOption>[] = [
-  { value: "anyone", label: "Anyone" },
-  { value: "address", label: "Address" },
+  { value: FilterOption.Anyone, label: "Anyone" },
+  { value: FilterOption.Address, label: "Address" },
 ];
 
 export const Badges = () => {
-  const { data, isLoading } = useBadges();
   const { address: userAddress } = useAccount();
-  const [activeTab, setActiveTab] = useState<TabOption>("all");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [filterBy, setFilterBy] = useState<FilterOption>("anyone");
+  const [activeTab, setActiveTab] = useState<TabOption>(TabOption.All);
+  const [sortBy, setSortBy] = useState<SortOption>(SortOption.Newest);
+  const [filterBy, setFilterBy] = useState<FilterOption>(FilterOption.Anyone);
   const [filterAddress, setFilterAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
+  const {
+    data,
+    isFetching,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useBadges(debouncedSearchQuery);
+
+  const { start, complete } = useLoadingBar();
+
+  // Control loading bar for non-initial loads
+  useEffect(() => {
+    if (isFetching) {
+      start("continuous");
+    } else {
+      complete();
+    }
+  }, [complete, isFetching, start]);
 
   const allBadges = useMemo(
     () => data?.pages.flatMap((page) => page.badges) || [],
     [data],
   );
 
+  // Intersection Observer for infinite scroll
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: "200px" },
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
   const tabCounts = useMemo(() => {
     const managed = userAddress
       ? allBadges.filter((badge) =>
-          isEqualCaseInsensitive(badge.createdBy?.id, userAddress),
+          isEqualCaseInsensitive(badge.creatorAddress, userAddress),
         ).length
       : 0;
     const myBadges = userAddress
@@ -93,7 +134,7 @@ export const Badges = () => {
     // Apply tab filter
     if (activeTab === "managed" && userAddress) {
       result = result.filter((badge) =>
-        isEqualCaseInsensitive(badge.createdBy?.id, userAddress),
+        isEqualCaseInsensitive(badge.creatorAddress, userAddress),
       );
     } else if (activeTab === "my-badges" && userAddress) {
       result = result.filter((badge) =>
@@ -106,24 +147,15 @@ export const Badges = () => {
     // Apply filter by creator
     if (filterBy === "me" && userAddress) {
       result = result.filter((badge) =>
-        isEqualCaseInsensitive(badge.createdBy?.id, userAddress),
+        isEqualCaseInsensitive(badge.creatorAddress, userAddress),
       );
     } else if (filterBy === "address" && filterAddress) {
       const cleanAddress = filterAddress.trim();
       if (isAddress(cleanAddress)) {
         result = result.filter((badge) =>
-          isEqualCaseInsensitive(badge.createdBy?.id, cleanAddress),
+          isEqualCaseInsensitive(badge.creatorAddress, cleanAddress),
         );
       }
-    }
-
-    // Apply search
-    if (searchQuery.trim()) {
-      result = searchInCollection(result, searchQuery, [
-        "name",
-        "id",
-        "createdBy.id",
-      ]);
     }
 
     // Apply sorting
@@ -141,132 +173,150 @@ export const Badges = () => {
     });
 
     return result;
-  }, [
-    allBadges,
-    activeTab,
-    sortBy,
-    filterBy,
-    filterAddress,
-    searchQuery,
-    userAddress,
-  ]);
-
-  const [currentPage, setCurrentPage] = useState(1);
+  }, [allBadges, activeTab, sortBy, filterBy, filterAddress, userAddress]);
 
   return (
-    <Stack spacing={3} width="100%" marginTop={3}>
-      {/* Tabs */}
-      <Tabs
-        value={activeTab}
-        onChange={(_, value) => {
-          setActiveTab(value);
-          setCurrentPage(1);
-        }}
-        variant="fullWidth"
-        sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-        }}
-      >
-        <Tab label={`All (${tabCounts.all})`} value="all" />
-        <Tab
-          label={`Managed by me (${tabCounts.managed})`}
-          value="managed"
-          disabled={!userAddress}
-        />
-        <Tab
-          label={`My badges (${tabCounts.myBadges})`}
-          value="my-badges"
-          disabled={!userAddress}
-        />
-      </Tabs>
-
-      {/* Controls */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          gap: 2,
-          justifyContent: "space-between",
-          alignItems: { xs: "stretch", md: "flex-start" },
-        }}
-      >
-        <Stack direction="row" spacing={2}>
-          {/* Sort */}
-          <FilterSelect
-            label="Sort by"
-            value={sortBy}
-            options={sortOptions}
-            onChange={(value) => {
-              setSortBy(value);
-              setCurrentPage(1);
-            }}
-          />
-
-          {/* Filter */}
-          <FilterSelect
-            label="Created by"
-            value={filterBy}
-            options={filterOptions}
-            onChange={(value) => {
-              setFilterBy(value);
-              setCurrentPage(1);
-              if (value !== "address") {
-                setFilterAddress("");
-              }
-            }}
-            customOption="address"
-            customInputValue={filterAddress}
-            onCustomInputChange={(value) => {
-              setFilterAddress(value);
-              setCurrentPage(1);
-            }}
-            customInputPlaceholder="0x..."
-            customInputValidate={isAddress}
-            customInputErrorText="Invalid address"
-          />
-        </Stack>
-
-        {/* Search */}
-        <TextField
-          placeholder="Search by name or address..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setCurrentPage(1);
-          }}
-          size="small"
+    <>
+      <Stack spacing={3} width="100%" marginTop={3}>
+        {/* Tabs */}
+        <Tabs
+          value={activeTab}
+          onChange={(_, value) => setActiveTab(value)}
+          variant="fullWidth"
           sx={{
-            flex: {
-              xs: 1,
-              md: "unset",
-            },
-            minWidth: { xs: "100%", md: 300 },
+            borderBottom: 1,
+            borderColor: "divider",
           }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      </Box>
+        >
+          <Tab label={`All (${tabCounts.all})`} value="all" />
+          <Tab
+            label={`Managed by me (${tabCounts.managed})`}
+            value="managed"
+            disabled={!userAddress}
+          />
+          <Tab
+            label={`My badges (${tabCounts.myBadges})`}
+            value="my-badges"
+            disabled={!userAddress}
+          />
+        </Tabs>
 
-      {/* Gallery */}
-      <Gallery
-        items={filteredAndSortedBadges}
-        loading={isLoading}
-        emptyMessage="No badges found"
-        renderItem={(badge) => <BadgeCard {...badge} />}
-        renderSkeleton={() => <BadgeCard loading />}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        columns={gridConfig.columns}
-        rows={gridConfig.rows}
-      />
-    </Stack>
+        {/* Controls */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 2,
+            justifyContent: "space-between",
+            alignItems: { xs: "stretch", md: "flex-start" },
+          }}
+        >
+          <Stack direction="row" spacing={2}>
+            {/* Sort */}
+            <FilterSelect
+              label="Sort by"
+              value={sortBy}
+              options={sortOptions}
+              onChange={setSortBy}
+            />
+
+            {/* Filter */}
+            <FilterSelect
+              label="Created by"
+              value={filterBy}
+              options={filterOptions}
+              onChange={(value) => {
+                setFilterBy(value);
+                if (value !== "address") {
+                  setFilterAddress("");
+                }
+              }}
+              customOption={FilterOption.Address}
+              customInputValue={filterAddress}
+              onCustomInputChange={setFilterAddress}
+              customInputPlaceholder="0x..."
+              customInputValidate={isAddress}
+              customInputErrorText="Invalid address"
+            />
+          </Stack>
+
+          {/* Search */}
+          <TextField
+            placeholder="Search by name or address..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            size="small"
+            sx={{
+              flex: {
+                xs: 1,
+                md: "unset",
+              },
+              minWidth: { xs: "100%", md: 300 },
+            }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Box>
+
+        {/* Badge Grid */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(1, 1fr)",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+              lg: "repeat(4, 1fr)",
+              xl: "repeat(6, 1fr)",
+            },
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          {isLoading ? (
+            Array.from({ length: 12 }).map((_, index) => (
+              <BadgeCard key={`skeleton-${index}`} loading />
+            ))
+          ) : filteredAndSortedBadges.length === 0 ? (
+            <Box
+              sx={{
+                gridColumn: "1 / -1",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: 200,
+              }}
+            >
+              <Typography variant="body1" color="text.primary">
+                No badges found
+              </Typography>
+            </Box>
+          ) : (
+            filteredAndSortedBadges.map((badge) => (
+              <BadgeCard key={badge.id} {...badge} />
+            ))
+          )}
+        </Box>
+
+        {/* Intersection observer target for infinite scroll */}
+        <Box ref={observerTarget} sx={{ height: 20, width: "100%" }} />
+
+        {/* Loading more indicator */}
+        {isFetchingNextPage && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Loading more badges...
+            </Typography>
+          </Box>
+        )}
+      </Stack>
+    </>
   );
 };

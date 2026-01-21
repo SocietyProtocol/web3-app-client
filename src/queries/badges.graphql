@@ -3,12 +3,14 @@ query Badges(
   $skip: Int!
   $orderBy: Badge_orderBy!
   $orderDirection: OrderDirection!
+  $where: Badge_filter
 ) {
   badges(
     first: $first
     skip: $skip
     orderBy: $orderBy
     orderDirection: $orderDirection
+    where: $where
   ) {
     id
     name
@@ -16,9 +18,8 @@ query Badges(
     isCommunity
     uri
     hookAddress
-    createdBy {
-      id
-    }
+    imageUrl
+    creatorAddress
     createdAt
     holders {
       id

@@ -8,15 +8,28 @@ import {
   Stack,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { BadgeCard, BadgeCardProps } from "../BadgeCard/BadgeCard";
+import { BadgeCard } from "../BadgeCard/BadgeCard";
 
 import { Gallery } from "../Gallery/Gallery";
 import { useEffect, useState } from "react";
+import { Badge, User } from "../../../.graphclient";
 
+type BadgeData = Pick<
+  Badge,
+  | "id"
+  | "name"
+  | "isOfficial"
+  | "isCommunity"
+  | "uri"
+  | "hookAddress"
+  | "createdAt"
+  | "imageUrl"
+  | "creatorAddress"
+> & { holders: Array<Pick<User, "id">> };
 interface BadgesModalProps {
   open: boolean;
   onClose: () => void;
-  badges: BadgeCardProps[];
+  badges: BadgeData[];
   username?: string;
 }
 
@@ -27,12 +40,6 @@ export const BadgesModal = ({
   username = "User",
 }: BadgesModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Transform badges to ensure they have required id
-  const badgesWithId = badges.map((badge, index) => ({
-    ...badge,
-    id: badge.id || `badge-${index}`,
-  }));
 
   useEffect(() => {
     if (open) {
@@ -45,7 +52,7 @@ export const BadgesModal = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
-          All Badges held by {username} ({badgesWithId.length})
+          All Badges held by {username} ({badges.length})
         </Typography>
         <IconButton
           onClick={onClose}
@@ -66,7 +73,7 @@ export const BadgesModal = ({
             },
           }}
         >
-          {badgesWithId.length === 0 ? (
+          {badges.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
@@ -81,7 +88,7 @@ export const BadgesModal = ({
             </Box>
           ) : (
             <Gallery
-              items={badgesWithId}
+              items={badges}
               renderItem={(badge) => <BadgeCard {...badge} />}
               currentPage={currentPage}
               onPageChange={setCurrentPage}

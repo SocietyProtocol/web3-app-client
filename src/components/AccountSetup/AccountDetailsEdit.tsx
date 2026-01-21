@@ -67,9 +67,9 @@ export const AccountDetailsEdit = ({
       enqueueSnackbar(
         parseErrorMessage(
           error,
-          "An unexpected error occurred while creating/updating profile."
+          "An unexpected error occurred while creating/updating profile.",
         ),
-        { variant: "error" }
+        { variant: "error" },
       );
     }
   };
@@ -136,10 +136,10 @@ export const AccountDetailsEdit = ({
       {/* Avatar and Name Section */}
 
       <Controller
-        name="avatar"
+        name="imageUrl"
         control={form.control}
         render={({ field, fieldState }) => {
-          const serverError = getServerFieldError("avatar");
+          const serverError = getServerFieldError("imageUrl");
           const error = fieldState.error?.message || serverError;
           const onChange = (value: string | null) => {
             field.onChange(value);

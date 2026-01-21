@@ -70,9 +70,9 @@ const AccountSetupWizardContent = ({
     (Boolean(activeStep === 0 && form.formState.errors.referralCode) ||
       Boolean(
         activeStep === 1 &&
-          (form.formState.errors.name ||
-            form.formState.errors.bio ||
-            form.formState.errors.avatar)
+        (form.formState.errors.name ||
+          form.formState.errors.bio ||
+          form.formState.errors.imageUrl),
       ));
 
   const handleNext = async () => {
@@ -125,7 +125,7 @@ const AccountSetupWizardContent = ({
         }
 
         const hasAccountInfoError =
-          err.details?.name || err.details?.bio || err.details?.avatar;
+          err.details?.name || err.details?.bio || err.details?.imageUrl;
 
         if (hasAccountInfoError) {
           setActiveStep(1);
@@ -138,9 +138,9 @@ const AccountSetupWizardContent = ({
         enqueueSnackbar(
           parseErrorMessage(
             err,
-            "An unexpected error occurred while creating/updating profile."
+            "An unexpected error occurred while creating/updating profile.",
           ),
-          { variant: "error" }
+          { variant: "error" },
         );
       }
     }

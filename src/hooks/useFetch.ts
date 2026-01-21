@@ -11,21 +11,26 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
  */
 export const useFetch = <T>(
   url?: string | null,
-  options?: UseQueryOptions<T>
-): ReturnType<typeof useQuery<T>> =>
-  useQuery<T>({
+  options?: Partial<UseQueryOptions<T | null>>,
+): ReturnType<typeof useQuery<T | null>> =>
+  useQuery<T | null>({
     queryKey: ["fetch", url],
     queryFn: async () => {
       if (!url) {
         throw new Error("URL is undefined");
       }
 
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data from ${url}`);
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data from ${url}`);
+        }
+        const data = (await response.json()) as T;
+        return data;
+      } catch {
+        return null;
       }
-      const data = (await response.json()) as T;
-      return data;
     },
     retry: 2,
     staleTime: Infinity,

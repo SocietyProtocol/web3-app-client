@@ -15,13 +15,11 @@ import Link from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Badge } from "../../../.graphclient";
 import { Hex } from "viem";
-import { useFetch } from "@/hooks/useFetch";
 
 export interface BadgeCardProps extends Partial<
-  Omit<Badge, "holders" | "createdAt" | "createdBy">
+  Omit<Badge, "holders" | "createdAt">
 > {
   loading?: boolean;
-  createdBy?: { id: string };
 }
 
 const StyledBadgeCard = styled(Paper, {
@@ -54,14 +52,11 @@ export const BadgeCard = ({
   id,
   name,
   isOfficial,
-  createdBy,
+  creatorAddress,
   uri,
   loading = false,
+  imageUrl,
 }: BadgeCardProps) => {
-  const metadata = useFetch<Record<string, string>>(uri);
-
-  const badgeImageUrl = metadata?.data?.avatar;
-
   return (
     <StyledBadgeCard isOfficial={isOfficial}>
       {/* Badge ID and Official Label */}
@@ -147,9 +142,7 @@ export const BadgeCard = ({
         />
       ) : (
         <Avatar
-          src={
-            badgeImageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
-          }
+          src={imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")}
           alt={name}
           sx={{ width: 52, height: 52 }}
         />
@@ -183,7 +176,7 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton variant="text" width={70} height={10} />
       ) : (
-        createdBy && (
+        creatorAddress && (
           <Stack
             width="100%"
             p={0.5}
@@ -207,9 +200,9 @@ export const BadgeCard = ({
             >
               CREATED BY
             </Typography>
-            {createdBy?.id ? (
+            {creatorAddress ? (
               <UserHandle
-                address={createdBy.id as Hex}
+                address={creatorAddress as Hex}
                 size="small"
                 showYouLabel={false}
                 previewCard

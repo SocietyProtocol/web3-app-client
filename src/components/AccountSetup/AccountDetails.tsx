@@ -1,7 +1,7 @@
 import { Stack, Typography, Button, Grid, Box } from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
 import { AccountSkeleton } from "./AccountSkeleton";
 import { AccountSetupProvider } from "./AccountSetupContext";
@@ -11,10 +11,10 @@ import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
-import { mockBadgesData } from "../../data/badges";
-import { BadgeCard } from "../BadgeCard/BadgeCard";
-import { BadgesModal } from "../BadgesModal/BadgesModal";
+import { BadgeCard } from "../Badges/BadgeCard";
+import { BadgesModal } from "../Badges/BadgesModal";
 import { truncateAddress } from "@/utils/string";
+import { useBadgesQuery } from "../Badges/useBadgesQuery";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -33,6 +33,15 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
       : "Unknown User",
   } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
+
+  const badges = useBadgesQuery({
+    holderAddress: overrideAddress,
+  });
+
+  const allBadges = useMemo(
+    () => badges.data?.pages.flatMap((page) => page.badges) || [],
+    [badges.data],
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
@@ -151,12 +160,12 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 variant="outlined"
                 size="small"
                 onClick={handleOpenBadgesModal}
-                disabled={mockBadgesData.length === 0}
+                disabled={allBadges.length === 0}
               >
-                View All Badges ({mockBadgesData.length})
+                View All Badges
               </Button>
             </Stack>
-            {mockBadgesData.length === 0 ? (
+            {allBadges.length === 0 ? (
               <Stack
                 justifyContent="center"
                 alignItems="center"
@@ -179,7 +188,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   sm: 3,
                 }}
               >
-                {mockBadgesData.slice(0, 6).map((badge) => (
+                {allBadges.slice(0, 6).map((badge) => (
                   <Grid
                     key={badge.id}
                     size={1}
@@ -201,7 +210,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   </Grid>
                 ))}
 
-                {mockBadgesData.length > 6 && (
+                {allBadges.length > 6 && (
                   <Grid
                     size={1}
                     sx={{
@@ -219,7 +228,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                       color="text.primary"
                       sx={{ textAlign: "center" }}
                     >
-                      And {mockBadgesData.length - 6} more badges...
+                      And {allBadges.length - 6} more badges...
                     </Typography>
                   </Grid>
                 )}
@@ -230,8 +239,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           <BadgesModal
             open={isBadgesModalOpen}
             onClose={handleCloseBadgesModal}
-            badges={mockBadgesData}
-            username={username}
+            holder={overrideAddress}
           />
         </Stack>
       )}

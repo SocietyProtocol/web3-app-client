@@ -1,8 +1,8 @@
 import { usePrevious } from "@/hooks/usePrevious";
+
 import { useResponsiveHeightValue } from "@/hooks/useResponsiveHeightValue";
 import { useResponsiveValue } from "@/hooks/useResponsiveValue";
 import { useIsMounted } from "@/hooks/useIsMounted";
-
 import {
   Box,
   Grid,
@@ -12,7 +12,6 @@ import {
   Typography,
 } from "@mui/material";
 import { ReactNode, useEffect, useMemo, ReactElement } from "react";
-
 export interface GalleryGridConfig {
   xs: number;
   sm?: number;
@@ -60,7 +59,6 @@ export const Gallery = <T extends { id: number | string }>({
   rows = defaultRows,
 }: GalleryProps<T>): ReactElement | null => {
   const isMounted = useIsMounted();
-
   const rawColumnsPerPage = useResponsiveValue(columns);
   const rawRowsPerPage = useResponsiveHeightValue(rows);
   const columnsPerPage = Math.max(1, rawColumnsPerPage || 0);
@@ -106,7 +104,6 @@ export const Gallery = <T extends { id: number | string }>({
   ) => {
     onPageChange(page);
   };
-
   // Handle page size changes - keep the same first item visible
   useEffect(() => {
     if (prevFirstItemIndex === null || currentPage !== prevPage) return;
@@ -146,21 +143,20 @@ export const Gallery = <T extends { id: number | string }>({
         }}
       >
         {loading ? (
-          renderSkeleton ? (
-            Array.from({ length: itemsPerPage }).map((_, index) => (
-              <Grid
-                size={1}
-                key={`skeleton-${index}`}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
-              >
-                {renderSkeleton()}
-              </Grid>
-            ))
-          ) : null
+          renderSkeleton &&
+          Array.from({ length: itemsPerPage }).map((_, index) => (
+            <Grid
+              size={1}
+              key={`skeleton-${index}`}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {renderSkeleton()}
+            </Grid>
+          ))
         ) : items.length === 0 ? (
           <Box
             sx={{

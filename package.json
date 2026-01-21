@@ -31,6 +31,7 @@
     "jotai-tanstack-query": "^0.11.0",
     "next": "16.0.10",
     "notistack": "^3.0.2",
+    "nuqs": "^2.8.6",
     "pinata": "^2.5.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",

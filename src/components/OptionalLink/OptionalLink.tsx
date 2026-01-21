@@ -7,9 +7,11 @@ import {
   isValidElement,
 } from "react";
 
-interface OptionalLinkProps
-  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
-  href?: string | false;
+interface OptionalLinkProps extends Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  "href"
+> {
+  href?: string | false | null;
   children: React.ReactNode;
   target?: string;
   rel?: string;

@@ -81,6 +81,7 @@ export function FilterSelect<T extends string>({
             size="small"
             error={hasError}
             disableUnderline
+            aria-label={label}
           >
             {options.map((option) => (
               <MenuItem
@@ -102,19 +103,22 @@ export function FilterSelect<T extends string>({
             sx={{ minWidth: { xs: "100%", md: 200 } }}
             error={hasError}
             variant="standard"
-            InputProps={{
-              endAdornment: customInputValue ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => onCustomInputChange("")}
-                    edge="end"
-                    sx={{ padding: 0.5 }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
+            aria-label={customInputPlaceholder || "Custom filter input"}
+            slotProps={{
+              input: {
+                endAdornment: customInputValue ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => onCustomInputChange("")}
+                      edge="end"
+                      sx={{ padding: 0.5 }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              },
             }}
           />
         )}
@@ -128,7 +132,7 @@ export function FilterSelect<T extends string>({
           visibility: hasError ? "visible" : "hidden",
         }}
       >
-        {customOption && (hasError ? customInputErrorText : " ")}
+        {showCustomInput && (hasError ? customInputErrorText : " ")}
       </FormHelperText>
     </Box>
   );

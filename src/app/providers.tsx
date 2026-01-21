@@ -18,6 +18,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { getQueryClient } from "@/lib/tanstack-query";
 import { LoadingBarContainer } from "react-top-loading-bar";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const queryClient = getQueryClient();
 
@@ -53,39 +54,44 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   overlayBlur: "small",
                 })}
               >
-                <SnackbarProvider
-                  anchorOrigin={{
-                    horizontal: "center",
-                    vertical: "bottom",
-                  }}
-                  Components={{
-                    default: StyledMaterialDesignContent,
-                    error: StyledMaterialDesignContent,
-                    success: StyledMaterialDesignContent,
-                    warning: StyledMaterialDesignContent,
-                    info: StyledMaterialDesignContent,
-                  }}
-                  maxSnack={3}
-                  action={(key) => (
-                    <IconButton onClick={() => closeSnackbar(key)} size="small">
-                      <CloseOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                >
-                  <ErrorBoundary>
-                    <LoadingBarContainer
-                      props={{
-                        color: "#ffffff",
-                        style: {
-                          boxShadow:
-                            "rgb(255, 255, 255) 0px 0px 10px, rgb(255, 255, 255) 0px 0px 10px",
-                        },
-                      }}
-                    >
-                      {children}
-                    </LoadingBarContainer>
-                  </ErrorBoundary>
-                </SnackbarProvider>
+                <NuqsAdapter>
+                  <SnackbarProvider
+                    anchorOrigin={{
+                      horizontal: "center",
+                      vertical: "bottom",
+                    }}
+                    Components={{
+                      default: StyledMaterialDesignContent,
+                      error: StyledMaterialDesignContent,
+                      success: StyledMaterialDesignContent,
+                      warning: StyledMaterialDesignContent,
+                      info: StyledMaterialDesignContent,
+                    }}
+                    maxSnack={3}
+                    action={(key) => (
+                      <IconButton
+                        onClick={() => closeSnackbar(key)}
+                        size="small"
+                      >
+                        <CloseOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  >
+                    <ErrorBoundary>
+                      <LoadingBarContainer
+                        props={{
+                          color: "#ffffff",
+                          style: {
+                            boxShadow:
+                              "rgb(255, 255, 255) 0px 0px 10px, rgb(255, 255, 255) 0px 0px 10px",
+                          },
+                        }}
+                      >
+                        {children}
+                      </LoadingBarContainer>
+                    </ErrorBoundary>
+                  </SnackbarProvider>
+                </NuqsAdapter>
               </RainbowKitProvider>
             </ThemeProvider>
           </JotaiProvider>

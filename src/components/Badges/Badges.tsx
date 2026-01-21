@@ -1,8 +1,7 @@
 "use client";
 
-import { useBadges } from "@/hooks/useBadges";
-import { BadgeCard } from "../BadgeCard/BadgeCard";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { BadgeCard } from "./BadgeCard";
+import { useMemo, useEffect, useRef } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
 import {
   Stack,
@@ -16,48 +15,14 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { useAccount } from "wagmi";
 import { isAddress } from "viem";
-import {
-  FilterSelect,
-  type FilterSelectOption,
-} from "../FilterSelect/FilterSelect";
-import { isEqualCaseInsensitive } from "@/utils/string";
-import { useDebounceValue } from "@/hooks/useDebounceValue";
-
-enum SortOption {
-  Newest = "newest",
-  Holders = "holders",
-  Name = "name",
-}
-enum FilterOption {
-  Anyone = "anyone",
-  Me = "me",
-  Address = "address",
-}
-enum TabOption {
-  All = "all",
-  Managed = "managed",
-  MyBadges = "my-badges",
-}
-
-const sortOptions: FilterSelectOption<SortOption>[] = [
-  { value: SortOption.Newest, label: "Newest" },
-  { value: SortOption.Holders, label: "Holders" },
-  { value: SortOption.Name, label: "Name" },
-];
-
-const filterOptions: FilterSelectOption<FilterOption>[] = [
-  { value: FilterOption.Anyone, label: "Anyone" },
-  { value: FilterOption.Address, label: "Address" },
-];
+import { FilterSelect } from "../FilterSelect/FilterSelect";
+import { CreatedByOption, TabOption } from "./types";
+import { useBadges } from "@/components/Badges/useBadges";
+import { filterOptions, sortOptions } from "./consts";
 
 export const Badges = () => {
   const { address: userAddress } = useAccount();
-  const [activeTab, setActiveTab] = useState<TabOption>(TabOption.All);
-  const [sortBy, setSortBy] = useState<SortOption>(SortOption.Newest);
-  const [filterBy, setFilterBy] = useState<FilterOption>(FilterOption.Anyone);
-  const [filterAddress, setFilterAddress] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
+
   const {
     data,
     isFetching,
@@ -65,7 +30,17 @@ export const Badges = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useBadges(debouncedSearchQuery);
+    activeTab,
+    searchQuery,
+    createdBy,
+    createdByAddress,
+    orderBy,
+    setSearchQuery,
+    setActiveTab,
+    setCreatedBy,
+    setCreatedByAddress,
+    setSortBy,
+  } = useBadges();
 
   const { start, complete } = useLoadingBar();
 
@@ -108,72 +83,9 @@ export const Badges = () => {
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const tabCounts = useMemo(() => {
-    const managed = userAddress
-      ? allBadges.filter((badge) =>
-          isEqualCaseInsensitive(badge.creatorAddress, userAddress),
-        ).length
-      : 0;
-    const myBadges = userAddress
-      ? allBadges.filter((badge) =>
-          badge.holders?.some((holder) =>
-            isEqualCaseInsensitive(holder.id, userAddress),
-          ),
-        ).length
-      : 0;
-    return {
-      all: allBadges.length,
-      managed,
-      myBadges,
-    };
-  }, [allBadges, userAddress]);
-
-  const filteredAndSortedBadges = useMemo(() => {
-    let result = [...allBadges];
-
-    // Apply tab filter
-    if (activeTab === "managed" && userAddress) {
-      result = result.filter((badge) =>
-        isEqualCaseInsensitive(badge.creatorAddress, userAddress),
-      );
-    } else if (activeTab === "my-badges" && userAddress) {
-      result = result.filter((badge) =>
-        badge.holders?.some((holder) =>
-          isEqualCaseInsensitive(holder.id, userAddress),
-        ),
-      );
-    }
-
-    // Apply filter by creator
-    if (filterBy === "me" && userAddress) {
-      result = result.filter((badge) =>
-        isEqualCaseInsensitive(badge.creatorAddress, userAddress),
-      );
-    } else if (filterBy === "address" && filterAddress) {
-      const cleanAddress = filterAddress.trim();
-      if (isAddress(cleanAddress)) {
-        result = result.filter((badge) =>
-          isEqualCaseInsensitive(badge.creatorAddress, cleanAddress),
-        );
-      }
-    }
-
-    // Apply sorting
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return Number(b.createdAt || 0) - Number(a.createdAt || 0);
-        case "holders":
-          return (b.holders?.length || 0) - (a.holders?.length || 0);
-        case "name":
-          return (a.name || "").localeCompare(b.name || "");
-        default:
-          return 0;
-      }
-    });
-
-    return result;
-  }, [allBadges, activeTab, sortBy, filterBy, filterAddress, userAddress]);
+  const onCreatedByAddressChange = (value: string) => {
+    setCreatedByAddress(isAddress(value) ? value : null);
+  };
 
   return (
     <>
@@ -188,15 +100,15 @@ export const Badges = () => {
             borderColor: "divider",
           }}
         >
-          <Tab label={`All (${tabCounts.all})`} value="all" />
+          <Tab label="All" value={TabOption.All} />
           <Tab
-            label={`Managed by me (${tabCounts.managed})`}
-            value="managed"
+            label="Managed by me"
+            value={TabOption.Managed}
             disabled={!userAddress}
           />
           <Tab
-            label={`My badges (${tabCounts.myBadges})`}
-            value="my-badges"
+            label="My badges"
+            value={TabOption.MyBadges}
             disabled={!userAddress}
           />
         </Tabs>
@@ -215,7 +127,7 @@ export const Badges = () => {
             {/* Sort */}
             <FilterSelect
               label="Sort by"
-              value={sortBy}
+              value={orderBy}
               options={sortOptions}
               onChange={setSortBy}
             />
@@ -223,17 +135,17 @@ export const Badges = () => {
             {/* Filter */}
             <FilterSelect
               label="Created by"
-              value={filterBy}
+              value={createdBy}
               options={filterOptions}
               onChange={(value) => {
-                setFilterBy(value);
-                if (value !== "address") {
-                  setFilterAddress("");
+                setCreatedBy(value);
+                if (value !== CreatedByOption.Address) {
+                  setCreatedByAddress(null);
                 }
               }}
-              customOption={FilterOption.Address}
-              customInputValue={filterAddress}
-              onCustomInputChange={setFilterAddress}
+              customOption={CreatedByOption.Address}
+              customInputValue={createdByAddress ?? undefined}
+              onCustomInputChange={onCreatedByAddressChange}
               customInputPlaceholder="0x..."
               customInputValidate={isAddress}
               customInputErrorText="Invalid address"
@@ -284,7 +196,7 @@ export const Badges = () => {
             Array.from({ length: 12 }).map((_, index) => (
               <BadgeCard key={`skeleton-${index}`} loading />
             ))
-          ) : filteredAndSortedBadges.length === 0 ? (
+          ) : allBadges.length === 0 ? (
             <Box
               sx={{
                 gridColumn: "1 / -1",
@@ -299,9 +211,7 @@ export const Badges = () => {
               </Typography>
             </Box>
           ) : (
-            filteredAndSortedBadges.map((badge) => (
-              <BadgeCard key={badge.id} {...badge} />
-            ))
+            allBadges.map((badge) => <BadgeCard key={badge.id} {...badge} />)
           )}
         </Box>
 

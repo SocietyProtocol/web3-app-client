@@ -8,51 +8,29 @@ import {
   Stack,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { BadgeCard } from "../BadgeCard/BadgeCard";
-
+import { BadgeCard } from "./BadgeCard";
 import { Gallery } from "../Gallery/Gallery";
-import { useEffect, useState } from "react";
-import { Badge, User } from "../../../.graphclient";
+import { useState } from "react";
+import { Address } from "viem";
+import { useProfile } from "../AccountSetup/useProfile";
+import { truncateAddress } from "@/utils/string";
 
-type BadgeData = Pick<
-  Badge,
-  | "id"
-  | "name"
-  | "isOfficial"
-  | "isCommunity"
-  | "uri"
-  | "hookAddress"
-  | "createdAt"
-  | "imageUrl"
-  | "creatorAddress"
-> & { holders: Array<Pick<User, "id">> };
 interface BadgesModalProps {
   open: boolean;
   onClose: () => void;
-  badges: BadgeData[];
-  username?: string;
+  holder: Address;
 }
 
-export const BadgesModal = ({
-  open,
-  onClose,
-  badges,
-  username = "User",
-}: BadgesModalProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
+export const BadgesModal = ({ open, onClose, holder }: BadgesModalProps) => {
+  const { username = truncateAddress(holder) } = useProfile(holder);
 
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentPage(1);
-    }
-  }, [open]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
-          All Badges held by {username} ({badges.length})
+          All Badges held by {username}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -71,9 +49,10 @@ export const BadgesModal = ({
               xs: "auto",
               sm: "fit-content",
             },
+            minWidth: 600,
           }}
         >
-          {badges.length === 0 ? (
+          {allBadges.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
@@ -88,10 +67,8 @@ export const BadgesModal = ({
             </Box>
           ) : (
             <Gallery
-              items={badges}
+              items={allBadges}
               renderItem={(badge) => <BadgeCard {...badge} />}
-              currentPage={currentPage}
-              onPageChange={setCurrentPage}
               columns={{
                 xs: 1,
                 sm: 2,
@@ -101,6 +78,8 @@ export const BadgesModal = ({
                 xs: 2,
                 sm: 3,
               }}
+              currentPage={currentPage}
+              onPageChange={(page) => setCurrentPage(page)}
             />
           )}
         </Stack>

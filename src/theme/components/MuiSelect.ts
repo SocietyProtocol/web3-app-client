@@ -1,12 +1,5 @@
 import { Components, CssVarsTheme, Theme } from "@mui/material";
 
-// Augment MUI Select variant types
-declare module "@mui/material/Select" {
-  interface SelectPropsVariantOverrides {
-    filter: true;
-  }
-}
-
 export const MuiSelect: Components<
   Omit<Theme, "palette" | "components"> & CssVarsTheme
 >["MuiSelect"] = {

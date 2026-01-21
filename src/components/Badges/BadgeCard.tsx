@@ -13,12 +13,10 @@ import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
 import Link from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { Badge } from "../../../.graphclient";
 import { Hex } from "viem";
+import { BadgeData } from "./types";
 
-export interface BadgeCardProps extends Partial<
-  Omit<Badge, "holders" | "createdAt">
-> {
+export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
 }
 

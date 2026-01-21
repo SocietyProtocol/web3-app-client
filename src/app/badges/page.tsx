@@ -20,11 +20,15 @@ const fetchBadges = async () => {
 export default async function BadgesPage() {
   const queryClient = getQueryClient();
 
-  await queryClient.prefetchInfiniteQuery({
-    queryKey: ["badges", "id", "asc"],
-    queryFn: fetchBadges,
-    initialPageParam: 0,
-  });
+  try {
+    await queryClient.prefetchInfiniteQuery({
+      queryKey: ["badges", "id", "asc"],
+      queryFn: fetchBadges,
+      initialPageParam: 0,
+    });
+  } catch (error) {
+    console.error("Error prefetching badges:", error);
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

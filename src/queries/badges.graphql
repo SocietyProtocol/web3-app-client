@@ -21,7 +21,11 @@ query Badges(
     imageUrl
     creatorAddress
     createdAt
+    holdersCount
     holders {
+      id
+    }
+    managers {
       id
     }
   }

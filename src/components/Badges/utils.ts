@@ -1,6 +1,16 @@
-import { Badge_filter, InputMaybe } from "../../../.graphclient";
+import { Address } from "viem";
+import {
+  Badge_filter,
+  BadgeDocument,
+  BadgeQuery,
+  BadgesDocument,
+  BadgesQuery,
+  execute,
+  InputMaybe,
+} from "../../../.graphclient";
 import { defaultOptions } from "./consts";
-import { BadgeQueryOptions } from "./types";
+import { BadgeQueryOptions, FullBadgeData } from "./types";
+import { isEqualCaseInsensitive } from "@/utils/string";
 
 /**
  * Merges the provided options with the default options.
@@ -21,7 +31,9 @@ export const mergeOptions = (
     managerAddress: managerAddress?.trim().toLowerCase(),
     creatorAddress: creatorAddress?.trim().toLowerCase(),
     holderAddress: holderAddress?.trim().toLowerCase(),
-    searchText: searchText?.trim().replace(/\s+/g, " "),
+    searchText: (searchText ?? defaultOptions.searchText)
+      ?.trim()
+      .replace(/\s+/g, " "),
   };
 };
 
@@ -78,4 +90,84 @@ export const buildWhereClause = (options: {
   }
 
   return { and: whereClauses };
+};
+
+/**
+ * Fetches a badge by its ID.
+ *
+ * @param id Badge ID
+ * @returns Badge data
+ */
+export const fetchBadge = async (id: string) => {
+  const res = await execute(BadgeDocument, {
+    id,
+  });
+
+  return res.data as BadgeQuery;
+};
+
+/**
+ *
+ * @param param0
+ * @returns
+ */
+export const fetchBadges = async (options?: BadgeQueryOptions) => {
+  const mergedOptions = mergeOptions(options);
+
+  const where = buildWhereClause({
+    searchText: mergedOptions.searchText,
+    creatorAddress: mergedOptions.creatorAddress,
+    managerAddress: mergedOptions.managerAddress,
+    holderAddress: mergedOptions.holderAddress,
+  });
+
+  const res = await execute(BadgesDocument, {
+    first: mergedOptions.pageSize,
+    skip: 0,
+    orderBy: mergedOptions.orderBy,
+    orderDirection: mergedOptions.orderDirection,
+    where,
+  });
+
+  return res.data as BadgesQuery;
+};
+
+export const getBadgePermissions = (
+  badge: FullBadgeData,
+  userAddress: Address,
+) => {
+  const permissions = {
+    canMint: false,
+    canBurn: false,
+    canTransfer: false,
+  };
+
+  for (const minter of badge.minters) {
+    for (const holder of minter.holders) {
+      if (isEqualCaseInsensitive(holder.id, userAddress)) {
+        permissions.canMint = true;
+        break;
+      }
+    }
+  }
+
+  for (const burner of badge.burners) {
+    for (const holder of burner.holders) {
+      if (isEqualCaseInsensitive(holder.id, userAddress)) {
+        permissions.canBurn = true;
+        break;
+      }
+    }
+  }
+
+  for (const transferer of badge.transferers) {
+    for (const holder of transferer.holders) {
+      if (isEqualCaseInsensitive(holder.id, userAddress)) {
+        permissions.canTransfer = true;
+        break;
+      }
+    }
+  }
+
+  return permissions;
 };

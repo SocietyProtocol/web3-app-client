@@ -1,17 +1,5 @@
-query Badges(
-  $first: Int!
-  $skip: Int!
-  $orderBy: Badge_orderBy!
-  $orderDirection: OrderDirection!
-  $where: Badge_filter
-) {
-  badges(
-    first: $first
-    skip: $skip
-    orderBy: $orderBy
-    orderDirection: $orderDirection
-    where: $where
-  ) {
+query Badge($id: ID!) {
+  badge(id: $id) {
     id
     name
     isOfficial

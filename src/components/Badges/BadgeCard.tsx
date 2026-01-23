@@ -1,5 +1,4 @@
 import {
-  alpha,
   Avatar,
   Chip,
   Paper,
@@ -8,13 +7,15 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { OfficialBadge } from "../icons/OfficialBadge";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
 import Link from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Hex } from "viem";
 import { BadgeData } from "./types";
+import { OptionalLink } from "../OptionalLink/OptionalLink";
+import { OfficialChip } from "./OfficialChip";
+import { CommunityChip } from "./CommunityChip";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
@@ -34,7 +35,7 @@ const StyledBadgeCard = styled(Paper, {
   borderRadius: 8,
   boxShadow: "none",
   width: "100%",
-  height: "200px",
+  height: "220px",
 
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
@@ -50,6 +51,7 @@ export const BadgeCard = ({
   id,
   name,
   isOfficial,
+  isCommunity,
   creatorAddress,
   uri,
   loading = false,
@@ -100,31 +102,10 @@ export const BadgeCard = ({
 
         {loading ? (
           <Skeleton width={50} />
+        ) : isCommunity ? (
+          <CommunityChip isOfficial={isOfficial} />
         ) : (
-          isOfficial && (
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography
-                variant="caption"
-                color="textPrimary"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: (theme) => theme.typography.pxToRem(10),
-                }}
-              >
-                OFFICIAL
-              </Typography>
-              <OfficialBadge
-                sx={{
-                  fontSize: 12,
-                  filter: (theme) =>
-                    `drop-shadow(0 0 1px ${alpha(
-                      theme.palette.gold.main,
-                      0.8,
-                    )})`,
-                }}
-              />
-            </Stack>
-          )
+          isOfficial && <OfficialChip />
         )}
       </Stack>
 
@@ -139,38 +120,49 @@ export const BadgeCard = ({
           }}
         />
       ) : (
-        <Avatar
-          src={imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")}
-          alt={name}
-          sx={{ width: 52, height: 52 }}
-        />
+        <OptionalLink href={loading ? undefined : `/badges/${id}`}>
+          <Avatar
+            src={
+              imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
+            }
+            alt={name}
+            sx={{ width: 52, height: 52 }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = isOfficial
+                ? "/official-badge.svg"
+                : "/badge.svg";
+            }}
+          />
+        </OptionalLink>
       )}
 
       {/* Title */}
       {loading ? (
         <Skeleton width="80%" />
       ) : (
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            textAlign: "center",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            width: "100%",
-            flexShrink: 0,
-          }}
-          title={name}
-        >
-          {name}
-        </Typography>
+        <OptionalLink href={loading ? undefined : `/badges/${id}`}>
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              textAlign: "center",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              width: "100%",
+              flexShrink: 0,
+              minHeight: 36,
+            }}
+            title={name}
+          >
+            {name}
+          </Typography>
+        </OptionalLink>
       )}
 
       {/* Created By */}
-
       {loading ? (
         <Skeleton variant="text" width={70} height={10} />
       ) : (
@@ -182,12 +174,11 @@ export const BadgeCard = ({
             spacing={0.5}
             alignItems="center"
             justifyContent="center"
+            onClick={(e) => e.stopPropagation()}
           >
             <Typography
               component="span"
-              variant="caption"
               sx={{
-                lineHeight: 1,
                 color: "text.primary",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -222,6 +213,7 @@ export const BadgeCard = ({
             href={uri}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             style={{
               textDecoration: "none",
               width: "100%",

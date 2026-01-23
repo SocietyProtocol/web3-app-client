@@ -1,31 +1,27 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { BadgesDocument, BadgesQuery, execute } from "@/../.graphclient";
-import { buildWhereClause, mergeOptions } from "./utils";
+import { fetchBadges, mergeOptions } from "./utils";
 import { BadgeQueryOptions } from "./types";
+import { getQueryClient } from "@/lib/tanstack-query";
+
+const queryClient = getQueryClient();
 
 export const useBadgesQuery = (options?: BadgeQueryOptions) => {
   const mergedOptions = mergeOptions(options);
-
-  const where = buildWhereClause({
-    searchText: mergedOptions.searchText,
-    creatorAddress: mergedOptions.creatorAddress,
-    managerAddress: mergedOptions.managerAddress,
-    holderAddress: mergedOptions.holderAddress,
-  });
 
   return useInfiniteQuery({
     queryKey: ["badges", mergedOptions],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
-      const res = await execute(BadgesDocument, {
-        first: mergedOptions.pageSize,
+      const result = await fetchBadges({
+        ...mergedOptions,
         skip: pageParam * mergedOptions.pageSize,
-        orderBy: mergedOptions.orderBy,
-        orderDirection: mergedOptions.orderDirection,
-        where,
       });
 
-      return res.data as BadgesQuery;
+      result.badges.forEach((badge) => {
+        queryClient.setQueryData(["badge", badge.id], badge);
+      });
+
+      return result;
     },
     getNextPageParam: (lastPage, pages) => {
       if (
@@ -37,5 +33,6 @@ export const useBadgesQuery = (options?: BadgeQueryOptions) => {
       return pages.length;
     },
     placeholderData: (prev) => prev,
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };

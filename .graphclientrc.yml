@@ -6,3 +6,4 @@ sources:
 documents:
   - ./src/queries/badges.graphql
   - ./src/queries/user.graphql
+  - ./src/queries/badge.graphql

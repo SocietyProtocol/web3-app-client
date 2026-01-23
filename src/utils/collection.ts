@@ -4,67 +4,30 @@ export type DeepKeys<T> = T extends object
     }[keyof T]
   : never;
 
-type GetIndexedField<T, K extends DeepKeys<T>> = K extends keyof T
-  ? T[K]
-  : K extends `${number}`
-    ? "0" extends keyof T
-      ? undefined
-      : number extends keyof T
-        ? T[number]
-        : undefined
-    : undefined;
-
-type FieldWithPossiblyUndefined<T, Key> =
-  | DeepValue<Exclude<T, undefined>, Key>
-  | Extract<T, undefined>;
-
-type IndexedFieldWithPossiblyUndefined<T, Key extends DeepKeys<T>> =
-  | GetIndexedField<Exclude<T, undefined>, Key>
-  | Extract<T, undefined>;
-
-export type DeepValue<T, P> = P extends `${infer Left}.${infer Right}`
-  ? Left extends keyof T
-    ? FieldWithPossiblyUndefined<T[Left], Right>
-    : Left extends `${infer FieldKey}[${infer IndexKey}]`
-      ? FieldKey extends keyof T
-        ? IndexKey extends DeepKeys<T[FieldKey]>
-          ? FieldWithPossiblyUndefined<
-              IndexedFieldWithPossiblyUndefined<T[FieldKey], IndexKey>,
-              Right
-            >
-          : undefined
-        : undefined
-      : undefined
+export type DeepValue<
+  T,
+  P extends string,
+> = P extends `${infer K}.${infer Rest}`
+  ? K extends keyof T
+    ? DeepValue<T[K], Rest>
+    : undefined
   : P extends keyof T
     ? T[P]
-    : P extends `${infer FieldKey}[${infer IndexKey}]`
-      ? FieldKey extends keyof T
-        ? IndexKey extends DeepKeys<T[FieldKey]>
-          ? IndexedFieldWithPossiblyUndefined<T[FieldKey], IndexKey>
-          : undefined
-        : undefined
-      : undefined;
+    : undefined;
 
 export function get<
   TData,
-  TPath extends string,
+  TPath extends DeepKeys<TData>,
   TDefault = DeepValue<TData, TPath>,
 >(
   data: TData,
   path: TPath,
   defaultValue?: TDefault,
 ): DeepValue<TData, TPath> | TDefault {
-  const value = path
-    .split(/[.[\]]/)
-    .filter(Boolean)
-    .reduce<DeepValue<TData, TPath>>(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (value, key) => (value as any)?.[key],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data as any,
-    );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const value = path.split(".").reduce<any>((acc, key) => acc?.[key], data);
 
-  return value !== undefined ? value : (defaultValue as TDefault);
+  return value !== undefined ? value : defaultValue!;
 }
 
 /**
@@ -81,17 +44,12 @@ export const searchInCollection = <T extends object>(
   query: string,
   fields: DeepKeys<T>[],
 ): T[] => {
-  const lowerCaseQuery = query.toLowerCase();
+  const q = query.toLowerCase();
+
   return collection.filter((item) =>
     fields.some((field) => {
-      // Handle nested fields with dot notation
-      const fieldValue = get(item, field);
-
-      if (typeof fieldValue === "string") {
-        return fieldValue.toLowerCase().includes(lowerCaseQuery);
-      }
-
-      return false;
+      const value = get(item, field);
+      return typeof value === "string" && value.toLowerCase().includes(q);
     }),
   );
 };

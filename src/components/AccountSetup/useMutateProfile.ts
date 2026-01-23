@@ -14,6 +14,7 @@ import { useProfile } from "./useProfile";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
+import { URLS } from "@/config/const";
 
 export const useMutateProfile = (overrideAddress?: Address) => {
   const chainId = useChainId();
@@ -37,7 +38,6 @@ export const useMutateProfile = (overrideAddress?: Address) => {
         },
         body: JSON.stringify({
           ...data,
-          cid: profile.uri.data || undefined,
         }),
       });
 
@@ -69,20 +69,23 @@ export const useMutateProfile = (overrideAddress?: Address) => {
     const profileExists =
       Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
 
-    const uriExists = Boolean(profile.uri.data && profile.uri.data.length > 0);
-
     const ipfsData = await uploadIpfsResult.mutateAsync({
       ...data,
-      cid: uriExists ? profile.uri.data! : undefined,
     });
+
+    const uri = ipfsData.cid
+      ? `${URLS.IPFS_GATEWAY}/${ipfsData.cid}`
+      : undefined;
+
+    if (!uri) {
+      throw new Error("Failed to generate profile URI");
+    }
 
     return await writeContract.writeContractAsync({
       address: contractAddress,
       abi: SocietyProtocolBadgesABI,
       functionName: profileExists ? "updateProfileURI" : "createProfile",
-      args: profileExists
-        ? [profile.profileId.data!, ipfsData.cid]
-        : [ipfsData.cid],
+      args: profileExists ? [profile.profileId.data!, uri] : [uri],
     });
   };
 

@@ -1,0 +1,41 @@
+query User($id: ID!) {
+  user(id: $id) {
+    id
+    badges {
+      id
+      name
+      isOfficial
+      isCommunity
+      uri
+      hookAddress
+      imageUrl
+      creatorAddress
+      createdAt
+      holdersCount
+      holders {
+        id
+      }
+      managers {
+        id
+      }
+    }
+    managedBadges {
+      id
+      name
+      isOfficial
+      isCommunity
+      uri
+      hookAddress
+      imageUrl
+      creatorAddress
+      createdAt
+      holdersCount
+      holders {
+        id
+      }
+      managers {
+        id
+      }
+    }
+  }
+}

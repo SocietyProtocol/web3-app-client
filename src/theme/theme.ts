@@ -3,6 +3,7 @@ import { dark } from "./palette/dark";
 import { MuiButton } from "./components/MuiButton";
 import { MuiStepper } from "./components/MuiStepper";
 import { MuiTextField } from "./components/MuiTextField";
+import { MuiSelect } from "./components/MuiSelect";
 import { createCustomMixins } from "./mixins";
 import { MuiCard } from "./components/MuiCard";
 import { MuiDialog } from "./components/MuiDialog";
@@ -29,6 +30,7 @@ const baseTheme = createTheme({
   components: {
     MuiButton,
     MuiStepper,
+    MuiSelect,
     MuiTextField,
     MuiCard,
     MuiDialog,

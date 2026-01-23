@@ -18,10 +18,10 @@ export const AccountInfoStep = () => {
 
       {/* Avatar Section */}
       <Controller
-        name="avatar"
+        name="imageUrl"
         control={form.control}
         render={({ field, fieldState }) => {
-          const serverError = getServerFieldError("avatar");
+          const serverError = getServerFieldError("imageUrl");
           const error = fieldState.error?.message || serverError;
           const onChange = (value: string | null) => {
             field.onChange(value);

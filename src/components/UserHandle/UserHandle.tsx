@@ -7,6 +7,7 @@ import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
 import { truncateAddress } from "@/utils/string";
+import { useMemo } from "react";
 
 interface UserHandleProps {
   address: Address;
@@ -31,6 +32,13 @@ export const UserHandle = ({
     profileData: { data: profileData, isLoading: profileDataLoading },
   } = useProfile(address);
 
+  const url = useMemo(() => {
+    if (address.toLowerCase() === connectedAddress?.toLowerCase()) {
+      return link ? `/profile` : false;
+    }
+    return link ? `/user/${address.toLowerCase()}` : false;
+  }, [address, connectedAddress, link]);
+
   return (
     <PreviewPopover
       content={
@@ -38,7 +46,7 @@ export const UserHandle = ({
           <ProfileCard
             loading={profileIdLoading || uriLoading || profileDataLoading}
             address={address}
-            avatar={profileData?.avatar}
+            imageUrl={profileData?.imageUrl}
             name={username}
             bio={profileData?.bio}
             showAddress
@@ -48,7 +56,7 @@ export const UserHandle = ({
       }
     >
       <OptionalLink
-        href={link && `/user/${address.toLowerCase()}`}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
         style={{
@@ -69,7 +77,7 @@ export const UserHandle = ({
           <Avatar
             address={address}
             size={size === "small" ? 16 : 24}
-            ensImage={profileData?.avatar}
+            ensImage={profileData?.imageUrl}
             loading={profileIdLoading || uriLoading || profileDataLoading}
           />
 

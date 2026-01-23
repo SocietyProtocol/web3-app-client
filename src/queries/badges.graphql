@@ -1,0 +1,32 @@
+query Badges(
+  $first: Int!
+  $skip: Int!
+  $orderBy: Badge_orderBy!
+  $orderDirection: OrderDirection!
+  $where: Badge_filter
+) {
+  badges(
+    first: $first
+    skip: $skip
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    where: $where
+  ) {
+    id
+    name
+    isOfficial
+    isCommunity
+    uri
+    hookAddress
+    imageUrl
+    creatorAddress
+    createdAt
+    holdersCount
+    holders {
+      id
+    }
+    managers {
+      id
+    }
+  }
+}

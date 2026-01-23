@@ -12,7 +12,7 @@ const ALLOWED_IMAGE_TYPES = [
 export const accountValidationSchema = z.object({
   name: z.string().max(100, "Name must be 100 characters or less").optional(),
   bio: z.string().max(500, "Bio must be 500 characters or less").optional(),
-  avatar: z
+  imageUrl: z
     .string()
     .nullable()
     .optional()
@@ -21,19 +21,19 @@ export const accountValidationSchema = z.object({
         if (!value) return true;
         return value.startsWith("data:image/");
       },
-      { message: "Avatar must be a valid image" }
+      { message: "Avatar must be a valid image" },
     )
     .refine(
       (value) => {
         if (!value) return true;
         const mimeMatch = value.match(
-          /^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/i
+          /^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/i,
         );
         if (!mimeMatch) return false;
         const fullMimeType = `image/${mimeMatch[1]}`;
         return ALLOWED_IMAGE_TYPES.includes(fullMimeType);
       },
-      { message: "Avatar must be a JPEG, PNG, WebP, SVG, or GIF image" }
+      { message: "Avatar must be a JPEG, PNG, WebP, SVG, or GIF image" },
     )
     .refine(
       (value) => {
@@ -49,13 +49,12 @@ export const accountValidationSchema = z.object({
         message: `Avatar size must not exceed ${
           MAX_AVATAR_SIZE / 1024 / 1024
         }MB`,
-      }
+      },
     ),
   referralCode: z
     .string()
     .max(50, "Referral code must be 50 characters or less")
     .optional(),
-  cid: z.string().optional(),
 });
 
 export type AccountData = z.infer<typeof accountValidationSchema>;

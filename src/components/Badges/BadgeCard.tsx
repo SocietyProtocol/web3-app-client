@@ -8,21 +8,15 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { Address } from "viem";
 import { OfficialBadge } from "../icons/OfficialBadge";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
 import Link from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Hex } from "viem";
+import { BadgeData } from "./types";
 
-export interface BadgeCardProps {
-  id: number;
-  title?: string;
-  badgeImageUrl?: string;
-  isOfficial?: boolean;
-  createdBy?: Address;
-  numberOfHolders?: number;
-  metadataUrl?: string;
+export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
 }
 
@@ -45,10 +39,6 @@ const StyledBadgeCard = styled(Paper, {
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 
-  [theme.breakpoints.up("sm")]: {
-    width: "200px",
-  },
-
   ...(isOfficial && {
     border: "none",
     ...theme.mixins.borderGradient("8px", "official"),
@@ -58,12 +48,12 @@ const StyledBadgeCard = styled(Paper, {
 
 export const BadgeCard = ({
   id,
-  title,
-  badgeImageUrl,
+  name,
   isOfficial,
-  createdBy,
-  metadataUrl,
+  creatorAddress,
+  uri,
   loading = false,
+  imageUrl,
 }: BadgeCardProps) => {
   return (
     <StyledBadgeCard isOfficial={isOfficial}>
@@ -129,7 +119,7 @@ export const BadgeCard = ({
                   filter: (theme) =>
                     `drop-shadow(0 0 1px ${alpha(
                       theme.palette.gold.main,
-                      0.8
+                      0.8,
                     )})`,
                 }}
               />
@@ -150,8 +140,8 @@ export const BadgeCard = ({
         />
       ) : (
         <Avatar
-          src={badgeImageUrl}
-          alt={title}
+          src={imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")}
+          alt={name}
           sx={{ width: 52, height: 52 }}
         />
       )}
@@ -173,9 +163,9 @@ export const BadgeCard = ({
             width: "100%",
             flexShrink: 0,
           }}
-          title={title}
+          title={name}
         >
-          {title}
+          {name}
         </Typography>
       )}
 
@@ -184,7 +174,7 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton variant="text" width={70} height={10} />
       ) : (
-        createdBy && (
+        creatorAddress && (
           <Stack
             width="100%"
             p={0.5}
@@ -208,9 +198,9 @@ export const BadgeCard = ({
             >
               CREATED BY
             </Typography>
-            {createdBy ? (
+            {creatorAddress ? (
               <UserHandle
-                address={createdBy}
+                address={creatorAddress as Hex}
                 size="small"
                 showYouLabel={false}
                 previewCard
@@ -227,9 +217,9 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton variant="text" width="90%" height={10} />
       ) : (
-        metadataUrl && (
+        uri && (
           <Link
-            href={metadataUrl}
+            href={uri}
             target="_blank"
             rel="noopener noreferrer"
             style={{

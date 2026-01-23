@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   if (!auth.authenticated) {
     return NextResponse.json(
       { error: auth.error || "Authentication required" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON in request body" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         error: "Validation failed",
         details: flattenError(validation.error).fieldErrors,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -54,29 +54,10 @@ export async function POST(request: NextRequest) {
   const metadata = {
     name: data.name,
     bio: data.bio || null,
-    avatar: data.avatar || null,
+    imageUrl: data.imageUrl || null,
     referralCode: data.referralCode || null,
     timestamp: new Date().toISOString(),
   };
-
-  // Delete old IPFS data if updating existing profile
-  // to be reviewed later
-  //
-  // if (data.cid) {
-  //   // If CID is provided, we are updating existing data
-  //   try {
-  //     const filesResponse = await pinata.files.public.list().cid(data.cid);
-  //     const id = filesResponse.files[0]?.id;
-
-  //     if (id) {
-  //       await pinata.files.public.delete([id]);
-  //       console.log(`Unpinned old IPFS data with CID ${data.cid} and ID ${id}`);
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to unpin old IPFS data:", error);
-  //     // Proceeding even if unpinning fails
-  //   }
-  // }
 
   try {
     const { cid } = await pinata.upload.public.json(metadata);
@@ -87,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

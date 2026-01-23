@@ -1,14 +1,49 @@
+import { Badges } from "@/components/Badges/Badges";
+import { getQueryClient } from "@/lib/tanstack-query";
 import { Box, Typography } from "@mui/material";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { BadgesDocument, BadgesQuery, execute } from "../../../.graphclient";
+import { defaultOptions } from "@/components/Badges/consts";
+import { Suspense } from "react";
 
-export default function BadgesPage() {
+const PAGE_SIZE = 1000;
+
+const fetchBadges = async () => {
+  const res = await execute(BadgesDocument, {
+    first: PAGE_SIZE,
+    skip: 0,
+    orderBy: "id",
+    orderDirection: "asc",
+  });
+
+  return res.data as BadgesQuery;
+};
+
+export default async function BadgesPage() {
+  const queryClient = getQueryClient();
+
+  try {
+    await queryClient.prefetchInfiniteQuery({
+      queryKey: ["badges", defaultOptions],
+      queryFn: fetchBadges,
+      initialPageParam: 0,
+    });
+  } catch (error) {
+    console.error("Error prefetching badges:", error);
+  }
+
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Badges
-      </Typography>
-      <Typography variant="body1">
-        This is the badges page. View and manage your badges here.
-      </Typography>
-    </Box>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Badges
+        </Typography>
+        <Box>
+          <Suspense>
+            <Badges />
+          </Suspense>
+        </Box>
+      </Box>
+    </HydrationBoundary>
   );
 }

@@ -1,12 +1,18 @@
-import { Grid, Tooltip, Typography } from "@mui/material";
+import { Grid, Skeleton, Tooltip, Typography } from "@mui/material";
 import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 interface AccountStatProps {
   label: string;
-  value: string | number;
+  value?: string | number;
   tooltip?: string;
+  loading?: boolean;
 }
 
-export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
+export const AccountStat = ({
+  label,
+  value,
+  tooltip,
+  loading,
+}: AccountStatProps) => {
   return (
     <Grid
       size={1}
@@ -44,7 +50,7 @@ export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
           fontWeight: 500,
         }}
       >
-        {value}
+        {loading ? <Skeleton variant="text" width={40} /> : value}
       </Typography>
     </Grid>
   );

@@ -1,14 +1,15 @@
 import { Address } from "viem";
 import { useAccount } from "wagmi";
-import { useIpfsJson } from "@/hooks/useIpfsJson";
 import { useProfileId } from "@/hooks/useProfileId";
 import { useProfileUri } from "@/hooks/useProfileUri";
 import { useMemo } from "react";
+import { useFetch } from "@/hooks/useFetch";
+import { useSubgraphUser } from "@/hooks/useSubgraphUser";
 
 export interface ProfileData {
   name?: string;
   bio?: string;
-  avatar?: string | null;
+  imageUrl?: string | null;
   referralCode?: string;
 }
 
@@ -22,8 +23,10 @@ export function useProfile(addressOverride?: Address) {
   // Read uri for the profileId (only if profileId is defined and not zero)
   const uriResult = useProfileUri(profileIdResult.data);
 
-  // Use the new IPFS hook
-  const profileDataResult = useIpfsJson<ProfileData>(uriResult.data);
+  // Read profile data from IPFS using the uri
+  const profileDataResult = useFetch<ProfileData>(uriResult.data);
+
+  const subgraphData = useSubgraphUser(userAddress);
 
   const refetch = async () => {
     await profileIdResult.refetch();
@@ -48,6 +51,7 @@ export function useProfile(addressOverride?: Address) {
     profileId: profileIdResult,
     uri: uriResult,
     profileData: profileDataResult,
+    subgraphData,
     username,
     refetch,
   };

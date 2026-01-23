@@ -13,3 +13,29 @@ export const truncateAddress = (address: Address, length = 6): string => {
   }
   return `${address.slice(0, length)}...${address.slice(-length)}`;
 };
+
+/**
+ * Validates whether a given string is a well-formed URL.
+ *
+ * @param urlString - The string to validate as a URL.
+ * @returns True if the string is a valid URL, false otherwise.
+ */
+export const isValidUrl = (urlString: string): boolean => {
+  try {
+    const url = new URL(urlString);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Compares two strings for equality, ignoring case differences.
+ *
+ * @param str1 The first string to compare.
+ * @param str2 The second string to compare.
+ * @returns True if the strings are equal case-insensitively, false otherwise.
+ */
+export const isEqualCaseInsensitive = (str1: string, str2: string): boolean => {
+  return str1.toLowerCase() === str2.toLowerCase();
+};

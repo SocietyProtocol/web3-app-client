@@ -17,29 +17,30 @@ const HeightBreakpoints = {
 };
 
 export const useResponsiveHeightValue = <T,>(
-  props: UseResponsiveHeightValueProps<T>
+  props: UseResponsiveHeightValueProps<T>,
 ): T => {
   const { xs, sm, md, lg, xl } = props;
-  const isSm = useMediaQuery(`(min-height:${HeightBreakpoints.sm}px)`);
-  const isMd = useMediaQuery(`(min-height:${HeightBreakpoints.md}px)`);
-  const isLg = useMediaQuery(`(min-height:${HeightBreakpoints.lg}px)`);
-  const isXl = useMediaQuery(`(min-height:${HeightBreakpoints.xl}px)`);
+  const isSm = useMediaQuery(`(min-height:${HeightBreakpoints.sm}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isMd = useMediaQuery(`(min-height:${HeightBreakpoints.md}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isLg = useMediaQuery(`(min-height:${HeightBreakpoints.lg}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isXl = useMediaQuery(`(min-height:${HeightBreakpoints.xl}px)`, {
+    defaultMatches: true,
+    noSsr: true,
+  });
 
-  if (isXl) {
-    return xl ?? lg ?? md ?? sm ?? xs;
-  }
-
-  if (isLg) {
-    return lg ?? md ?? sm ?? xs;
-  }
-
-  if (isMd) {
-    return md ?? sm ?? xs;
-  }
-
-  if (isSm) {
-    return sm ?? xs;
-  }
-
+  // Return largest matching breakpoint with fallback cascade
+  if (isXl && xl !== undefined) return xl;
+  if (isLg && lg !== undefined) return lg;
+  if (isMd && md !== undefined) return md;
+  if (isSm && sm !== undefined) return sm;
   return xs;
 };

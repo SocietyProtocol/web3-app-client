@@ -4,6 +4,7 @@ import { Address } from "viem";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
+import { isEqualCaseInsensitive } from "@/utils/string";
 
 interface MiniProfileCardProps {
   imageUrl?: string | null;
@@ -25,7 +26,11 @@ export const MiniProfileCard = ({
   const { address: connectedAddress } = useAccount();
 
   const url = useMemo(() => {
-    if (address && address?.toLowerCase() === connectedAddress?.toLowerCase()) {
+    if (
+      address &&
+      connectedAddress &&
+      isEqualCaseInsensitive(address, connectedAddress)
+    ) {
       return link ? `/profile` : false;
     }
 
@@ -35,8 +40,6 @@ export const MiniProfileCard = ({
   return (
     <OptionalLink
       href={url}
-      target="_blank"
-      rel="noopener noreferrer"
       style={{
         textDecoration: "none",
         width: "fit-content",

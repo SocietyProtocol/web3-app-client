@@ -36,7 +36,11 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
   const { data, isLoading } = useBadge(id);
 
-  const creator = useProfile(data?.badge?.creatorAddress as Address);
+  const creatorAddress = data?.badge?.creatorAddress
+    ? (data?.badge?.creatorAddress as Address)
+    : undefined;
+
+  const creator = useProfile(creatorAddress);
 
   const isManager = useMemo(() => {
     if (!data?.badge?.managers || !userAddress) return false;
@@ -51,7 +55,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
       data?.badge && userAddress
-        ? getBadgePermissions(data?.badge, userAddress as Address)
+        ? getBadgePermissions(data?.badge, userAddress)
         : { canMint: false, canBurn: false, canTransfer: false },
     [data?.badge, userAddress],
   );
@@ -158,11 +162,11 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       <Stack direction="row" spacing={5} alignItems="center">
         {data?.badge?.creatorAddress && (
           <MiniProfileCard
-            address={data?.badge?.creatorAddress as Address}
+            address={creatorAddress}
             loading={isLoading || creator.profileData.isLoading}
             username={
               creator.profileData.data?.name ??
-              truncateAddress(data?.badge?.creatorAddress as Address)
+              (creatorAddress ? truncateAddress(creatorAddress) : "")
             }
             imageUrl={creator.profileData.data?.imageUrl}
             bio={creator.profileData.data?.bio}

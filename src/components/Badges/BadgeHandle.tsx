@@ -18,7 +18,6 @@ export const BadgeHandle = ({ id, name, loading }: BadgeHandleProps) => {
           gap: 1,
           rowGap: 1,
         }}
-        key={id}
       >
         {loading ? (
           <Skeleton width={100} height={20} />

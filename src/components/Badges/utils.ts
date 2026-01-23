@@ -123,7 +123,7 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
 
   const res = await execute(BadgesDocument, {
     first: mergedOptions.pageSize,
-    skip: 0,
+    skip: mergedOptions.skip,
     orderBy: mergedOptions.orderBy,
     orderDirection: mergedOptions.orderDirection,
     where,
@@ -132,6 +132,14 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
   return res.data as BadgesQuery;
 };
 
+/**
+ * Gets the badge permissions for a user.
+ *
+ * @param badge Badge data
+ * @param userAddress User address
+ * @returns Badge permissions { canMint: boolean, canBurn: boolean, canTransfer: boolean }
+ *
+ */
 export const getBadgePermissions = (
   badge: FullBadgeData,
   userAddress: Address,

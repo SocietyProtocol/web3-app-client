@@ -1,6 +1,7 @@
 import {
   Avatar,
   Chip,
+  Link,
   Paper,
   Skeleton,
   Stack,
@@ -9,7 +10,6 @@ import {
 } from "@mui/material";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
-import Link from "next/link";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Hex } from "viem";
 import { BadgeData } from "./types";
@@ -120,7 +120,7 @@ export const BadgeCard = ({
           }}
         />
       ) : (
-        <OptionalLink href={loading ? undefined : `/badges/${id}`}>
+        <OptionalLink href={`/badges/${id}`}>
           <Avatar
             src={
               imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
@@ -140,7 +140,7 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton width="80%" />
       ) : (
-        <OptionalLink href={loading ? undefined : `/badges/${id}`}>
+        <OptionalLink href={`/badges/${id}`}>
           <Typography
             component="span"
             variant="body2"
@@ -174,7 +174,6 @@ export const BadgeCard = ({
             spacing={0.5}
             alignItems="center"
             justifyContent="center"
-            onClick={(e) => e.stopPropagation()}
           >
             <Typography
               component="span"
@@ -213,7 +212,6 @@ export const BadgeCard = ({
             href={uri}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
             style={{
               textDecoration: "none",
               width: "100%",
@@ -222,7 +220,6 @@ export const BadgeCard = ({
           >
             <Typography
               component="span"
-              variant="caption"
               sx={{
                 lineHeight: 1,
                 color: "text.primary",

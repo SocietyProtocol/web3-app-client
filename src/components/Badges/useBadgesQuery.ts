@@ -1,12 +1,11 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchBadges, mergeOptions } from "./utils";
 import { BadgeQueryOptions } from "./types";
-import { getQueryClient } from "@/lib/tanstack-query";
-
-const queryClient = getQueryClient();
 
 export const useBadgesQuery = (options?: BadgeQueryOptions) => {
   const mergedOptions = mergeOptions(options);
+
+  const queryClient = useQueryClient();
 
   return useInfiniteQuery({
     queryKey: ["badges", mergedOptions],

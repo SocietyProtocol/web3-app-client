@@ -6,7 +6,7 @@ import { PreviewPopover } from "../PreviewPopover/PreviewPopover";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
-import { truncateAddress } from "@/utils/string";
+import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useMemo } from "react";
 
 interface UserHandleProps {
@@ -33,7 +33,7 @@ export const UserHandle = ({
   } = useProfile(address);
 
   const url = useMemo(() => {
-    if (address.toLowerCase() === connectedAddress?.toLowerCase()) {
+    if (connectedAddress && isEqualCaseInsensitive(address, connectedAddress)) {
       return link ? `/profile` : false;
     }
     return link ? `/user/${address.toLowerCase()}` : false;
@@ -105,7 +105,8 @@ export const UserHandle = ({
             !uriLoading &&
             !profileDataLoading &&
             showYouLabel &&
-            connectedAddress?.toLowerCase() === address.toLowerCase() && (
+            connectedAddress &&
+            isEqualCaseInsensitive(address, connectedAddress) && (
               <Typography
                 component="span"
                 sx={{

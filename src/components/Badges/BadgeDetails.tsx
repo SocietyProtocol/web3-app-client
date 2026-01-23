@@ -62,10 +62,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
   return (
     <Stack
-      spacing={4}
+      spacing={{ xs: 3, md: 4 }}
       sx={{
-        py: 3,
-
+        py: { xs: 2, md: 3 },
+        px: { xs: 2, sm: 0 },
         width: "100%",
         alignItems: "center",
         position: "relative",
@@ -83,23 +83,27 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
           sx={{
             color: "primary.main",
-            fontSize: 14,
+            fontSize: { xs: "0.875rem", sm: "1rem" },
             textTransform: "none",
             fontWeight: 600,
+            minWidth: { xs: "auto", sm: "64px" },
+            px: { xs: 1, sm: 2 },
           }}
         >
-          Back
+          <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+            Back
+          </Box>
         </Button>
       </Box>
 
       {/* Badge Image */}
-      <Box>
+      <Box sx={{ mt: { xs: 2, md: 5 } }}>
         {isLoading ? (
           <Skeleton
             variant="circular"
-            width={120}
-            height={120}
             sx={{
+              width: { xs: 80, sm: 100, md: 120 },
+              height: { xs: 80, sm: 100, md: 120 },
               flexShrink: 0,
             }}
           />
@@ -110,7 +114,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
               (data?.badge?.isOfficial ? "/official-badge.svg" : "/badge.svg")
             }
             alt={data?.badge?.name ?? "Badge Image"}
-            sx={{ width: 120, height: 120 }}
+            sx={{
+              width: { xs: 80, sm: 100, md: 120 },
+              height: { xs: 80, sm: 100, md: 120 },
+            }}
           />
         )}
       </Box>
@@ -120,14 +127,17 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         direction="row"
         alignItems="center"
         justifyContent="center"
-        spacing={4}
+        spacing={{ xs: 2, sm: 3, md: 4 }}
+        flexWrap="wrap"
+        sx={{ gap: { xs: 1, sm: 2 } }}
       >
         <Chip
           color={data?.badge?.isOfficial ? "gold" : "default"}
           label={`ID: #${id}`}
           size="medium"
           sx={{
-            height: 24,
+            height: { xs: 20, sm: 24 },
+            fontSize: { xs: "0.7rem", sm: "0.8125rem" },
           }}
         />
 
@@ -135,7 +145,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           <>
             <Logo
               sx={{
-                fontSize: 24,
+                fontSize: { xs: "0.875rem", sm: "1rem" },
                 color: "text.primary",
               }}
             />
@@ -149,17 +159,23 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       <Typography
         variant="h4"
         sx={{
-          fontSize: 32,
+          fontSize: { xs: "1.5rem", sm: "2rem" },
           fontWeight: 700,
           color: "primary.main",
           textAlign: "center",
+          px: 2,
+          wordBreak: "break-word",
         }}
       >
         {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
       </Typography>
 
       {/* Creator Handle and Manage Button */}
-      <Stack direction="row" spacing={5} alignItems="center">
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={{ xs: 2, sm: 5 }}
+        alignItems="center"
+      >
         {data?.badge?.creatorAddress && (
           <MiniProfileCard
             address={creatorAddress}
@@ -181,7 +197,8 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              width: 160,
+              width: { xs: "100%", sm: 160 },
+              maxWidth: { xs: 300, sm: 160 },
             }}
           >
             Manage
@@ -195,8 +212,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         sx={{
           width: {
             xs: "100%",
-            sm: 560,
+            sm: "90%",
+            md: 560,
           },
+          maxWidth: 560,
         }}
       >
         <BadgePermissions
@@ -226,7 +245,19 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       </Stack>
 
       {/* Actions */}
-      <Stack direction="row" spacing={2}>
+      <Stack
+        direction={{
+          xs: "column",
+          sm: "row",
+        }}
+        spacing={2}
+        sx={{
+          width: {
+            xs: "100%",
+            sm: "auto",
+          },
+        }}
+      >
         {canMint && (
           <Button
             variant="outlined"
@@ -235,7 +266,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              width: 160,
+              width: {
+                xs: "100%",
+                sm: 160,
+              },
             }}
           >
             Mint
@@ -249,7 +283,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              width: 160,
+              width: {
+                xs: "100%",
+                sm: 160,
+              },
             }}
           >
             Burn
@@ -263,7 +300,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              width: 160,
+              width: {
+                xs: "100%",
+                sm: 160,
+              },
             }}
           >
             Transfer

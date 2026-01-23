@@ -10,7 +10,6 @@ import {
 } from "../../../.graphclient";
 import { defaultOptions } from "./consts";
 import { BadgeQueryOptions, FullBadgeData } from "./types";
-import { isEqualCaseInsensitive } from "@/utils/string";
 
 /**
  * Merges the provided options with the default options.
@@ -107,9 +106,10 @@ export const fetchBadge = async (id: string) => {
 };
 
 /**
+ * Fetches badges based on the provided query options.
  *
- * @param param0
- * @returns
+ * @param options Query options
+ * @returns Badges data
  */
 export const fetchBadges = async (options?: BadgeQueryOptions) => {
   const mergedOptions = mergeOptions(options);
@@ -136,38 +136,29 @@ export const getBadgePermissions = (
   badge: FullBadgeData,
   userAddress: Address,
 ) => {
-  const permissions = {
-    canMint: false,
-    canBurn: false,
-    canTransfer: false,
+  const lowerCasedUserAddress = userAddress.toLowerCase();
+
+  const mintersSet = new Set(
+    badge.minters.flatMap((minter) =>
+      minter.holders.map((holder) => holder.id.toLowerCase()),
+    ),
+  );
+
+  const burnersSet = new Set(
+    badge.burners.flatMap((burner) =>
+      burner.holders.map((holder) => holder.id.toLowerCase()),
+    ),
+  );
+
+  const transferersSet = new Set(
+    badge.transferers.flatMap((transferer) =>
+      transferer.holders.map((holder) => holder.id.toLowerCase()),
+    ),
+  );
+
+  return {
+    canMint: mintersSet.has(lowerCasedUserAddress),
+    canBurn: burnersSet.has(lowerCasedUserAddress),
+    canTransfer: transferersSet.has(lowerCasedUserAddress),
   };
-
-  for (const minter of badge.minters) {
-    for (const holder of minter.holders) {
-      if (isEqualCaseInsensitive(holder.id, userAddress)) {
-        permissions.canMint = true;
-        break;
-      }
-    }
-  }
-
-  for (const burner of badge.burners) {
-    for (const holder of burner.holders) {
-      if (isEqualCaseInsensitive(holder.id, userAddress)) {
-        permissions.canBurn = true;
-        break;
-      }
-    }
-  }
-
-  for (const transferer of badge.transferers) {
-    for (const holder of transferer.holders) {
-      if (isEqualCaseInsensitive(holder.id, userAddress)) {
-        permissions.canTransfer = true;
-        break;
-      }
-    }
-  }
-
-  return permissions;
 };

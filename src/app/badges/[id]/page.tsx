@@ -18,7 +18,7 @@ export default async function BadgePage({
       queryFn: () => fetchBadge(id),
     });
   } catch (error) {
-    console.error("Error prefetching badges:", error);
+    console.error("Error prefetching badge:", error);
   }
 
   return (

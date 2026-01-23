@@ -190,7 +190,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         spacing={1}
         sx={{
           width: {
-            sx: "100%",
+            xs: "100%",
             sm: 560,
           },
         }}

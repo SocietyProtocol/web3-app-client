@@ -34,7 +34,7 @@ export const TopLoader = () => {
 
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
-  }, [complete, getProgress, pathname, start]);
+  }, [getProgress, pathname, start]);
 
   return null;
 };

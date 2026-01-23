@@ -3,6 +3,8 @@ import { getQueryClient } from "@/lib/tanstack-query";
 import { Box, Typography } from "@mui/material";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BadgesDocument, BadgesQuery, execute } from "../../../.graphclient";
+import { defaultOptions } from "@/components/Badges/consts";
+import { Suspense } from "react";
 
 const PAGE_SIZE = 1000;
 
@@ -22,7 +24,7 @@ export default async function BadgesPage() {
 
   try {
     await queryClient.prefetchInfiniteQuery({
-      queryKey: ["badges", "id", "asc"],
+      queryKey: ["badges", defaultOptions],
       queryFn: fetchBadges,
       initialPageParam: 0,
     });
@@ -37,7 +39,9 @@ export default async function BadgesPage() {
           Badges
         </Typography>
         <Box>
-          <Badges />
+          <Suspense>
+            <Badges />
+          </Suspense>
         </Box>
       </Box>
     </HydrationBoundary>

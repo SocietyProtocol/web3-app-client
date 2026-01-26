@@ -1,7 +1,7 @@
-import { Box, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { Badge } from "../../../.graphclient";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 import { BadgeHandle } from "./BadgeHandle";
+import { WithTooltip } from "../WithTooltip/WithTooltip";
 
 interface BadgePermissionsProps {
   label: string;
@@ -18,22 +18,17 @@ export const BadgePermissions = ({
 }: BadgePermissionsProps) => {
   return (
     <Stack spacing={1} padding={1} alignItems="flex-start">
-      <Typography
+      <WithTooltip
         variant="body1"
         sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
           fontWeight: 700,
           color: "text.primary",
           fontSize: (theme) => theme.typography.pxToRem(16),
         }}
+        tooltip={tooltip}
       >
-        <Tooltip title={tooltip} arrow placement="top">
-          <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
-        </Tooltip>
         {label}
-      </Typography>
+      </WithTooltip>
       <Stack direction="row" spacing={1} alignItems="center" paddingLeft={1.5}>
         {permissionBadges?.length === 0 ? (
           <Typography
@@ -70,7 +65,7 @@ export const BadgePermissions = ({
                 <Skeleton width={100} height={20} />
               ) : (
                 permissionBadges?.map(({ id, name }) => (
-                  <BadgeHandle key={id} id={id} name={name} />
+                  <BadgeHandle key={id} id={id} name={name} link />
                 ))
               )}
             </Box>

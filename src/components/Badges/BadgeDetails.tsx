@@ -15,7 +15,7 @@ import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Address } from "viem";
 import { Logo } from "../icons/Logo";
-import { useBadge } from "./useBadge";
+import { useBadge } from "../../data/badges/useBadge";
 import { useMemo } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
@@ -23,7 +23,7 @@ import { MiniProfileCard } from "../MiniProfileCard/MiniProfileCard";
 import { useProfile } from "../AccountSetup/useProfile";
 import { BadgePermissions } from "./BadgePermissions";
 import { BadgeManagers } from "./BadgeManagers";
-import { getBadgePermissions } from "./utils";
+import { getBadgePermissions } from "../../data/badges/utils";
 
 export interface BadgeDetailsProps {
   id: string;

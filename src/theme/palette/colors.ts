@@ -6,6 +6,7 @@
 // Primary colors
 export const PRIMARY_MAIN = "#FFFFFF";
 export const PRIMARY_CONTRAST_TEXT = "#09090B";
+export const PRIMARY_SHADE_100 = "#FBFDFD";
 
 // Background colors
 export const BACKGROUND_DEFAULT = "#2c2d30";

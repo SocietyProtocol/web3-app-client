@@ -1,4 +1,4 @@
-import { Address } from "viem";
+import { Address, decodeEventLog, TransactionReceipt } from "viem";
 import {
   Badge_filter,
   BadgeDocument,
@@ -10,6 +10,7 @@ import {
 } from "../../../.graphclient";
 import { defaultOptions } from "./consts";
 import { BadgeQueryOptions, FullBadgeData } from "./types";
+import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 
 /**
  * Merges the provided options with the default options.
@@ -169,4 +170,31 @@ export const getBadgePermissions = (
     canBurn: burnersSet.has(lowerCasedUserAddress),
     canTransfer: transferersSet.has(lowerCasedUserAddress),
   };
+};
+
+/**
+ * Decodes the created badge ID from a transaction receipt.
+ *
+ * @param receipt Transaction receipt
+ * @returns Created badge ID or null if not found
+ */
+export const decodeBadgeId = (receipt: TransactionReceipt) => {
+  let id: bigint | null = null;
+
+  for (const log of receipt.logs) {
+    try {
+      const decoded = decodeEventLog({
+        abi: SocietyProtocolBadgesABI,
+        data: log.data,
+        topics: log.topics,
+        eventName: "BadgeCreated",
+      });
+
+      id = decoded.args.id;
+    } catch {
+      // Ignore errors for logs that are not BadgeCreated events
+    }
+  }
+
+  return id;
 };

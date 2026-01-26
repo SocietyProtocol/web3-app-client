@@ -1,7 +1,7 @@
 import { getQueryClient } from "@/lib/tanstack-query";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BadgeDetails } from "@/components/Badges/BadgeDetails";
-import { fetchBadge } from "@/components/Badges/utils";
+import { fetchBadge } from "@/data/badges/utils";
 
 export default async function BadgePage({
   params,

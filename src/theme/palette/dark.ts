@@ -6,6 +6,7 @@ export const dark: PaletteOptions = {
   primary: {
     main: colors.PRIMARY_MAIN,
     contrastText: colors.PRIMARY_CONTRAST_TEXT,
+    100: colors.PRIMARY_SHADE_100,
   },
   background: {
     default: colors.BACKGROUND_DEFAULT,
@@ -71,11 +72,11 @@ export const dark: PaletteOptions = {
     official: `linear-gradient(180deg, ${colors.GOLD_LIGHT} 0%, ${colors.GOLD_MAIN} 100%)`,
     darkOfficial: `linear-gradient(90deg, ${alpha(
       colors.GOLD_LIGHT,
-      0.1
+      0.1,
     )} 0%, ${alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1)} 100%)`,
     primary: `linear-gradient(to bottom, ${colors.PRIMARY_MAIN}, ${alpha(
       colors.PRIMARY_MAIN,
-      0.31
+      0.31,
     )})`,
   },
   chart: {

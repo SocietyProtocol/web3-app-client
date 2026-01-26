@@ -5,5 +5,6 @@ sources:
         endpoint: ${NEXT_PUBLIC_GRAPH_URL}
 documents:
   - ./src/queries/badges.graphql
-  - ./src/queries/user.graphql
   - ./src/queries/badge.graphql
+  - ./src/queries/user.graphql
+  - ./src/queries/users.graphql

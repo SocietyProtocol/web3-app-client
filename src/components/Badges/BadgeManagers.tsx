@@ -1,8 +1,8 @@
-import { Box, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { User } from "../../../.graphclient";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 import { UserHandle } from "../UserHandle/UserHandle";
 import { Address } from "viem";
+import { WithTooltip } from "../WithTooltip/WithTooltip";
 
 interface BadgeManagersProps {
   label: string;
@@ -19,22 +19,17 @@ export const BadgeManagers = ({
 }: BadgeManagersProps) => {
   return (
     <Stack spacing={1} padding={1} alignItems="flex-start">
-      <Typography
+      <WithTooltip
         variant="body1"
         sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
           fontWeight: 700,
           color: "text.primary",
           fontSize: (theme) => theme.typography.pxToRem(16),
         }}
+        tooltip={tooltip}
       >
-        <Tooltip title={tooltip} arrow placement="top">
-          <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
-        </Tooltip>
         {label}
-      </Typography>
+      </WithTooltip>
       <Stack direction="row" spacing={1} alignItems="center" paddingLeft={1.5}>
         {managers?.length === 0 ? (
           <Typography

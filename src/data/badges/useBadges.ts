@@ -2,11 +2,7 @@ import { useAccount } from "wagmi";
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { addressParser } from "@/lib/nuqs";
 import { useDebounceValue } from "../../hooks/useDebounceValue";
-import {
-  CreatedByOption,
-  SortOption,
-  TabOption,
-} from "@/components/Badges/types";
+import { CreatedByOption, SortOption, TabOption } from "@/data/badges/types";
 import { mergeOptions } from "./utils";
 import { useBadgesQuery } from "./useBadgesQuery";
 

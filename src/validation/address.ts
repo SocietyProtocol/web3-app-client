@@ -1,6 +1,9 @@
-import { isAddress } from "viem";
+import { Address, isAddress } from "viem";
 import { z } from "zod";
 
-export const addressValidationSchema = z.string().refine(isAddress, {
-  message: "Invalid address",
-});
+export const addressValidationSchema = z
+  .string()
+  .refine((value: string) => (isAddress(value) ? true : false), {
+    message: "Invalid address",
+  })
+  .transform((value: string) => value.toLowerCase() as Address);

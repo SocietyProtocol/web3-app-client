@@ -12,7 +12,7 @@ import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Hex } from "viem";
-import { BadgeData } from "./types";
+import { BadgeData } from "../../data/badges/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";

@@ -17,6 +17,14 @@ declare module "@mui/material/styles" {
     };
   }
 
+  interface PaletteColor {
+    100?: string;
+  }
+
+  interface SimplePaletteColorOptions {
+    100?: string;
+  }
+
   interface TypeBackground {
     default: string;
     page: string;

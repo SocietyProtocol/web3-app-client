@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Address, isAddress } from "viem";
-import { execute, UserDocument, UserQuery } from "../../.graphclient";
+import { execute, UserDocument, UserQuery } from "../../../.graphclient";
 
 export const useSubgraphUser = (address?: Address) =>
   useQuery({

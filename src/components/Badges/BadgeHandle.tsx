@@ -1,15 +1,21 @@
 import { Box, Chip, Skeleton, Typography } from "@mui/material";
-import Link from "next/link";
+import { OptionalLink } from "../OptionalLink/OptionalLink";
 
 export interface BadgeHandleProps {
   id: string;
   name: string;
   loading?: boolean;
+  link?: boolean;
 }
 
-export const BadgeHandle = ({ id, name, loading }: BadgeHandleProps) => {
+export const BadgeHandle = ({
+  id,
+  name,
+  loading,
+  link = false,
+}: BadgeHandleProps) => {
   return (
-    <Link href={`/badges/${id}`}>
+    <OptionalLink href={link ? `/badges/${id}` : undefined}>
       <Box
         sx={{
           display: "flex",
@@ -23,7 +29,14 @@ export const BadgeHandle = ({ id, name, loading }: BadgeHandleProps) => {
           <Skeleton width={100} height={20} />
         ) : (
           <>
-            <Chip color="gold" label={`ID #${id}`} size="small" />
+            <Chip
+              color="gold"
+              label={`ID #${id}`}
+              size="small"
+              sx={{
+                height: 18,
+              }}
+            />
 
             <Typography
               component="span"
@@ -37,6 +50,6 @@ export const BadgeHandle = ({ id, name, loading }: BadgeHandleProps) => {
           </>
         )}
       </Box>
-    </Link>
+    </OptionalLink>
   );
 };

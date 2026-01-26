@@ -1,7 +1,7 @@
 import { Button, Typography } from "@mui/material";
 import { useAccount } from "wagmi";
 import { BubbleBase } from "./BubbleBase";
-import { useProfileId } from "@/hooks/useProfileId";
+import { useProfileId } from "@/data/users/useProfileId";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 
 interface AccountSetupBubbleProps {

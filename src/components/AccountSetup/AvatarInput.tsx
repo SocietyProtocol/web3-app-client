@@ -14,6 +14,7 @@ interface AvatarInputProps {
   disabled?: boolean;
   error?: boolean;
   helperText?: string;
+  label?: string;
 }
 
 export const AvatarInput = ({
@@ -22,6 +23,7 @@ export const AvatarInput = ({
   disabled = false,
   error,
   helperText,
+  label = "Choose an avatar",
 }: AvatarInputProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { enqueueSnackbar } = useSnackbar();
@@ -83,7 +85,7 @@ export const AvatarInput = ({
             ...(disabled && { color: "text.disabled" }),
           }}
         >
-          Choose an avatar
+          {label}
         </Typography>
         <Stack
           direction={{ xs: "column", sm: "row" }}

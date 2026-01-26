@@ -11,7 +11,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { BadgeCard } from "./BadgeCard";
 import { Gallery } from "../Gallery/Gallery";
 import { useState } from "react";
-import { BadgeData } from "./types";
+import { BadgeData } from "../../data/badges/types";
 
 interface BadgesModalProps {
   open: boolean;

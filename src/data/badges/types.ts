@@ -30,6 +30,7 @@ export interface BadgeQueryOptions {
   orderBy?: Badge_orderBy;
   orderDirection?: OrderDirection;
   pageSize?: number;
+  skip?: number;
 }
 
 export type BadgeData = Pick<
@@ -43,4 +44,25 @@ export type BadgeData = Pick<
   | "imageUrl"
   | "creatorAddress"
   | "createdAt"
-> & { holders: Array<Pick<User, "id">>; managers: Array<Pick<User, "id">> };
+> & {
+  holders: Array<Pick<User, "id">>;
+  managers: Array<Pick<User, "id" | "name" | "imageUrl">>;
+};
+
+export type FullBadgeData = BadgeData & {
+  minters: Array<
+    Pick<Badge, "id" | "name"> & {
+      holders: Array<Pick<User, "id">>;
+    }
+  >;
+  burners: Array<
+    Pick<Badge, "id" | "name"> & {
+      holders: Array<Pick<User, "id">>;
+    }
+  >;
+  transferers: Array<
+    Pick<Badge, "id" | "name"> & {
+      holders: Array<Pick<User, "id">>;
+    }
+  >;
+};

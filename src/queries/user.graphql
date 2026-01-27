@@ -1,6 +1,9 @@
 query User($id: ID!) {
   user(id: $id) {
     id
+    name
+    bio
+    imageUrl
     badges {
       id
       name

@@ -3,9 +3,10 @@ import { authenticateRequest } from "@/lib/auth";
 import { accountValidationSchema } from "@/validation/account";
 import { NextRequest, NextResponse } from "next/server";
 import { flattenError } from "zod";
+import { URLS } from "@/config/const";
 
 export interface ProfileResponse {
-  cid: string;
+  uri: string;
 }
 
 export interface ProfileErrorResponse {
@@ -62,7 +63,10 @@ export async function POST(request: NextRequest) {
   try {
     const { cid } = await pinata.upload.public.json(metadata);
 
-    return NextResponse.json({ cid }, { status: 200 });
+    return NextResponse.json(
+      { uri: `${URLS.IPFS_GATEWAY}/${cid}` } as ProfileResponse,
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Account upload error:", error);
 

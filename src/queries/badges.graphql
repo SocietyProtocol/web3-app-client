@@ -27,6 +27,29 @@ query Badges(
     }
     managers {
       id
+      name
+      imageUrl
+    }
+    minters {
+      id
+      name
+      holders {
+        id
+      }
+    }
+    burners {
+      id
+      name
+      holders {
+        id
+      }
+    }
+    transferers {
+      id
+      name
+      holders {
+        id
+      }
     }
   }
 }

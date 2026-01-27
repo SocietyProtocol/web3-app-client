@@ -1,10 +1,10 @@
 import { Address } from "viem";
 import { useAccount } from "wagmi";
-import { useProfileId } from "@/hooks/useProfileId";
-import { useProfileUri } from "@/hooks/useProfileUri";
+import { useProfileId } from "@/data/users/useProfileId";
+import { useProfileUri } from "@/data/users/useProfileUri";
 import { useMemo } from "react";
 import { useFetch } from "@/hooks/useFetch";
-import { useSubgraphUser } from "@/hooks/useSubgraphUser";
+import { useSubgraphUser } from "@/data/users/useSubgraphUser";
 
 export interface ProfileData {
   name?: string;
@@ -41,11 +41,9 @@ export function useProfile(addressOverride?: Address) {
     ) {
       return profileDataResult.data.name;
     }
-    if (profileIdResult.data) {
-      return `User #${profileIdResult.data}`;
-    }
+
     return undefined;
-  }, [profileDataResult.data, profileIdResult.data]);
+  }, [profileDataResult.data]);
 
   return {
     profileId: profileIdResult,

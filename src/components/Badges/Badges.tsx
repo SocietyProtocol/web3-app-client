@@ -16,9 +16,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useAccount } from "wagmi";
 import { isAddress } from "viem";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
-import { CreatedByOption, TabOption } from "./types";
-import { useBadges } from "@/components/Badges/useBadges";
-import { filterOptions, sortOptions } from "./consts";
+import { CreatedByOption, TabOption } from "../../data/badges/types";
+import { useBadges } from "@/data/badges/useBadges";
+import { filterOptions, sortOptions } from "../../data/badges/consts";
 
 export const Badges = () => {
   const { address: userAddress } = useAccount();

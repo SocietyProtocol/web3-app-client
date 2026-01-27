@@ -1,4 +1,4 @@
-import { FilterSelectOption } from "../FilterSelect/FilterSelect";
+import { FilterSelectOption } from "../../components/FilterSelect/FilterSelect";
 import { BadgeQueryOptions, CreatedByOption, SortOption } from "./types";
 
 export const sortOptions: FilterSelectOption<SortOption>[] = [

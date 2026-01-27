@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Address } from "viem";
-import { execute, UserDocument, UserQuery } from "../../.graphclient";
+import { Address, isAddress } from "viem";
+import { execute, UserDocument, UserQuery } from "../../../.graphclient";
 
 export const useSubgraphUser = (address?: Address) =>
   useQuery({
-    queryKey: ["subgraphUser", address],
+    queryKey: ["user", address?.toLowerCase()],
     queryFn: async () => {
       if (!address) {
         return null;
@@ -16,5 +16,5 @@ export const useSubgraphUser = (address?: Address) =>
 
       return res.data as UserQuery;
     },
-    enabled: typeof address === "string",
+    enabled: !!address && isAddress(address),
   });

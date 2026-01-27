@@ -1,8 +1,8 @@
 "use client";
 
-import { Stack, Tooltip, Typography } from "@mui/material";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
+import { Stack, Typography } from "@mui/material";
 import { SafeImage } from "../SafeImage/SafeImage";
+import { WithTooltip } from "../WithTooltip/WithTooltip";
 
 export interface AuctionStatProps {
   icon?: string;
@@ -32,23 +32,18 @@ export const AuctionStat = ({
           {value}
         </Typography>
       </Stack>
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <Typography
-          component="div"
-          color="primary.main"
-          sx={{
-            fontSize: 14,
-            fontWeight: 400,
-          }}
-        >
-          {label}
-        </Typography>
-        {tooltip && (
-          <Tooltip title={tooltip} arrow placement="top">
-            <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
-          </Tooltip>
-        )}
-      </Stack>
+      <WithTooltip
+        component="div"
+        color="primary.main"
+        sx={{
+          fontSize: 14,
+          fontWeight: 400,
+        }}
+        tooltip={tooltip}
+        iconPosition="end"
+      >
+        {label}
+      </WithTooltip>
     </Stack>
   );
 };

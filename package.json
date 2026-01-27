@@ -15,7 +15,6 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@apollo/client": "^4.0.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.2.2",

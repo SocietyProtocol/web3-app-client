@@ -1,5 +1,5 @@
-import { Grid, Skeleton, Tooltip, Typography } from "@mui/material";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
+import { Grid, Skeleton, Typography } from "@mui/material";
+import { WithTooltip } from "../WithTooltip/WithTooltip";
 interface AccountStatProps {
   label: string;
   value?: string | number;
@@ -20,25 +20,16 @@ export const AccountStat = ({
         minWidth: "120px",
       }}
     >
-      <Typography
+      <WithTooltip
         component="div"
         variant="subtitle2"
         gutterBottom
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          color: "text.primary",
-        }}
+        color="textPrimary"
+        tooltip={tooltip}
+        iconPosition="end"
       >
         {label}
-
-        {tooltip && (
-          <Tooltip title={tooltip} arrow placement="top">
-            <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
-          </Tooltip>
-        )}
-      </Typography>
+      </WithTooltip>
       <Typography
         component="div"
         sx={{

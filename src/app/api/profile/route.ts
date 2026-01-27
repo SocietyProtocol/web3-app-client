@@ -6,7 +6,7 @@ import { flattenError } from "zod";
 import { URLS } from "@/config/const";
 
 export interface ProfileResponse {
-  url: string;
+  uri: string;
 }
 
 export interface ProfileErrorResponse {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const { cid } = await pinata.upload.public.json(metadata);
 
     return NextResponse.json(
-      { url: `${URLS.IPFS_GATEWAY}/${cid}` } as ProfileResponse,
+      { uri: `${URLS.IPFS_GATEWAY}/${cid}` } as ProfileResponse,
       { status: 200 },
     );
   } catch (error) {

@@ -72,7 +72,7 @@ export const useMutateProfile = (overrideAddress?: Address) => {
       ...data,
     });
 
-    if (!ipfsData.url) {
+    if (!ipfsData.uri) {
       throw new Error("Failed to generate profile URI");
     }
 
@@ -81,8 +81,8 @@ export const useMutateProfile = (overrideAddress?: Address) => {
       abi: SocietyProtocolBadgesABI,
       functionName: profileExists ? "updateProfileURI" : "createProfile",
       args: profileExists
-        ? [profile.profileId.data!, ipfsData.url]
-        : [ipfsData.url],
+        ? [profile.profileId.data!, ipfsData.uri]
+        : [ipfsData.uri],
     });
   };
 

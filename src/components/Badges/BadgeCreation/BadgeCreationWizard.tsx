@@ -98,21 +98,7 @@ const BadgeCreationWizardContent = ({
     }
   }, [isSynced, onComplete, form, reset, router, transactionReceipt]);
 
-  const nextDisabled =
-    !form.formState.isValid &&
-    (Boolean(
-      activeStep === 0 &&
-      (form.formState.errors.name ||
-        form.formState.errors.imageUrl ||
-        form.formState.errors.metadata),
-    ) ||
-      Boolean(
-        activeStep === 1 &&
-        (form.formState.errors.minters ||
-          form.formState.errors.transferers ||
-          form.formState.errors.burners ||
-          form.formState.errors.editors),
-      ));
+  const nextDisabled = !form.formState.isValid;
 
   const handleNext = async () => {
     // Validate current step before moving forward

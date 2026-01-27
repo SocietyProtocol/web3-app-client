@@ -89,6 +89,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             minWidth: { xs: "auto", sm: "64px" },
             px: { xs: 1, sm: 2 },
           }}
+          aria-label="Go back"
         >
           <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
             Back

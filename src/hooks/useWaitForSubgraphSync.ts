@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { execute, StatusDocument } from "../../.graphclient";
 
 interface WaitForSubgraphSyncOptions {
@@ -28,7 +28,6 @@ export const useWaitForSubgraphSync = (
     Status.Waiting | Status.Synced | Status.Timeout
   >(Status.Waiting);
   const [indexedBlock, setIndexedBlock] = useState<bigint | null>(null);
-  const cancelled = useRef(false);
 
   const interval = options?.interval ?? defaultOptions.interval;
   const timeout = options?.timeout ?? defaultOptions.timeout;
@@ -36,16 +35,20 @@ export const useWaitForSubgraphSync = (
 
   useEffect(() => {
     if (!enabled || !targetBlock) return;
+    const controller = new AbortController();
+    const { signal } = controller;
 
-    cancelled.current = false;
     const start = Date.now();
 
     async function poll() {
       setInternalStatus(Status.Waiting);
 
-      while (!cancelled.current && enabled && targetBlock) {
+      while (!signal.aborted && enabled && targetBlock) {
         try {
-          const res = await execute(StatusDocument, {});
+          const res = await execute(StatusDocument, {
+            signal,
+          });
+
           const currentIndexedBlock = BigInt(res.data._meta.block.number);
           setIndexedBlock(currentIndexedBlock);
 
@@ -70,9 +73,7 @@ export const useWaitForSubgraphSync = (
 
     poll();
 
-    return () => {
-      cancelled.current = true;
-    };
+    return () => controller.abort();
   }, [enabled, interval, targetBlock, timeout]);
 
   const status = useMemo(

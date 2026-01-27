@@ -8,3 +8,4 @@ documents:
   - ./src/queries/badge.graphql
   - ./src/queries/user.graphql
   - ./src/queries/users.graphql
+  - ./src/queries/status.graphql

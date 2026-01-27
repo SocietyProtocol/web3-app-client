@@ -1,6 +1,6 @@
 import { Stack, Typography } from "@mui/material";
 import { useAccount } from "wagmi";
-import { ProfileCard } from "../ProfileCard/ProfileCard";
+import { UserCard } from "../User/UserCard";
 import { useAccountSetup } from "./AccountSetupContext";
 
 export const ReviewStep = () => {
@@ -22,10 +22,10 @@ export const ReviewStep = () => {
         Review your information
       </Typography>
 
-      <ProfileCard
+      <UserCard
         imageUrl={formValues.imageUrl}
         name={formValues.name || username || "New User"}
-        address={address}
+        id={address}
         bio={formValues.bio || "Your bio goes here."}
         showAddress
       />

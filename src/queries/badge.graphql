@@ -10,12 +10,22 @@ query Badge($id: ID!) {
     creatorAddress
     createdAt
     holdersCount
+    createdBy {
+      id
+      name
+      bio
+      imageUrl
+    }
     holders {
       id
+      name
+      bio
+      imageUrl
     }
     managers {
       id
       name
+      bio
       imageUrl
     }
     minters {

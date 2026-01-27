@@ -13,7 +13,7 @@ export interface UserQueryOptions {
   skip?: number;
 }
 
-export type UserData = Pick<User, "id" | "name" | "imageUrl"> & {
+export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {
   badges: Array<
     Pick<
       Badge,

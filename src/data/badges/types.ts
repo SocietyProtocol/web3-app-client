@@ -45,8 +45,9 @@ export type BadgeData = Pick<
   | "creatorAddress"
   | "createdAt"
 > & {
-  holders: Array<Pick<User, "id">>;
-  managers: Array<Pick<User, "id" | "name" | "imageUrl">>;
+  createdBy: Pick<User, "id" | "name" | "bio" | "imageUrl">;
+  holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+  managers: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
 };
 
 export type FullBadgeData = BadgeData & {

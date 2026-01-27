@@ -1,14 +1,14 @@
 import { Box, Skeleton, Stack, Typography } from "@mui/material";
-import { User } from "../../../.graphclient";
-import { UserHandle } from "../UserHandle/UserHandle";
-import { Address } from "viem";
+import { Hex } from "viem";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
+import { UserHandle } from "../User/UserHandle";
+import { BadgeData } from "@/data/badges/types";
 
 interface BadgeManagersProps {
   label: string;
   tooltip: string;
   isLoading?: boolean;
-  managers?: Array<Pick<User, "id" | "name" | "imageUrl">>;
+  managers?: BadgeData["managers"];
 }
 
 export const BadgeManagers = ({
@@ -65,12 +65,16 @@ export const BadgeManagers = ({
               {isLoading ? (
                 <Skeleton width={100} height={20} />
               ) : (
-                managers?.map(({ id }) => (
+                managers?.map(({ id, name, imageUrl, bio }) => (
                   <UserHandle
                     key={id}
-                    address={id as Address}
+                    id={id as Hex}
+                    name={name}
+                    bio={bio}
+                    imageUrl={imageUrl}
                     size="small"
-                    previewCard
+                    highlightYou
+                    showPreview
                     link
                   />
                 ))

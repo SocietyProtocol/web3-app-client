@@ -1,12 +1,18 @@
-import { Grid, Tooltip, Typography } from "@mui/material";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
+import { Grid, Skeleton, Typography } from "@mui/material";
+import { WithTooltip } from "../WithTooltip/WithTooltip";
 interface AccountStatProps {
   label: string;
-  value: string | number;
+  value?: string | number;
   tooltip?: string;
+  loading?: boolean;
 }
 
-export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
+export const AccountStat = ({
+  label,
+  value,
+  tooltip,
+  loading,
+}: AccountStatProps) => {
   return (
     <Grid
       size={1}
@@ -14,25 +20,16 @@ export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
         minWidth: "120px",
       }}
     >
-      <Typography
+      <WithTooltip
         component="div"
         variant="subtitle2"
         gutterBottom
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          color: "text.primary",
-        }}
+        color="textPrimary"
+        tooltip={tooltip}
+        iconPosition="end"
       >
         {label}
-
-        {tooltip && (
-          <Tooltip title={tooltip} arrow placement="top">
-            <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
-          </Tooltip>
-        )}
-      </Typography>
+      </WithTooltip>
       <Typography
         component="div"
         sx={{
@@ -44,7 +41,7 @@ export const AccountStat = ({ label, value, tooltip }: AccountStatProps) => {
           fontWeight: 500,
         }}
       >
-        {value}
+        {loading ? <Skeleton variant="text" width={40} /> : value}
       </Typography>
     </Grid>
   );

@@ -1,0 +1,56 @@
+query Users(
+  $first: Int!
+  $skip: Int!
+  $orderBy: User_orderBy!
+  $orderDirection: OrderDirection!
+  $where: User_filter
+) {
+  users(
+    first: $first
+    skip: $skip
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    where: $where
+  ) {
+    id
+    name
+    bio
+    imageUrl
+    badges {
+      id
+      name
+      isOfficial
+      isCommunity
+      uri
+      hookAddress
+      imageUrl
+      creatorAddress
+      createdAt
+      holdersCount
+      holders {
+        id
+      }
+      managers {
+        id
+      }
+    }
+    managedBadges {
+      id
+      name
+      isOfficial
+      isCommunity
+      uri
+      hookAddress
+      imageUrl
+      creatorAddress
+      createdAt
+      holdersCount
+      holders {
+        id
+      }
+      managers {
+        id
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+sources:
+  - name: society-subgraph
+    handler:
+      graphql:
+        endpoint: ${NEXT_PUBLIC_GRAPH_URL}
+documents:
+  - ./src/queries/badges.graphql
+  - ./src/queries/badge.graphql
+  - ./src/queries/user.graphql
+  - ./src/queries/users.graphql
+  - ./src/queries/status.graphql

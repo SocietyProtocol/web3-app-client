@@ -37,7 +37,6 @@ export const useMutateProfile = (overrideAddress?: Address) => {
         },
         body: JSON.stringify({
           ...data,
-          cid: profile.uri.data || undefined,
         }),
       });
 
@@ -69,20 +68,21 @@ export const useMutateProfile = (overrideAddress?: Address) => {
     const profileExists =
       Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
 
-    const uriExists = Boolean(profile.uri.data && profile.uri.data.length > 0);
-
     const ipfsData = await uploadIpfsResult.mutateAsync({
       ...data,
-      cid: uriExists ? profile.uri.data! : undefined,
     });
+
+    if (!ipfsData.uri) {
+      throw new Error("Failed to generate profile URI");
+    }
 
     return await writeContract.writeContractAsync({
       address: contractAddress,
       abi: SocietyProtocolBadgesABI,
       functionName: profileExists ? "updateProfileURI" : "createProfile",
       args: profileExists
-        ? [profile.profileId.data!, ipfsData.cid]
-        : [ipfsData.cid],
+        ? [profile.profileId.data!, ipfsData.uri]
+        : [ipfsData.uri],
     });
   };
 

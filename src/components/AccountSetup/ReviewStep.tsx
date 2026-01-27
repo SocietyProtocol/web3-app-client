@@ -23,7 +23,7 @@ export const ReviewStep = () => {
       </Typography>
 
       <ProfileCard
-        avatar={formValues.avatar}
+        imageUrl={formValues.imageUrl}
         name={formValues.name || username || "New User"}
         address={address}
         bio={formValues.bio || "Your bio goes here."}

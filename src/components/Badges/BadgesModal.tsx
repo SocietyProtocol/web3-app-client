@@ -8,32 +8,25 @@ import {
   Stack,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { BadgeCard, BadgeCardProps } from "../BadgeCard/BadgeCard";
-
+import { BadgeCard } from "./BadgeCard";
 import { Gallery } from "../Gallery/Gallery";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { BadgeData } from "../../data/badges/types";
 
 interface BadgesModalProps {
   open: boolean;
   onClose: () => void;
-  badges: BadgeCardProps[];
-  username?: string;
+  username: string;
+  badges: BadgeData[];
 }
 
 export const BadgesModal = ({
   open,
   onClose,
+  username,
   badges,
-  username = "User",
 }: BadgesModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentPage(1);
-    }
-  }, [open]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -41,7 +34,12 @@ export const BadgesModal = ({
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
           All Badges held by {username} ({badges.length})
         </Typography>
-        <IconButton onClick={onClose} size="small" color="primary">
+        <IconButton
+          onClick={onClose}
+          size="small"
+          color="primary"
+          aria-label="close"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -53,6 +51,7 @@ export const BadgesModal = ({
               xs: "auto",
               sm: "fit-content",
             },
+            minWidth: 600,
           }}
         >
           {badges.length === 0 ? (
@@ -72,10 +71,17 @@ export const BadgesModal = ({
             <Gallery
               items={badges}
               renderItem={(badge) => <BadgeCard {...badge} />}
-              itemWidth={200}
-              itemHeight={200}
+              columns={{
+                xs: 1,
+                sm: 2,
+                md: 3,
+              }}
+              rows={{
+                xs: 2,
+                sm: 3,
+              }}
               currentPage={currentPage}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => setCurrentPage(page)}
             />
           )}
         </Stack>

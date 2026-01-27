@@ -23,11 +23,11 @@ export const Avatar = ({
     profileData: { data: profileData },
   } = useProfile(address && isAddress(address) ? address : undefined);
 
-  const image = profileData?.avatar || ensImage;
+  const image = profileData?.imageUrl || ensImage;
 
   const colors = useMemo(
     () => (!image && address ? generateColorsFromAddress(address) : []),
-    [address, image]
+    [address, image],
   );
 
   if (loading) {

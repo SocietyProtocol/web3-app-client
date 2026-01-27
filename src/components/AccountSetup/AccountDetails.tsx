@@ -1,7 +1,7 @@
-import { Stack, Typography, Button, Grid, Box } from "@mui/material";
+import { Stack, Typography, Button, Grid, Box, Skeleton } from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
 import { AccountSkeleton } from "./AccountSkeleton";
 import { AccountSetupProvider } from "./AccountSetupContext";
@@ -11,9 +11,8 @@ import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
 import { mockAccountStats } from "./accountStats";
-import { mockBadgesData } from "../../data/badges";
-import { BadgeCard } from "../BadgeCard/BadgeCard";
-import { BadgesModal } from "../BadgesModal/BadgesModal";
+import { BadgeCard } from "../Badges/BadgeCard";
+import { BadgesModal } from "../Badges/BadgesModal";
 import { truncateAddress } from "@/utils/string";
 
 interface AccountDetailsProps {
@@ -28,11 +27,28 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   const {
     profileId,
     profileData,
+    subgraphData,
     username = overrideAddress
       ? truncateAddress(overrideAddress)
       : "Unknown User",
   } = useProfile(overrideAddress);
   const { data: profile, isLoading } = profileData;
+
+  const badgesCount = subgraphData.data?.user?.badges?.length;
+
+  const stats = useMemo(
+    () =>
+      mockAccountStats.map((stat) => {
+        if (stat.label === "Badges") {
+          return {
+            ...stat,
+            value: badgesCount ?? 0,
+          };
+        }
+        return stat;
+      }),
+    [badgesCount],
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
@@ -91,7 +107,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 2, sm: 3 }}
             overflow="hidden"
           >
-            {mockAccountStats.map((stat) => (
+            {stats.map((stat) => (
               <AccountStat
                 key={stat.label}
                 label={stat.label}
@@ -114,7 +130,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             overflow="hidden"
           >
             <ProfileCard
-              avatar={profile?.avatar}
+              imageUrl={profile?.imageUrl}
               bio={profile?.bio}
               name={username}
               address={overrideAddress}
@@ -145,18 +161,25 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           <Box>
             <Stack direction="row" justifyContent="space-between" mb={2}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Badges held by {username}
+                Badges held by {username} (
+                {subgraphData.isLoading ? (
+                  <Skeleton variant="text" width={20} />
+                ) : (
+                  badgesCount
+                )}
+                )
               </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleOpenBadgesModal}
-                disabled={mockBadgesData.length === 0}
-              >
-                View All Badges ({mockBadgesData.length})
-              </Button>
+              {badgesCount && badgesCount > 6 && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleOpenBadgesModal}
+                >
+                  View All Badges
+                </Button>
+              )}
             </Stack>
-            {mockBadgesData.length === 0 ? (
+            {badgesCount === 0 ? (
               <Stack
                 justifyContent="center"
                 alignItems="center"
@@ -179,30 +202,44 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   sm: 3,
                 }}
               >
-                {mockBadgesData.slice(0, 6).map((badge) => (
-                  <Grid
-                    key={badge.id}
-                    size={1}
-                    sx={{
-                      width: {
-                        xs: "100%",
-                        sm: "200px",
-                      },
-                    }}
-                  >
-                    <BadgeCard
-                      id={badge.id}
-                      title={badge.title}
-                      badgeImageUrl={badge.badgeImageUrl}
-                      isOfficial={badge.isOfficial}
-                      createdBy={badge.createdBy}
-                      numberOfHolders={badge.numberOfHolders}
-                      metadataUrl={badge.metadataUrl}
-                    />
-                  </Grid>
-                ))}
+                {subgraphData.isLoading
+                  ? Array.from({ length: 4 }).map((_, index) => (
+                      <Grid
+                        key={`skeleton-${index}`}
+                        size={1}
+                        sx={{
+                          width: {
+                            xs: "100%",
+                            sm: "200px",
+                          },
+                        }}
+                      >
+                        <BadgeCard loading />
+                      </Grid>
+                    ))
+                  : subgraphData.data?.user?.badges.slice(0, 6).map((badge) => (
+                      <Grid
+                        key={badge.id}
+                        size={1}
+                        sx={{
+                          width: {
+                            xs: "100%",
+                            sm: "200px",
+                          },
+                        }}
+                      >
+                        <BadgeCard
+                          id={badge.id}
+                          name={badge.name}
+                          imageUrl={badge.imageUrl}
+                          isOfficial={badge.isOfficial}
+                          creatorAddress={badge.creatorAddress}
+                          uri={badge.uri}
+                        />
+                      </Grid>
+                    ))}
 
-                {mockBadgesData.length > 6 && (
+                {badgesCount && badgesCount > 6 && (
                   <Grid
                     size={1}
                     sx={{
@@ -220,7 +257,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                       color="text.primary"
                       sx={{ textAlign: "center" }}
                     >
-                      And {mockBadgesData.length - 6} more badges...
+                      And {badgesCount - 6} more badges...
                     </Typography>
                   </Grid>
                 )}
@@ -231,8 +268,8 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           <BadgesModal
             open={isBadgesModalOpen}
             onClose={handleCloseBadgesModal}
-            badges={mockBadgesData}
             username={username}
+            badges={subgraphData.data?.user?.badges || []}
           />
         </Stack>
       )}

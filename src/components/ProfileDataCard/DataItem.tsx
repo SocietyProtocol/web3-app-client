@@ -1,6 +1,6 @@
-import { Stack, Tooltip, Typography } from "@mui/material";
+import { Stack } from "@mui/material";
 import { ReactNode } from "react";
-import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
+import { WithTooltip } from "../WithTooltip/WithTooltip";
 
 interface DataItemProps {
   label: string;
@@ -16,24 +16,16 @@ export const DataItem = ({ label, children, tooltip }: DataItemProps) => {
         width: "100%",
       }}
     >
-      <Typography
+      <WithTooltip
         component="div"
         variant="subtitle2"
         gutterBottom
-        sx={{
-          display: "flex",
-          gap: 1,
-          alignItems: "center",
-          color: "text.primary",
-        }}
+        color="textPrimary"
+        tooltip={tooltip}
+        iconPosition="end"
       >
         {label}
-        {tooltip && (
-          <Tooltip title={tooltip} arrow placement="top">
-            <InfoOutlineIcon sx={{ cursor: "help", fontSize: 16 }} />
-          </Tooltip>
-        )}
-      </Typography>
+      </WithTooltip>
       {children}
     </Stack>
   );

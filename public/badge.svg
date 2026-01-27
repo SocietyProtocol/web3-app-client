@@ -1,0 +1,88 @@
+<svg width="52" height="52" viewBox="0 0 52 52"
+    xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Neon ring -->
+        <linearGradient id="neonRing" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00F5D4" />
+            <stop offset="50%" stop-color="#6C63FF" />
+            <stop offset="100%" stop-color="#FF3CAC" />
+        </linearGradient>
+
+        <!-- Dark core -->
+        <radialGradient id="coreGradient" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#1E1B3A" />
+            <stop offset="100%" stop-color="#0B0A1F" />
+        </radialGradient>
+
+        <!-- Holographic emblem -->
+        <linearGradient id="holo" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00F5D4" />
+            <stop offset="50%" stop-color="#9B5CFF" />
+            <stop offset="100%" stop-color="#FFD166" />
+        </linearGradient>
+
+        <!-- Glow -->
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+
+        <!-- Ribbon -->
+        <linearGradient id="ribbon" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#FF3CAC" />
+            <stop offset="100%" stop-color="#6C63FF" />
+        </linearGradient>
+
+        <!-- Medal metal -->
+        <linearGradient id="metal" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#00F5D4" />
+            <stop offset="50%" stop-color="#6C63FF" />
+            <stop offset="100%" stop-color="#9B5CFF" />
+        </linearGradient>
+    </defs>
+
+    <!-- Outer neon ring -->
+    <circle cx="26" cy="26" r="25" fill="none" stroke="url(#neonRing)" stroke-width="2" filter="url(#glow)" />
+
+    <!-- Inner dark core -->
+    <circle cx="26" cy="26" r="21" fill="url(#coreGradient)" />
+    <!-- Medal ribbon (left) -->
+    <path d="M21 13
+       L25 13
+       L23.5 20
+       L21 18
+       Z" fill="url(#ribbon)" />
+
+    <!-- Medal ribbon (right) -->
+    <path d="M31 13
+       L27 13
+       L28.5 20
+       L31 18
+       Z" fill="url(#ribbon)" />
+
+    <!-- Medal outer disc -->
+    <circle cx="26" cy="29" r="8.5" fill="url(#metal)" />
+
+    <!-- Medal inner disc -->
+    <circle cx="26" cy="29" r="6.2" fill="#0B0A1F" opacity="0.35" />
+
+    <!-- Star emboss -->
+    <path d="M26 25.8
+       L27.3 28
+       L29.8 28.4
+       L28 30.2
+       L28.4 32.7
+       L26 31.4
+       L23.6 32.7
+       L24 30.2
+       L22.2 28.4
+       L24.7 28
+       Z" fill="#FFFFFF" opacity="0.35" />
+</svg>
+
+
+
+

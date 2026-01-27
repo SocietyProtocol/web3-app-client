@@ -1,5 +1,7 @@
 import "@mui/material/styles";
 
+// Augment MUI Select variant types
+
 declare module "@mui/material/styles" {
   interface Palette {
     gold: Palette["primary"];
@@ -13,6 +15,14 @@ declare module "@mui/material/styles" {
     neutral?: {
       main?: string;
     };
+  }
+
+  interface PaletteColor {
+    100?: string;
+  }
+
+  interface SimplePaletteColorOptions {
+    100?: string;
   }
 
   interface TypeBackground {
@@ -75,7 +85,7 @@ declare module "@mui/material/styles" {
   interface Mixins {
     borderGradient: (
       borderRadius?: string | number,
-      gradient?: keyof Palette["gradients"]
+      gradient?: keyof Palette["gradients"],
     ) => Record<string, unknown>;
   }
 }

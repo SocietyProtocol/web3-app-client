@@ -1,0 +1,55 @@
+export type DeepKeys<T> = T extends object
+  ? {
+      [K in keyof T]: `${Exclude<K, symbol>}${"" | `.${DeepKeys<T[K]>}`}`;
+    }[keyof T]
+  : never;
+
+export type DeepValue<
+  T,
+  P extends string,
+> = P extends `${infer K}.${infer Rest}`
+  ? K extends keyof T
+    ? DeepValue<T[K], Rest>
+    : undefined
+  : P extends keyof T
+    ? T[P]
+    : undefined;
+
+export function get<
+  TData,
+  TPath extends DeepKeys<TData>,
+  TDefault = DeepValue<TData, TPath>,
+>(
+  data: TData,
+  path: TPath,
+  defaultValue?: TDefault,
+): DeepValue<TData, TPath> | TDefault {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const value = path.split(".").reduce<any>((acc, key) => acc?.[key], data);
+
+  return value !== undefined ? value : defaultValue!;
+}
+
+/**
+ * Searches for a query string within specified fields of objects in a collection.
+ * Supports nested fields using dot notation.
+ *
+ * @param collection The array of objects to search within.
+ * @param query The search string to look for.
+ * @param fields The fields of the objects to search in (supports dot notation for nested fields).
+ * @returns A filtered array of objects where the query matches any of the specified fields.
+ */
+export const searchInCollection = <T extends object>(
+  collection: T[],
+  query: string,
+  fields: DeepKeys<T>[],
+): T[] => {
+  const q = query.toLowerCase();
+
+  return collection.filter((item) =>
+    fields.some((field) => {
+      const value = get(item, field);
+      return typeof value === "string" && value.toLowerCase().includes(q);
+    }),
+  );
+};

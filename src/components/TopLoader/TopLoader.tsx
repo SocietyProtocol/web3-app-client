@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import LoadingBar, { LoadingBarRef } from "react-top-loading-bar";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useLoadingBar } from "react-top-loading-bar";
 
 export const TopLoader = () => {
-  const loadingBarRef = useRef<LoadingBarRef>(null);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+
+  const { start, complete, getProgress } = useLoadingBar();
 
   useEffect(() => {
-    loadingBarRef.current?.complete();
-  }, [pathname, searchParams]);
+    complete();
+  }, [complete, pathname]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -20,18 +20,21 @@ export const TopLoader = () => {
 
       if (anchor && anchor.href && !anchor.target) {
         const url = new URL(anchor.href);
+
         if (
           url.pathname !== pathname &&
           url.origin === window.location.origin
         ) {
-          loadingBarRef.current?.continuousStart();
+          if (getProgress() === 0) {
+            start("continuous", 0);
+          }
         }
       }
     };
 
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
-  }, [pathname]);
+  }, [getProgress, pathname, start]);
 
-  return <LoadingBar color="#ffffff" ref={loadingBarRef} waitingTime={300} />;
+  return null;
 };

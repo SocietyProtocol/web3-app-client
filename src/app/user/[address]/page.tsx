@@ -9,6 +9,7 @@ import { checksumAddress, isAddress } from "viem";
 import { use } from "react";
 import { notFound, redirect } from "next/navigation";
 import { useAccount } from "wagmi";
+import { isEqualCaseInsensitive } from "@/utils/string";
 
 export default function UserProfilePage({
   params,
@@ -29,7 +30,7 @@ export default function UserProfilePage({
     return notFound();
   }
 
-  if (connectedAddress?.toLowerCase() === address.toLowerCase()) {
+  if (connectedAddress && isEqualCaseInsensitive(connectedAddress, address)) {
     return redirect("/profile");
   }
 

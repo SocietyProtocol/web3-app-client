@@ -33,7 +33,7 @@ interface AccountSetupContextType {
 }
 
 const AccountSetupContext = createContext<AccountSetupContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const useAccountSetup = () => {
@@ -73,7 +73,7 @@ export const AccountSetupProvider = ({
     defaultValues: {
       name: "",
       bio: "",
-      avatar: null,
+      imageUrl: null,
       referralCode: "",
     },
     mode: "onChange",
@@ -83,7 +83,7 @@ export const AccountSetupProvider = ({
 
   // Get server-side validation error for a field
   const getServerFieldError = (
-    field: keyof AccountData
+    field: keyof AccountData,
   ): string | undefined => {
     if (serverError instanceof ValidationError) {
       return serverError.details?.[field]?.[0];
@@ -104,7 +104,7 @@ export const AccountSetupProvider = ({
       profileId.isFetched,
       profileUri.data,
       profileUri.isFetched,
-    ]
+    ],
   );
 
   // Prefill form from profile data if available
@@ -114,7 +114,7 @@ export const AccountSetupProvider = ({
       form.reset({
         name: data.name || "",
         bio: data.bio || "",
-        avatar: data.avatar || null,
+        imageUrl: data.imageUrl || null,
         referralCode: data.referralCode || "",
       });
     }

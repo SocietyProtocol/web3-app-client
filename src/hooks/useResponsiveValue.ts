@@ -10,30 +10,29 @@ interface UseResponsiveValueProps<T> {
 
 export const useResponsiveValue = <T>(props: UseResponsiveValueProps<T>): T => {
   const { xs, sm, md, lg, xl } = props;
-  
-  // Check breakpoints from largest to smallest using up() queries
-  // This ensures only one media query matches at a time, improving performance
-  const isXlUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("xl"));
-  const isLgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("lg"));
-  const isMdUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("md"));
-  const isSmUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("sm"));
 
-  // Return the first available value for the current breakpoint
-  if (isXlUp && xl !== undefined) {
-    return xl;
-  }
+  // Mobile-first: check from largest to smallest
+  const isXl = useMediaQuery((theme: Theme) => theme.breakpoints.up("xl"), {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isLg = useMediaQuery((theme: Theme) => theme.breakpoints.up("lg"), {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isMd = useMediaQuery((theme: Theme) => theme.breakpoints.up("md"), {
+    defaultMatches: true,
+    noSsr: true,
+  });
+  const isSm = useMediaQuery((theme: Theme) => theme.breakpoints.up("sm"), {
+    defaultMatches: true,
+    noSsr: true,
+  });
 
-  if (isLgUp && lg !== undefined) {
-    return lg;
-  }
-
-  if (isMdUp && md !== undefined) {
-    return md;
-  }
-
-  if (isSmUp && sm !== undefined) {
-    return sm;
-  }
-
+  // Return largest matching breakpoint with fallback cascade
+  if (isXl && xl !== undefined) return xl;
+  if (isLg && lg !== undefined) return lg;
+  if (isMd && md !== undefined) return md;
+  if (isSm && sm !== undefined) return sm;
   return xs;
 };

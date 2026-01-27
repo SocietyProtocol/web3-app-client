@@ -4,12 +4,16 @@ import { createContext, useContext, ReactNode } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutateBadge } from "./useMutateBadge";
-import { BadgeInputData, badgeValidationSchema } from "@/validation/badge";
+import {
+  BadgeInputData,
+  BadgeTransformedData,
+  badgeValidationSchema,
+} from "@/validation/badge";
 import { ValidationError } from "@/errors/ValidationError";
 import { TransactionReceipt } from "viem";
 
 interface BadgeCreationContextType {
-  form: UseFormReturn<BadgeInputData>;
+  form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
   isMutating: boolean;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
@@ -55,7 +59,7 @@ export const BadgeCreationProvider = ({
     transactionReceipt,
   } = useMutateBadge();
 
-  const form = useForm<BadgeInputData>({
+  const form = useForm<BadgeInputData, unknown, BadgeTransformedData>({
     resolver: zodResolver(badgeValidationSchema),
     defaultValues: {
       name: "",

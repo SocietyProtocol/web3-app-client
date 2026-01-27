@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     "thread-stream",
     "@walletconnect/ethereum-provider",
     "pinata",
+    "node-libcurl",
+    "@whatwg-node/fetch",
   ],
 };
 

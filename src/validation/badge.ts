@@ -34,4 +34,4 @@ export const badgeValidationSchema = z.object({
 
 export type BadgeInputData = z.input<typeof badgeValidationSchema>;
 
-export type BadgeData = z.output<typeof badgeValidationSchema>;
+export type BadgeTransformedData = z.output<typeof badgeValidationSchema>;

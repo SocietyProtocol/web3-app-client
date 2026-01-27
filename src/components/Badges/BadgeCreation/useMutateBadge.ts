@@ -4,11 +4,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import {
-  BadgeData,
-  BadgeInputData,
-  badgeValidationSchema,
-} from "@/validation/badge";
+import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,7 +20,7 @@ export const useMutateBadge = () => {
   const uploadIpfsResult = useMutation<
     UploadMetadataResponse,
     Error,
-    BadgeData
+    BadgeTransformedData
   >({
     mutationFn: async (data) => {
       // Generate authentication payload
@@ -67,12 +63,10 @@ export const useMutateBadge = () => {
   });
 
   const mutate = useCallback(
-    async (data: BadgeInputData) => {
-      const parsed = badgeValidationSchema.parse(data);
-
+    async (data: BadgeTransformedData) => {
       const metadata = {
-        imageUrl: parsed.imageUrl,
-        ...(parsed.metadata ? JSON.parse(parsed.metadata) : {}),
+        imageUrl: data.imageUrl,
+        ...(data.metadata ? JSON.parse(data.metadata) : {}),
       };
 
       // Upload metadata to IPFS first
@@ -88,14 +82,14 @@ export const useMutateBadge = () => {
         abi: SocietyProtocolBadgesABI,
         functionName: "createBadge",
         args: [
-          parsed.name,
-          parsed.isOfficial,
-          parsed.isCommunity,
+          data.name,
+          data.isOfficial,
+          data.isCommunity,
           ipfsData.uri,
-          parsed.minters,
-          parsed.transferers,
-          parsed.burners,
-          parsed.editors,
+          data.minters,
+          data.transferers,
+          data.burners,
+          data.editors,
         ],
       });
     },

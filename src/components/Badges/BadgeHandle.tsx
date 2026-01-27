@@ -15,7 +15,11 @@ export const BadgeHandle = ({
   link = false,
 }: BadgeHandleProps) => {
   return (
-    <OptionalLink href={link ? `/badges/${id}` : undefined}>
+    <OptionalLink
+      href={link ? `/badges/${id}` : undefined}
+      aria-label={link ? `View badge “${name}” (ID #${id})` : undefined}
+      title={link ? `View badge “${name}” (ID #${id})` : undefined}
+    >
       <Box
         sx={{
           display: "flex",

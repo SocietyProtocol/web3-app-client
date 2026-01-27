@@ -157,17 +157,15 @@ const BadgeCreationWizardContent = ({
         const hasInfoError =
           err.details?.name || err.details?.imageUrl || err.details?.metadata;
 
-        if (hasInfoError) {
-          setActiveStep(0);
-        }
-
         const hasPermissionsError =
           err.details?.minters ||
           err.details?.transferers ||
           err.details?.burners ||
           err.details?.editors;
 
-        if (hasPermissionsError) {
+        if (hasInfoError) {
+          setActiveStep(0);
+        } else if (hasPermissionsError) {
           setActiveStep(1);
         }
 

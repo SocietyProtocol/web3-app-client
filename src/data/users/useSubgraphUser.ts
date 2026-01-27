@@ -4,7 +4,7 @@ import { execute, UserDocument, UserQuery } from "../../../.graphclient";
 
 export const useSubgraphUser = (address?: Address) =>
   useQuery({
-    queryKey: ["subgraphUser", address],
+    queryKey: ["user", address?.toLowerCase()],
     queryFn: async () => {
       if (!address) {
         return null;

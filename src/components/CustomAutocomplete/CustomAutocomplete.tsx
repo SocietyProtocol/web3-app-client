@@ -83,7 +83,10 @@ export const CustomAutocomplete = <T,>({
         getOptionLabel={getOptionLabel}
         onChange={(_, newValue) => {
           if (newValue && "inputValue" in newValue && newValue.inputValue) {
-            onChange([(newValue.inputValue as string).toLowerCase()]);
+            onChange([
+              ...newValue.map((v) => v[valueKey] as string),
+              (newValue.inputValue as string).toLowerCase(),
+            ]);
           } else {
             onChange(
               (newValue as T[]).map((item) =>

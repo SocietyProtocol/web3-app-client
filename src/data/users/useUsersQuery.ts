@@ -17,7 +17,7 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
       });
 
       result.users.forEach((user) => {
-        queryClient.setQueryData(["user", user.id], user);
+        queryClient.setQueryData(["user", user.id.toLowerCase()], user);
       });
 
       return result;

@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { imageUrlSchema } from "./custom";
+import { imageUrlSchema } from "./imageUrl";
 import { addressValidationSchema } from "./address";
+import { bigNumericStringSchema } from "./bigNumeric";
 
 export const badgeValidationSchema = z.object({
   name: z
@@ -22,13 +23,12 @@ export const badgeValidationSchema = z.object({
       },
       { message: "Metadata must be valid JSON" },
     )
-    .optional()
-    .or(z.literal("")),
+    .optional(),
   isOfficial: z.boolean(),
   isCommunity: z.boolean(),
-  minters: z.array(z.string()), // Badge IDs
-  transferers: z.array(z.string()), // Badge IDs
-  burners: z.array(z.string()), // Badge IDs
+  minters: z.array(bigNumericStringSchema), // Badge IDs
+  transferers: z.array(bigNumericStringSchema), // Badge IDs
+  burners: z.array(bigNumericStringSchema), // Badge IDs
   editors: z.array(addressValidationSchema), // Ethereum addresses
 });
 

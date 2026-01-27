@@ -25,7 +25,7 @@ export const mergeOptions = (
     ...options,
     searchText: (searchText ?? defaultOptions.searchText)
       ?.toLowerCase()
-      ?.trim()
+      .trim()
       .replace(/\s+/g, " "),
   };
 };

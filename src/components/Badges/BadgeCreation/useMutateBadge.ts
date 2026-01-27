@@ -79,13 +79,8 @@ export const useMutateBadge = () => {
       const ipfsData = await uploadIpfsResult.mutateAsync(metadata);
 
       if (!ipfsData.uri) {
-        throw new Error("Failed to generate profile URI");
+        throw new Error("IPFS upload did not return a valid URI");
       }
-
-      // Convert badge IDs from strings to bigint arrays
-      const minters: bigint[] = parsed.minters.map((id) => BigInt(id));
-      const transferers: bigint[] = parsed.transferers.map((id) => BigInt(id));
-      const burners: bigint[] = parsed.burners.map((id) => BigInt(id));
 
       // Call the contract
       await writeContractAsync({
@@ -97,9 +92,9 @@ export const useMutateBadge = () => {
           parsed.isOfficial,
           parsed.isCommunity,
           ipfsData.uri,
-          minters,
-          transferers,
-          burners,
+          parsed.minters,
+          parsed.transferers,
+          parsed.burners,
           parsed.editors,
         ],
       });

@@ -160,7 +160,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           <>
             <Logo
               sx={{
-                fontSize: { xs: "0.875rem", sm: "1rem" },
+                fontSize: { xs: "0.875rem", sm: "1.25rem" },
                 color: "text.primary",
               }}
             />

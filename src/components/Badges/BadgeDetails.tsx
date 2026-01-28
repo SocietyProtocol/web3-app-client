@@ -325,6 +325,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
                     <UserCard
                       id={holder.id as Hex}
                       name={holder.name ?? truncateAddress(holder.id as Hex)}
+                      bio={holder.bio}
                       imageUrl={holder.imageUrl}
                       size="small"
                       highlightYou

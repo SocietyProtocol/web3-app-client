@@ -31,8 +31,8 @@ export const HoldersModal = ({
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>
+    <Dialog open={open} onClose={onClose} aria-labelledby="holders-modal-title">
+      <DialogTitle id="holders-modal-title">
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
           All Holders of {badgeName} ({holders.length})
         </Typography>
@@ -82,6 +82,7 @@ export const HoldersModal = ({
                   <UserCard
                     id={holder.id as Hex}
                     name={holder.name ?? truncateAddress(holder.id as Hex)}
+                    bio={holder.bio}
                     imageUrl={holder.imageUrl}
                     size="small"
                     highlightYou

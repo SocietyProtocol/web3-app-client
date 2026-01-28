@@ -7,7 +7,7 @@ export const UserCardPaper = styled(Paper, {
   highlight?: boolean;
 }>(({ theme, size, highlight }) => ({
   padding: theme.spacing(size === "large" ? 2 : 1, 1),
-  borderRadius: 8,
+  borderRadius: Number(theme.shape.borderRadius) * 2,
   boxShadow: "none",
   minHeight: size === "large" ? 220 : "unset",
   width: size === "large" ? 214 : 140,

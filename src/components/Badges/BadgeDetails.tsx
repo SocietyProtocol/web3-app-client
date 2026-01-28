@@ -14,7 +14,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
-import { Address, Hex } from "viem";
+import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
 import { useMemo, useState } from "react";
@@ -41,7 +41,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const { data, isLoading } = useBadge(id);
 
   const creatorAddress = data?.badge?.creatorAddress
-    ? (data?.badge?.creatorAddress as Address)
+    ? (data?.badge?.creatorAddress as Hex)
     : undefined;
 
   const creator = useProfile(creatorAddress);
@@ -323,7 +323,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
                     }}
                   >
                     <UserCard
-                      id={holder.id as Address}
+                      id={holder.id as Hex}
                       name={holder.name ?? truncateAddress(holder.id as Hex)}
                       imageUrl={holder.imageUrl}
                       size="small"

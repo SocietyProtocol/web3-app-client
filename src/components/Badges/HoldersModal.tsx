@@ -10,19 +10,16 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { Gallery } from "../Gallery/Gallery";
 import { useState } from "react";
-import { Address } from "viem";
+import { Hex } from "viem";
 import { truncateAddress } from "@/utils/string";
 import { UserCard } from "../User/UserCard";
-
-interface Holder {
-  id: string;
-}
+import { UserData } from "@/data/users/types";
 
 interface HoldersModalProps {
   open: boolean;
   onClose: () => void;
   badgeName: string;
-  holders: Holder[];
+  holders: Pick<UserData, "id" | "name" | "bio" | "imageUrl">[];
 }
 
 export const HoldersModal = ({
@@ -83,8 +80,12 @@ export const HoldersModal = ({
                   }}
                 >
                   <UserCard
-                    id={holder.id as Address}
-                    name={truncateAddress(holder.id as Address)}
+                    id={holder.id as Hex}
+                    name={holder.name ?? truncateAddress(holder.id as Hex)}
+                    imageUrl={holder.imageUrl}
+                    size="small"
+                    highlightYou
+                    link
                   />
                 </Box>
               )}

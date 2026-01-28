@@ -20,7 +20,9 @@ export const UserTag = ({
 
   const isConnectedUser = useMemo(
     () =>
-      id && connectedAddress && isEqualCaseInsensitive(id, connectedAddress),
+      !!id &&
+      !!connectedAddress &&
+      isEqualCaseInsensitive(id, connectedAddress),
     [id, connectedAddress],
   );
 

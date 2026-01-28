@@ -1,5 +1,4 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
-import { Avatar } from "../Avatar/Avatar";
 import { UserCard } from "./UserCard";
 import { PreviewPopover } from "../PreviewPopover/PreviewPopover";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
@@ -8,6 +7,7 @@ import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useMemo } from "react";
 import { UserHandleProps } from "./types";
 import { Hex } from "viem";
+import { UserAvatar } from "../Avatar/UserAvatar";
 
 export const UserHandle = ({
   id,
@@ -24,7 +24,9 @@ export const UserHandle = ({
 
   const isConnectedUser = useMemo(
     () =>
-      id && connectedAddress && isEqualCaseInsensitive(id, connectedAddress),
+      !!id &&
+      !!connectedAddress &&
+      isEqualCaseInsensitive(id, connectedAddress),
     [id, connectedAddress],
   );
 
@@ -63,6 +65,9 @@ export const UserHandle = ({
           width: "fit-content",
           flex: 0,
         }}
+        aria-label={
+          (name ?? id) ? `User profile link for ${name ?? id}` : undefined
+        }
       >
         <Stack
           direction="row"
@@ -73,10 +78,10 @@ export const UserHandle = ({
             flex: 0,
           }}
         >
-          <Avatar
+          <UserAvatar
             address={id}
             size={size === "small" ? 16 : 24}
-            ensImage={imageUrl}
+            imageUrl={imageUrl}
             loading={loading}
           />
 

@@ -33,6 +33,9 @@ query Badge($id: ID!) {
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     burners {
@@ -40,6 +43,9 @@ query Badge($id: ID!) {
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     transferers {
@@ -47,6 +53,9 @@ query Badge($id: ID!) {
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
   }

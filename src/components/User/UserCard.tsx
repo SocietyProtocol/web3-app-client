@@ -7,6 +7,7 @@ import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useAccount } from "wagmi";
 import { useMemo } from "react";
 import { isEqualCaseInsensitive } from "@/utils/string";
+import { Hex } from "viem";
 
 export const UserCard = ({
   imageUrl,
@@ -25,7 +26,9 @@ export const UserCard = ({
 
   const isConnectedUser = useMemo(
     () =>
-      id && connectedAddress && isEqualCaseInsensitive(id, connectedAddress),
+      !!id &&
+      !!connectedAddress &&
+      isEqualCaseInsensitive(id, connectedAddress),
     [id, connectedAddress],
   );
 
@@ -40,7 +43,12 @@ export const UserCard = ({
   }, [isConnectedUser, id, link]);
 
   return (
-    <OptionalLink href={url}>
+    <OptionalLink
+      href={url}
+      aria-label={
+        (name ?? id) ? `User profile link for ${name ?? id}` : undefined
+      }
+    >
       <UserCardPaper
         elevation={1}
         size={size}
@@ -80,7 +88,7 @@ export const UserCard = ({
           {showAddress &&
             (id && !loading ? (
               <AddressDisplay
-                address={id}
+                address={id as Hex}
                 showCopy={!readonly && !link}
                 showLink={!readonly && !link}
                 truncate

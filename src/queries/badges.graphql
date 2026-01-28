@@ -45,6 +45,9 @@ query Badges(
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     burners {
@@ -52,6 +55,9 @@ query Badges(
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     transferers {
@@ -59,6 +65,9 @@ query Badges(
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
   }

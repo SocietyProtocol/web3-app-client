@@ -1,11 +1,4 @@
-import { Hex } from "viem";
-
-export interface UserData {
-  id: Hex;
-  name: string | null;
-  imageUrl: string | null;
-  bio: string | null;
-}
+import { UserData } from "@/data/users/types";
 
 export interface UserCardProps extends Partial<UserData> {
   loading?: boolean;

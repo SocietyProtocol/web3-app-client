@@ -1,10 +1,10 @@
 import { Grid, Paper, Typography } from "@mui/material";
 import { AddressDisplay } from "../AddressDisplay/AddressDisplay";
 import { DataItem } from "./DataItem";
-import { UserHandle } from "../UserHandle/UserHandle";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
 import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
+import { UserHandle } from "../User/UserHandle";
 
 interface ProfileDataCardProps {
   address: Address;
@@ -88,7 +88,7 @@ export const ProfileDataCard = ({
             label="Referred by"
             tooltip="The user who referred this account."
           >
-            <UserHandle address={referredBy} previewCard link />
+            <UserHandle id={referredBy} showPreview highlightYou link />
           </DataItem>
 
           {!readonly && <ReferralCodeGenerator />}

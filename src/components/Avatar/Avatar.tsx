@@ -1,8 +1,7 @@
-import { Avatar as MUIAvatar, Skeleton, SxProps } from "@mui/material";
-import { useMemo } from "react";
+import { SxProps } from "@mui/material";
 import { useProfile } from "../AccountSetup/useProfile";
-import { generateColorsFromAddress } from "@/lib/color";
 import { isAddress } from "viem";
+import { UserAvatar } from "./UserAvatar";
 
 export interface AvatarProps {
   address?: string;
@@ -25,40 +24,13 @@ export const Avatar = ({
 
   const image = profileData?.imageUrl || ensImage;
 
-  const colors = useMemo(
-    () => (!image && address ? generateColorsFromAddress(address) : []),
-    [address, image],
-  );
-
-  if (loading) {
-    return (
-      <Skeleton
-        variant="circular"
-        sx={{
-          ...sx,
-          width: size,
-          height: size,
-        }}
-      />
-    );
-  }
-
   return (
-    <MUIAvatar
-      {...(image && { src: image })}
-      aria-label={`Avatar for ${address}`}
-      sx={{
-        ...sx,
-        width: size,
-        height: size,
-        ...(!image && {
-          background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
-        }),
-
-        "& .MuiAvatar-fallback": {
-          display: "none",
-        },
-      }}
+    <UserAvatar
+      address={address}
+      imageUrl={image}
+      size={size}
+      sx={sx}
+      loading={loading}
     />
   );
 };

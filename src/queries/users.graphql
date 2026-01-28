@@ -27,11 +27,44 @@ query Users(
       creatorAddress
       createdAt
       holdersCount
+      createdBy {
+        id
+        name
+        bio
+        imageUrl
+      }
       holders {
         id
+        name
+        bio
+        imageUrl
       }
       managers {
         id
+        name
+        bio
+        imageUrl
+      }
+      minters {
+        id
+        name
+        holders {
+          id
+        }
+      }
+      burners {
+        id
+        name
+        holders {
+          id
+        }
+      }
+      transferers {
+        id
+        name
+        holders {
+          id
+        }
       }
     }
     managedBadges {
@@ -45,11 +78,44 @@ query Users(
       creatorAddress
       createdAt
       holdersCount
+      createdBy {
+        id
+        name
+        bio
+        imageUrl
+      }
       holders {
         id
+        name
+        bio
+        imageUrl
       }
       managers {
         id
+        name
+        bio
+        imageUrl
+      }
+      minters {
+        id
+        name
+        holders {
+          id
+        }
+      }
+      burners {
+        id
+        name
+        holders {
+          id
+        }
+      }
+      transferers {
+        id
+        name
+        holders {
+          id
+        }
       }
     }
   }

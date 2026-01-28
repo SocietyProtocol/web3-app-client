@@ -8,7 +8,6 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { UserHandle } from "../UserHandle/UserHandle";
 import { Logo } from "../icons/Logo";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Hex } from "viem";
@@ -16,6 +15,7 @@ import { BadgeData } from "../../data/badges/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
+import { UserHandle } from "../User/UserHandle";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
@@ -52,7 +52,7 @@ export const BadgeCard = ({
   name,
   isOfficial,
   isCommunity,
-  creatorAddress,
+  createdBy,
   uri,
   loading = false,
   imageUrl,
@@ -140,31 +140,33 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton width="80%" />
       ) : (
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            textAlign: "center",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            width: "100%",
-            flexShrink: 0,
-            minHeight: 36,
-          }}
-          title={name}
-        >
-          {name}
-        </Typography>
+        <OptionalLink href={`/badges/${id}`}>
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              textAlign: "center",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              width: "100%",
+              flexShrink: 0,
+              minHeight: 36,
+            }}
+            title={name}
+          >
+            {name}
+          </Typography>
+        </OptionalLink>
       )}
 
       {/* Created By */}
       {loading ? (
         <Skeleton variant="text" width={70} height={10} />
       ) : (
-        creatorAddress && (
+        createdBy?.id && (
           <Stack
             width="100%"
             p={0.5}
@@ -186,12 +188,15 @@ export const BadgeCard = ({
             >
               CREATED BY
             </Typography>
-            {creatorAddress ? (
+            {createdBy?.id ? (
               <UserHandle
-                address={creatorAddress as Hex}
+                id={createdBy.id as Hex}
+                name={createdBy.name}
+                bio={createdBy.bio}
+                imageUrl={createdBy.imageUrl}
                 size="small"
-                showYouLabel={false}
-                previewCard
+                highlightYou
+                showPreview
                 link
               />
             ) : (

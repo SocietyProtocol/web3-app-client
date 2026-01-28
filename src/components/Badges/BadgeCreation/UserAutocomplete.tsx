@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { useUsersQuery } from "@/data/users/useUsersQuery";
-import { UserHandle } from "@/components/UserHandle/UserHandle";
-import { Address, isAddress } from "viem";
+import { Hex, isAddress } from "viem";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
+import { UserHandle } from "@/components/User/UserHandle";
+import { UserData } from "@/data/users/types";
 
 interface UserAutocompleteProps {
   label: string;
@@ -19,7 +20,7 @@ export const UserAutocomplete = ({
   onChange,
 }: UserAutocompleteProps) => {
   const [selectedUserMap, setSelectedUserMap] = useState<
-    Map<string, { id: string; name?: string | null }>
+    Map<string, Pick<UserData, "id" | "name" | "imageUrl">>
   >(new Map());
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,7 +77,14 @@ export const UserAutocomplete = ({
         }
         return option.name ? `${option.name} (${option.id})` : option.id;
       }}
-      renderItem={(item) => <UserHandle address={item.id as Address} />}
+      renderItem={(item) => (
+        <UserHandle
+          id={item.id as Hex}
+          name={item.name}
+          imageUrl={item.imageUrl}
+          highlightYou
+        />
+      )}
       inputValue={searchQuery}
       onInputChange={(_, value, reason) => {
         if (reason !== "reset") {

@@ -1,41 +1,40 @@
-import { Paper, Skeleton, Stack, Typography } from "@mui/material";
+import { Skeleton, Stack, Typography } from "@mui/material";
 import { Avatar } from "../Avatar/Avatar";
-import { Address } from "viem";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive } from "@/utils/string";
+import { UserTagProps } from "./types";
+import { UserCardPaper } from "./components";
 
-interface MiniProfileCardProps {
-  imageUrl?: string | null;
-  username?: string;
-  address?: Address;
-  bio?: string;
-  loading?: boolean;
-  link?: boolean;
-}
-
-export const MiniProfileCard = ({
+export const UserTag = ({
   imageUrl,
-  username,
-  address,
+  name,
+  id,
   bio,
   loading = false,
   link = true,
-}: MiniProfileCardProps) => {
+  highlightYou,
+}: UserTagProps) => {
   const { address: connectedAddress } = useAccount();
 
+  const isConnectedUser = useMemo(
+    () =>
+      !!id &&
+      !!connectedAddress &&
+      isEqualCaseInsensitive(id, connectedAddress),
+    [id, connectedAddress],
+  );
+
   const url = useMemo(() => {
-    if (
-      address &&
-      connectedAddress &&
-      isEqualCaseInsensitive(address, connectedAddress)
-    ) {
-      return link ? `/profile` : false;
+    if (!link) return false;
+
+    if (isConnectedUser) {
+      return `/profile`;
     }
 
-    return address && link ? `/user/${address.toLowerCase()}` : false;
-  }, [address, connectedAddress, link]);
+    return id ? `/user/${id.toLowerCase()}` : false;
+  }, [isConnectedUser, id, link]);
 
   return (
     <OptionalLink
@@ -46,13 +45,13 @@ export const MiniProfileCard = ({
         flex: 0,
       }}
     >
-      <Paper
+      <UserCardPaper
+        highlight={highlightYou && isConnectedUser}
         elevation={1}
+        size="small"
         sx={{
           px: 1,
           py: 1,
-          borderRadius: 2,
-          boxShadow: "none",
           width: 214,
         }}
       >
@@ -61,7 +60,7 @@ export const MiniProfileCard = ({
 
           <Avatar
             ensImage={imageUrl}
-            address={address}
+            address={id}
             size={42}
             loading={loading}
           />
@@ -81,9 +80,9 @@ export const MiniProfileCard = ({
                   whiteSpace: "nowrap",
                   maxWidth: "100%",
                 }}
-                title={username}
+                title={name ?? undefined}
               >
-                {username}
+                {name}
               </Typography>
             )}
 
@@ -102,7 +101,7 @@ export const MiniProfileCard = ({
             </Typography>
           </Stack>
         </Stack>
-      </Paper>
+      </UserCardPaper>
     </OptionalLink>
   );
 };

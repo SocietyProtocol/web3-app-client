@@ -10,12 +10,22 @@ query Badge($id: ID!) {
     creatorAddress
     createdAt
     holdersCount
+    createdBy {
+      id
+      name
+      bio
+      imageUrl
+    }
     holders {
       id
+      name
+      bio
+      imageUrl
     }
     managers {
       id
       name
+      bio
       imageUrl
     }
     minters {
@@ -23,6 +33,9 @@ query Badge($id: ID!) {
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     burners {
@@ -30,6 +43,9 @@ query Badge($id: ID!) {
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     transferers {
@@ -37,6 +53,9 @@ query Badge($id: ID!) {
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
   }

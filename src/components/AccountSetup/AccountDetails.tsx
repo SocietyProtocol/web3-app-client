@@ -6,7 +6,7 @@ import { AccountDetailsEdit } from "./AccountDetailsEdit";
 import { AccountSkeleton } from "./AccountSkeleton";
 import { AccountSetupProvider } from "./AccountSetupContext";
 import { AccountStat } from "./AccountStat";
-import { ProfileCard } from "../ProfileCard/ProfileCard";
+import { UserCard } from "../User/UserCard";
 import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
@@ -129,11 +129,11 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             }}
             overflow="hidden"
           >
-            <ProfileCard
+            <UserCard
               imageUrl={profile?.imageUrl}
               bio={profile?.bio}
               name={username}
-              address={overrideAddress}
+              id={overrideAddress}
             >
               {!readonly && (
                 <Button
@@ -145,7 +145,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   Edit
                 </Button>
               )}
-            </ProfileCard>
+            </UserCard>
 
             {profileId.isLoading ? (
               <ProfileDataCardSkeleton />

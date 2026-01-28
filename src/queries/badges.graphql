@@ -22,12 +22,22 @@ query Badges(
     creatorAddress
     createdAt
     holdersCount
+    createdBy {
+      id
+      name
+      bio
+      imageUrl
+    }
     holders {
       id
+      name
+      bio
+      imageUrl
     }
     managers {
       id
       name
+      bio
       imageUrl
     }
     minters {
@@ -35,6 +45,9 @@ query Badges(
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     burners {
@@ -42,6 +55,9 @@ query Badges(
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
     transferers {
@@ -49,6 +65,9 @@ query Badges(
       name
       holders {
         id
+        name
+        bio
+        imageUrl
       }
     }
   }

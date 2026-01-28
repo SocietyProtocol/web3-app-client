@@ -45,24 +45,25 @@ export type BadgeData = Pick<
   | "creatorAddress"
   | "createdAt"
 > & {
-  holders: Array<Pick<User, "id">>;
-  managers: Array<Pick<User, "id" | "name" | "imageUrl">>;
+  createdBy: Pick<User, "id" | "name" | "bio" | "imageUrl">;
+  holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+  managers: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
 };
 
 export type FullBadgeData = BadgeData & {
   minters: Array<
     Pick<Badge, "id" | "name"> & {
-      holders: Array<Pick<User, "id">>;
+      holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
     }
   >;
   burners: Array<
     Pick<Badge, "id" | "name"> & {
-      holders: Array<Pick<User, "id">>;
+      holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
     }
   >;
   transferers: Array<
     Pick<Badge, "id" | "name"> & {
-      holders: Array<Pick<User, "id">>;
+      holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
     }
   >;
 };

@@ -13,7 +13,6 @@ export const CommunityChip = ({
   return (
     <Stack direction="row" alignItems="center" spacing={0.5}>
       <Typography
-        variant="caption"
         color="textPrimary"
         sx={{
           fontWeight: 700,

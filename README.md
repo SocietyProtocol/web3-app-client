@@ -20,6 +20,7 @@ Then configure the following required variables:
 | `NEXT_PUBLIC_GRAPH_URL`          | The Graph subgraph endpoint URL                         | Yes      | Your deployed subgraph                                                                  |
 | `PINATA_JWT`                     | Pinata JWT token for IPFS uploads (server-side)         | Yes      | [Pinata Dashboard](https://pinata.cloud/)                                               |
 | `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata gateway URL for IPFS content retrieval           | Yes      | [Pinata Dashboard](https://pinata.cloud/) (e.g., `https://your-gateway.mypinata.cloud`) |
+| `NEXT_PUBLIC_AUCTION_ID`         | The ID of the auction to interact with                  | No       | Your auction ID from the smart contract deployment                                      |
 
 **Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Server-only variables (like `PINATA_JWT`) are only accessible on the server side.
 

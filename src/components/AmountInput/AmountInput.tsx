@@ -12,14 +12,16 @@ import {
 import { formatUnits, parseUnits } from "viem";
 import { TokenIcon } from "../TokenIcon/TokenIcon";
 
-export interface AmountInputProps
-  extends Omit<TextFieldProps<"outlined">, "onChange" | "value" | "variant"> {
+export interface AmountInputProps extends Omit<
+  TextFieldProps<"outlined">,
+  "onChange" | "value" | "variant"
+> {
   label?: string;
   value?: bigint;
   onChange?: (value: bigint | undefined) => void;
   max?: bigint;
   disabled?: boolean;
-  tokenSymbol: string;
+  tokenSymbol?: string;
   decimals?: number;
   readonly?: boolean;
 }
@@ -37,7 +39,7 @@ export const AmountInput = ({
 }: AmountInputProps) => {
   const stringValue = useMemo(
     () => (value === undefined ? "" : formatUnits(value, decimals)),
-    [value, decimals]
+    [value, decimals],
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,33 +84,40 @@ export const AmountInput = ({
 
       onChange?.(bigintValue);
     },
-    [onChange, decimals, max]
+    [onChange, decimals, max],
   );
 
-  const onBlur = useCallback(() => {
-    if (stringValue !== intermediateValue) {
-      let bigintValue;
+  const onBlur = useCallback(
+    (event: React.FocusEvent<HTMLInputElement, Element>) => {
+      if (stringValue !== intermediateValue) {
+        let bigintValue;
 
-      try {
-        bigintValue = parseUnits(intermediateValue || "0", decimals);
-      } catch {
-        setIntermediateValue(stringValue);
-        return;
+        try {
+          bigintValue = parseUnits(intermediateValue || "0", decimals);
+        } catch {
+          setIntermediateValue(stringValue);
+          return;
+        }
+
+        if (bigintValue === value) {
+          setIntermediateValue(stringValue);
+
+          return;
+        }
+
+        if (max !== undefined && bigintValue > max) {
+          onChange?.(max);
+
+          return;
+        }
+
+        onChange?.(bigintValue);
       }
 
-      if (bigintValue === value) {
-        setIntermediateValue(stringValue);
-        return;
-      }
-
-      if (max !== undefined && bigintValue > max) {
-        onChange?.(max);
-        return;
-      }
-
-      onChange?.(bigintValue);
-    }
-  }, [intermediateValue, stringValue, value, decimals, max, onChange]);
+      props.onBlur?.(event);
+    },
+    [stringValue, intermediateValue, value, max, onChange, props, decimals],
+  );
 
   useEffect(() => {
     setIntermediateValue(stringValue);
@@ -126,7 +135,7 @@ export const AmountInput = ({
       {...props}
       variant="outlined"
       label={label}
-      placeholder={`0.0 ${tokenSymbol.toUpperCase()}`}
+      placeholder={tokenSymbol ? `0.0 ${tokenSymbol.toUpperCase()}` : undefined}
       onChange={handleChange}
       onBlur={onBlur}
       value={intermediateValue}
@@ -135,15 +144,15 @@ export const AmountInput = ({
         input: {
           inputRef,
           readOnly: readonly,
-          startAdornment: (
+          startAdornment: !!tokenSymbol && (
             <TokenIcon
               symbol={tokenSymbol}
               size={36}
-              style={{ marginRight: 4 }}
+              style={{ marginRight: 8 }}
             />
           ),
 
-          endAdornment: max && !readonly && (
+          endAdornment: max !== undefined && !readonly && (
             <Button
               variant="outlined"
               onClick={() => {

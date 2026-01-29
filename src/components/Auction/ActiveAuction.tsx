@@ -1,14 +1,30 @@
 import { CountDown } from "@/components/Auction/CountDown";
 import { Box, Stack, Typography } from "@mui/material";
 import { AuctionHeader } from "@/components/Auction/AuctionHeader";
-import { mockAuctionStats } from "@/data/auction-stats";
 import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
 import { PriceVolumeChart } from "@/components/Auction/PriceVolumeChart";
 import { mockPriceVolumeData } from "@/data/price-volume";
 import { YourBids } from "@/components/Auction/YourBids";
+import { useChain } from "@/hooks/useChain";
+import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
+import { useAuctionContext } from "./AuctionContext";
 
 export const ActiveAuction = () => {
+  const { auctionDetail, minPrice, totalAuctioned, isLoading } =
+    useAuctionContext();
+
+  const {
+    chainId,
+    currentClearingPrice,
+    symbolBiddingToken,
+    decimalsBiddingToken,
+    symbolAuctioningToken,
+    endTimeTimestamp,
+  } = auctionDetail ?? {};
+
+  const chain = useChain(chainId ? Number(chainId) : undefined);
+
   return (
     <Box
       sx={{
@@ -18,7 +34,11 @@ export const ActiveAuction = () => {
         gap: { xs: 3, sm: 4, md: 6 },
       }}
     >
-      <AuctionHeader networkName="Mainnet" id={1} active />
+      <AuctionHeader
+        networkName={chain ? chain.name : "Unknown Network"}
+        id={1}
+        active={!isLoading}
+      />
 
       <Stack
         direction={{ xs: "column", md: "row" }}
@@ -26,26 +46,63 @@ export const ActiveAuction = () => {
         alignItems="center"
         justifyContent="space-between"
       >
-        {mockAuctionStats.slice(0, 2).map((stat) => (
-          <AuctionStat
-            key={stat.label}
-            icon={stat.icon}
-            label={stat.label}
-            value={stat.value}
-            tooltip={stat.tooltip}
-          />
-        ))}
+        <AuctionStat
+          label="Current Price"
+          value={currentClearingPrice && `${currentClearingPrice} USDC/SPEC`}
+          tooltip="The current highest bid price for the auctioned item."
+          loading={isLoading}
+        />
 
-        <CountDown endTimestamp={1772323200} title="ENDS IN" />
+        <AuctionStat
+          icon="/tokens/spec.svg"
+          label="Bidding With"
+          value={symbolBiddingToken}
+          tooltip="The token used for bidding in the auction."
+          loading={isLoading}
+        />
 
-        {mockAuctionStats.slice(2).map((stat) => (
-          <AuctionStat
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
-            tooltip={stat.tooltip}
-          />
-        ))}
+        <CountDown endTimestamp={endTimeTimestamp ?? 0} title="ENDS IN" />
+
+        <AuctionStat
+          label="Total Auctioned"
+          value={
+            <FormattedNumber
+              value={totalAuctioned}
+              maxDecimals={4}
+              minThreshold={0.0001}
+              symbol={symbolAuctioningToken}
+              component="div"
+              color="primary.main"
+              sx={{
+                fontSize: 18,
+                fontWeight: 700,
+              }}
+            />
+          }
+          tooltip="The total amount of tokens auctioned so far."
+          loading={isLoading}
+        />
+
+        <AuctionStat
+          label="Min Price"
+          value={
+            <FormattedNumber
+              value={minPrice}
+              scaleDownDecimals={decimalsBiddingToken}
+              maxDecimals={4}
+              minThreshold={0.0001}
+              symbol={`${symbolBiddingToken}/${symbolAuctioningToken}`}
+              component="div"
+              color="primary.main"
+              sx={{
+                fontSize: 18,
+                fontWeight: 700,
+              }}
+            />
+          }
+          tooltip="The minimum acceptable bid price for the auctioned item."
+          loading={isLoading}
+        />
       </Stack>
 
       <Stack>

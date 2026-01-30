@@ -19,10 +19,6 @@ export const YourBids = () => {
       });
   }, [orders, exactOrder]);
 
-  console.log({
-    sortedOrders,
-  });
-
   return (
     <Paper
       elevation={0}

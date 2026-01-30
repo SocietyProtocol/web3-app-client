@@ -13,7 +13,7 @@ export const buildBidValidationSchema = ({
   biddingTokenDecimals,
 }: BuildBidValidationSchemaParams) =>
   z.object({
-    bidAmount: z
+    sellAmount: z
       .bigint()
       .gt(minBid, {
         message: `Bid amount must be greater than minimum bid of ${formatUnits(minBid, biddingTokenDecimals)}`,

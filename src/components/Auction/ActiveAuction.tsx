@@ -4,24 +4,41 @@ import { AuctionHeader } from "@/components/Auction/AuctionHeader";
 import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
 import { PriceVolumeChart } from "@/components/Auction/PriceVolumeChart";
-import { mockPriceVolumeData } from "@/data/price-volume";
 import { YourBids } from "@/components/Auction/YourBids/YourBids";
 import { useChain } from "@/hooks/useChain";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { useAuctionContext } from "./AuctionContext";
+import { useMemo } from "react";
 
 export const ActiveAuction = () => {
-  const { auctionDetail, minPrice, totalAuctioned, isLoading } =
-    useAuctionContext();
+  const {
+    auctionDetail,
+    minPrice,
+    totalAuctioned,
+    isLoading,
+    priceVolumeHistogram,
+  } = useAuctionContext();
 
   const {
     chainId,
     currentClearingPrice,
     symbolBiddingToken,
     decimalsBiddingToken,
+    decimalsAuctioningToken,
     symbolAuctioningToken,
     endTimeTimestamp,
   } = auctionDetail ?? {};
+
+  const xReferenceLines = useMemo(() => {
+    if (currentClearingPrice === undefined) return [];
+
+    return [
+      {
+        value: parseFloat(currentClearingPrice),
+        label: "Current Clearing Price",
+      },
+    ];
+  }, [currentClearingPrice]);
 
   const chain = useChain(chainId ? Number(chainId) : undefined);
 
@@ -47,9 +64,22 @@ export const ActiveAuction = () => {
         justifyContent="space-between"
       >
         <AuctionStat
-          label="Current Price"
-          value={currentClearingPrice && `${currentClearingPrice} USDC/SPEC`}
-          tooltip="The current highest bid price for the auctioned item."
+          label="Current Clearing Price"
+          value={
+            <FormattedNumber
+              value={Number(currentClearingPrice)}
+              maxDecimals={4}
+              minThreshold={0.0001}
+              symbol={`${symbolBiddingToken}/${symbolAuctioningToken}`}
+              component="div"
+              color="primary.main"
+              sx={{
+                fontSize: 18,
+                fontWeight: 700,
+              }}
+            />
+          }
+          tooltip="The current price at which the auction is clearing."
           loading={isLoading}
         />
 
@@ -68,6 +98,7 @@ export const ActiveAuction = () => {
           value={
             <FormattedNumber
               value={totalAuctioned}
+              scaleDownDecimals={decimalsAuctioningToken}
               maxDecimals={4}
               minThreshold={0.0001}
               symbol={symbolAuctioningToken}
@@ -118,7 +149,10 @@ export const ActiveAuction = () => {
           flex={1}
         >
           <BidControl />
-          <PriceVolumeChart series={mockPriceVolumeData} />
+          <PriceVolumeChart
+            series={priceVolumeHistogram}
+            xReferenceLines={xReferenceLines}
+          />
         </Stack>
       </Stack>
 

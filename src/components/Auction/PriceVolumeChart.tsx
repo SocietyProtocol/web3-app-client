@@ -1,44 +1,27 @@
 "use client";
 
 import { Paper, Stack, useTheme, Box } from "@mui/material";
-import { useMemo } from "react";
 import {
   Area,
   AreaChart,
+  Label,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { useResponsiveValue } from "@/hooks/useResponsiveValue";
 
 export interface PriceVolumeChartProps {
-  series: Array<{ price: number; volume: number }>;
+  series?: Array<{ label: number; value: number }>;
+  xReferenceLines?: Array<{ value: number; label: string }>;
 }
 
-export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
+export const PriceVolumeChart = ({
+  series = [],
+  xReferenceLines = [],
+}: PriceVolumeChartProps) => {
   const theme = useTheme();
-  const nTicks = useResponsiveValue({ xs: 3, sm: 5, md: 6, lg: 7 });
-
-  const xTicks = useMemo(() => {
-    if (series.length === 0) return [];
-
-    const prices = series.map((item) => item.price).sort((a, b) => a - b);
-    const tickCount = nTicks;
-    const step = Math.floor(prices.length / (tickCount - 1));
-
-    if (step === 0) return prices;
-
-    const ticks = [prices[0]];
-
-    for (let i = step; i < prices.length - 1; i += step) {
-      ticks.push(prices[i]);
-    }
-
-    ticks.push(prices[prices.length - 1]);
-
-    return ticks;
-  }, [series, nTicks]);
 
   return (
     <Stack
@@ -60,7 +43,18 @@ export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
           position: "relative",
         }}
       >
-        <Box sx={{ width: "100%", height: { xs: 300, sm: 350, md: 400 } }}>
+        <Box
+          sx={{
+            width: "100%",
+            height: { xs: 300, sm: 350, md: 400 },
+            "& svg:focus": {
+              outline: "none",
+            },
+            "& svg:focus-visible": {
+              outline: "none",
+            },
+          }}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={series}
@@ -87,9 +81,11 @@ export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
               </defs>
 
               <XAxis
-                dataKey="price"
+                type="number"
+                scale="linear"
+                reversed
+                dataKey="label"
                 stroke={theme.palette.primary.main}
-                ticks={xTicks}
                 interval="preserveStartEnd"
                 label={{
                   value: "Price (USDC)",
@@ -100,6 +96,8 @@ export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
                   fontWeight: 400,
                 }}
                 tickLine={false}
+                domain={["dataMin", "dataMax"]}
+                tickFormatter={(v) => Number(v).toFixed(4)}
               />
               <YAxis
                 axisLine={false}
@@ -113,7 +111,9 @@ export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
                   fontSize: 12,
                   fontWeight: 400,
                 }}
+                tickFormatter={(v) => Number(v).toFixed(4)}
               />
+
               <Tooltip
                 contentStyle={{
                   backgroundColor: theme.palette.background.paper,
@@ -128,12 +128,33 @@ export const PriceVolumeChart = ({ series }: PriceVolumeChartProps) => {
                 ]}
               />
               <Area
-                type="monotone"
-                dataKey="volume"
+                type="linear"
+                dataKey="value"
+                dot={false}
                 stroke={theme.palette.chart.stroke}
                 strokeWidth={2}
                 fill="url(#colorRate)"
               />
+
+              {xReferenceLines.map(({ value, label }) => (
+                <ReferenceLine
+                  key={value}
+                  x={value}
+                  stroke="#FF0000"
+                  strokeDasharray="3 3"
+                >
+                  <Label
+                    value={`${label}: ${value.toFixed(4)} USDC`}
+                    position="top"
+                    offset={10}
+                    style={{
+                      fill: theme.palette.error.main,
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
+                  />
+                </ReferenceLine>
+              ))}
             </AreaChart>
           </ResponsiveContainer>
         </Box>

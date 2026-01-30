@@ -35,5 +35,15 @@ query Auction($id: ID!) {
       volume
       timestamp
     }
+
+    orders {
+      id
+      sellAmount
+      buyAmount
+      userAddress
+      price
+      volume
+      timestamp
+    }
   }
 }

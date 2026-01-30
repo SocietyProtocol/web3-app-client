@@ -2,22 +2,24 @@
 import { createContext, useContext, useMemo } from "react";
 import { AuctionQuery, OrdersQuery } from "../../../.graphclient";
 import { useAuction } from "@/data/auction/useAuction";
-import { scaleUp } from "@/utils/bigint";
-import { formatUnits } from "viem";
+import { min, scaleUp } from "@/utils/bigint";
+import { parseUnits } from "viem";
 import { useOrders } from "@/data/orders/useOrders";
 import { useAccount } from "wagmi";
+import { useAuctionDemandCurve } from "@/data/orders/useAuctionDemandCurve";
 
 export interface AuctionContextValue {
   auctionId?: number;
   auctionDetail?: AuctionQuery["auctionDetail"];
   minPrice?: bigint;
   minBid?: bigint;
-  totalAuctioned?: string;
+  totalAuctioned?: bigint;
   isLoading: boolean;
   refetch: () => void;
   orders?: OrdersQuery["orders"];
   isOrdersLoading: boolean;
   refetchOrders: () => void;
+  priceVolumeHistogram?: { label: number; value: number }[];
 }
 
 export const AuctionContext = createContext<AuctionContextValue | undefined>(
@@ -45,8 +47,11 @@ export const AuctionProvider = ({
   const {
     minimumBiddingAmountPerOrder,
     decimalsAuctioningToken,
-    currentVolume,
+    decimalsBiddingToken,
+    currentBiddingAmount,
+    currentClearingPrice,
     exactOrder,
+    orders: allOrders,
   } = auctionData?.auctionDetail ?? {};
 
   const minBid = useMemo(
@@ -69,11 +74,38 @@ export const AuctionProvider = ({
   );
 
   const totalAuctioned = useMemo(() => {
-    if (currentVolume === undefined || decimalsAuctioningToken === undefined) {
+    if (
+      exactOrder === undefined ||
+      currentBiddingAmount === undefined ||
+      currentClearingPrice === undefined ||
+      decimalsAuctioningToken === undefined ||
+      decimalsBiddingToken === undefined
+    ) {
       return undefined;
     }
-    return formatUnits(BigInt(currentVolume), Number(decimalsAuctioningToken));
-  }, [currentVolume, decimalsAuctioningToken]);
+
+    return min(
+      BigInt(exactOrder.sellAmount),
+      scaleUp(BigInt(currentBiddingAmount), Number(decimalsAuctioningToken)) /
+        parseUnits(currentClearingPrice, Number(decimalsBiddingToken)),
+    );
+  }, [
+    currentBiddingAmount,
+    currentClearingPrice,
+    decimalsAuctioningToken,
+    decimalsBiddingToken,
+    exactOrder,
+  ]);
+
+  const priceVolumeHistogram = useAuctionDemandCurve(
+    useMemo(
+      () => allOrders?.filter((order) => order.id !== exactOrder?.id),
+      [exactOrder?.id, allOrders],
+    ),
+    decimalsAuctioningToken === undefined
+      ? undefined
+      : Number(decimalsAuctioningToken),
+  );
 
   const value = useMemo(
     () => ({
@@ -87,6 +119,7 @@ export const AuctionProvider = ({
       orders: ordersData?.orders,
       isOrdersLoading,
       refetchOrders,
+      priceVolumeHistogram,
     }),
     [
       auctionId,
@@ -99,6 +132,7 @@ export const AuctionProvider = ({
       ordersData?.orders,
       isOrdersLoading,
       refetchOrders,
+      priceVolumeHistogram,
     ],
   );
 

@@ -13,4 +13,5 @@ export const useAuction = (auctionId?: number) =>
     enabled: !!auctionId,
     staleTime: Infinity,
     gcTime: Infinity,
+    placeholderData: (prev) => prev,
   });

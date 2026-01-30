@@ -20,6 +20,9 @@ export const useAllowance = ({
       ownerAddress && spenderAddress
         ? [ownerAddress, spenderAddress]
         : undefined,
-    query: { enabled: Boolean(ownerAddress && spenderAddress && tokenAddress) },
+    query: {
+      enabled: Boolean(ownerAddress && spenderAddress && tokenAddress),
+      staleTime: 5_000,
+    },
   });
 };

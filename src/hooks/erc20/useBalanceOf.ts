@@ -12,6 +12,6 @@ export const useBalanceOf = ({ address, tokenAddress }: UseBalanceOfParams) => {
     abi: erc20Abi,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
-    query: { enabled: Boolean(address && tokenAddress) },
+    query: { enabled: Boolean(address && tokenAddress), staleTime: 5_000, },
   });
 };

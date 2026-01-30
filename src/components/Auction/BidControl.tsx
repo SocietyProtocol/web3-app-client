@@ -2,7 +2,7 @@
 
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { AmountInput } from "../AmountInput/AmountInput";
-import { useCallback, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { scaleUp } from "@/utils/bigint";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { Controller, useForm } from "react-hook-form";
@@ -12,36 +12,18 @@ import {
   BidOutput,
   buildBidValidationSchema,
 } from "@/validation/bid";
-import {
-  useAccount,
-  useChainId,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
-import { erc20Abi, Hex } from "viem";
+import { useAccount } from "wagmi";
 import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
-import { EasyAuctionAbi } from "@/abis/EasyAuction";
-import { getAuctionContractAddress } from "@/lib/wagmi";
-import { useAllowance } from "@/hooks/erc20/useAllowance";
 import { useAuctionContext } from "./AuctionContext";
 import { TransactionFeedback } from "../Transaction/TransactionFeedback";
-import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
+import { useBidMutation } from "./useBidMutation";
 
 export const BidControl = () => {
   const { address } = useAccount();
 
-  const { auctionDetail, minBid, minPrice, refetch, refetchOrders } =
-    useAuctionContext();
-
-  const chainId = useChainId();
-
-  const contractAddress = useMemo(
-    () => getAuctionContractAddress(chainId),
-    [chainId],
-  );
+  const { auctionDetail, minBid, minPrice } = useAuctionContext();
 
   const {
-    auctionId,
     addressBiddingToken,
     symbolBiddingToken,
     symbolAuctioningToken,
@@ -49,26 +31,10 @@ export const BidControl = () => {
     decimalsAuctioningToken,
   } = auctionDetail ?? {};
 
-  const userBiddingTokenAllowance = useAllowance({
-    ownerAddress: address,
-    spenderAddress: contractAddress,
-    tokenAddress: addressBiddingToken,
-  });
-
   const userBiddingTokenBalance = useBalanceOf({
     address,
     tokenAddress: addressBiddingToken,
   });
-
-  const { writeContractAsync, isPending, data } = useWriteContract();
-
-  const receipt = useWaitForTransactionReceipt({
-    hash: data,
-  });
-
-  const { isSynced, isWaiting } = useWaitForSubgraphSync(
-    receipt.data?.blockNumber,
-  );
 
   const validationSchema = useMemo(() => {
     const biddingTokenDecimals = decimalsBiddingToken
@@ -89,98 +55,45 @@ export const BidControl = () => {
   const form = useForm<BidInput, unknown, BidOutput>({
     ...(validationSchema && { resolver: zodResolver(validationSchema) }),
     defaultValues: {
-      bidAmount: undefined,
+      sellAmount: undefined,
       price: undefined,
     },
     mode: "onTouched",
-    disabled:
-      validationSchema === undefined ||
-      isPending ||
-      receipt.isFetching ||
-      isWaiting,
+    disabled: validationSchema === undefined,
   });
 
   const values = form.watch();
 
-  const approveRequired = useMemo(() => {
-    if (
-      values.bidAmount === undefined ||
-      userBiddingTokenAllowance.data === undefined
-    ) {
-      return false;
-    }
-
-    return userBiddingTokenAllowance.data < values.bidAmount;
-  }, [userBiddingTokenAllowance.data, values.bidAmount]);
+  const {
+    approveRequired,
+    mutate,
+    isApproving,
+    isBidding,
+    isSyncing,
+    isLoading,
+    approveReceipt,
+    bidReceipt,
+  } = useBidMutation({
+    ...values,
+    onSuccess: () => {
+      userBiddingTokenBalance.refetch();
+      form.reset();
+    },
+  });
 
   const amountSpecBigInt = useMemo(() => {
     if (
       decimalsAuctioningToken === undefined ||
-      values.bidAmount === undefined ||
+      values.sellAmount === undefined ||
       values.price === undefined ||
       values.price === BigInt(0) ||
-      values.bidAmount === BigInt(0)
+      values.sellAmount === BigInt(0)
     ) {
       return undefined;
     }
 
-    return scaleUp(values.bidAmount, decimalsAuctioningToken) / values.price;
+    return scaleUp(values.sellAmount, decimalsAuctioningToken) / values.price;
   }, [values, decimalsAuctioningToken]);
-
-  const placeBid = useCallback(async () => {
-    if (
-      addressBiddingToken === undefined ||
-      values.bidAmount === undefined ||
-      userBiddingTokenAllowance.data === undefined
-    ) {
-      return;
-    }
-
-    if (userBiddingTokenAllowance.data < values.bidAmount) {
-      await writeContractAsync({
-        address: addressBiddingToken,
-        abi: erc20Abi,
-        functionName: "approve",
-        args: [contractAddress, values.bidAmount],
-      });
-      return;
-    }
-
-    if (auctionId === undefined || amountSpecBigInt === undefined) {
-      return;
-    }
-
-    await writeContractAsync({
-      address: contractAddress,
-      abi: EasyAuctionAbi,
-      functionName: "placeSellOrders",
-      args: [
-        BigInt(auctionId),
-        [amountSpecBigInt],
-        [values.bidAmount],
-        [
-          "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex,
-        ],
-        "0x" as Hex,
-      ],
-    });
-  }, [
-    addressBiddingToken,
-    values.bidAmount,
-    userBiddingTokenAllowance.data,
-    auctionId,
-    amountSpecBigInt,
-    writeContractAsync,
-    contractAddress,
-  ]);
-
-  useEffect(() => {
-    if (isSynced) {
-      form.reset();
-      refetch();
-      refetchOrders();
-    }
-  }, [form, isSynced, refetch, refetchOrders]);
 
   return (
     <Paper
@@ -240,7 +153,7 @@ export const BidControl = () => {
         </Typography>
       </Box>
       <Controller
-        name="bidAmount"
+        name="sellAmount"
         control={form.control}
         render={({ field, fieldState }) => (
           <AmountInput
@@ -253,7 +166,7 @@ export const BidControl = () => {
             max={userBiddingTokenBalance.data}
             error={fieldState.invalid}
             helperText={fieldState.error?.message}
-            disabled={form.formState.disabled}
+            disabled={form.formState.disabled || isLoading}
             fullWidth
           />
         )}
@@ -272,7 +185,7 @@ export const BidControl = () => {
             onBlur={field.onBlur}
             error={fieldState.invalid}
             helperText={fieldState.error?.message}
-            disabled={form.formState.disabled}
+            disabled={form.formState.disabled || isLoading}
             fullWidth
           />
         )}
@@ -299,23 +212,35 @@ export const BidControl = () => {
         variant="contained"
         color="primary"
         fullWidth
-        disabled={!form.formState.isValid || form.formState.disabled}
-        onClick={placeBid}
+        disabled={
+          !form.formState.isValid || form.formState.disabled || isLoading
+        }
+        onClick={mutate}
       >
-        {isWaiting
+        {isSyncing
           ? "Syncing..."
-          : receipt.isFetching
+          : bidReceipt.isFetching || approveReceipt.isFetching
             ? "Waiting for confirmation..."
-            : isPending
-              ? "Processing..."
-              : approveRequired
-                ? "Approve"
-                : "Place Bid"}
+            : isApproving
+              ? "Approving..."
+              : isBidding
+                ? "Processing..."
+                : approveRequired
+                  ? "Approve"
+                  : "Place Bid"}
       </Button>
 
+      {!bidReceipt.data && (
+        <TransactionFeedback
+          hash={approveReceipt.data?.transactionHash}
+          status={approveReceipt.data?.status}
+          successMessage="Bid placed successfully!"
+        />
+      )}
+
       <TransactionFeedback
-        hash={receipt.data?.transactionHash}
-        status={receipt.data?.status}
+        hash={bidReceipt.data?.transactionHash}
+        status={bidReceipt.data?.status}
         successMessage="Bid placed successfully!"
       />
     </Paper>

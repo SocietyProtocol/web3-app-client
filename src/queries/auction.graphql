@@ -34,56 +34,6 @@ query Auction($id: ID!) {
       price
       volume
       timestamp
-      auctionUser {
-        id
-        address
-        user {
-          id
-          name
-          bio
-          imageUrl
-        }
-      }
-    }
-
-    orders {
-      id
-      sellAmount
-      buyAmount
-      userAddress
-      price
-      volume
-      timestamp
-      auctionUser {
-        id
-        address
-        user {
-          id
-          name
-          bio
-          imageUrl
-        }
-      }
-    }
-
-    ordersWithoutClaimed {
-      id
-      sellAmount
-      buyAmount
-      userAddress
-      price
-      volume
-      timestamp
-      auctionUser {
-        id
-        address
-        user {
-          id
-          name
-          bio
-          imageUrl
-        }
-      }
     }
   }
 }

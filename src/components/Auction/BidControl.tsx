@@ -30,7 +30,8 @@ import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 export const BidControl = () => {
   const { address } = useAccount();
 
-  const { auctionDetail, minBid, minPrice, refetch } = useAuctionContext();
+  const { auctionDetail, minBid, minPrice, refetch, refetchOrders } =
+    useAuctionContext();
 
   const chainId = useChainId();
 
@@ -177,8 +178,9 @@ export const BidControl = () => {
     if (isSynced) {
       form.reset();
       refetch();
+      refetchOrders();
     }
-  }, [form, isSynced, refetch]);
+  }, [form, isSynced, refetch, refetchOrders]);
 
   return (
     <Paper

@@ -5,7 +5,7 @@ import { AuctionStat } from "@/components/Auction/AuctionStat";
 import { BidControl } from "@/components/Auction/BidControl";
 import { PriceVolumeChart } from "@/components/Auction/PriceVolumeChart";
 import { mockPriceVolumeData } from "@/data/price-volume";
-import { YourBids } from "@/components/Auction/YourBids";
+import { YourBids } from "@/components/Auction/YourBids/YourBids";
 import { useChain } from "@/hooks/useChain";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { useAuctionContext } from "./AuctionContext";

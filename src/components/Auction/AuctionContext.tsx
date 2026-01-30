@@ -1,9 +1,11 @@
 "use client";
 import { createContext, useContext, useMemo } from "react";
-import { AuctionQuery } from "../../../.graphclient";
+import { AuctionQuery, OrdersQuery } from "../../../.graphclient";
 import { useAuction } from "@/data/auction/useAuction";
 import { scaleUp } from "@/utils/bigint";
 import { formatUnits } from "viem";
+import { useOrders } from "@/data/orders/useOrders";
+import { useAccount } from "wagmi";
 
 export interface AuctionContextValue {
   auctionId?: number;
@@ -13,6 +15,9 @@ export interface AuctionContextValue {
   totalAuctioned?: string;
   isLoading: boolean;
   refetch: () => void;
+  orders?: OrdersQuery["orders"];
+  isOrdersLoading: boolean;
+  refetchOrders: () => void;
 }
 
 export const AuctionContext = createContext<AuctionContextValue | undefined>(
@@ -28,7 +33,14 @@ export const AuctionProvider = ({
   auctionId,
   children,
 }: AuctionProviderProps) => {
+  const { address } = useAccount();
   const { data: auctionData, isLoading, refetch } = useAuction(auctionId);
+
+  const {
+    data: ordersData,
+    isLoading: isOrdersLoading,
+    refetch: refetchOrders,
+  } = useOrders(auctionId, address);
 
   const {
     minimumBiddingAmountPerOrder,
@@ -72,6 +84,9 @@ export const AuctionProvider = ({
       totalAuctioned,
       isLoading,
       refetch,
+      orders: ordersData?.orders,
+      isOrdersLoading,
+      refetchOrders,
     }),
     [
       auctionId,
@@ -81,6 +96,9 @@ export const AuctionProvider = ({
       totalAuctioned,
       isLoading,
       refetch,
+      ordersData?.orders,
+      isOrdersLoading,
+      refetchOrders,
     ],
   );
 

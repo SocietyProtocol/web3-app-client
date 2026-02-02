@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Button, Skeleton } from "@mui/material";
+import { Box, Typography, Button, Skeleton, Tooltip } from "@mui/material";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 import { Status } from "./Status";
 import { Tr } from "./Tr";
@@ -23,7 +23,8 @@ export const Bid = ({
   loading,
   id: orderId,
 }: BidProps) => {
-  const { refetch, refetchOrders } = useAuctionContext();
+  const { isCancellationPastDeadline, refetch, refetchOrders } =
+    useAuctionContext();
 
   const cancelBid = useCancelBidMutation({
     orderId,
@@ -140,17 +141,26 @@ export const Bid = ({
         }}
       >
         {(status === "Placed" || status === "Pending") && (
-          <Button
-            size="small"
-            variant="contained"
-            onClick={cancelBid.cancel}
-            disabled={cancelBid.isLoading}
-            sx={{
-              width: { xs: "100%", sm: "200px", md: "auto" },
-            }}
+          <Tooltip
+            title={
+              isCancellationPastDeadline ? "Cancellation period has ended" : ""
+            }
+            arrow
           >
-            {cancelBid.isCanceling ? "Canceling..." : "Cancel"}
-          </Button>
+            <span>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={cancelBid.cancel}
+                disabled={cancelBid.isLoading || isCancellationPastDeadline}
+                sx={{
+                  width: { xs: "100%", sm: "200px", md: "auto" },
+                }}
+              >
+                {cancelBid.isCanceling ? "Canceling..." : "Cancel"}
+              </Button>
+            </span>
+          </Tooltip>
         )}
       </Box>
     </Tr>

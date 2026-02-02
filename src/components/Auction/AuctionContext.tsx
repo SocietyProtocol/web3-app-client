@@ -7,6 +7,7 @@ import { parseUnits } from "viem";
 import { useOrders } from "@/data/orders/useOrders";
 import { useAccount } from "wagmi";
 import { useAuctionDemandCurve } from "@/data/orders/useAuctionDemandCurve";
+import { useNow } from "@/hooks/useNow";
 
 export interface AuctionContextValue {
   auctionId?: number;
@@ -20,6 +21,7 @@ export interface AuctionContextValue {
   isOrdersLoading: boolean;
   refetchOrders: () => void;
   priceVolumeHistogram?: { label: number; value: number }[];
+  isCancellationPastDeadline: boolean;
 }
 
 export const AuctionContext = createContext<AuctionContextValue | undefined>(
@@ -37,6 +39,12 @@ export const AuctionProvider = ({
 }: AuctionProviderProps) => {
   const { address } = useAccount();
   const { data: auctionData, isLoading, refetch } = useAuction(auctionId);
+
+  const now = useNow({
+    updateAt: auctionData?.auctionDetail?.orderCancellationEndDate
+      ? Number(auctionData.auctionDetail.orderCancellationEndDate)
+      : undefined,
+  });
 
   const {
     data: ordersData,
@@ -107,6 +115,14 @@ export const AuctionProvider = ({
       : Number(decimalsAuctioningToken),
   );
 
+  const isCancellationPastDeadline = useMemo(
+    () =>
+      auctionData?.auctionDetail?.orderCancellationEndDate
+        ? now > Number(auctionData.auctionDetail.orderCancellationEndDate)
+        : false,
+    [auctionData?.auctionDetail?.orderCancellationEndDate, now],
+  );
+
   const value = useMemo(
     () => ({
       auctionId,
@@ -120,6 +136,7 @@ export const AuctionProvider = ({
       isOrdersLoading,
       refetchOrders,
       priceVolumeHistogram,
+      isCancellationPastDeadline,
     }),
     [
       auctionId,
@@ -133,6 +150,7 @@ export const AuctionProvider = ({
       isOrdersLoading,
       refetchOrders,
       priceVolumeHistogram,
+      isCancellationPastDeadline,
     ],
   );
 

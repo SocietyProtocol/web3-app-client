@@ -1,5 +1,6 @@
 "use client";
 
+import { formatAuto } from "@/utils/format";
 import { Paper, Stack, useTheme, Box } from "@mui/material";
 import {
   Area,
@@ -32,7 +33,7 @@ export const PriceVolumeChart = ({
       <Paper
         elevation={0}
         sx={{
-          padding: { xs: 2, sm: 3 },
+          padding: 0,
           backgroundColor: "transparent",
           border: (theme) => `1px solid ${theme.palette.border.area}`,
           borderRadius: "12px",
@@ -50,7 +51,7 @@ export const PriceVolumeChart = ({
             "& svg:focus": {
               outline: "none",
             },
-            "& svg:focus-visible": {
+            "& svg > g:focus": {
               outline: "none",
             },
           }}
@@ -60,9 +61,9 @@ export const PriceVolumeChart = ({
               data={series}
               margin={{
                 top: 60,
-                right: 10,
+                right: 40,
                 bottom: 20,
-                left: 0,
+                left: 40,
               }}
             >
               <defs>
@@ -97,7 +98,7 @@ export const PriceVolumeChart = ({
                 }}
                 tickLine={false}
                 domain={["dataMin", "dataMax"]}
-                tickFormatter={(v) => Number(v).toFixed(4)}
+                tickFormatter={(v) => formatAuto(v)}
               />
               <YAxis
                 axisLine={false}
@@ -111,7 +112,7 @@ export const PriceVolumeChart = ({
                   fontSize: 12,
                   fontWeight: 400,
                 }}
-                tickFormatter={(v) => Number(v).toFixed(4)}
+                tickFormatter={(v) => formatAuto(v)}
               />
 
               <Tooltip
@@ -121,9 +122,9 @@ export const PriceVolumeChart = ({
                   borderRadius: "8px",
                 }}
                 labelStyle={{ color: theme.palette.primary.main }}
-                labelFormatter={(label) => [`Price: ${label.toFixed(4)} USDC`]}
+                labelFormatter={(label) => [`Price: ${formatAuto(label)} USDC`]}
                 formatter={(value: number | undefined) => [
-                  `${value?.toFixed(2)} SPEC`,
+                  `${formatAuto(value ?? 0)} SPEC`,
                   "Volume",
                 ]}
               />
@@ -144,12 +145,12 @@ export const PriceVolumeChart = ({
                   strokeDasharray="3 3"
                 >
                   <Label
-                    value={`${label}: ${value.toFixed(4)} USDC`}
+                    value={`${label}: ${formatAuto(value)} USDC`}
                     position="top"
                     offset={10}
                     style={{
                       fill: theme.palette.error.main,
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: 600,
                     }}
                   />

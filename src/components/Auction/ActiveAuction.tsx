@@ -35,7 +35,7 @@ export const ActiveAuction = () => {
     return [
       {
         value: parseFloat(currentClearingPrice),
-        label: "Current Clearing Price",
+        label: "Clearing Price",
       },
     ];
   }, [currentClearingPrice]);

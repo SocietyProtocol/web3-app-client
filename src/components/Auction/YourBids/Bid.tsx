@@ -6,6 +6,8 @@ import { Status } from "./Status";
 import { Tr } from "./Tr";
 import { Order } from "../../../../.graphclient";
 import { FormattedNumber } from "@/components/FormattedNumber/FormattedNumber";
+import { useCancelBidMutation } from "./useCancelBidMutation";
+import { useAuctionContext } from "../AuctionContext";
 
 export interface BidProps extends Partial<Order> {
   loading?: boolean;
@@ -19,7 +21,18 @@ export const Bid = ({
   sellAmount,
   status,
   loading,
+  id: orderId,
 }: BidProps) => {
+  const { refetch, refetchOrders } = useAuctionContext();
+
+  const cancelBid = useCancelBidMutation({
+    orderId,
+    onSuccess: () => {
+      refetch();
+      refetchOrders();
+    },
+  });
+
   if (loading) {
     return (
       <Tr>
@@ -130,11 +143,13 @@ export const Bid = ({
           <Button
             size="small"
             variant="contained"
+            onClick={cancelBid.cancel}
+            disabled={cancelBid.isLoading}
             sx={{
               width: { xs: "100%", sm: "200px", md: "auto" },
             }}
           >
-            Cancel
+            {cancelBid.isCanceling ? "Canceling..." : "Cancel"}
           </Button>
         )}
       </Box>

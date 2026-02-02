@@ -71,6 +71,7 @@ export const BidControl = () => {
     isBidding,
     isSyncing,
     isLoading,
+    isSuccess,
     approveReceipt,
     bidReceipt,
   } = useBidMutation({
@@ -80,6 +81,28 @@ export const BidControl = () => {
       form.reset();
     },
   });
+
+  const isActionDisabled = useMemo(() => {
+    return (
+      !form.formState.isValid ||
+      form.formState.disabled ||
+      !values.sellAmount ||
+      !values.price ||
+      isLoading ||
+      isApproving ||
+      isBidding ||
+      isSyncing
+    );
+  }, [
+    form.formState.isValid,
+    form.formState.disabled,
+    values.sellAmount,
+    values.price,
+    isLoading,
+    isApproving,
+    isBidding,
+    isSyncing,
+  ]);
 
   const amountSpecBigInt = useMemo(() => {
     if (
@@ -212,37 +235,41 @@ export const BidControl = () => {
         variant="contained"
         color="primary"
         fullWidth
-        disabled={
-          !form.formState.isValid || form.formState.disabled || isLoading
-        }
+        disabled={isActionDisabled}
         onClick={mutate}
       >
         {isSyncing
-          ? "Syncing..."
-          : bidReceipt.isFetching || approveReceipt.isFetching
-            ? "Waiting for confirmation..."
-            : isApproving
-              ? "Approving..."
-              : isBidding
-                ? "Processing..."
-                : approveRequired
-                  ? "Approve"
-                  : "Place Bid"}
+          ? "Syncing with subgraph..."
+          : bidReceipt.isFetching
+            ? "Confirming bid..."
+            : approveReceipt.isFetching
+              ? "Confirming approval..."
+              : isApproving
+                ? "Approving..."
+                : isBidding
+                  ? "Placing bid..."
+                  : isSuccess
+                    ? "Bid Placed!"
+                    : approveRequired
+                      ? "Approve"
+                      : "Place Bid"}
       </Button>
 
-      {!bidReceipt.data && (
+      {approveReceipt.data && !bidReceipt.data && (
         <TransactionFeedback
           hash={approveReceipt.data?.transactionHash}
           status={approveReceipt.data?.status}
-          successMessage="Bid placed successfully!"
+          successMessage="Approval confirmed"
         />
       )}
 
-      <TransactionFeedback
-        hash={bidReceipt.data?.transactionHash}
-        status={bidReceipt.data?.status}
-        successMessage="Bid placed successfully!"
-      />
+      {bidReceipt.data && (
+        <TransactionFeedback
+          hash={bidReceipt.data?.transactionHash}
+          status={bidReceipt.data?.status}
+          successMessage="Bid placed successfully!"
+        />
+      )}
     </Paper>
   );
 };

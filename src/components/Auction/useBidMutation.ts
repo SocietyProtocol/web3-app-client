@@ -1,19 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { scaleUp } from "@/utils/bigint";
-import {
-  useAccount,
-  useChainId,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
-import { erc20Abi, Hex } from "viem";
+import { useChainId } from "wagmi";
+import { Hex } from "viem";
 import { EasyAuctionAbi } from "@/abis/EasyAuction";
 import { getAuctionContractAddress } from "@/lib/wagmi";
-import { useAllowance } from "@/hooks/erc20/useAllowance";
 import { useAuctionContext } from "./AuctionContext";
-import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
+import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
+import { useSnackbar } from "notistack";
 
 interface UseBidMutationValues {
   sellAmount?: bigint;
@@ -22,22 +17,14 @@ interface UseBidMutationValues {
   onError?: (error: unknown) => void;
 }
 
-type BidMutationStatus = "idle" | "approving" | "bidding" | "success" | "error";
-
 export const useBidMutation = ({
   sellAmount,
   price,
   onSuccess,
   onError,
 }: UseBidMutationValues) => {
-  const [status, setStatus] = useState<BidMutationStatus>("idle");
-  const [approveTransactionHash, setApproveTransactionHash] = useState<Hex>();
-  const [bidTransactionHash, setBidTransactionHash] = useState<Hex>();
-
-  const { address } = useAccount();
-
+  const { enqueueSnackbar } = useSnackbar();
   const { auctionDetail, refetch, refetchOrders } = useAuctionContext();
-
   const chainId = useChainId();
 
   const contractAddress = useMemo(
@@ -47,37 +34,6 @@ export const useBidMutation = ({
 
   const { auctionId, addressBiddingToken, decimalsAuctioningToken } =
     auctionDetail ?? {};
-
-  const userBiddingTokenAllowance = useAllowance({
-    ownerAddress: address,
-    spenderAddress: contractAddress,
-    tokenAddress: addressBiddingToken,
-  });
-
-  const { writeContractAsync, isPending } = useWriteContract();
-
-  const approveReceipt = useWaitForTransactionReceipt({
-    hash: approveTransactionHash,
-  });
-
-  const bidReceipt = useWaitForTransactionReceipt({
-    hash: bidTransactionHash,
-  });
-
-  const { isSynced, isWaiting } = useWaitForSubgraphSync(
-    bidReceipt.data?.blockNumber,
-  );
-
-  const approveRequired = useMemo(() => {
-    if (
-      sellAmount === undefined ||
-      userBiddingTokenAllowance.data === undefined
-    ) {
-      return false;
-    }
-
-    return userBiddingTokenAllowance.data < sellAmount;
-  }, [sellAmount, userBiddingTokenAllowance.data]);
 
   // Calculate buyAmount (Auctioning Token i.e. SPEC) based on sellAmount and price
   const buyAmount = useMemo(() => {
@@ -94,36 +50,29 @@ export const useBidMutation = ({
     return scaleUp(sellAmount, decimalsAuctioningToken) / price;
   }, [sellAmount, price, decimalsAuctioningToken]);
 
+  const transaction = useTransactionWithApproval({
+    tokenAddress: addressBiddingToken,
+    spenderAddress: contractAddress,
+    amount: sellAmount,
+    onSuccess: () => {
+      refetch();
+      refetchOrders();
+      onSuccess?.();
+    },
+    onError,
+  });
+
   const placeBid = useCallback(async () => {
     if (
-      addressBiddingToken === undefined ||
-      sellAmount === undefined ||
-      userBiddingTokenAllowance.data === undefined ||
-      status === "approving" ||
-      status === "bidding"
+      auctionId === undefined ||
+      buyAmount === undefined ||
+      sellAmount === undefined
     ) {
+      enqueueSnackbar("Missing required bid parameters", { variant: "error" });
       return;
     }
 
-    if (userBiddingTokenAllowance.data < sellAmount) {
-      setStatus("approving");
-      const hash = await writeContractAsync({
-        address: addressBiddingToken,
-        abi: erc20Abi,
-        functionName: "approve",
-        args: [contractAddress, sellAmount],
-      });
-      setApproveTransactionHash(hash);
-      return;
-    }
-
-    if (auctionId === undefined || buyAmount === undefined) {
-      return;
-    }
-
-    setStatus("bidding");
-
-    const hash = await writeContractAsync({
+    await transaction.execute({
       address: contractAddress,
       abi: EasyAuctionAbi,
       functionName: "placeSellOrders",
@@ -137,62 +86,63 @@ export const useBidMutation = ({
         "0x" as Hex,
       ],
     });
-    setBidTransactionHash(hash);
   }, [
-    addressBiddingToken,
-    sellAmount,
-    userBiddingTokenAllowance.data,
-    status,
     auctionId,
     buyAmount,
-    writeContractAsync,
+    sellAmount,
     contractAddress,
+    transaction,
+    enqueueSnackbar,
   ]);
 
+  // Auto-execute transaction after approval
   useEffect(() => {
-    if (status === "approving" && approveReceipt.isFetched) {
-      userBiddingTokenAllowance.refetch();
-      setStatus("idle");
-      placeBid();
-    }
-  }, [status, approveReceipt.isFetched, placeBid, userBiddingTokenAllowance]);
+    if (
+      transaction.status === "approving" &&
+      transaction.approveReceipt.status === "success" &&
+      auctionId !== undefined &&
+      buyAmount !== undefined &&
+      sellAmount !== undefined
+    ) {
+      enqueueSnackbar("Approval confirmed, placing bid...", {
+        variant: "success",
+      });
 
-  useEffect(() => {
-    if (status === "bidding" && bidReceipt.isFetched) {
-      userBiddingTokenAllowance.refetch();
-      if (bidReceipt.status === "error") {
-        setStatus("error");
-
-        onError?.(bidReceipt.error);
-      } else if (bidReceipt.status === "success" && isSynced) {
-        setStatus("success");
-        onSuccess?.();
-        refetch();
-        refetchOrders();
-      }
+      transaction.executeTransaction({
+        address: contractAddress,
+        abi: EasyAuctionAbi,
+        functionName: "placeSellOrders",
+        args: [
+          BigInt(auctionId),
+          [buyAmount],
+          [sellAmount],
+          [
+            "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex,
+          ],
+          "0x" as Hex,
+        ],
+      });
     }
   }, [
-    status,
-    bidReceipt,
-    isSynced,
-    refetch,
-    refetchOrders,
-    onError,
-    onSuccess,
-    userBiddingTokenAllowance,
+    transaction,
+    auctionId,
+    buyAmount,
+    sellAmount,
+    contractAddress,
+    enqueueSnackbar,
   ]);
 
   return {
     mutate: placeBid,
-    isLoading:
-      status === "approving" || status === "bidding" || isPending || isWaiting,
-    isApproving: status === "approving",
-    isBidding: status === "bidding",
-    isSuccess: status === "success",
-    isError: status === "error",
-    isSyncing: status === "bidding" && isWaiting,
-    approveRequired,
-    bidReceipt,
-    approveReceipt,
+    reset: transaction.reset,
+    isLoading: transaction.isLoading,
+    isApproving: transaction.isApproving,
+    isBidding: transaction.isExecuting,
+    isSuccess: transaction.isSuccess,
+    isError: transaction.isError,
+    isSyncing: transaction.isSyncing,
+    approveRequired: transaction.approveRequired,
+    bidReceipt: transaction.txReceipt,
+    approveReceipt: transaction.approveReceipt,
   };
 };

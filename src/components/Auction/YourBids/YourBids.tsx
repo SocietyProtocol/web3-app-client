@@ -78,6 +78,7 @@ export const YourBids = () => {
           {sortedOrders?.map((bid) => (
             <Bid
               key={bid.id}
+              id={bid.id}
               buyAmount={bid.buyAmount}
               sellAmount={bid.sellAmount}
               price={bid.price}

@@ -48,11 +48,6 @@ export const useCancelBidMutation = ({
     // Convert subgraph order ID format to hex format for contract
     const { hexOrderId, auctionId } = subgraphOrderIdToHex(orderId);
 
-    console.log({
-      orderId,
-      hexOrderId,
-    });
-
     await transaction.execute({
       address: contractAddress,
       abi: EasyAuctionAbi,

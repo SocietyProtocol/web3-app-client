@@ -17,6 +17,7 @@ export const ActiveAuction = () => {
     totalAuctioned,
     isLoading,
     priceVolumeHistogram,
+    auctionId,
   } = useAuctionContext();
 
   const {
@@ -53,7 +54,7 @@ export const ActiveAuction = () => {
     >
       <AuctionHeader
         networkName={chain ? chain.name : "Unknown Network"}
-        id={1}
+        id={auctionId}
         active={!isLoading}
       />
 

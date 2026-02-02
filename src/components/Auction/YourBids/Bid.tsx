@@ -23,8 +23,10 @@ export const Bid = ({
   loading,
   id: orderId,
 }: BidProps) => {
-  const { isCancellationPastDeadline, refetch, refetchOrders } =
+  const { isCancellationPastDeadline, refetch, refetchOrders, auctionDetail } =
     useAuctionContext();
+
+  const { decimalsBiddingToken } = auctionDetail || {};
 
   const cancelBid = useCancelBidMutation({
     orderId,
@@ -104,7 +106,10 @@ export const Bid = ({
         </Typography>
         <Typography fontWeight={700} component="span">
           <FormattedNumber
-            value={price ? Math.round(Number(price) * 1e6) / 1e6 : BigInt(0)}
+            value={price}
+            maxDecimals={
+              decimalsBiddingToken ? Number(decimalsBiddingToken) : undefined
+            }
             symbol={tokenSymbol}
             fontWeight={700}
             component="span"

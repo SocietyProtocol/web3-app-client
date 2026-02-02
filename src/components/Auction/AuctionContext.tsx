@@ -70,16 +70,22 @@ export const AuctionProvider = ({
     [minimumBiddingAmountPerOrder],
   );
 
-  const minPrice = useMemo(
-    () =>
-      exactOrder
-        ? scaleUp(
-            BigInt(exactOrder.buyAmount),
-            Number(decimalsAuctioningToken),
-          ) / BigInt(exactOrder.sellAmount)
-        : undefined,
-    [exactOrder, decimalsAuctioningToken],
-  );
+  const minPrice = useMemo(() => {
+    if (!exactOrder || decimalsAuctioningToken === undefined) {
+      return undefined;
+    }
+
+    const sellAmountBigInt = BigInt(exactOrder.sellAmount);
+
+    if (sellAmountBigInt === BigInt(0)) {
+      return undefined;
+    }
+
+    return (
+      scaleUp(BigInt(exactOrder.buyAmount), Number(decimalsAuctioningToken)) /
+      sellAmountBigInt
+    );
+  }, [exactOrder, decimalsAuctioningToken]);
 
   const totalAuctioned = useMemo(() => {
     if (

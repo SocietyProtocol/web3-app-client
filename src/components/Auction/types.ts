@@ -5,6 +5,5 @@ export enum AuctionStatusEnum {
 }
 
 export interface AuctionStatusProps {
-  status: AuctionStatusEnum;
   size?: "small" | "medium";
 }

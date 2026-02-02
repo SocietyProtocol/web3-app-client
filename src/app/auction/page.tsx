@@ -1,7 +1,7 @@
 import { AuctionProvider } from "@/components/Auction/AuctionContext";
 import { AuctionDetails } from "@/components/Auction/AuctionDetails";
 import { AuctionDetailsSkeleton } from "@/components/Auction/AuctionDetailsSkeleton";
-import { fetchAuction } from "@/data/auction/utils";
+import { fetchAuctionStatus } from "@/data/auction/utils";
 import { getQueryClient } from "@/lib/tanstack-query";
 import { Suspense } from "react";
 
@@ -15,12 +15,12 @@ export default async function AuctionPage() {
 
     try {
       await queryClient.prefetchQuery({
-        queryKey: ["auction", auctionId],
+        queryKey: ["auctionStatus", auctionId],
         queryFn: () =>
-          auctionId !== undefined ? fetchAuction(auctionId) : null,
+          auctionId !== undefined ? fetchAuctionStatus(auctionId) : null,
       });
     } catch (error) {
-      console.error("Error prefetching auction:", error);
+      console.error("Error prefetching auction status:", error);
     }
   }
 

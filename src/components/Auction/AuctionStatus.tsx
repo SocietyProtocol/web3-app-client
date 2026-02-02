@@ -1,7 +1,8 @@
 "use client";
 
-import { Box, Chip } from "@mui/material";
+import { Badge, Box, Chip } from "@mui/material";
 import { AuctionStatusEnum, AuctionStatusProps } from "./types";
+import { useAuctionStatus } from "@/data/auction/useAuctionStatus";
 
 export const mapStatusToColor = (status: AuctionStatusEnum) => {
   switch (status) {
@@ -30,10 +31,46 @@ export const AuctionStatusDisk = ({
   );
 };
 
-export const AuctionStatus = ({
-  status,
-  size = "small",
-}: AuctionStatusProps) => {
+export const AuctionStatusDot = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { status, isLoading } = useAuctionStatus();
+
+  if (isLoading) {
+    return <>{children}</>;
+  }
+  return (
+    <Badge
+      color={mapStatusToColor(status)}
+      variant="dot"
+      overlap="circular"
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      sx={{
+        "& .MuiBadge-badge": {
+          top: 12,
+          left: 24,
+          borderRadius: "50%",
+          opacity: 0.85,
+        },
+      }}
+    >
+      {children}
+    </Badge>
+  );
+};
+
+export const AuctionStatus = ({ size = "small" }: AuctionStatusProps) => {
+  const { status, isLoading } = useAuctionStatus();
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <Chip
       color={mapStatusToColor(status)}

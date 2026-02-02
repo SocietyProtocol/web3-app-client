@@ -84,7 +84,7 @@ export const ActiveAuction = () => {
         />
 
         <AuctionStat
-          icon="/tokens/spec.svg"
+          icon={`/tokens/${symbolBiddingToken?.toLowerCase()}.svg`}
           label="Bidding With"
           value={symbolBiddingToken}
           tooltip="The token used for bidding in the auction."

@@ -65,7 +65,7 @@ export const AuctionProvider = ({
   const minBid = useMemo(
     () =>
       minimumBiddingAmountPerOrder
-        ? Number(minimumBiddingAmountPerOrder)
+        ? BigInt(minimumBiddingAmountPerOrder)
         : undefined,
     [minimumBiddingAmountPerOrder],
   );
@@ -133,8 +133,8 @@ export const AuctionProvider = ({
     () => ({
       auctionId,
       auctionDetail: auctionData?.auctionDetail,
-      minBid: minBid !== undefined ? BigInt(minBid) : undefined,
-      minPrice: minPrice,
+      minBid,
+      minPrice,
       totalAuctioned,
       isLoading,
       refetch,

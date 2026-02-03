@@ -156,13 +156,13 @@ export const Bid = ({
               <Button
                 size="small"
                 variant="contained"
-                onClick={cancelBid.cancel}
+                onClick={cancelBid.mutate}
                 disabled={cancelBid.isLoading || isCancellationPastDeadline}
                 sx={{
                   width: { xs: "100%", sm: "200px", md: "auto" },
                 }}
               >
-                {cancelBid.isCanceling ? "Canceling..." : "Cancel"}
+                {cancelBid.isMutating ? "Canceling..." : "Cancel"}
               </Button>
             </span>
           </Tooltip>

@@ -39,7 +39,7 @@ export const useCancelBidMutation = ({
     successMessage: "Bid canceled successfully",
   });
 
-  const cancel = useCallback(async () => {
+  const mutate = useCallback(async () => {
     if (!orderId) {
       enqueueSnackbar("Missing required parameters", { variant: "error" });
       return;
@@ -57,11 +57,11 @@ export const useCancelBidMutation = ({
   }, [orderId, contractAddress, transaction, enqueueSnackbar]);
 
   return {
-    cancel,
+    mutate,
     reset: transaction.reset,
     status: transaction.status,
     isLoading: transaction.isLoading,
-    isCanceling: transaction.isExecuting,
+    isMutating: transaction.isExecuting,
     isSuccess: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,

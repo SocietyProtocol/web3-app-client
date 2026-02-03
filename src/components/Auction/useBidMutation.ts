@@ -108,20 +108,7 @@ export const useBidMutation = ({
         variant: "success",
       });
 
-      transaction.executeTransaction({
-        address: contractAddress,
-        abi: EasyAuctionAbi,
-        functionName: "placeSellOrders",
-        args: [
-          BigInt(auctionId),
-          [buyAmount],
-          [sellAmount],
-          [
-            "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex,
-          ],
-          "0x" as Hex,
-        ],
-      });
+      placeBid();
     }
   }, [
     transaction,
@@ -130,6 +117,7 @@ export const useBidMutation = ({
     sellAmount,
     contractAddress,
     enqueueSnackbar,
+    placeBid,
   ]);
 
   return {
@@ -137,7 +125,7 @@ export const useBidMutation = ({
     reset: transaction.reset,
     isLoading: transaction.isLoading,
     isApproving: transaction.isApproving,
-    isBidding: transaction.isExecuting,
+    isMutating: transaction.isExecuting,
     isSuccess: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,

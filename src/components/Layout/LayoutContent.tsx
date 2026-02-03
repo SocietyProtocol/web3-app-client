@@ -7,34 +7,14 @@ import { ReactNode } from "react";
 import { MainContentArea } from "./MainContentArea";
 import { useHeaderHeight } from "@/hooks/useHeaderHeight";
 import { useSidebar as useSidebar } from "@/hooks/useSidebar";
-import { getQueryClient } from "@/lib/tanstack-query";
-import { fetchAuction } from "@/data/auction/utils";
 
 interface LayoutContentProps {
   children: ReactNode;
 }
 
-const auctionId = process.env.NEXT_PUBLIC_AUCTION_ID
-  ? parseInt(process.env.NEXT_PUBLIC_AUCTION_ID)
-  : undefined;
-
 export const LayoutContent = ({ children }: LayoutContentProps) => {
   const { headerRef, headerHeight } = useHeaderHeight();
   const { isOpen: sidebarIsOpen, toggle: toggleSidebar } = useSidebar();
-
-  if (auctionId !== undefined) {
-    const queryClient = getQueryClient();
-
-    try {
-      queryClient.prefetchQuery({
-        queryKey: ["auction", auctionId],
-        queryFn: () =>
-          auctionId !== undefined ? fetchAuction(auctionId) : null,
-      });
-    } catch (error) {
-      console.error("Error prefetching auction:", error);
-    }
-  }
 
   return (
     <Box

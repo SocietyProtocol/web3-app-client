@@ -52,6 +52,13 @@ export const decodeOrderId = (orderId: Hex) => {
 
 export const subgraphOrderIdToHex = (subgraphOrderId: string) => {
   const parts = subgraphOrderId.split("-");
+
+  if (parts.length !== 4) {
+    throw new Error(
+      `Invalid subgraphOrderId "${subgraphOrderId}": expected format "auctionId-sellAmount-buyAmount-userId" with 4 components, but got ${parts.length}.`,
+    );
+  }
+
   const auctionId = BigInt(parts[0]);
   const sellAmount = BigInt(parts[1]);
   const buyAmount = BigInt(parts[2]);

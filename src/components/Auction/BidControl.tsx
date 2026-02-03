@@ -36,21 +36,26 @@ export const BidControl = () => {
     tokenAddress: addressBiddingToken,
   });
 
-  const validationSchema = useMemo(() => {
-    const biddingTokenDecimals = decimalsBiddingToken
-      ? Number(decimalsBiddingToken)
-      : undefined;
+  const biddingTokenDecimals = useMemo(
+    () => (decimalsBiddingToken ? Number(decimalsBiddingToken) : undefined),
+    [decimalsBiddingToken],
+  );
 
-    if (minBid === undefined || biddingTokenDecimals === undefined) {
+  const validationSchema = useMemo(() => {
+    if (
+      minBid === undefined ||
+      biddingTokenDecimals === undefined ||
+      minPrice === undefined
+    ) {
       return undefined;
     }
 
     return buildBidValidationSchema({
-      minBid: BigInt(minBid),
-      minPrice: minPrice ? BigInt(minPrice) : BigInt(0),
+      minBid,
+      minPrice,
       biddingTokenDecimals,
     });
-  }, [decimalsBiddingToken, minBid, minPrice]);
+  }, [biddingTokenDecimals, minBid, minPrice]);
 
   const form = useForm<BidInput, unknown, BidOutput>({
     ...(validationSchema && { resolver: zodResolver(validationSchema) }),
@@ -68,7 +73,7 @@ export const BidControl = () => {
     approveRequired,
     mutate,
     isApproving,
-    isBidding,
+    isMutating: isBidding,
     isSyncing,
     isLoading,
     isSuccess,
@@ -140,10 +145,10 @@ export const BidControl = () => {
       <Box>
         <Typography variant="body2" color="textPrimary" component="div">
           Minimum bid amount:{" "}
-          {minBid !== undefined && decimalsBiddingToken !== undefined ? (
+          {minBid !== undefined && biddingTokenDecimals !== undefined ? (
             <FormattedNumber
-              value={BigInt(minBid)}
-              scaleDownDecimals={decimalsBiddingToken}
+              value={minBid}
+              scaleDownDecimals={biddingTokenDecimals}
               maxDecimals={4}
               minThreshold={0.0001}
               symbol={symbolBiddingToken}
@@ -158,10 +163,10 @@ export const BidControl = () => {
         </Typography>
         <Typography variant="body2" color="textPrimary" component="div">
           Minimum price:{" "}
-          {minPrice !== undefined && decimalsBiddingToken !== undefined ? (
+          {minPrice !== undefined && biddingTokenDecimals !== undefined ? (
             <FormattedNumber
-              value={BigInt(minPrice)}
-              scaleDownDecimals={decimalsBiddingToken}
+              value={minPrice}
+              scaleDownDecimals={biddingTokenDecimals}
               maxDecimals={4}
               minThreshold={0.0001}
               symbol={symbolBiddingToken}
@@ -182,7 +187,7 @@ export const BidControl = () => {
           <AmountInput
             label="Amount"
             tokenSymbol={symbolBiddingToken}
-            decimals={decimalsBiddingToken}
+            decimals={biddingTokenDecimals}
             value={field.value}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -202,7 +207,7 @@ export const BidControl = () => {
           <AmountInput
             label={`${symbolBiddingToken} Per ${symbolAuctioningToken} price`}
             tokenSymbol={symbolBiddingToken}
-            decimals={decimalsBiddingToken}
+            decimals={biddingTokenDecimals}
             value={field.value}
             onChange={field.onChange}
             onBlur={field.onBlur}

@@ -3,21 +3,14 @@ import { fetchAuctionStatus } from "./utils";
 import { useNow } from "@/hooks/useNow";
 import { useMemo } from "react";
 import { AuctionStatusEnum } from "@/components/Auction/types";
-
-const auctionId = process.env.NEXT_PUBLIC_AUCTION_ID
-  ? parseInt(process.env.NEXT_PUBLIC_AUCTION_ID)
-  : undefined;
+import { env } from "@/lib/env";
 
 export const useAuctionStatus = () => {
   const { data, isLoading } = useQuery({
-    queryKey: ["auctionStatus", auctionId],
+    queryKey: ["auctionStatus", env.auctionId],
     queryFn: () => {
-      if (!auctionId) {
-        return undefined;
-      }
-      return fetchAuctionStatus(auctionId);
+      return fetchAuctionStatus(env.auctionId);
     },
-    enabled: !!auctionId,
     staleTime: Infinity,
     gcTime: Infinity,
     placeholderData: (prev) => prev,

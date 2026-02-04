@@ -33,7 +33,7 @@ export const BubbleBase = ({
   return (
     <Card
       variant="bubble"
-      sx={variant === "warning" ? { borderColor: "warning.light" } : {}}
+      sx={variant === "warning" ? { borderColor: "warning.light" } : undefined}
     >
       <CardHeader
         title={
@@ -42,26 +42,35 @@ export const BubbleBase = ({
             alignItems="center"
             justifyContent="space-between"
             sx={{
-              mb: 5.5,
+              mb: { xs: 2, sm: 5.5 },
             }}
           >
-            {showIcon &&
-              (variant === "default" ? (
-                <ChatBubbleOutlineOutlinedIcon fontSize="large" />
-              ) : (
-                <WarningAmberOutlinedIcon
-                  fontSize="large"
-                  sx={{ color: "warning.light" }}
-                />
-              ))}
-            {title || ""}
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={2}
+              sx={{ flex: 1 }}
+            >
+              {showIcon &&
+                (variant === "default" ? (
+                  <ChatBubbleOutlineOutlinedIcon fontSize="large" />
+                ) : (
+                  <WarningAmberOutlinedIcon
+                    fontSize="large"
+                    sx={{ color: "warning.light" }}
+                  />
+                ))}
+
+              {title ?? ""}
+            </Stack>
+
             <Image
               src="/logo/logo-icon-dark.svg"
               alt="Society Protocol Logo"
               width={32}
               height={32}
               priority
-              style={{ maxWidth: "100%", height: "auto" }}
+              style={{ width: "2rem", height: "auto" }}
             />
           </Stack>
         }

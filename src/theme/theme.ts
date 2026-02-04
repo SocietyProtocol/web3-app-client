@@ -12,6 +12,9 @@ import { MuiDialogContent } from "./components/MuiDialogContent";
 import { breakpoints } from "./breakpoints";
 import { MuiPaginationItem } from "./components/MuiPaginationItem";
 import { MuiChip } from "./components/MuiChip";
+import { MuiAccordion } from "./components/MuiAccordion";
+import { MuiAccordionSummary } from "./components/MuiAccordionSummary";
+import { MuiAccordionDetails } from "./components/MuiAccordionDetails";
 
 const baseTheme = createTheme({
   cssVariables: {
@@ -36,6 +39,9 @@ const baseTheme = createTheme({
     MuiDialog,
     MuiDialogTitle,
     MuiDialogContent,
+    MuiAccordion,
+    MuiAccordionSummary,
+    MuiAccordionDetails,
     MuiPaginationItem,
     MuiChip,
   },

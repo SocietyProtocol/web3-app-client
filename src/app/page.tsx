@@ -19,6 +19,8 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useProfile } from "@/components/AccountSetup/useProfile";
 import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
 import { faqData } from "@/data/faq";
+import HomeSkeleton from "@/components/Skeletons/HomeSkeleton";
+import { useWagmiReady } from "@/atoms/wagmiReady";
 
 export default function Home() {
   // allow multiple panels to be expanded
@@ -34,15 +36,25 @@ export default function Home() {
       }),
     [],
   );
+  const wagmiReady = useWagmiReady();
 
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
 
+  const isInitialLoading =
+    (profile.profileId.data === undefined && profile.profileId.isLoading) ||
+    (profile.uri.data === undefined && profile.uri.isLoading) ||
+    (profile.profileData.data === undefined && profile.profileData.isLoading);
+
   const router = useRouter();
 
   const showBubble =
     !isConnected || isWrongNetwork || !profile.profileData.data;
+
+  if (!wagmiReady || isInitialLoading) {
+    return <HomeSkeleton showBubble={showBubble} />;
+  }
 
   return (
     <Container

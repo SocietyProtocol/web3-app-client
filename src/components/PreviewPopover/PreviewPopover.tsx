@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { Grow, Paper, Popper } from "@mui/material";
 import {
   cloneElement,
@@ -28,7 +29,7 @@ export const PreviewPopover = ({
   const [timerState, setTimerState] = useState<ReturnType<typeof setTimeout>>();
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -40,9 +41,9 @@ export const PreviewPopover = ({
   }, [timerState]);
 
   if (!isValidElement(children)) {
-    if (process.env.NODE_ENV !== "production") {
+    if (env.environment !== "production") {
       console.error(
-        "<PreviewPopover> expects a single React element as its child."
+        "<PreviewPopover> expects a single React element as its child.",
       );
     }
 
@@ -59,7 +60,7 @@ export const PreviewPopover = ({
             left: position.x,
             right: position.x,
             bottom: position.y,
-          } as DOMRect),
+          }) as DOMRect,
       }
     : null;
 

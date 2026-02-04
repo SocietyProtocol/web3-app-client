@@ -25,6 +25,13 @@ export function getBadgesContractAddress(chainId?: number) {
   return isProd ? contracts.mainnet.badges : contracts.sepolia.badges;
 }
 
+export const getAuctionContractAddress = (chainId?: number) => {
+  if (chainId === sepolia.id) return contracts.sepolia.auction;
+  if (chainId === mainnet.id) return contracts.mainnet.auction;
+  // fallback to env
+  return isProd ? contracts.mainnet.auction : contracts.sepolia.auction;
+};
+
 export const wagmiConfig = getDefaultConfig({
   appName: "Society Protocol",
   projectId: env.wcProjectId,
@@ -32,10 +39,10 @@ export const wagmiConfig = getDefaultConfig({
   ssr: true,
   transports: {
     [mainnet.id]: http(
-      `https://eth-mainnet.g.alchemy.com/v2/${env.alchemyApiKey}`
+      `https://eth-mainnet.g.alchemy.com/v2/${env.alchemyApiKey}`,
     ),
     [sepolia.id]: http(
-      `https://eth-sepolia.g.alchemy.com/v2/${env.alchemyApiKey}`
+      `https://eth-sepolia.g.alchemy.com/v2/${env.alchemyApiKey}`,
     ),
   },
 });

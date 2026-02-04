@@ -7,6 +7,10 @@ import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
 import { LayoutContent } from "@/components/Layout/LayoutContent";
 import { TopLoader } from "@/components/TopLoader/TopLoader";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/tanstack-query";
+import { fetchAuctionStatus } from "@/data/auction/utils";
+import { env } from "@/lib/env";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -36,20 +40,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const queryClient = getQueryClient();
+
+  // Prefetch auction data on the server
+  await queryClient.prefetchQuery({
+    queryKey: ["auctionStatus", env.auctionId],
+    queryFn: () => fetchAuctionStatus(env.auctionId),
+  });
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${spaceGrotesk.variable}`} suppressHydrationWarning>
         <InitColorSchemeScript attribute="class" />
         <Providers>
-          <Suspense fallback={null}>
-            <TopLoader />
-          </Suspense>
-          <LayoutContent>{children}</LayoutContent>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <Suspense fallback={null}>
+              <TopLoader />
+            </Suspense>
+            <LayoutContent>{children}</LayoutContent>
+          </HydrationBoundary>
         </Providers>
       </body>
     </html>

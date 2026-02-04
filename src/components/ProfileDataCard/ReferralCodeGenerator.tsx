@@ -32,7 +32,7 @@ export const ReferralCodeGenerator = () => {
     resolver: zodResolver(
       z.object({
         address: addressValidationSchema,
-      })
+      }),
     ),
     defaultValues: {
       address: "",
@@ -77,14 +77,14 @@ export const ReferralCodeGenerator = () => {
           enqueueSnackbar(
             parseErrorMessage(
               error,
-              "An unexpected error occurred while generating the referral code."
+              "An unexpected error occurred while generating the referral code.",
             ),
-            { variant: "error" }
+            { variant: "error" },
           );
         }
       },
-      [signMessageAsync, enqueueSnackbar]
-    )
+      [signMessageAsync, enqueueSnackbar],
+    ),
   );
 
   return (

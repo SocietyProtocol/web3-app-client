@@ -11,6 +11,7 @@ import {
   Tabs,
   Tab,
   Typography,
+  Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useAccount } from "wagmi";
@@ -19,6 +20,7 @@ import { FilterSelect } from "../FilterSelect/FilterSelect";
 import { CreatedByOption, TabOption } from "../../data/badges/types";
 import { useBadges } from "@/data/badges/useBadges";
 import { filterOptions, sortOptions } from "../../data/badges/consts";
+import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 
 export const Badges = () => {
   const { address: userAddress } = useAccount();
@@ -27,6 +29,9 @@ export const Badges = () => {
     data,
     isFetching,
     isLoading,
+    isError,
+    error,
+    refetch,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -193,7 +198,16 @@ export const Badges = () => {
             width: "100%",
           }}
         >
-          {isLoading ? (
+          {isError ? (
+            <ErrorDisplay
+              error={error}
+              action={
+                <Button onClick={() => refetch()} variant="contained">
+                  Retry
+                </Button>
+              }
+            />
+          ) : isLoading ? (
             Array.from({ length: 12 }).map((_, index) => (
               <BadgeCard key={`skeleton-${index}`} loading />
             ))

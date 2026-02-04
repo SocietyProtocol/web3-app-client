@@ -6,12 +6,11 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
-  Badge,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { NavigationItem as NavigationItemType } from "./navigationItems";
 import { styled } from "@mui/material/styles";
-import { mapStatusToColor } from "../Auction/AuctionStatus";
+import { AuctionStatusDot } from "../Auction/AuctionStatus";
 
 interface NavigationItemProps {
   item: NavigationItemType;
@@ -92,26 +91,8 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
           justifyContent: "center",
         }}
       >
-        {item.status && !isExpanded ? (
-          <Badge
-            color={mapStatusToColor(item.status)}
-            variant="dot"
-            overlap="circular"
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            sx={{
-              "& .MuiBadge-badge": {
-                top: 12,
-                left: 24,
-                borderRadius: "50%",
-                opacity: 0.85,
-              },
-            }}
-          >
-            {item.icon}
-          </Badge>
+        {item.showAuctionStatus && !isExpanded ? (
+          <AuctionStatusDot>{item.icon}</AuctionStatusDot>
         ) : (
           item.icon
         )}

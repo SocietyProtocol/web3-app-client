@@ -4,18 +4,14 @@ import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
-import {
-  useAccount,
-  useChainId,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { useProfile } from "./useProfile";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
+import { useTransaction } from "@/hooks/useTransaction";
 
-export const useMutateProfile = (overrideAddress?: Address) => {
+export const useProfileMutation = (overrideAddress?: Address) => {
   const chainId = useChainId();
   const contractAddress = getBadgesContractAddress(chainId);
   const { address } = useAccount();
@@ -50,46 +46,51 @@ export const useMutateProfile = (overrideAddress?: Address) => {
     },
   });
 
-  const writeContract = useWriteContract();
-
-  const receipt = useWaitForTransactionReceipt({
-    hash: writeContract.data,
-    confirmations: 1,
+  const transaction = useTransaction({
+    waitForSync: false,
   });
 
-  const mutate = async (data: AccountData) => {
-    if (
-      !profile.profileId.isFetched ||
-      (profile.profileId.data !== BigInt(0) && !profile.uri.isFetched)
-    ) {
-      throw new Error("Profile data is still loading. Please try again.");
-    }
+  const mutate = useCallback(
+    async (data: AccountData) => {
+      if (
+        !profile.profileId.isFetched ||
+        (profile.profileId.data !== BigInt(0) && !profile.uri.isFetched)
+      ) {
+        throw new Error("Profile data is still loading. Please try again.");
+      }
 
-    const profileExists =
-      Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
+      const profileExists =
+        Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
 
-    const ipfsData = await uploadIpfsResult.mutateAsync({
-      ...data,
-    });
+      const ipfsData = await uploadIpfsResult.mutateAsync({
+        ...data,
+      });
 
-    if (!ipfsData.uri) {
-      throw new Error("Failed to generate profile URI");
-    }
+      if (!ipfsData.uri) {
+        throw new Error("Failed to generate profile URI");
+      }
 
-    return await writeContract.writeContractAsync({
-      address: contractAddress,
-      abi: SocietyProtocolBadgesABI,
-      functionName: profileExists ? "updateProfileURI" : "createProfile",
-      args: profileExists
-        ? [profile.profileId.data!, ipfsData.uri]
-        : [ipfsData.uri],
-    });
-  };
+      await transaction.execute({
+        address: contractAddress,
+        abi: SocietyProtocolBadgesABI,
+        functionName: profileExists ? "updateProfileURI" : "createProfile",
+        args: profileExists
+          ? [profile.profileId.data!, ipfsData.uri]
+          : [ipfsData.uri],
+      });
+    },
+    [contractAddress, profile, uploadIpfsResult, transaction],
+  );
 
   const reset = useCallback(() => {
     uploadIpfsResult.reset();
-    writeContract.reset();
-  }, [uploadIpfsResult, writeContract]);
+    transaction.reset();
+  }, [uploadIpfsResult, transaction]);
+
+  const error =
+    uploadIpfsResult.error ||
+    (transaction.isError ? new Error("Transaction failed") : null);
+  const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {
     username: profile.username,
@@ -100,18 +101,15 @@ export const useMutateProfile = (overrideAddress?: Address) => {
       profile.profileId.isLoading ||
       profile.uri.isLoading ||
       profile.profileData.isLoading,
-    isMutating:
-      uploadIpfsResult.isPending ||
-      writeContract.isPending ||
-      Boolean(writeContract.data && receipt.isPending),
+    isMutating,
     isUploadingToIpfs: uploadIpfsResult.isPending,
-    isWritingContract: writeContract.isPending,
-    error: uploadIpfsResult.error || writeContract.error || receipt.error,
+    isWritingContract: transaction.isExecuting,
+    error,
     ipfsData: uploadIpfsResult.data,
-    transactionReceipt: receipt.data,
-    transactionHash: writeContract.data,
-    isTransactionPending: Boolean(writeContract.data && receipt.isPending),
-    isTransactionConfirmed: Boolean(receipt.data && receipt.isSuccess),
+    transactionReceipt: transaction.txReceipt.data,
+    transactionHash: transaction.txHash,
+    isTransactionPending: transaction.isLoading,
+    isTransactionConfirmed: transaction.isSuccess,
     refetch: profile.refetch,
     mutate,
     reset,

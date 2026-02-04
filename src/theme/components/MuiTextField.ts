@@ -31,7 +31,6 @@ export const MuiTextField: Components<
         },
 
         "& .MuiOutlinedInput-input": {
-          padding: theme.spacing(2.25, 1.5),
           "&::placeholder": {
             color: alpha(theme.palette.text.primary, 0.5),
             opacity: 1,
@@ -39,6 +38,18 @@ export const MuiTextField: Components<
               duration: theme.transitions.duration.shorter,
               easing: theme.transitions.easing.easeInOut,
             }),
+          },
+          "&:-webkit-autofill": {
+            WebkitBoxShadow: `0 0 0 100px ${theme.palette.background.input} inset !important`,
+            WebkitTextFillColor: `unset !important`,
+            caretColor: `unset !important`,
+            borderRadius: "8px",
+          },
+          "&:-webkit-autofill:hover": {
+            WebkitBoxShadow: `0 0 0 100px ${theme.palette.background.input} inset !important`,
+          },
+          "&:-webkit-autofill:focus": {
+            WebkitBoxShadow: `0 0 0 100px ${theme.palette.background.input} inset !important`,
           },
         },
 

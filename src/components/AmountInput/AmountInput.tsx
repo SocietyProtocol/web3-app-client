@@ -1,25 +1,22 @@
 "use client";
 
-import { Button, TextField, TextFieldProps } from "@mui/material";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Box, Button, TextField, TextFieldProps } from "@mui/material";
+import { useCallback, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import { TokenIcon } from "../TokenIcon/TokenIcon";
+import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 
-export interface AmountInputProps
-  extends Omit<TextFieldProps<"outlined">, "onChange" | "value" | "variant"> {
+export interface AmountInputProps extends Omit<
+  TextFieldProps<"outlined">,
+  "onChange" | "value" | "variant"
+> {
   label?: string;
   value?: bigint;
   onChange?: (value: bigint | undefined) => void;
   max?: bigint;
+  maxLabel?: string;
   disabled?: boolean;
-  tokenSymbol: string;
+  tokenSymbol?: string;
   decimals?: number;
   readonly?: boolean;
 }
@@ -28,7 +25,9 @@ export const AmountInput = ({
   label,
   value,
   onChange,
+  onBlur,
   max,
+  maxLabel = "Balance",
   tokenSymbol,
   decimals = 18,
   disabled = false,
@@ -37,136 +36,181 @@ export const AmountInput = ({
 }: AmountInputProps) => {
   const stringValue = useMemo(
     () => (value === undefined ? "" : formatUnits(value, decimals)),
-    [value, decimals]
+    [value, decimals],
   );
-
-  const inputRef = useRef<HTMLInputElement>(null);
-  const cursorRef = useRef<number | null>(null);
 
   const [intermediateValue, setIntermediateValue] =
     useState<string>(stringValue);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Sync external value changes when not focused
+  const displayValue = isFocused ? intermediateValue : stringValue;
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = event.target.value;
 
-      // check if it's empty
-      if (inputValue === "") {
-        onChange?.(undefined);
-        return;
-      }
-
-      const numberValue = Number(inputValue);
-      if (isNaN(numberValue)) {
-        return;
-      }
-
-      let bigintValue;
-
-      try {
-        bigintValue = parseUnits(inputValue || "0", decimals);
-      } catch {
-        return;
-      }
-
-      cursorRef.current = event.target.selectionStart;
-
-      if (max !== undefined && bigintValue > max) {
-        setIntermediateValue(formatUnits(max, decimals));
-
-        onChange?.(max);
+      // Only allow digits, decimal point, and empty string
+      if (inputValue !== "" && !/^\d*\.?\d*$/.test(inputValue)) {
         return;
       }
 
       setIntermediateValue(inputValue);
 
-      onChange?.(bigintValue);
+      // Empty input
+      if (inputValue === "") {
+        onChange?.(undefined);
+        return;
+      }
+
+      // Allow partial decimal inputs
+      if (
+        inputValue === "." ||
+        inputValue.endsWith(".") ||
+        inputValue.endsWith(".0")
+      ) {
+        return;
+      }
+
+      // Try to parse and update
+      try {
+        const bigintValue = parseUnits(inputValue, decimals);
+
+        if (max !== undefined && bigintValue > max) {
+          onChange?.(max);
+        } else {
+          onChange?.(bigintValue);
+        }
+      } catch {
+        // Invalid format, don't update
+      }
     },
-    [onChange, decimals, max]
+    [onChange, decimals, max],
   );
 
-  const onBlur = useCallback(() => {
-    if (stringValue !== intermediateValue) {
-      let bigintValue;
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
 
-      try {
-        bigintValue = parseUnits(intermediateValue || "0", decimals);
-      } catch {
-        setIntermediateValue(stringValue);
-        return;
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLInputElement, Element>) => {
+      setIsFocused(false);
+
+      // Clean up the input on blur
+      if (intermediateValue && intermediateValue !== ".") {
+        try {
+          let bigintValue = parseUnits(intermediateValue, decimals);
+
+          if (max !== undefined && bigintValue > max) {
+            bigintValue = max;
+          }
+
+          // Format to clean value
+          setIntermediateValue(formatUnits(bigintValue, decimals));
+          onChange?.(bigintValue);
+        } catch {
+          // Invalid, reset to previous valid value
+          setIntermediateValue(stringValue);
+        }
+      } else if (intermediateValue === ".") {
+        setIntermediateValue("");
+        onChange?.(undefined);
       }
 
-      if (bigintValue === value) {
-        setIntermediateValue(stringValue);
-        return;
-      }
-
-      if (max !== undefined && bigintValue > max) {
-        onChange?.(max);
-        return;
-      }
-
-      onChange?.(bigintValue);
-    }
-  }, [intermediateValue, stringValue, value, decimals, max, onChange]);
-
-  useEffect(() => {
-    setIntermediateValue(stringValue);
-  }, [stringValue]);
-
-  useLayoutEffect(() => {
-    if (inputRef.current && cursorRef.current !== null) {
-      inputRef.current.setSelectionRange(cursorRef.current, cursorRef.current);
-      cursorRef.current = null;
-    }
-  }, [intermediateValue]);
+      onBlur?.(event);
+    },
+    [intermediateValue, onBlur, decimals, max, onChange, stringValue],
+  );
 
   return (
-    <TextField
-      {...props}
-      variant="outlined"
-      label={label}
-      placeholder={`0.0 ${tokenSymbol.toUpperCase()}`}
-      onChange={handleChange}
-      onBlur={onBlur}
-      value={intermediateValue}
-      disabled={disabled}
-      slotProps={{
-        input: {
-          inputRef,
-          readOnly: readonly,
-          startAdornment: (
-            <TokenIcon
-              symbol={tokenSymbol}
-              size={36}
-              style={{ marginRight: 4 }}
-            />
-          ),
-
-          endAdornment: max && !readonly && (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                if (value !== max) {
-                  onChange?.(max);
-                }
+    <Box>
+      {(label || (max !== undefined && maxLabel)) && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 1,
+          }}
+        >
+          {label && (
+            <Box
+              component="label"
+              sx={{
+                color: (theme) => theme.palette.primary.main,
+                fontSize: "1rem",
+                fontWeight: 400,
               }}
-              size="small"
-              disabled={disabled || value === max}
-              aria-label="Set to maximum amount"
             >
-              Max
-            </Button>
-          ),
-        },
+              {label}
+            </Box>
+          )}
+          {max !== undefined && maxLabel && (
+            <Box
+              sx={{
+                color: (theme) => theme.palette.text.secondary,
+                fontSize: "0.875rem",
+                display: "flex",
+                gap: 0.5,
+                alignItems: "center",
+              }}
+            >
+              <Box component="span">{maxLabel}:</Box>
+              <FormattedNumber
+                value={max}
+                scaleDownDecimals={decimals}
+                maxDecimals={4}
+                minThreshold={0.0001}
+                symbol={tokenSymbol}
+                variant="body2"
+                color="textPrimary"
+                component="span"
+              />
+            </Box>
+          )}
+        </Box>
+      )}
+      <TextField
+        {...props}
+        variant="outlined"
+        placeholder={
+          tokenSymbol ? `0.0 ${tokenSymbol.toUpperCase()}` : undefined
+        }
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        value={displayValue}
+        disabled={disabled}
+        slotProps={{
+          input: {
+            readOnly: readonly,
+            inputMode: "decimal",
+            startAdornment: !!tokenSymbol && (
+              <TokenIcon
+                symbol={tokenSymbol}
+                size={36}
+                style={{ marginRight: 8 }}
+              />
+            ),
 
-        inputLabel: {
-          sx: {
-            color: (theme) => `${theme.palette.primary.main} !important`,
-            marginBottom: (theme) => `${theme.spacing(1)} !important`,
+            endAdornment: max !== undefined && !readonly && (
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  if (value !== max) {
+                    onChange?.(max);
+                  }
+                }}
+                size="small"
+                disabled={disabled || value === max}
+                aria-label="Set to maximum amount"
+              >
+                Max
+              </Button>
+            ),
           },
-        },
-      }}
-    />
+        }}
+      />
+    </Box>
   );
 };

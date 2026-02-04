@@ -1,9 +1,5 @@
-import { useCallback } from "react";
-import {
-  useAccount,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-} from "wagmi";
+import { useCallback, useMemo } from "react";
+import { useAccount } from "wagmi";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
@@ -11,10 +7,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { throwResponseError } from "@/utils/errors";
 import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
 import { getBadgesContractAddress } from "@/lib/wagmi";
+import { useTransaction } from "@/hooks/useTransaction";
 
 export const useMutateBadge = () => {
   const { chainId } = useAccount();
-  const contractAddress = getBadgesContractAddress(chainId);
+  const contractAddress = useMemo(
+    () => getBadgesContractAddress(chainId),
+    [chainId],
+  );
   const { generateAuthPayload } = useAuth();
 
   const uploadIpfsResult = useMutation<
@@ -45,21 +45,9 @@ export const useMutateBadge = () => {
     },
   });
 
-  const {
-    data: hash,
-    writeContractAsync,
-    isPending: isWritingContract,
-    error: writeError,
-    reset: resetWrite,
-  } = useWriteContract();
-
-  const {
-    data: transactionReceipt,
-    isLoading: isTransactionPending,
-    isSuccess: isTransactionConfirmed,
-    error: transactionError,
-  } = useWaitForTransactionReceipt({
-    hash,
+  const transaction = useTransaction({
+    waitForSync: false,
+    successMessage: "Badge created successfully",
   });
 
   const mutate = useCallback(
@@ -77,7 +65,7 @@ export const useMutateBadge = () => {
       }
 
       // Call the contract
-      await writeContractAsync({
+      await transaction.execute({
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
         functionName: "createBadge",
@@ -93,28 +81,29 @@ export const useMutateBadge = () => {
         ],
       });
     },
-    [contractAddress, uploadIpfsResult, writeContractAsync],
+    [contractAddress, uploadIpfsResult, transaction],
   );
 
   const reset = useCallback(() => {
     uploadIpfsResult.reset();
-    resetWrite();
-  }, [resetWrite, uploadIpfsResult]);
+    transaction.reset();
+  }, [transaction, uploadIpfsResult]);
 
-  const error = uploadIpfsResult.error || writeError || transactionError;
-  const isMutating =
-    uploadIpfsResult.isPending || isWritingContract || isTransactionPending;
+  const error =
+    uploadIpfsResult.error ||
+    (transaction.isError ? new Error("Transaction failed") : null);
+  const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {
     mutate,
     isUploadingToIpfs: uploadIpfsResult.isPending,
-    isWritingContract,
-    isTransactionPending,
-    isTransactionConfirmed,
+    isWritingContract: transaction.isExecuting,
+    isTransactionPending: transaction.isLoading,
+    isTransactionConfirmed: transaction.isSuccess,
     isMutating,
     error,
     reset,
-    transactionHash: hash,
-    transactionReceipt,
+    transactionHash: transaction.txHash,
+    transactionReceipt: transaction.txReceipt.data,
   };
 };

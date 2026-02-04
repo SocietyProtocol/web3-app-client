@@ -9,3 +9,6 @@ documents:
   - ./src/queries/user.graphql
   - ./src/queries/users.graphql
   - ./src/queries/status.graphql
+  - ./src/queries/auction.graphql
+  - ./src/queries/orders.graphql
+  - ./src/queries/auctionStatus.graphql

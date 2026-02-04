@@ -38,7 +38,7 @@ export const Bid = ({
 
   if (loading) {
     return (
-      <Tr>
+      <Tr role="row">
         <Skeleton width="80%" height={24} />
         <Skeleton width="60%" height={24} />
         <Skeleton width="40%" height={24} />
@@ -48,7 +48,7 @@ export const Bid = ({
   }
 
   return (
-    <Tr>
+    <Tr role="row">
       <Box
         sx={{
           display: "flex",
@@ -72,13 +72,15 @@ export const Bid = ({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {tokenSymbol && <TokenIcon symbol={tokenSymbol} size={24} />}
 
-          <FormattedNumber
-            value={BigInt(sellAmount)}
-            symbol={tokenSymbol}
-            scaleDownDecimals={6}
-            fontWeight={700}
-            component="span"
-          />
+          {tokenSymbol && sellAmount && decimalsBiddingToken && (
+            <FormattedNumber
+              value={BigInt(sellAmount)}
+              symbol={tokenSymbol}
+              scaleDownDecimals={Number(decimalsBiddingToken)}
+              fontWeight={700}
+              component="span"
+            />
+          )}
         </Box>
       </Box>
       <Box
@@ -104,18 +106,18 @@ export const Bid = ({
         >
           Limit Price
         </Typography>
-        <Typography fontWeight={700} component="span">
-          <FormattedNumber
-            value={price}
-            maxDecimals={
-              decimalsBiddingToken ? Number(decimalsBiddingToken) : undefined
-            }
-            symbol={tokenSymbol}
-            fontWeight={700}
-            component="span"
-          />{" "}
-          per 1 SPEC
-        </Typography>
+        {tokenSymbol && decimalsBiddingToken && (
+          <Typography fontWeight={700} component="span">
+            <FormattedNumber
+              value={price}
+              maxDecimals={Number(decimalsBiddingToken)}
+              symbol={tokenSymbol}
+              fontWeight={700}
+              component="span"
+            />{" "}
+            per 1 {tokenSymbol}
+          </Typography>
+        )}
       </Box>
       <Box
         sx={{

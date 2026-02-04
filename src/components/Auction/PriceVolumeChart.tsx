@@ -141,7 +141,7 @@ export const PriceVolumeChart = ({
                 <ReferenceLine
                   key={value}
                   x={value}
-                  stroke="#FF0000"
+                  stroke={theme.palette.error.main}
                   strokeDasharray="3 3"
                 >
                   <Label

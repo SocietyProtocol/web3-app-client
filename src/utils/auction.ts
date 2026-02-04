@@ -43,26 +43,26 @@ export const decodeOrderId = (orderId: Hex) => {
 };
 
 /**
- * Converts a subgraph order ID format to hex format for contract interaction.
- * Subgraph order ID format: "{auctionId}-{sellAmount}-{buyAmount}-{userId}"
+ * Converts a subgraph order ID to the contract hex order ID.
+ * Subgraph order ID format: "auctionId-sellAmount-buyAmount-userId"
  *
- * @param subgraphOrderId - Order ID from the subgraph
+ * @param subgraphOrderId - The subgraph order ID string
  * @returns Object containing hexOrderId and auctionId
- */
-
+ * @throws Error if the subgraphOrderId format is invalid
+ *
+ **/
 export const subgraphOrderIdToHex = (subgraphOrderId: string) => {
-  const parts = subgraphOrderId.split("-");
+  const regex = /^\d+-\d+-\d+-\d+$/;
 
-  if (parts.length !== 4) {
+  if (!regex.test(subgraphOrderId)) {
     throw new Error(
-      `Invalid subgraphOrderId "${subgraphOrderId}": expected format "auctionId-sellAmount-buyAmount-userId" with 4 components, but got ${parts.length}.`,
+      `Invalid subgraphOrderId "${subgraphOrderId}": expected format "auctionId-sellAmount-buyAmount-userId".`,
     );
   }
 
-  const auctionId = BigInt(parts[0]);
-  const sellAmount = BigInt(parts[1]);
-  const buyAmount = BigInt(parts[2]);
-  const userId = BigInt(parts[3]);
+  const [auctionId, sellAmount, buyAmount, userId] = subgraphOrderId
+    .split("-")
+    .map((part) => BigInt(part));
 
   return {
     hexOrderId: encodeOrderId(userId, buyAmount, sellAmount),

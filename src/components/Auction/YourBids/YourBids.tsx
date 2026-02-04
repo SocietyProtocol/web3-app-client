@@ -9,7 +9,7 @@ import { useMemo } from "react";
 
 export const YourBids = () => {
   const { orders, isOrdersLoading, auctionDetail } = useAuctionContext();
-  const exactOrder = auctionDetail?.exactOrder;
+  const { exactOrder, symbolBiddingToken } = auctionDetail ?? {};
 
   const sortedOrders = useMemo(() => {
     return orders
@@ -60,6 +60,7 @@ export const YourBids = () => {
       ) : (
         <>
           <Tr
+            role="rowheader"
             sx={{
               display: { xs: "none", md: "grid" },
             }}
@@ -82,7 +83,7 @@ export const YourBids = () => {
               buyAmount={bid.buyAmount}
               sellAmount={bid.sellAmount}
               price={bid.price}
-              tokenSymbol="USDC"
+              tokenSymbol={symbolBiddingToken}
               status="Placed"
             />
           ))}

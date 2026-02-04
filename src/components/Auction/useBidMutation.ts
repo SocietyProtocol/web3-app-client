@@ -10,6 +10,9 @@ import { useAuctionContext } from "./AuctionContext";
 import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useSnackbar } from "notistack";
 
+const PREV_SELL_ORDER =
+  "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex;
+
 interface UseBidMutationValues {
   sellAmount?: bigint;
   price?: bigint;
@@ -64,6 +67,14 @@ export const useBidMutation = ({
 
   const placeBid = useCallback(async () => {
     if (
+      transaction.isExecuting ||
+      transaction.isLoading ||
+      transaction.isSyncing
+    ) {
+      return;
+    }
+
+    if (
       auctionId === undefined ||
       buyAmount === undefined ||
       sellAmount === undefined
@@ -80,9 +91,7 @@ export const useBidMutation = ({
         BigInt(auctionId),
         [buyAmount],
         [sellAmount],
-        [
-          "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex,
-        ],
+        [PREV_SELL_ORDER],
         "0x" as Hex,
       ],
     });

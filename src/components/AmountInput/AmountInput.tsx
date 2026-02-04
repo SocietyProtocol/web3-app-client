@@ -25,6 +25,7 @@ export const AmountInput = ({
   label,
   value,
   onChange,
+  onBlur,
   max,
   maxLabel = "Balance",
   tokenSymbol,
@@ -116,9 +117,9 @@ export const AmountInput = ({
         onChange?.(undefined);
       }
 
-      props.onBlur?.(event);
+      onBlur?.(event);
     },
-    [intermediateValue, decimals, max, stringValue, onChange, props],
+    [intermediateValue, onBlur, decimals, max, onChange, stringValue],
   );
 
   return (

@@ -57,6 +57,9 @@ export const useTransactionWithApproval = ({
     successMessage: "Approval successful",
   });
 
+  const { execute: executeApproval, reset: resetApproval } =
+    approvalTransaction;
+
   // Main transaction
   const transaction = useTransaction({
     enabled,
@@ -66,6 +69,8 @@ export const useTransactionWithApproval = ({
     },
     onError,
   });
+
+  const { execute: executeTransaction, reset: resetTransaction } = transaction;
 
   const approve = useCallback(async () => {
     if (
@@ -78,7 +83,7 @@ export const useTransactionWithApproval = ({
       return;
     }
 
-    await approvalTransaction.execute({
+    await executeApproval({
       address: tokenAddress,
       abi: erc20Abi,
       functionName: "approve",
@@ -90,7 +95,7 @@ export const useTransactionWithApproval = ({
     spenderAddress,
     amount,
     allowance.data,
-    approvalTransaction,
+    executeApproval,
   ]);
 
   const execute = useCallback(
@@ -99,23 +104,31 @@ export const useTransactionWithApproval = ({
 
       // Reset previous state when starting a new transaction
       if (transaction.status === "success" || transaction.status === "error") {
-        approvalTransaction.reset();
-        transaction.reset();
+        resetApproval();
+        resetTransaction();
       }
 
       if (approveRequired) {
         await approve();
       } else {
-        await transaction.execute(params);
+        await executeTransaction(params);
       }
     },
-    [enabled, transaction, approvalTransaction, approveRequired, approve],
+    [
+      enabled,
+      transaction.status,
+      approveRequired,
+      resetApproval,
+      resetTransaction,
+      approve,
+      executeTransaction,
+    ],
   );
 
   const reset = useCallback(() => {
-    approvalTransaction.reset();
-    transaction.reset();
-  }, [approvalTransaction, transaction]);
+    resetApproval();
+    resetTransaction();
+  }, [resetApproval, resetTransaction]);
 
   // Handle approval success
   // No longer needed - useTransaction handles everything
@@ -124,7 +137,7 @@ export const useTransactionWithApproval = ({
 
   return {
     execute,
-    executeTransaction: transaction.execute,
+    executeTransaction,
     reset,
     status: approvalTransaction.isExecuting
       ? "approving"

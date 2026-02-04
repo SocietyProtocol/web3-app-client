@@ -3,7 +3,7 @@
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
 import { AccountSetupBubble } from "@/components/Bubbles/AccountSetupBubble";
 import { ConnectWalletBubble } from "@/components/Bubbles/ConnectWalletBubble";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useProfile } from "@/components/AccountSetup/useProfile";
 import { Stack } from "@mui/material";
@@ -13,9 +13,14 @@ import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
+import { parseAsBoolean, useQueryState } from "nuqs";
 
 export default function ProfilePage() {
-  const [accountSetupOpen, setAccountSetupOpen] = useState(false);
+  const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
+    "setupOpen",
+    parseAsBoolean.withDefault(false),
+  );
+
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
@@ -28,8 +33,10 @@ export default function ProfilePage() {
 
   // reset accountSetupOpen when user connects/disconnects or address changes
   useEffect(() => {
-    setTimeout(() => setAccountSetupOpen(false));
-  }, [isConnected, address]);
+    // Close the setup whenever connection or address changes
+    // (covers connect, disconnect, and switching accounts)
+    setAccountSetupOpen(false);
+  }, [isConnected, address, setAccountSetupOpen]);
 
   if (!wagmiReady || isInitialLoading) {
     return <AccountSkeleton />;
@@ -37,7 +44,14 @@ export default function ProfilePage() {
 
   return (
     <ErrorBoundary>
-      <Stack alignItems="center" justifyContent="center">
+      <Stack
+        alignItems="center"
+        justifyContent="center"
+        sx={{
+          maxWidth: 600,
+          marginX: "auto",
+        }}
+      >
         {!isConnected ? (
           <ConnectWalletBubble />
         ) : isWrongNetwork ? (

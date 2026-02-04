@@ -51,7 +51,7 @@ export const ConnectButton = ({
           return (
             <Button
               disabled={!wagmiReady}
-              variant="outlined"
+              variant={variant || "outlined"}
               onClick={openConnectModal}
               sx={sx}
               fullWidth={fullWidth}

@@ -1,5 +1,135 @@
 "use client";
 
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Box,
+  Container,
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { ConnectWalletBubble } from "@/components/Bubbles/ConnectWalletBubble";
+import { AccountSetupBubble } from "@/components/Bubbles/AccountSetupBubble";
+import { useAccount } from "wagmi";
+import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
+import { useProfile } from "@/components/AccountSetup/useProfile";
+import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
+import { faqData } from "@/data/faq";
+
 export default function Home() {
-  return <div style={{ minHeight: "100vh" }}></div>;
+  // allow multiple panels to be expanded
+  const [expandedPanels, setExpandedPanels] = useState<number[]>([]);
+
+  const handleToggle =
+    (panel: number) => (event: React.SyntheticEvent, isExpanded: boolean) =>
+      setExpandedPanels((prev) => {
+        if (isExpanded) {
+          return prev.includes(panel) ? prev : [...prev, panel];
+        }
+        return prev.filter((p) => p !== panel);
+      });
+  const { address, isConnected } = useAccount();
+  const { isWrongNetwork } = useCheckWrongNetwork();
+  const profile = useProfile(address);
+
+  const router = useRouter();
+
+  return (
+    <Container
+      maxWidth="md"
+      sx={{
+        marginBottom: 6,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          maxWidth: 600,
+          marginX: "auto",
+        }}
+      >
+        {!isConnected ? (
+          <ConnectWalletBubble message="Society Protocol is a framework for building synchronized network states." />
+        ) : isWrongNetwork ? (
+          <WrongNetworkBubble />
+        ) : (
+          !profile.profileData.data && (
+            <AccountSetupBubble
+              onActionClick={() => router.push("/profile?setupOpen=true")}
+            />
+          )
+        )}
+      </Box>
+
+      <Box sx={{ mt: 10 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            textAlign: "center",
+            color: (theme) => theme.palette.primary[100],
+          }}
+        >
+          Common questions
+        </Typography>
+
+        <Typography
+          variant="body1"
+          sx={{
+            textAlign: "center",
+            mb: 4,
+            color: (theme) => theme.palette.primary.main,
+          }}
+        >
+          Here&apos;s a quick overview of Society Protocol
+        </Typography>
+
+        {faqData.map((faq) => (
+          <Accordion
+            key={faq.id}
+            expanded={expandedPanels.includes(faq.id)}
+            onChange={handleToggle(faq.id)}
+          >
+            <AccordionSummary
+              expandIcon={
+                expandedPanels.includes(faq.id) ? (
+                  <RemoveIcon sx={{ fontSize: 24 }} />
+                ) : (
+                  <AddIcon sx={{ fontSize: 24 }} />
+                )
+              }
+            >
+              <Typography>{faq.question}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {Array.isArray(faq.answer) ? (
+                <ol>
+                  {faq.answer.map((item, index) => (
+                    <Typography key={index} sx={{ mb: 2 }} component="li">
+                      {item.split("\n").length > 1
+                        ? item.split("\n").map((line, lineIndex) => (
+                            <Typography key={lineIndex}>
+                              {"• "}
+                              {line}
+                            </Typography>
+                          ))
+                        : item}
+                    </Typography>
+                  ))}
+                </ol>
+              ) : (
+                <Typography sx={{ mb: 2 }}>{faq.answer}</Typography>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        ))}
+      </Box>
+    </Container>
+  );
 }

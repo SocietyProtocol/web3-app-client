@@ -14,11 +14,10 @@ export const MuiCard: Components<
     {
       props: { variant: "bubble" },
       style: ({ theme }) => ({
-        backgroundColor: theme.palette.background.bubble,
+        backgroundColor: theme.palette.background.page,
         border: `1px solid ${theme.palette.border.bubble}`,
         borderRadius: 38,
         boxShadow: "none",
-        maxWidth: 580,
         "& .MuiCardHeader-root": {
           padding: theme.spacing(3),
         },

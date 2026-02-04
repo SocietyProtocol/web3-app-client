@@ -1,0 +1,49 @@
+query Auction($id: ID!) {
+  auctionDetail(id: $id) {
+    id
+    auctionId
+    chainId
+    symbolAuctioningToken
+    symbolBiddingToken
+    addressAuctioningToken
+    addressBiddingToken
+    decimalsAuctioningToken
+    decimalsBiddingToken
+    endTimeTimestamp
+    orderCancellationEndDate
+    startingTimeStamp
+    minimumBiddingAmountPerOrder
+    minFundingThreshold
+    allowListManager
+    allowListSigner
+    currentVolume
+    currentClearingOrderSellAmount
+    currentClearingOrderBuyAmount
+    currentClearingPrice
+    currentBiddingAmount
+    isAtomicClosureAllowed
+    isPrivateAuction
+    interestScore
+    usdAmountTraded
+
+    exactOrder {
+      id
+      sellAmount
+      buyAmount
+      userAddress
+      price
+      volume
+      timestamp
+    }
+
+    orders {
+      id
+      sellAmount
+      buyAmount
+      userAddress
+      price
+      volume
+      timestamp
+    }
+  }
+}

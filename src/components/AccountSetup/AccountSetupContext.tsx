@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutateProfile } from "./useMutateProfile";
+import { useProfileMutation } from "./useProfileMutation";
 import { UseQueryResult } from "@tanstack/react-query";
 import { ProfileData } from "./useProfile";
 import { ValidationError } from "@/errors/ValidationError";
@@ -66,7 +66,7 @@ export const AccountSetupProvider = ({
     error: serverError,
     reset,
     refetch,
-  } = useMutateProfile();
+  } = useProfileMutation();
 
   const form = useForm<AccountData>({
     resolver: zodResolver(accountValidationSchema),

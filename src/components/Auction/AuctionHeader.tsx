@@ -5,8 +5,8 @@ import LanguageIcon from "@mui/icons-material/Language";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 
 export interface AuctionHeaderProps {
-  networkName: string;
-  id: number;
+  networkName?: string;
+  id?: number;
   active?: boolean;
 }
 

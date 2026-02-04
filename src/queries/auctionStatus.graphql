@@ -1,0 +1,8 @@
+query AuctionStatus($id: ID!) {
+  auctionDetail(id: $id) {
+    id
+    auctionId
+    chainId
+    endTimeTimestamp
+  }
+}

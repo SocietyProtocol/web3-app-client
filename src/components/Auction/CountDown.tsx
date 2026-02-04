@@ -42,7 +42,7 @@ const StyledNumber = styled(Typography)<TypographyProps<"span">>(
     [theme.breakpoints.down("sm")]: {
       fontSize: theme.typography.pxToRem(18),
     },
-  })
+  }),
 );
 
 const StyledLetter = styled(Typography)<TypographyProps<"span">>(
@@ -54,15 +54,23 @@ const StyledLetter = styled(Typography)<TypographyProps<"span">>(
     [theme.breakpoints.down("sm")]: {
       fontSize: theme.typography.pxToRem(18),
     },
-  })
+  }),
 );
 
 export const CountDown = ({ endTimestamp, title }: CountDownProps) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState<TimeRemaining>(() =>
-    calculateTimeRemaining(endTimestamp)
-  );
+  const [timeLeft, setTimeLeft] = useState<TimeRemaining>({
+    days: "00",
+    hours: "00",
+    minutes: "00",
+    seconds: "00",
+  });
+
+  useEffect(() => {
+    // Set initial time after mount
+    setTimeLeft(calculateTimeRemaining(endTimestamp));
+  }, [endTimestamp]);
 
   useEffect(() => {
     if (intervalRef.current) {

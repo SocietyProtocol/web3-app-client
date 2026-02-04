@@ -23,3 +23,13 @@ export const scaleDown = (value: bigint, decimals: number): bigint => {
 
   return value / scaleFactor;
 };
+
+/**
+ * Returns the minimum bigint from a list of bigints.
+ *
+ * @param numbers The list of bigint numbers
+ * @returns The minimum bigint
+ */
+export const min = (...numbers: bigint[]): bigint => {
+  return numbers.reduce((min, curr) => (curr < min ? curr : min), numbers[0]);
+};

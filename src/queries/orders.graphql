@@ -1,0 +1,11 @@
+query Orders($auctionId: BigInt!, $user: String!) {
+  orders(where: { auctionId: $auctionId, auctionUser_: { user: $user } }) {
+    id
+    sellAmount
+    buyAmount
+    userAddress
+    price
+    volume
+    timestamp
+  }
+}

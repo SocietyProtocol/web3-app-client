@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import Image from "next/image";
 import { AuctionStatus } from "../Auction/AuctionStatus";
-import { AuctionStatusEnum } from "../Auction/types";
 
 export interface NavigationItem {
   text: string;
@@ -9,7 +8,7 @@ export interface NavigationItem {
   url: string;
   isExternal?: boolean;
   badge?: ReactNode;
-  status?: AuctionStatusEnum;
+  showAuctionStatus?: boolean;
 }
 
 export const navigationItems: NavigationItem[] = [
@@ -55,7 +54,7 @@ export const navigationItems: NavigationItem[] = [
       <Image src="/icons/auction.svg" alt="Auction" width={24} height={24} />
     ),
     url: "/auction",
-    badge: <AuctionStatus status={AuctionStatusEnum.INACTIVE} size="medium" />,
-    status: AuctionStatusEnum.INACTIVE,
+    badge: <AuctionStatus size="medium" />,
+    showAuctionStatus: true,
   },
 ];

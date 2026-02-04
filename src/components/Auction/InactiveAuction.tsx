@@ -128,8 +128,8 @@ export const InactiveAuction = () => {
                 Alignment: There are two inherently competing interests which
                 must both be balanced and aligned: the individual desire and the
                 societal interest. The goal of alignment is to make it such that
-                each individuals optimal game theoretic move is the same as the
-                optimal move for the society as a whole.
+                each individual&apos;s optimal game theoretic move is the same
+                as the optimal move for the society as a whole.
               </li>
               <li>
                 Agency: We believe that agency and decentralization of control

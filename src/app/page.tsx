@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -24,14 +24,17 @@ export default function Home() {
   // allow multiple panels to be expanded
   const [expandedPanels, setExpandedPanels] = useState<number[]>([]);
 
-  const handleToggle =
-    (panel: number) => (event: React.SyntheticEvent, isExpanded: boolean) =>
+  const handleToggle = useCallback(
+    (panel: number) => (_event: React.SyntheticEvent, isExpanded: boolean) =>
       setExpandedPanels((prev) => {
         if (isExpanded) {
           return [...prev, panel];
         }
         return prev.filter((p) => p !== panel);
-      });
+      }),
+    [],
+  );
+
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
@@ -74,7 +77,11 @@ export default function Home() {
         </Box>
       )}
 
-      <Box sx={{ mt: showBubble ? { xs: 6, sm: 10 } : { xs: 3, sm: 5 } }}>
+      <Box
+        sx={{ mt: showBubble ? { xs: 6, sm: 10 } : { xs: 3, sm: 5 } }}
+        role="region"
+        aria-labelledby="faq-heading"
+      >
         <Typography
           variant="h4"
           gutterBottom

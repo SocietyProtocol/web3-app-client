@@ -38,42 +38,50 @@ export default function Home() {
 
   const router = useRouter();
 
+  const showBubble =
+    !isConnected || isWrongNetwork || !profile.profileData.data;
+
   return (
     <Container
       maxWidth="md"
       sx={{
         marginBottom: 6,
+        px: { xs: 2, sm: 0 },
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          maxWidth: 600,
-          marginX: "auto",
-        }}
-      >
-        {!isConnected ? (
-          <ConnectWalletBubble message="Society Protocol is a framework for building synchronized network states." />
-        ) : isWrongNetwork ? (
-          <WrongNetworkBubble />
-        ) : (
-          !profile.profileData.data && (
-            <AccountSetupBubble
-              onActionClick={() => router.push("/profile?setupOpen=true")}
-            />
-          )
-        )}
-      </Box>
+      {showBubble && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: { xs: 1.5, sm: 2 },
+            maxWidth: { xs: "100%", sm: 600 },
+            marginX: "auto",
+            width: "100%",
+          }}
+        >
+          {!isConnected ? (
+            <ConnectWalletBubble message="Society Protocol is a framework for building synchronized network states." />
+          ) : isWrongNetwork ? (
+            <WrongNetworkBubble />
+          ) : (
+            !profile.profileData.data && (
+              <AccountSetupBubble
+                onActionClick={() => router.push("/profile?setupOpen=true")}
+              />
+            )
+          )}
+        </Box>
+      )}
 
-      <Box sx={{ mt: 10 }}>
+      <Box sx={{ mt: showBubble ? { xs: 6, sm: 10 } : { xs: 3, sm: 5 } }}>
         <Typography
           variant="h4"
           gutterBottom
           sx={{
             textAlign: "center",
             color: (theme) => theme.palette.primary[100],
+            fontSize: { xs: "1.5rem", sm: "2.375rem" },
           }}
         >
           Common questions
@@ -85,6 +93,7 @@ export default function Home() {
             textAlign: "center",
             mb: 4,
             color: (theme) => theme.palette.primary.main,
+            fontSize: { xs: "0.9rem", sm: "1rem" },
           }}
         >
           Here&apos;s a quick overview of Society Protocol
@@ -101,20 +110,34 @@ export default function Home() {
                 expandedPanels.includes(faq.id) ? (
                   <RemoveIcon sx={{ fontSize: 24 }} />
                 ) : (
-                  <AddIcon sx={{ fontSize: 24 }} />
+                  <AddIcon sx={{ fontSize: "1.5rem" }} />
                 )
               }
             >
-              <Typography>{faq.question}</Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: "1rem", sm: "1.125rem" },
+                  fontWeight: 700,
+                }}
+              >
+                {faq.question}
+              </Typography>
             </AccordionSummary>
             <AccordionDetails>
               {Array.isArray(faq.answer) ? (
                 <ol>
                   {faq.answer.map((item, index) => (
-                    <Typography key={index} sx={{ mb: 2 }} component="li">
+                    <Typography
+                      key={index}
+                      sx={{ mb: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                      component="li"
+                    >
                       {item.split("\n").length > 1
                         ? item.split("\n").map((line, lineIndex) => (
-                            <Typography key={lineIndex}>
+                            <Typography
+                              key={lineIndex}
+                              sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                            >
                               {"• "}
                               {line}
                             </Typography>
@@ -124,7 +147,11 @@ export default function Home() {
                   ))}
                 </ol>
               ) : (
-                <Typography sx={{ mb: 2 }}>{faq.answer}</Typography>
+                <Typography
+                  sx={{ mb: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                >
+                  {faq.answer}
+                </Typography>
               )}
             </AccordionDetails>
           </Accordion>

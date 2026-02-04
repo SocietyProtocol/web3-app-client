@@ -24,10 +24,18 @@ export const WrongNetworkBubble: React.FC = () => {
         </Button>
       }
     >
-      <Typography variant="h5" gutterBottom>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+      >
         You are connected to the wrong network.
       </Typography>
-      <Typography variant="h6" gutterBottom>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+      >
         Please switch to <strong>{expectedNetwork.name}</strong> to continue.
       </Typography>
     </BubbleBase>

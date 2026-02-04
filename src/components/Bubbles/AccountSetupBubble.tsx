@@ -29,11 +29,17 @@ export const AccountSetupBubble = ({
         !isLoading
       }
     >
-      <Typography variant="h5" gutterBottom>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+      >
         Welcome! Let&apos;s get started by setting up your account.
       </Typography>
       <br />
-      <Typography variant="h6">No KYC needed.</Typography>
+      <Typography variant="h6" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+        No KYC needed.
+      </Typography>
     </BubbleBase>
   );
 };

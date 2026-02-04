@@ -20,9 +20,14 @@ export const MuiCard: Components<
         boxShadow: "none",
         "& .MuiCardHeader-root": {
           padding: theme.spacing(3),
+          paddingBottom: 0,
         },
         "& > .MuiCardContent-root": {
-          padding: theme.spacing(3),
+          color: theme.palette.primary.main,
+          padding: theme.spacing(0, 3),
+          [theme.breakpoints.up("sm")]: {
+            padding: theme.spacing(3),
+          },
         },
         "& > .MuiCardActions-root": {
           padding: theme.spacing(3),

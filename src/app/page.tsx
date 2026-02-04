@@ -95,6 +95,7 @@ export default function Home() {
         aria-labelledby="faq-heading"
       >
         <Typography
+          id="faq-heading"
           variant="h4"
           gutterBottom
           sx={{
@@ -129,14 +130,7 @@ export default function Home() {
                 expandedPanels.includes(faq.id) ? <RemoveIcon /> : <AddIcon />
               }
             >
-              <Typography
-                sx={{
-                  fontSize: { xs: "1rem", sm: "1.125rem" },
-                  fontWeight: 700,
-                }}
-              >
-                {faq.question}
-              </Typography>
+              <Typography>{faq.question}</Typography>
             </AccordionSummary>
             <AccordionDetails>
               {Array.isArray(faq.answer) ? (

@@ -98,10 +98,19 @@ export const AuctionProvider = ({
       return undefined;
     }
 
+    const clearingPriceBigInt = parseUnits(
+      currentClearingPrice,
+      Number(decimalsBiddingToken),
+    );
+
+    if (clearingPriceBigInt === BigInt(0)) {
+      return undefined;
+    }
+
     return min(
       BigInt(exactOrder.sellAmount),
       scaleUp(BigInt(currentBiddingAmount), Number(decimalsAuctioningToken)) /
-        parseUnits(currentClearingPrice, Number(decimalsBiddingToken)),
+        clearingPriceBigInt,
     );
   }, [
     currentBiddingAmount,

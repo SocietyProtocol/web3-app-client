@@ -49,6 +49,6 @@ export const env: Env = {
   pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL,
   wcProjectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
   alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-  auctionId: parseInt(process.env.NEXT_PUBLIC_AUCTION_ID),
+  auctionId: parseInt(process.env.NEXT_PUBLIC_AUCTION_ID, 10),
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
 };

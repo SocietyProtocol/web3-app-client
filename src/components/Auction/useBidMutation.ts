@@ -50,7 +50,13 @@ export const useBidMutation = ({
       return undefined;
     }
 
-    return scaleUp(sellAmount, decimalsAuctioningToken) / price;
+    const decimals = Number(decimalsAuctioningToken);
+
+    if (Number.isNaN(decimals)) {
+      return undefined;
+    }
+
+    return scaleUp(sellAmount, decimals) / price;
   }, [sellAmount, price, decimalsAuctioningToken]);
 
   const transaction = useTransactionWithApproval({

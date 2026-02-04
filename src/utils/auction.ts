@@ -21,28 +21,6 @@ export const encodeOrderId = (
 };
 
 /**
- * Decodes an order ID into its components.
- *
- * @param orderId - Encoded order ID as hex string
- * @returns Object containing userId, buyAmount, and sellAmount
- */
-export const decodeOrderId = (orderId: Hex) => {
-  // Remove '0x' prefix
-  const hex = orderId.slice(2);
-
-  // Extract components (in hex)
-  const userIdHex = hex.slice(0, 16); // 64 bits = 16 hex chars
-  const buyAmountHex = hex.slice(16, 40); // 96 bits = 24 hex chars
-  const sellAmountHex = hex.slice(40, 64); // 96 bits = 24 hex chars
-
-  return {
-    userId: BigInt(`0x${userIdHex}`),
-    buyAmount: BigInt(`0x${buyAmountHex}`),
-    sellAmount: BigInt(`0x${sellAmountHex}`),
-  };
-};
-
-/**
  * Converts a subgraph order ID to the contract hex order ID.
  * Subgraph order ID format: "auctionId-sellAmount-buyAmount-userId"
  *

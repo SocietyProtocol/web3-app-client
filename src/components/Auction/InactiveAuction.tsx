@@ -32,7 +32,8 @@ const formatAuctionDate = (timestamp: number): string => {
       hour: "numeric",
       hour12: false,
       timeZone: "Europe/Paris",
-    })
+    }),
+    10,
   );
 
   let timeStr = "";
@@ -80,7 +81,7 @@ export const InactiveAuction = () => {
         <CountDown
           endTimestamp={startTimestamp}
           title={`The auction kicks off on ${formatAuctionDate(
-            startTimestamp
+            startTimestamp,
           )}!`}
         />
       </Stack>

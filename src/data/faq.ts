@@ -9,7 +9,7 @@ export const faqData: FAQItem[] = [
     id: 1,
     question: "What is Society Protocol?",
     answer:
-      "We are gathered because society is on the verge of a radical               transformation driven by sheer technological innovation from Nation States to Synchronized States. We believe that Sync States are the evolution to Nation States because of clearly discernible advantages and offer the promise of a better world f humanity.",
+      "We are gathered because society is on the verge of a radical transformation driven by sheer technological innovation from Nation States to Synchronized States. We believe that Sync States are the evolution to Nation States because of clearly discernible advantages and offer the promise of a better world for humanity.",
   },
   {
     id: 2,

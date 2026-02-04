@@ -107,11 +107,7 @@ export default function Home() {
           >
             <AccordionSummary
               expandIcon={
-                expandedPanels.includes(faq.id) ? (
-                  <RemoveIcon sx={{ fontSize: 24 }} />
-                ) : (
-                  <AddIcon sx={{ fontSize: "1.5rem" }} />
-                )
+                expandedPanels.includes(faq.id) ? <RemoveIcon /> : <AddIcon />
               }
             >
               <Typography

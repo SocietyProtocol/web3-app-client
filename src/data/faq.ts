@@ -16,7 +16,7 @@ export const faqData: FAQItem[] = [
     question: "What is the ideology?",
     answer: [
       "Fairness: Each participant in society should retain status / value equal to their contribution to society, at each point in time.",
-      "Alignment: There are two inherently competing interests which must both be balanced and aligned: the individual desire and the societal interest. \n The goal of alignment is to make it such that each individuals optimal game theoretic move is the same as the optimal move for the society as a whole.",
+      "Alignment: There are two inherently competing interests which must both be balanced and aligned: the individual desire and the societal interest. \n The goal of alignment is to make it such that each individual&apos;s optimal game theoretic move is the same as the optimal move for the society as a whole.",
       "Agency: We believe that agency and decentralization of control enables more potential actions for every individual, increasing human potential.",
     ],
   },

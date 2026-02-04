@@ -14,7 +14,7 @@ export const MuiAccordionDetails: Components<
         fontSize: theme.typography.pxToRem(16),
         fontWeight: 400,
         lineHeight: "24px",
-        color: "#CACACA",
+        color: theme.palette.text.primary,
       },
     }),
   },

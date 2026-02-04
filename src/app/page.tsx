@@ -28,7 +28,7 @@ export default function Home() {
     (panel: number) => (event: React.SyntheticEvent, isExpanded: boolean) =>
       setExpandedPanels((prev) => {
         if (isExpanded) {
-          return prev.includes(panel) ? prev : [...prev, panel];
+          return [...prev, panel];
         }
         return prev.filter((p) => p !== panel);
       });
@@ -133,14 +133,12 @@ export default function Home() {
                       component="li"
                     >
                       {item.split("\n").length > 1
-                        ? item.split("\n").map((line, lineIndex) => (
-                            <Typography
-                              key={lineIndex}
-                              sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
-                            >
+                        ? item.split("\n").map((line, lineIndex, lines) => (
+                            <React.Fragment key={lineIndex}>
                               {"• "}
                               {line}
-                            </Typography>
+                              {lineIndex < lines.length - 1 && <br />}
+                            </React.Fragment>
                           ))
                         : item}
                     </Typography>

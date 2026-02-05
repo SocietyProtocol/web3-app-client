@@ -73,6 +73,7 @@ export const Wizard = ({
           sx={{
             mb: { xs: 3, sm: 5 },
             px: { xs: 1, sm: 2 },
+            color: "primary.main",
           }}
         >
           {title}

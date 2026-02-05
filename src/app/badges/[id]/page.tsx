@@ -2,6 +2,7 @@ import { getQueryClient } from "@/lib/tanstack-query";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BadgeDetails } from "@/components/Badges/BadgeDetails";
 import { fetchBadge } from "@/data/badges/utils";
+import { Page } from "@/components/Page/Page";
 
 export default async function BadgePage({
   params,
@@ -23,7 +24,9 @@ export default async function BadgePage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <BadgeDetails id={id} />
+      <Page backButton defaultBackPath="/badges">
+        <BadgeDetails id={id} />
+      </Page>
     </HydrationBoundary>
   );
 }

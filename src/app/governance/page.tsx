@@ -1,15 +1,10 @@
-import { Box, Typography } from "@mui/material";
+import { Governance } from "@/components/Governance/Governance";
+import { Page } from "@/components/Page/Page";
 
 export default function GovernancePage() {
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Governance
-      </Typography>
-      <Typography variant="body1">
-        This is the governance page. Find important details and documentation
-        here.
-      </Typography>
-    </Box>
+    <Page title="Governance">
+      <Governance />
+    </Page>
   );
 }

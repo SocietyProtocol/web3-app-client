@@ -10,8 +10,6 @@ import {
   Skeleton,
   Link,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
@@ -34,13 +32,11 @@ import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
 import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
 export interface BadgeDetailsProps {
   id: string;
 }
 
 export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
-  const router = useRouter();
   const [isHoldersModalOpen, setIsHoldersModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useQueryState(
     "edit",
@@ -129,38 +125,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         position: "relative",
       }}
     >
-      {/* Back Button */}
-      <Box
-        sx={{
-          alignSelf: "flex-start",
-        }}
-      >
-        <Button
-          variant="text"
-          onClick={() => {
-            if (window.history.length > 1) {
-              router.back();
-            } else {
-              router.push("/badges");
-            }
-          }}
-          startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
-          sx={{
-            color: "primary.main",
-            fontSize: { xs: "0.875rem", sm: "1rem" },
-            textTransform: "none",
-            fontWeight: 600,
-            minWidth: { xs: "auto", sm: "64px" },
-            px: { xs: 1, sm: 2 },
-          }}
-          aria-label="Go back"
-        >
-          <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
-            Back
-          </Box>
-        </Button>
-      </Box>
-
       {/* Badge Image */}
       <Box sx={{ mt: { xs: 2, md: 5 } }}>
         {isLoading ? (

@@ -1,4 +1,4 @@
-import { Stack, Typography, Button, Grid, Box, Skeleton } from "@mui/material";
+import { Stack, Button, Grid, Skeleton } from "@mui/material";
 import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
 import { useMemo, useState } from "react";
@@ -20,6 +20,7 @@ import { tokens } from "@/consts/tokens";
 import { useFullBalanceOf } from "@/hooks/erc20/useFullBalance";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { CardRow } from "../Cards/CardRow";
+import { Page } from "../Page/Page";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -94,12 +95,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   }
 
   return (
-    <Box
-      sx={{
-        p: { xs: 2, sm: 3 },
-        overflow: "hidden",
-      }}
-    >
+    <Page title={`${username}'s Profile`}>
       {isEditing ? (
         <ContentGuard requireNetwork showBackButton>
           <AccountSetupProvider>
@@ -111,17 +107,6 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
         </ContentGuard>
       ) : (
         <Stack spacing={{ xs: 2, sm: 5 }}>
-          {/* Header with Edit Button */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "stretch", sm: "center" }}
-            spacing={{ xs: 1.5, sm: 0 }}
-          >
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {`${username}'s Profile`}
-            </Typography>
-          </Stack>
           {/* Stats and Profile Cards */}
           <Grid
             container
@@ -262,6 +247,6 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           />
         </Stack>
       )}
-    </Box>
+    </Page>
   );
 };

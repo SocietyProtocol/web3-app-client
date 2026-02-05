@@ -126,7 +126,7 @@ const BadgeCreationWizardContent = () => {
     >
       <Box sx={{ flex: { xs: 1, md: 2 } }}>
         <Wizard
-          title="Create Badge"
+          title="Create New Badge"
           steps={steps}
           activeStep={activeStep}
           onNext={handleNext}

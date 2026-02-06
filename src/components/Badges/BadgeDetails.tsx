@@ -15,29 +15,27 @@ import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { UserTag } from "../User/UserTag";
 import { useProfile } from "../AccountSetup/useProfile";
 import { BadgePermissions } from "./BadgePermissions";
 import { BadgeManagers } from "./BadgeManagers";
-import { HoldersModal } from "./HoldersModal";
 import { getBadgePermissions } from "../../data/badges/utils";
-import { UserCard } from "../User/UserCard";
 import { BadgeActions } from "./BadgeActions";
-import { CardRow } from "../Cards/CardRow";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
 import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { UserList } from "../User/UserList";
+
 export interface BadgeDetailsProps {
   id: string;
 }
 
 export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
-  const [isHoldersModalOpen, setIsHoldersModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useQueryState(
     "edit",
     parseAsBoolean.withDefault(false).withOptions({
@@ -72,16 +70,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         : { canMint: false, canBurn: false, canTransfer: false },
     [data?.badge, userAddress],
   );
-
-  const holdersCount = data?.badge?.holders?.length ?? 0;
-
-  const handleOpenHoldersModal = () => {
-    setIsHoldersModalOpen(true);
-  };
-
-  const handleCloseHoldersModal = () => {
-    setIsHoldersModalOpen(false);
-  };
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
@@ -300,42 +288,31 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         />
       </Stack>
 
-      <CardRow
-        title={
-          <>
-            Holders (
-            {isLoading ? <Skeleton variant="text" width={20} /> : holdersCount})
-          </>
-        }
+      {/* Holders Section */}
+      <UserList
+        title="Holders"
+        modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
+        users={data?.badge?.holders || []}
         loading={isLoading}
-        items={data?.badge?.holders}
-        minItemWidth={140}
-        renderItem={(holder) => (
-          <UserCard
-            id={holder.id as Hex}
-            name={holder.name ?? truncateAddress(holder.id as Hex)}
-            bio={holder.bio}
-            imageUrl={holder.imageUrl}
-            loading={holder.loading}
-            size="small"
-            highlightYou
-            link
-          />
-        )}
-        andMoreText="And {count} more holders..."
-        noneFoundText="No holders found"
-        viewAllText="View All Holders"
-        viewAllOnClick={handleOpenHoldersModal}
+        highlightYou
+        link
+        noUsersFoundText="No holders found"
+        viewAllButtonText="View All Holders"
+        andMoreText={(remainingCount) =>
+          `And ${remainingCount} more holders...`
+        }
+      />
+
+      {/* Actions */}
+      <Stack
+        direction={{
+          xs: "column",
+          sm: "row",
+        }}
+        spacing={2}
         sx={{
           width: "100%",
         }}
-      />
-
-      <HoldersModal
-        open={isHoldersModalOpen}
-        onClose={handleCloseHoldersModal}
-        badgeName={data?.badge?.name ?? "Badge"}
-        holders={data?.badge?.holders || []}
       />
     </Stack>
   );

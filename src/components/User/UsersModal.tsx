@@ -12,29 +12,35 @@ import { Gallery } from "../Gallery/Gallery";
 import { useState } from "react";
 import { Hex } from "viem";
 import { truncateAddress } from "@/utils/string";
-import { UserCard } from "../User/UserCard";
+import { UserCard } from "./UserCard";
 import { UserData } from "@/data/users/types";
 
-interface HoldersModalProps {
+interface UsersModalProps {
   open: boolean;
   onClose: () => void;
-  badgeName: string;
-  holders: Pick<UserData, "id" | "name" | "bio" | "imageUrl">[];
+  title: string;
+  users: Pick<UserData, "id" | "name" | "bio" | "imageUrl">[];
+  noUsersFoundText?: string;
+  highlightYou?: boolean;
+  link?: boolean;
 }
 
-export const HoldersModal = ({
+export const UsersModal = ({
   open,
   onClose,
-  badgeName,
-  holders,
-}: HoldersModalProps) => {
+  title,
+  users,
+  noUsersFoundText = "No users found",
+  highlightYou = false,
+  link = true,
+}: UsersModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
-    <Dialog open={open} onClose={onClose} aria-labelledby="holders-modal-title">
-      <DialogTitle id="holders-modal-title">
+    <Dialog open={open} onClose={onClose} aria-labelledby="users-modal-title">
+      <DialogTitle id="users-modal-title">
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
-          All Holders of {badgeName} ({holders.length})
+          {title}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -56,7 +62,7 @@ export const HoldersModal = ({
             minWidth: 600,
           }}
         >
-          {holders.length === 0 ? (
+          {users.length === 0 ? (
             <Box
               sx={{
                 display: "flex",
@@ -66,13 +72,13 @@ export const HoldersModal = ({
               }}
             >
               <Typography variant="body1" color="text.primary">
-                No holders found
+                {noUsersFoundText}
               </Typography>
             </Box>
           ) : (
             <Gallery
-              items={holders}
-              renderItem={(holder) => (
+              items={users}
+              renderItem={(user) => (
                 <Box
                   sx={{
                     display: "flex",
@@ -80,13 +86,13 @@ export const HoldersModal = ({
                   }}
                 >
                   <UserCard
-                    id={holder.id as Hex}
-                    name={holder.name ?? truncateAddress(holder.id as Hex)}
-                    bio={holder.bio}
-                    imageUrl={holder.imageUrl}
+                    id={user.id as Hex}
+                    name={user.name ?? truncateAddress(user.id as Hex)}
+                    bio={user.bio}
+                    imageUrl={user.imageUrl}
                     size="small"
-                    highlightYou
-                    link
+                    highlightYou={highlightYou}
+                    link={link}
                   />
                 </Box>
               )}

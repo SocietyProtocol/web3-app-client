@@ -1,37 +1,94 @@
 import {
   Button,
+  CircularProgress,
   IconButton,
   Stack,
   TextField,
+  TextFieldProps,
   Typography,
 } from "@mui/material";
 import { DataItem } from "./DataItem";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addressValidationSchema } from "@/validation/address";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
-import { useSignMessage } from "wagmi";
+import { useAccount, useSignMessage } from "wagmi";
 import { CopyButton } from "../CopyButton/CopyButton";
-import { Hex } from "viem";
+import { Hex, isAddress, zeroAddress } from "viem";
 import { useSnackbar } from "notistack";
 import { parseErrorMessage } from "@/utils/errors";
+import { generateReferralCode, generateReferralMessage } from "./utils";
+import { isEqualCaseInsensitive } from "@/utils/string";
+import { useInvitedBy } from "./useInvitedBy";
 
-export function generateReferralMessage(address: string): string {
-  return `Sign this message to generate a referral code for the address: ${address}`;
+interface AddressInputProps extends Omit<TextFieldProps, "variant"> {
+  loading?: boolean;
+  onCancel: () => void;
+  onPaste: () => void;
 }
 
+const AddressInput = ({
+  loading,
+  onCancel,
+  onPaste,
+  ...props
+}: AddressInputProps) => {
+  return (
+    <TextField
+      {...props}
+      size="small"
+      fullWidth
+      placeholder="Paste or enter an address"
+      slotProps={{
+        input: {
+          endAdornment: loading ? (
+            <CircularProgress size={16} />
+          ) : props.value ? (
+            <IconButton size="small" onClick={onCancel} title="Clear">
+              <CancelIcon
+                fontSize="small"
+                sx={{
+                  color: "error.main",
+                }}
+              />
+            </IconButton>
+          ) : (
+            <IconButton size="small" onClick={onPaste} title="Paste">
+              <ContentPasteIcon fontSize="small" />
+            </IconButton>
+          ),
+        },
+      }}
+    />
+  );
+};
+
 export const ReferralCodeGenerator = () => {
-  const [referralCode, setReferralCode] = useState<Hex | null>(null);
+  const [referralCodeMap, setReferralCodeMap] = useState<
+    Record<Hex, Record<Hex, Hex | null>>
+  >({});
+
+  const { address: account } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { enqueueSnackbar } = useSnackbar();
 
   const form = useForm({
     resolver: zodResolver(
       z.object({
-        address: addressValidationSchema,
+        address: z.union([
+          addressValidationSchema.refine(
+            (value) =>
+              account ? !isEqualCaseInsensitive(value as Hex, account) : true,
+            {
+              message:
+                "You cannot generate a referral code for your own address",
+            },
+          ),
+          z.literal(""),
+        ]),
       }),
     ),
     defaultValues: {
@@ -39,6 +96,32 @@ export const ReferralCodeGenerator = () => {
     },
     mode: "onChange",
   });
+
+  const { address } = useWatch({
+    control: form.control,
+  });
+
+  const invitedBy = useInvitedBy(
+    useMemo(
+      () =>
+        address &&
+        account &&
+        isAddress(address, { strict: false }) &&
+        !isEqualCaseInsensitive(address, account as Hex)
+          ? address
+          : undefined,
+      [account, address],
+    ),
+  );
+
+  const alreadyReferred =
+    invitedBy.data !== undefined && invitedBy.data !== zeroAddress;
+
+  const referralCode = useMemo(() => {
+    if (!account) return null;
+
+    return referralCodeMap[account]?.[address?.toLowerCase() as Hex] || null;
+  }, [account, referralCodeMap, address]);
 
   const onPaste = useCallback(async () => {
     if (!navigator?.clipboard?.readText) {
@@ -61,18 +144,29 @@ export const ReferralCodeGenerator = () => {
 
   const onCancel = useCallback(() => {
     form.resetField("address");
-    setReferralCode(null);
   }, [form]);
 
   const onSubmit = form.handleSubmit(
     useCallback(
       async (data) => {
+        if (!account || !data.address) {
+          return;
+        }
+
         try {
           const message = generateReferralMessage(data.address);
 
           const signature = await signMessageAsync({ message });
 
-          setReferralCode(signature);
+          const referralCode = generateReferralCode(signature, account);
+
+          setReferralCodeMap((prev) => ({
+            ...prev,
+            [account]: {
+              ...prev[account],
+              [data.address.toLowerCase()]: referralCode,
+            },
+          }));
         } catch (error) {
           enqueueSnackbar(
             parseErrorMessage(
@@ -83,7 +177,7 @@ export const ReferralCodeGenerator = () => {
           );
         }
       },
-      [signMessageAsync, enqueueSnackbar],
+      [signMessageAsync, account, enqueueSnackbar],
     ),
   );
 
@@ -95,34 +189,33 @@ export const ReferralCodeGenerator = () => {
       <Controller
         name="address"
         control={form.control}
-        render={({ field, fieldState }) => (
-          <TextField
-            size="small"
-            fullWidth
-            placeholder={"Paste or enter an address"}
-            {...field}
-            error={fieldState.invalid}
-            helperText={fieldState.error?.message}
-            slotProps={{
-              input: {
-                endAdornment: field.value ? (
-                  <IconButton size="small" onClick={onCancel} title="Clear">
-                    <CancelIcon
-                      fontSize="small"
-                      sx={{
-                        color: "error.main",
-                      }}
-                    />
-                  </IconButton>
-                ) : (
-                  <IconButton size="small" onClick={onPaste} title="Paste">
-                    <ContentPasteIcon fontSize="small" />
-                  </IconButton>
-                ),
-              },
-            }}
-          />
-        )}
+        render={({ field, fieldState }) => {
+          const error = Boolean(fieldState.error) || alreadyReferred;
+
+          const referrer =
+            account &&
+            alreadyReferred &&
+            isEqualCaseInsensitive(invitedBy.data, account)
+              ? "you"
+              : invitedBy.data;
+
+          const helperText = fieldState.error
+            ? fieldState.error.message
+            : alreadyReferred
+              ? `This address was already referred by ${referrer}`
+              : "";
+
+          return (
+            <AddressInput
+              {...field}
+              loading={invitedBy.isLoading}
+              onCancel={onCancel}
+              onPaste={onPaste}
+              error={error}
+              helperText={helperText}
+            />
+          );
+        }}
       />
 
       {referralCode ? (
@@ -146,7 +239,12 @@ export const ReferralCodeGenerator = () => {
           variant="outlined"
           sx={{ alignSelf: "flex-start" }}
           size="small"
-          disabled={!form.formState.isValid}
+          disabled={
+            !address ||
+            !form.formState.isValid ||
+            alreadyReferred ||
+            invitedBy.isLoading
+          }
           onClick={onSubmit}
         >
           Generate

@@ -5,7 +5,7 @@ import { AmountInput } from "../AmountInput/AmountInput";
 import { useMemo } from "react";
 import { scaleUp } from "@/utils/bigint";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   BidInput,
@@ -67,7 +67,9 @@ export const BidControl = () => {
     disabled: validationSchema === undefined,
   });
 
-  const values = form.watch();
+  const values = useWatch({
+    control: form.control,
+  });
 
   const {
     approveRequired,

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { Wizard, WizardStep } from "../Wizard";
-import { ReferralStep } from "./ReferralStep";
 import { AccountInfoStep } from "./AccountInfoStep";
 import { ReviewStep } from "./ReviewStep";
 import { AccountSetupProvider, useAccountSetup } from "./AccountSetupContext";
@@ -12,7 +11,6 @@ import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 
 const steps: WizardStep[] = [
-  { label: "Referral", description: "Enter your referral code" },
   { label: "Account Info", description: "Set up your profile" },
   { label: "Review", description: "Review your information" },
 ];
@@ -181,9 +179,8 @@ const AccountSetupWizardContent = ({
         loadingText={getLoadingText()}
         showActions={!isWrongNetwork}
       >
-        {activeStep === 0 && <ReferralStep />}
-        {activeStep === 1 && <AccountInfoStep />}
-        {activeStep === 2 && <ReviewStep />}
+        {activeStep === 0 && <AccountInfoStep />}
+        {activeStep === 1 && <ReviewStep />}
       </Wizard>
       {/* Toasts handled by notistack */}
     </Box>

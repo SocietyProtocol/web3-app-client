@@ -1,7 +1,7 @@
 import { Stack, Typography, Button, TextField } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { AvatarInput } from "./AvatarInput";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -35,6 +35,8 @@ export const AccountDetailsEdit = ({
     isTransactionPending,
     getServerFieldError,
   } = useAccountSetup();
+
+  const { name, bio } = useWatch({ control: form.control }); // Watch all form values for changes
 
   // Watch for transaction confirmation
   useEffect(() => {
@@ -178,9 +180,7 @@ export const AccountDetailsEdit = ({
               {...field}
               onChange={(e) => onChange(e.target.value)}
               error={Boolean(error)}
-              helperText={
-                error || `${(form.watch("name") || "").length}/100 characters`
-              }
+              helperText={error || `${(name || "").length}/100 characters`}
             />
           );
         }}
@@ -207,9 +207,7 @@ export const AccountDetailsEdit = ({
               {...field}
               onChange={(e) => onChange(e.target.value)}
               error={Boolean(error)}
-              helperText={
-                error || `${(form.watch("bio") || "").length}/500 characters`
-              }
+              helperText={error || `${(bio || "").length}/500 characters`}
             />
           );
         }}

@@ -44,6 +44,8 @@ export const MuiTextField: Components<
             WebkitTextFillColor: `unset !important`,
             caretColor: `unset !important`,
             borderRadius: "8px",
+
+            "& input:-internal-autofill-selected": {},
           },
           "&:-webkit-autofill:hover": {
             WebkitBoxShadow: `0 0 0 100px ${theme.palette.background.input} inset !important`,

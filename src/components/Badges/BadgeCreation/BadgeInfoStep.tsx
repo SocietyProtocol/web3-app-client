@@ -9,8 +9,12 @@ import {
 import { Controller } from "react-hook-form";
 import { useBadgeCreation } from "./BadgeCreationContext";
 import { AvatarInput } from "../../AccountSetup/AvatarInput";
+import { useAccount } from "wagmi";
+import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
 
 export const BadgeInfoStep = () => {
+  const { address } = useAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
   const { form, getServerFieldError } = useBadgeCreation();
   const {
     register,
@@ -39,6 +43,7 @@ export const BadgeInfoStep = () => {
             helperText={
               errors.imageUrl?.message || getServerFieldError("imageUrl")
             }
+            disabled={hasOfficialBadgeCreatorRole.isLoading}
           />
         )}
       />
@@ -50,6 +55,7 @@ export const BadgeInfoStep = () => {
         {...register("name")}
         error={Boolean(errors.name) || Boolean(getServerFieldError("name"))}
         helperText={errors.name?.message || getServerFieldError("name")}
+        disabled={hasOfficialBadgeCreatorRole.isLoading}
       />
 
       <TextField
@@ -67,29 +73,32 @@ export const BadgeInfoStep = () => {
           getServerFieldError("metadata") ||
           "Optional: Additional metadata in JSON format"
         }
+        disabled={hasOfficialBadgeCreatorRole.isLoading}
       />
 
-      <Box>
-        <Controller
-          name="isOfficial"
-          control={control}
-          render={({ field }) => (
-            <FormControlLabel
-              control={
-                <Checkbox checked={field.value} onChange={field.onChange} />
-              }
-              label={
-                <Box>
-                  <Typography variant="body1">Official Badge</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Mark this badge as an official badge
-                  </Typography>
-                </Box>
-              }
-            />
-          )}
-        />
-      </Box>
+      {hasOfficialBadgeCreatorRole.data && (
+        <Box>
+          <Controller
+            name="isOfficial"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={
+                  <Checkbox checked={field.value} onChange={field.onChange} />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body1">Official Badge</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Mark this badge as an official badge
+                    </Typography>
+                  </Box>
+                }
+              />
+            )}
+          />
+        </Box>
+      )}
 
       <Box>
         <Controller
@@ -98,7 +107,11 @@ export const BadgeInfoStep = () => {
           render={({ field }) => (
             <FormControlLabel
               control={
-                <Checkbox checked={field.value} onChange={field.onChange} />
+                <Checkbox
+                  checked={field.value}
+                  onChange={field.onChange}
+                  disabled={hasOfficialBadgeCreatorRole.isLoading}
+                />
               }
               label={
                 <Box>

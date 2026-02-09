@@ -36,7 +36,7 @@ export const AccountDetailsEdit = ({
     getServerFieldError,
   } = useAccountSetup();
 
-  const { name, bio } = useWatch({ control: form.control }); // Watch all form values for changes
+  const { name, bio } = useWatch({ control: form.control }); // Watch name and bio fields for changes
 
   // Watch for transaction confirmation
   useEffect(() => {

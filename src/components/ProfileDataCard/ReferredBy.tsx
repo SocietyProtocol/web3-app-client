@@ -19,7 +19,7 @@ export const ReferredBy = ({ readonly = false, address }: ReferredByProps) => {
       : undefined,
   );
 
-  return !readonly && invitedBy.data === zeroAddress ? (
+  return !readonly && invitedBy.data === zeroAddress && !invitedBy.isLoading ? (
     <AcceptInvitation />
   ) : (
     <DataItem
@@ -27,7 +27,8 @@ export const ReferredBy = ({ readonly = false, address }: ReferredByProps) => {
       label="Referred by"
       tooltip="The user who referred this account."
     >
-      {invitedBy.data && invitedBy.data !== zeroAddress ? (
+      {invitedBy.isLoading ||
+      (invitedBy.data && invitedBy.data !== zeroAddress) ? (
         <UserHandle
           loading={invitedBy.isLoading}
           id={invitedBy.data}

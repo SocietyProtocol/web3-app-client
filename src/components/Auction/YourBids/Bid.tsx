@@ -11,12 +11,14 @@ import { useAuctionContext } from "../AuctionContext";
 
 export interface BidProps extends Partial<Order> {
   loading?: boolean;
-  tokenSymbol?: string;
+  biddingTokenSymbol?: string;
+  auctioningTokenSymbol?: string;
   status?: "Placed" | "Pending" | "Cancelled";
 }
 
 export const Bid = ({
-  tokenSymbol,
+  biddingTokenSymbol,
+  auctioningTokenSymbol,
   price,
   sellAmount,
   status,
@@ -70,12 +72,14 @@ export const Bid = ({
           Amount
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {tokenSymbol && <TokenIcon symbol={tokenSymbol} size={24} />}
+          {biddingTokenSymbol && (
+            <TokenIcon symbol={biddingTokenSymbol} size={24} />
+          )}
 
-          {tokenSymbol && sellAmount && decimalsBiddingToken && (
+          {biddingTokenSymbol && sellAmount && decimalsBiddingToken && (
             <FormattedNumber
               value={BigInt(sellAmount)}
-              symbol={tokenSymbol}
+              symbol={biddingTokenSymbol}
               scaleDownDecimals={Number(decimalsBiddingToken)}
               fontWeight={700}
               component="span"
@@ -106,18 +110,20 @@ export const Bid = ({
         >
           Limit Price
         </Typography>
-        {tokenSymbol && decimalsBiddingToken && (
-          <Typography fontWeight={700} component="span">
-            <FormattedNumber
-              value={price}
-              maxDecimals={Number(decimalsBiddingToken)}
-              symbol={tokenSymbol}
-              fontWeight={700}
-              component="span"
-            />{" "}
-            per 1 {tokenSymbol}
-          </Typography>
-        )}
+        {biddingTokenSymbol &&
+          auctioningTokenSymbol &&
+          decimalsBiddingToken && (
+            <Typography fontWeight={700} component="span">
+              <FormattedNumber
+                value={price}
+                maxDecimals={Number(decimalsBiddingToken)}
+                symbol={biddingTokenSymbol}
+                fontWeight={700}
+                component="span"
+              />{" "}
+              per 1 {auctioningTokenSymbol}
+            </Typography>
+          )}
       </Box>
       <Box
         sx={{

@@ -9,7 +9,8 @@ import { useMemo } from "react";
 
 export const YourBids = () => {
   const { orders, isOrdersLoading, auctionDetail } = useAuctionContext();
-  const { exactOrder, symbolBiddingToken } = auctionDetail ?? {};
+  const { exactOrder, symbolBiddingToken, symbolAuctioningToken } =
+    auctionDetail ?? {};
 
   const sortedOrders = useMemo(() => {
     return orders
@@ -83,7 +84,8 @@ export const YourBids = () => {
               buyAmount={bid.buyAmount}
               sellAmount={bid.sellAmount}
               price={bid.price}
-              tokenSymbol={symbolBiddingToken}
+              biddingTokenSymbol={symbolBiddingToken}
+              auctioningTokenSymbol={symbolAuctioningToken}
               status="Placed"
             />
           ))}

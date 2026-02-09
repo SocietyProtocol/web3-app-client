@@ -91,21 +91,10 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
         ...(data.metadata ? JSON.parse(data.metadata) : {}),
       };
 
-      let uri: string;
+      const res = await uploadIpfsResult.mutateAsync(metadata);
 
-      try {
-        const res = await uploadIpfsResult.mutateAsync(metadata);
-        uri = res.uri;
-      } catch (error) {
-        console.error("Error uploading metadata to IPFS:", error);
-        onError?.(error);
-        return;
-      }
-
-      if (!uri) {
-        console.error("No URI returned from IPFS upload");
-        onError?.(new Error("Failed to upload metadata to IPFS"));
-        return;
+      if (!res.uri) {
+        throw new Error("Failed to upload metadata to IPFS");
       }
 
       // Call the contract
@@ -118,7 +107,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
           data.isOfficial,
           data.isCommunity,
           zeroAddress,
-          uri,
+          res.uri,
           data.minters,
           data.transferers,
           data.burners,
@@ -126,7 +115,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
         ],
       });
     },
-    [transaction, contractAddress, uploadIpfsResult, onError],
+    [transaction, contractAddress, uploadIpfsResult],
   );
 
   const reset = useCallback(() => {

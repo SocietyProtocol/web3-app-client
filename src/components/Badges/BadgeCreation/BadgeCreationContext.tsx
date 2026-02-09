@@ -30,7 +30,6 @@ interface BadgeCreationContextType {
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
   getServerFieldError: (field: keyof BadgeInputData) => string | undefined;
-  transactionReceipt?: TransactionReceipt;
   isTransactionPending: boolean;
 }
 

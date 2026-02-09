@@ -113,8 +113,8 @@ const BadgeCreationWizardContent = () => {
   const loadingText = useMemo(() => {
     if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
     if (isWritingContract) return "Waiting for wallet confirmation...";
-    if (isTransactionPending) return "Creating badge...";
     if (isSyncing) return "Waiting for blockchain sync...";
+    if (isTransactionPending) return "Creating badge...";
     return "Processing...";
   }, [isUploadingToIpfs, isWritingContract, isTransactionPending, isSyncing]);
 

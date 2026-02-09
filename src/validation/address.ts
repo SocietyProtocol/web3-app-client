@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const addressValidationSchema = z
   .string()
+  .transform((value: string) => value.trim())
   .refine((value) => isAddress(value, { strict: false }), {
     message: "Invalid address",
   })

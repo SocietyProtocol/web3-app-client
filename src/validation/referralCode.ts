@@ -6,9 +6,10 @@ export const referralCodeValidationSchema = z
   .string()
   .refine(
     (value) => {
-      if (!isHex(value) || value.length !== 172) return false;
+      const trimmed = value.trim();
+      if (!isHex(trimmed) || trimmed.length !== 172) return false;
 
-      const bytes = hexToBytes(value);
+      const bytes = hexToBytes(trimmed);
 
       const address = bytes.slice(0, 20); // First 20 bytes for the address
 
@@ -20,4 +21,4 @@ export const referralCodeValidationSchema = z
       message: "Invalid referral code",
     },
   )
-  .transform((value: string) => parseReferralCode(value as Hex));
+  .transform((value: string) => parseReferralCode(value.trim() as Hex));

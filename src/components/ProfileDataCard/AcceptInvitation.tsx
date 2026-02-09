@@ -48,8 +48,8 @@ export const AcceptInvitation = () => {
 
     try {
       const text = await navigator.clipboard.readText();
-      form.setValue("referralCode", text);
-      form.trigger("referralCode");
+      const trimmedText = text.trim();
+      form.setValue("referralCode", trimmedText, { shouldValidate: true });
     } catch {
       enqueueSnackbar("Unable to read from clipboard. Please paste manually.", {
         variant: "error",

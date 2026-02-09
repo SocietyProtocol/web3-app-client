@@ -4,10 +4,11 @@ import {
   generateReferralCode,
   parseReferralCode,
 } from "../referralCode";
+import { Hex } from "viem";
 
 describe("referralCode utils", () => {
-  const address = "0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa";
-  const signature = "0x" + "22".repeat(65); // 65-byte-like signature
+  const address = "0xAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa" as Hex;
+  const signature = ("0x" + "22".repeat(65)) as Hex; // 65-byte-like signature
 
   it("generateReferralMessage uses lowercased address", () => {
     const msg = generateReferralMessage(address);
@@ -24,8 +25,8 @@ describe("referralCode utils", () => {
 
   it("parseReferralCode handles uppercase input", () => {
     const codeUpper = generateReferralCode(
-      signature.toUpperCase(),
-      address.toUpperCase(),
+      signature.toUpperCase() as Hex,
+      address.toUpperCase() as Hex,
     );
     const parsed = parseReferralCode(codeUpper);
 

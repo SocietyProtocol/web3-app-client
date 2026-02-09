@@ -247,6 +247,7 @@ export const ReferralCodeGenerator = () => {
           sx={{ alignSelf: "flex-start" }}
           size="small"
           disabled={
+            !account ||
             !address ||
             !form.formState.isValid ||
             alreadyReferred ||

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { useRouter } from "next/navigation";
 import { Wizard, WizardStep } from "../../Wizard";
 import { BadgeInfoStep } from "./BadgeInfoStep";
 import { BadgePermissionsStep } from "./BadgePermissionsStep";
@@ -17,22 +16,15 @@ import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 import { BadgePreview } from "./BadgePreview";
-import { decodeBadgeId } from "@/data/badges/utils";
 
 const steps: WizardStep[] = [
   { label: "Badge Info", description: "Basic badge information" },
   { label: "Permissions", description: "Set permissions and managers" },
 ];
 
-const BadgeCreationWizardContent = ({
-  onComplete,
-}: {
-  onComplete?: () => void;
-}) => {
+const BadgeCreationWizardContent = () => {
   const [activeStep, setActiveStep] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
-  const router = useRouter();
-  const hasCompletedRef = useRef(false);
   const {
     form,
     onSubmit,
@@ -42,7 +34,6 @@ const BadgeCreationWizardContent = ({
     isTransactionPending,
     isTransactionConfirmed,
     transactionReceipt,
-    reset,
   } = useBadgeCreation();
 
   const { address } = useAccount();
@@ -57,46 +48,7 @@ const BadgeCreationWizardContent = ({
     [isTransactionConfirmed, transactionReceipt],
   );
 
-  const { isSynced, isWaiting: isWaitingForSync } =
-    useWaitForSubgraphSync(targetBlock);
-
-  // Watch for transaction confirmation and set target block
-  useEffect(() => {
-    if (
-      isTransactionConfirmed &&
-      !hasCompletedRef.current &&
-      transactionReceipt
-    ) {
-      enqueueSnackbar("Badge created successfully!", {
-        variant: "success",
-        key: "badge-creation-success",
-      });
-    }
-  }, [isTransactionConfirmed, transactionReceipt, enqueueSnackbar]);
-
-  // Watch for subgraph sync and redirect
-  useEffect(() => {
-    if (isSynced && !hasCompletedRef.current && transactionReceipt) {
-      hasCompletedRef.current = true;
-      form.reset();
-      reset();
-
-      if (onComplete) {
-        onComplete();
-      } else {
-        const createdBadgeId = decodeBadgeId(transactionReceipt);
-
-        if (createdBadgeId) {
-          // Redirect to the newly created badge details page
-          router.push(`/badges/${createdBadgeId.toString()}`);
-          return;
-        }
-
-        // Redirect to badges page
-        router.push("/badges");
-      }
-    }
-  }, [isSynced, onComplete, form, reset, router, transactionReceipt]);
+  const { isWaiting: isWaitingForSync } = useWaitForSubgraphSync(targetBlock);
 
   const nextDisabled = !form.formState.isValid;
 
@@ -223,14 +175,10 @@ const BadgeCreationWizardContent = ({
   );
 };
 
-export const BadgeCreationWizard = ({
-  onComplete,
-}: {
-  onComplete?: () => void;
-}) => {
+export const BadgeCreationWizard = () => {
   return (
     <BadgeCreationProvider>
-      <BadgeCreationWizardContent onComplete={onComplete} />
+      <BadgeCreationWizardContent />
     </BadgeCreationProvider>
   );
 };

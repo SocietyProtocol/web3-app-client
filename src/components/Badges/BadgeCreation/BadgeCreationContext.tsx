@@ -11,6 +11,8 @@ import {
 } from "@/validation/badge";
 import { ValidationError } from "@/errors/ValidationError";
 import { TransactionReceipt } from "viem";
+import { decodeBadgeId } from "@/data/badges/utils";
+import { useRouter } from "next/navigation";
 
 interface BadgeCreationContextType {
   form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
@@ -47,17 +49,7 @@ interface BadgeCreationProviderProps {
 export const BadgeCreationProvider = ({
   children,
 }: BadgeCreationProviderProps) => {
-  const {
-    mutate: createBadge,
-    isMutating,
-    isUploadingToIpfs,
-    isWritingContract,
-    isTransactionPending,
-    isTransactionConfirmed,
-    error: serverError,
-    reset: resetMutation,
-    transactionReceipt,
-  } = useMutateBadge();
+  const router = useRouter();
 
   const form = useForm<BadgeInputData, unknown, BadgeTransformedData>({
     resolver: zodResolver(badgeValidationSchema),
@@ -73,6 +65,34 @@ export const BadgeCreationProvider = ({
       editors: [],
     },
     mode: "onChange",
+  });
+
+  const {
+    mutate: createBadge,
+    isMutating,
+    isUploadingToIpfs,
+    isWritingContract,
+    isTransactionPending,
+    isTransactionConfirmed,
+    error: serverError,
+    reset: resetMutation,
+    transactionReceipt,
+  } = useMutateBadge({
+    onSuccess: (receipt: TransactionReceipt) => {
+      form.reset();
+      resetMutation();
+
+      const createdBadgeId = decodeBadgeId(receipt);
+
+      if (createdBadgeId) {
+        // Redirect to the newly created badge details page
+        router.push(`/badges/${createdBadgeId.toString()}`);
+        return;
+      }
+
+      // Redirect to badges page
+      router.push("/badges");
+    },
   });
 
   const onSubmit = form.handleSubmit(createBadge);

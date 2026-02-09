@@ -121,9 +121,13 @@ export const ReferralCodeGenerator = () => {
     invitedBy.data !== undefined && invitedBy.data !== zeroAddress;
 
   const referralCode = useMemo(() => {
-    if (!account) return null;
+    if (!account || !address) return null;
 
-    return referralCodeMap[account]?.[address?.toLowerCase() as Hex] || null;
+    if (!isAddress(address, { strict: false })) return null;
+
+    const normalizedAddress = address.toLowerCase() as Hex;
+
+    return referralCodeMap[account]?.[normalizedAddress] ?? null;
   }, [account, referralCodeMap, address]);
 
   const onPaste = useCallback(async () => {

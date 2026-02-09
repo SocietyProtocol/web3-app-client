@@ -22,7 +22,9 @@ import { ValidationError } from "@/errors/ValidationError";
 
 interface BadgeCreationContextType {
   form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
-  onSubmit: () => void;
+  onSubmit: ReturnType<
+    UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>["handleSubmit"]
+  >;
   isMutating: boolean;
   isSyncing: boolean;
   isUploadingToIpfs: boolean;

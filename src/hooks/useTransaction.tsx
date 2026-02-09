@@ -217,6 +217,7 @@ export const useTransaction = ({
     txReceipt.isFetched,
     txReceipt.status,
     txReceipt.error,
+    txReceipt.data,
     isSynced,
     waitForSync,
     enqueueSnackbar,

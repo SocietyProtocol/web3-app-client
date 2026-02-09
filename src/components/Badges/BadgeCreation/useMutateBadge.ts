@@ -93,10 +93,6 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
 
       const res = await uploadIpfsResult.mutateAsync(metadata);
 
-      if (!res.uri) {
-        throw new Error("Failed to upload metadata to IPFS");
-      }
-
       // Call the contract
       await transaction.execute({
         address: contractAddress,

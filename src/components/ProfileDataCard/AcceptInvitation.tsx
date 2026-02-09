@@ -9,9 +9,9 @@ import z from "zod";
 import { useCallback } from "react";
 import { useSnackbar } from "notistack";
 import { useAcceptInvitationMutation } from "./useAcceptInvitationMutation";
-import { generateReferralMessage } from "./utils";
 import { useAccount } from "wagmi";
 import { useInvitedBy } from "./useInvitedBy";
+import { generateReferralMessage } from "@/utils/referralCode";
 
 export const AcceptInvitation = () => {
   const { address } = useAccount();

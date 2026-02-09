@@ -20,9 +20,12 @@ import { CopyButton } from "../CopyButton/CopyButton";
 import { Hex, isAddress, zeroAddress } from "viem";
 import { useSnackbar } from "notistack";
 import { parseErrorMessage } from "@/utils/errors";
-import { generateReferralCode, generateReferralMessage } from "./utils";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { useInvitedBy } from "./useInvitedBy";
+import {
+  generateReferralCode,
+  generateReferralMessage,
+} from "@/utils/referralCode";
 
 interface AddressInputProps extends Omit<TextFieldProps, "variant"> {
   loading?: boolean;

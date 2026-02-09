@@ -43,7 +43,7 @@ export const useAcceptInvitationMutation = ({
     },
     successMessage: "Invitation accepted successfully",
     waitForSync: true,
-    supressErrorSnackbar: true,
+    suppressErrorSnackbar: true,
   });
 
   const mutate = useCallback(

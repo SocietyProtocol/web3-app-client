@@ -1,4 +1,4 @@
-import { bytesToHex, checksumAddress, concatHex, Hex, hexToBytes } from "viem";
+import { bytesToHex, concatHex, Hex, hexToBytes } from "viem";
 
 /**
  * Generates a referral message that the user needs to sign in order to create a referral code.
@@ -18,7 +18,10 @@ export function generateReferralMessage(address: Hex): string {
  * @returns The generated referral code as a Hex string.
  */
 export const generateReferralCode = (signature: Hex, address: Hex): Hex => {
-  return concatHex([checksumAddress(address), signature]);
+  return concatHex([
+    address.toLowerCase() as Hex,
+    signature.toLowerCase() as Hex,
+  ]);
 };
 
 /**
@@ -36,7 +39,7 @@ export const parseReferralCode = (
   const signature = bytes.slice(20); // Remaining characters for the signature
 
   return {
-    inviter: checksumAddress(bytesToHex(address)),
-    signature: bytesToHex(signature),
+    inviter: bytesToHex(address).toLowerCase() as Hex,
+    signature: bytesToHex(signature).toLowerCase() as Hex,
   };
 };

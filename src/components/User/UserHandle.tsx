@@ -66,7 +66,9 @@ export const UserHandle = ({
           flex: 0,
         }}
         aria-label={
-          (name ?? id) ? `User profile link for ${name ?? id}` : undefined
+          !loading && (name ?? id)
+            ? `User profile link for ${name ?? id}`
+            : undefined
         }
       >
         <Stack

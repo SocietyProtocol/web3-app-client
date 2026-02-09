@@ -63,19 +63,9 @@ const AccountSetupWizardContent = ({
     reset,
   ]);
 
-  const nextDisabled =
-    !form.formState.isValid &&
-    (Boolean(activeStep === 0 && form.formState.errors.referralCode) ||
-      Boolean(
-        activeStep === 1 &&
-        (form.formState.errors.name ||
-          form.formState.errors.bio ||
-          form.formState.errors.imageUrl),
-      ));
-
   const handleNext = async () => {
     // Validate account info step before moving forward
-    if (activeStep === 1) {
+    if (activeStep === 0) {
       const isValid = await form.trigger();
 
       if (!isValid) {
@@ -172,7 +162,7 @@ const AccountSetupWizardContent = ({
         onNext={handleNext}
         onBack={handleBack}
         onFinish={handleFinish}
-        nextDisabled={nextDisabled}
+        nextDisabled={form.formState.isValid}
         showReset={false}
         minHeight={{ xs: 400, sm: 554 }}
         isLoading={isMutatingProfile}

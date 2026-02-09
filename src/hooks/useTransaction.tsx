@@ -21,7 +21,7 @@ interface UseTransactionParams {
   pendingMessage?: string;
   submittedMessage?: string;
   successMessage?: string;
-  supressErrorSnackbar?: boolean;
+  suppressErrorSnackbar?: boolean;
 }
 
 interface ExecuteTransactionParams {
@@ -88,14 +88,13 @@ export const useTransaction = ({
   pendingMessage = "Please confirm the transaction in your wallet",
   submittedMessage = "Transaction submitted",
   successMessage = "Transaction successful!",
-  supressErrorSnackbar = false,
+  suppressErrorSnackbar = false,
 }: UseTransactionParams = {}) => {
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { writeContractAsync, isPending } = useWriteContract();
-  const buildExplorerLink = useExplorerLinkBuilder();
 
   const txReceipt = useWaitForTransactionReceipt({
     hash: txHash,
@@ -145,7 +144,7 @@ export const useTransaction = ({
       } catch (error) {
         setStatus("error");
         closeSnackbar("transaction-pending");
-        if (!supressErrorSnackbar) {
+        if (!suppressErrorSnackbar) {
           enqueueSnackbar(
             parseErrorMessage(error, "Transaction failed to submit"),
             { variant: "error", key: "transaction-error" },
@@ -162,7 +161,7 @@ export const useTransaction = ({
       writeContractAsync,
       closeSnackbar,
       submittedMessage,
-      supressErrorSnackbar,
+      suppressErrorSnackbar,
       onError,
     ],
   );
@@ -180,7 +179,7 @@ export const useTransaction = ({
       if (txReceipt.status === "error") {
         queueMicrotask(() => {
           setStatus("error");
-          if (!supressErrorSnackbar) {
+          if (!suppressErrorSnackbar) {
             enqueueSnackbar(
               parseErrorMessage(txReceipt.error, "Transaction failed"),
               { variant: "error" },
@@ -193,6 +192,7 @@ export const useTransaction = ({
           setStatus("success");
 
           enqueueSnackbar(successMessage, {
+            key: "transaction-success",
             variant: "success",
             action: txHash ? (
               <TransactionNotificationActions
@@ -217,8 +217,7 @@ export const useTransaction = ({
     onError,
     successMessage,
     txHash,
-    buildExplorerLink,
-    supressErrorSnackbar,
+    suppressErrorSnackbar,
   ]);
 
   return {

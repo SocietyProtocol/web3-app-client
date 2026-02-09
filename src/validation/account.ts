@@ -51,10 +51,6 @@ export const accountValidationSchema = z.object({
         }MB`,
       },
     ),
-  referralCode: z
-    .string()
-    .max(50, "Referral code must be 50 characters or less")
-    .optional(),
 });
 
 export type AccountData = z.infer<typeof accountValidationSchema>;

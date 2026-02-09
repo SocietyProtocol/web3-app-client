@@ -74,7 +74,6 @@ export const AccountSetupProvider = ({
       name: "",
       bio: "",
       imageUrl: null,
-      referralCode: "",
     },
     mode: "onChange",
   });
@@ -115,7 +114,6 @@ export const AccountSetupProvider = ({
         name: data.name || "",
         bio: data.bio || "",
         imageUrl: data.imageUrl || null,
-        referralCode: data.referralCode || "",
       });
     }
   }, [isFetched, profileData.data, form]);

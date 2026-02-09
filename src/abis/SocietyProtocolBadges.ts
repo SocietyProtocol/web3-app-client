@@ -14,6 +14,7 @@ export const SocietyProtocolBadgesABI = [
     name: "AddressEmptyCode",
     type: "error",
   },
+  { inputs: [], name: "AlreadyInvited", type: "error" },
   { inputs: [], name: "BadgeDoesNotExist", type: "error" },
   { inputs: [], name: "BurnDeniedByHook", type: "error" },
   { inputs: [], name: "BurnNotAuthorized", type: "error" },
@@ -73,11 +74,21 @@ export const SocietyProtocolBadgesABI = [
   { inputs: [], name: "ERC1967NonPayable", type: "error" },
   { inputs: [], name: "FailedCall", type: "error" },
   { inputs: [], name: "InvalidInitialization", type: "error" },
+  { inputs: [], name: "InvalidSignature", type: "error" },
   { inputs: [], name: "MintDeniedByHook", type: "error" },
   { inputs: [], name: "MintNotAuthorized", type: "error" },
   { inputs: [], name: "NotInitializing", type: "error" },
   { inputs: [], name: "NotProfileOwner", type: "error" },
   { inputs: [], name: "ProfileAlreadyExists", type: "error" },
+  { inputs: [], name: "SelfInvitation", type: "error" },
+  {
+    inputs: [
+      { internalType: "uint256", name: "value", type: "uint256" },
+      { internalType: "uint256", name: "length", type: "uint256" },
+    ],
+    name: "StringsInsufficientHexLength",
+    type: "error",
+  },
   { inputs: [], name: "TransferDeniedByHook", type: "error" },
   { inputs: [], name: "TransferNotAuthorized", type: "error" },
   { inputs: [], name: "UUPSUnauthorizedCallContext", type: "error" },
@@ -102,12 +113,7 @@ export const SocietyProtocolBadgesABI = [
         name: "operator",
         type: "address",
       },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "approved",
-        type: "bool",
-      },
+      { indexed: false, internalType: "bool", name: "approved", type: "bool" },
     ],
     name: "ApprovalForAll",
     type: "event",
@@ -115,18 +121,8 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
+      { indexed: false, internalType: "string", name: "name", type: "string" },
       {
         indexed: false,
         internalType: "bool",
@@ -152,18 +148,8 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
+      { indexed: false, internalType: "string", name: "name", type: "string" },
       {
         indexed: false,
         internalType: "bool",
@@ -189,24 +175,47 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
+        indexed: false,
+        internalType: "uint256[]",
+        name: "minters",
+        type: "uint256[]",
       },
+      {
+        indexed: false,
+        internalType: "uint256[]",
+        name: "transferers",
+        type: "uint256[]",
+      },
+      {
+        indexed: false,
+        internalType: "uint256[]",
+        name: "burners",
+        type: "uint256[]",
+      },
+      {
+        indexed: false,
+        internalType: "address[]",
+        name: "editors",
+        type: "address[]",
+      },
+    ],
+    name: "BadgePermissions",
+    type: "event",
+  },
+  { anonymous: false, inputs: [], name: "EIP712DomainChanged", type: "event" },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
       {
         indexed: true,
         internalType: "address",
         name: "editor",
         type: "address",
       },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "isAllowed",
-        type: "bool",
-      },
+      { indexed: false, internalType: "bool", name: "isAllowed", type: "bool" },
     ],
     name: "EditorsUpdated",
     type: "event",
@@ -214,18 +223,8 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "hook",
-        type: "address",
-      },
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
+      { indexed: true, internalType: "address", name: "hook", type: "address" },
     ],
     name: "HookUpdated",
     type: "event",
@@ -246,18 +245,8 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
+      { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
     ],
     name: "ProfileCreated",
     type: "event",
@@ -265,12 +254,7 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
+      { indexed: true, internalType: "bytes32", name: "role", type: "bytes32" },
       {
         indexed: true,
         internalType: "bytes32",
@@ -290,12 +274,7 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
+      { indexed: true, internalType: "bytes32", name: "role", type: "bytes32" },
       {
         indexed: true,
         internalType: "address",
@@ -315,12 +294,7 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
+      { indexed: true, internalType: "bytes32", name: "role", type: "bytes32" },
       {
         indexed: true,
         internalType: "address",
@@ -346,18 +320,8 @@ export const SocietyProtocolBadgesABI = [
         name: "operator",
         type: "address",
       },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
+      { indexed: true, internalType: "address", name: "from", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
       {
         indexed: false,
         internalType: "uint256[]",
@@ -383,24 +347,9 @@ export const SocietyProtocolBadgesABI = [
         name: "operator",
         type: "address",
       },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
+      { indexed: true, internalType: "address", name: "from", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
+      { indexed: false, internalType: "uint256", name: "id", type: "uint256" },
       {
         indexed: false,
         internalType: "uint256",
@@ -414,18 +363,8 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: false,
-        internalType: "string",
-        name: "value",
-        type: "string",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
+      { indexed: false, internalType: "string", name: "value", type: "string" },
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
     ],
     name: "URI",
     type: "event",
@@ -441,6 +380,20 @@ export const SocietyProtocolBadgesABI = [
       },
     ],
     name: "Upgraded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "user", type: "address" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "inviter",
+        type: "address",
+      },
+    ],
+    name: "UserInvited",
     type: "event",
   },
   {
@@ -500,10 +453,14 @@ export const SocietyProtocolBadgesABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "badgeHooks",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
+    inputs: [
+      { internalType: "address", name: "inviter", type: "address" },
+      { internalType: "string", name: "message", type: "string" },
+      { internalType: "bytes", name: "signature", type: "bytes" },
+    ],
+    name: "acceptInvite",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -511,6 +468,7 @@ export const SocietyProtocolBadgesABI = [
     name: "badges",
     outputs: [
       { internalType: "string", name: "name", type: "string" },
+      { internalType: "address", name: "hook", type: "address" },
       { internalType: "bool", name: "isOfficial", type: "bool" },
       { internalType: "bool", name: "isCommunity", type: "bool" },
       { internalType: "string", name: "metadataURI", type: "string" },
@@ -583,13 +541,10 @@ export const SocietyProtocolBadgesABI = [
       { internalType: "string", name: "name", type: "string" },
       { internalType: "bool", name: "isOfficial", type: "bool" },
       { internalType: "bool", name: "isCommunity", type: "bool" },
+      { internalType: "address", name: "hook", type: "address" },
       { internalType: "string", name: "metadataURI", type: "string" },
       { internalType: "uint256[]", name: "minters", type: "uint256[]" },
-      {
-        internalType: "uint256[]",
-        name: "transferers",
-        type: "uint256[]",
-      },
+      { internalType: "uint256[]", name: "transferers", type: "uint256[]" },
       { internalType: "uint256[]", name: "burners", type: "uint256[]" },
       { internalType: "address[]", name: "editors", type: "address[]" },
     ],
@@ -606,9 +561,52 @@ export const SocietyProtocolBadgesABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "eip712Domain",
+    outputs: [
+      { internalType: "bytes1", name: "fields", type: "bytes1" },
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "version", type: "string" },
+      { internalType: "uint256", name: "chainId", type: "uint256" },
+      { internalType: "address", name: "verifyingContract", type: "address" },
+      { internalType: "bytes32", name: "salt", type: "bytes32" },
+      { internalType: "uint256[]", name: "extensions", type: "uint256[]" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
     name: "exists",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    name: "getBadgeBurners",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    name: "getBadgeEditors",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    name: "getBadgeMinters",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    name: "getBadgeTransferers",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
     stateMutability: "view",
     type: "function",
   },
@@ -647,6 +645,13 @@ export const SocietyProtocolBadgesABI = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "invitedBy",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       { internalType: "address", name: "account", type: "address" },
       { internalType: "address", name: "operator", type: "address" },
@@ -664,6 +669,30 @@ export const SocietyProtocolBadgesABI = [
       { internalType: "bytes", name: "data", type: "bytes" },
     ],
     name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256[]", name: "ids", type: "uint256[]" },
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+      { internalType: "bytes", name: "data", type: "bytes" },
+    ],
+    name: "mintBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address[]", name: "to", type: "address[]" },
+      { internalType: "uint256", name: "id", type: "uint256" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "bytes", name: "data", type: "bytes" },
+    ],
+    name: "mintToMultiple",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -705,11 +734,7 @@ export const SocietyProtocolBadgesABI = [
   {
     inputs: [
       { internalType: "bytes32", name: "role", type: "bytes32" },
-      {
-        internalType: "address",
-        name: "callerConfirmation",
-        type: "address",
-      },
+      { internalType: "address", name: "callerConfirmation", type: "address" },
     ],
     name: "renounceRole",
     outputs: [],
@@ -815,11 +840,7 @@ export const SocietyProtocolBadgesABI = [
   },
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "newImplementation",
-        type: "address",
-      },
+      { internalType: "address", name: "newImplementation", type: "address" },
       { internalType: "bytes", name: "data", type: "bytes" },
     ],
     name: "upgradeToAndCall",
@@ -833,118 +854,5 @@ export const SocietyProtocolBadgesABI = [
     outputs: [{ internalType: "string", name: "", type: "string" }],
     stateMutability: "view",
     type: "function",
-  },
-  {
-    type: "function",
-    name: "getBadgeMinters",
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        internalType: "uint256[]",
-        name: "",
-        type: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getBadgeTransferers",
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        internalType: "uint256[]",
-        name: "",
-        type: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getBadgeBurners",
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        internalType: "uint256[]",
-        name: "",
-        type: "uint256[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getBadgeEditors",
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        internalType: "address[]",
-        name: "",
-        type: "address[]",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "event",
-    name: "BadgePermissions",
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "minters",
-        type: "uint256[]",
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "transferers",
-        type: "uint256[]",
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "burners",
-        type: "uint256[]",
-      },
-      {
-        indexed: false,
-        internalType: "address[]",
-        name: "editors",
-        type: "address[]",
-      },
-    ],
   },
 ] as const;

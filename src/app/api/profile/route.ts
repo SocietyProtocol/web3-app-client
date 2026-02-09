@@ -56,7 +56,6 @@ export async function POST(request: NextRequest) {
     name: data.name,
     bio: data.bio || null,
     imageUrl: data.imageUrl || null,
-    referralCode: data.referralCode || null,
     timestamp: new Date().toISOString(),
   };
 

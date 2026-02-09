@@ -3,7 +3,7 @@ import {
   ValidationError,
   ValidationErrorDetails,
 } from "@/errors/ValidationError";
-import { BaseError } from "viem";
+import { BaseError, ContractFunctionExecutionError } from "viem";
 
 /**
  * Represents the result of parsing an error
@@ -22,7 +22,7 @@ export interface ParsedError {
  */
 export function getFieldError(
   error: unknown,
-  field: string
+  field: string,
 ): string | undefined {
   if (error instanceof ValidationError) {
     return error.details?.[field]?.[0];
@@ -39,10 +39,12 @@ export function getFieldError(
  */
 export function parseErrorMessage(
   error: unknown,
-  defaultMessage = "An unexpected error occurred"
+  defaultMessage = "An unexpected error occurred",
 ): string {
   if (error instanceof ValidationError) {
     return error.message;
+  } else if (error instanceof ContractFunctionExecutionError) {
+    return defaultMessage;
   } else if (error instanceof BaseError) {
     return error.shortMessage;
   } else if (
@@ -76,11 +78,11 @@ export async function throwResponseError(response: Response): Promise<never> {
 
     throw new ResponseError(
       `Rate limit exceeded. Please try again at ${new Date(
-        errorData.resetTime
+        errorData.resetTime,
       ).toLocaleTimeString()}`,
       429,
       response.statusText,
-      errorData
+      errorData,
     );
   }
 
@@ -90,7 +92,7 @@ export async function throwResponseError(response: Response): Promise<never> {
       errorData.error || "Authentication failed.",
       401,
       response.statusText,
-      errorData
+      errorData,
     );
   }
 
@@ -103,7 +105,7 @@ export async function throwResponseError(response: Response): Promise<never> {
         errorData.error || "Bad request.",
         400,
         response.statusText,
-        errorData
+        errorData,
       );
     }
   }
@@ -113,7 +115,7 @@ export async function throwResponseError(response: Response): Promise<never> {
       "Server error occurred. Please try again later.",
       response.status,
       response.statusText,
-      await response.text()
+      await response.text(),
     );
   }
 

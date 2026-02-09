@@ -145,6 +145,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
     isWritingContract: transaction.isExecuting,
     isTransactionPending: transaction.isLoading,
     isTransactionConfirmed: transaction.isSuccess,
+    isSyncing: transaction.isSyncing,
     isMutating,
     error,
     reset,

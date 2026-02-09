@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useMemo,
+  useCallback,
+} from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutateBadge } from "./useMutateBadge";
@@ -9,23 +15,21 @@ import {
   BadgeTransformedData,
   badgeValidationSchema,
 } from "@/validation/badge";
-import { ValidationError } from "@/errors/ValidationError";
 import { TransactionReceipt } from "viem";
 import { decodeBadgeId } from "@/data/badges/utils";
 import { useRouter } from "next/navigation";
+import { ValidationError } from "@/errors/ValidationError";
 
 interface BadgeCreationContextType {
   form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
+  onSubmit: () => void;
   isMutating: boolean;
+  isSyncing: boolean;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
-  isTransactionPending: boolean;
-  isTransactionConfirmed: boolean;
-  onSubmit: () => void;
-  serverError: Error | null;
-  reset: () => void;
   getServerFieldError: (field: keyof BadgeInputData) => string | undefined;
   transactionReceipt?: TransactionReceipt;
+  isTransactionPending: boolean;
 }
 
 const BadgeCreationContext = createContext<
@@ -72,15 +76,12 @@ export const BadgeCreationProvider = ({
     isMutating,
     isUploadingToIpfs,
     isWritingContract,
+    isSyncing,
     isTransactionPending,
-    isTransactionConfirmed,
     error: serverError,
-    reset: resetMutation,
-    transactionReceipt,
   } = useMutateBadge({
     onSuccess: (receipt: TransactionReceipt) => {
       form.reset();
-      resetMutation();
 
       const createdBadgeId = decodeBadgeId(receipt);
 
@@ -98,33 +99,38 @@ export const BadgeCreationProvider = ({
   const onSubmit = form.handleSubmit(createBadge);
 
   // Get server-side validation error for a field
-  const getServerFieldError = (
-    field: keyof BadgeInputData,
-  ): string | undefined => {
-    if (serverError instanceof ValidationError) {
-      return serverError.details?.[field]?.[0];
-    }
-    return undefined;
-  };
+  const getServerFieldError = useCallback(
+    (field: keyof BadgeInputData): string | undefined => {
+      if (serverError instanceof ValidationError) {
+        return serverError.details?.[field]?.[0];
+      }
+      return undefined;
+    },
+    [serverError],
+  );
 
-  const reset = () => {
-    form.reset();
-    resetMutation();
-  };
-
-  const value = {
-    form,
-    isMutating,
-    isUploadingToIpfs,
-    isWritingContract,
-    isTransactionPending,
-    isTransactionConfirmed,
-    onSubmit,
-    serverError,
-    reset,
-    getServerFieldError,
-    transactionReceipt,
-  };
+  const value = useMemo(
+    () => ({
+      form,
+      onSubmit,
+      isMutating,
+      isUploadingToIpfs,
+      isWritingContract,
+      isTransactionPending,
+      isSyncing,
+      getServerFieldError,
+    }),
+    [
+      form,
+      isMutating,
+      isUploadingToIpfs,
+      isWritingContract,
+      isTransactionPending,
+      isSyncing,
+      onSubmit,
+      getServerFieldError,
+    ],
+  );
 
   return (
     <BadgeCreationContext.Provider value={value}>

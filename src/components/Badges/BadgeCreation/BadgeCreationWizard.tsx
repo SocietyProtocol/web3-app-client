@@ -12,7 +12,6 @@ import {
 import { useAccount } from "wagmi";
 import { Box, Stack } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
-import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 import { BadgePreview } from "./BadgePreview";
@@ -32,23 +31,11 @@ const BadgeCreationWizardContent = () => {
     isUploadingToIpfs,
     isWritingContract,
     isTransactionPending,
-    isTransactionConfirmed,
-    transactionReceipt,
+    isSyncing,
   } = useBadgeCreation();
 
   const { address } = useAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
-
-  // Derive target block from transaction receipt
-  const targetBlock = useMemo(
-    () =>
-      isTransactionConfirmed && transactionReceipt
-        ? transactionReceipt.blockNumber
-        : undefined,
-    [isTransactionConfirmed, transactionReceipt],
-  );
-
-  const { isWaiting: isWaitingForSync } = useWaitForSubgraphSync(targetBlock);
 
   const nextDisabled = !form.formState.isValid;
 
@@ -127,14 +114,9 @@ const BadgeCreationWizardContent = () => {
     if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
     if (isWritingContract) return "Waiting for wallet confirmation...";
     if (isTransactionPending) return "Creating badge...";
-    if (isWaitingForSync) return "Waiting for blockchain sync...";
+    if (isSyncing) return "Waiting for blockchain sync...";
     return "Processing...";
-  }, [
-    isUploadingToIpfs,
-    isWritingContract,
-    isTransactionPending,
-    isWaitingForSync,
-  ]);
+  }, [isUploadingToIpfs, isWritingContract, isTransactionPending, isSyncing]);
 
   return (
     <Stack
@@ -153,7 +135,7 @@ const BadgeCreationWizardContent = () => {
           nextDisabled={nextDisabled}
           backDisabled={activeStep === 0}
           finishDisabled={!form.formState.isValid}
-          isLoading={isMutating || isWaitingForSync}
+          isLoading={isMutating || isSyncing}
           loadingText={loadingText}
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >

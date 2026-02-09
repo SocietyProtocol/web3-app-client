@@ -11,7 +11,7 @@ export function generateReferralMessage(address: Hex): string {
 }
 
 /**
- * Generates a referral code by concatenating the signature and the checksummed address.
+ * Generates a referral code by concatenating the lowercased address and signature.
  *
  * @param signature The signature obtained from signing the referral message.
  * @param address The address for which the referral code is being generated.
@@ -35,8 +35,8 @@ export const parseReferralCode = (
 ): { inviter: Hex; signature: Hex } => {
   const bytes = hexToBytes(referralCode);
 
-  const address = bytes.slice(0, 20); // First 42 characters for the address
-  const signature = bytes.slice(20); // Remaining characters for the signature
+  const address = bytes.slice(0, 20); // First 20 bytes for the address
+  const signature = bytes.slice(20); // Remaining bytes for the signature
 
   return {
     inviter: bytesToHex(address).toLowerCase() as Hex,

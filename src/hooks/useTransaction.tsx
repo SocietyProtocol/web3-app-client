@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { Hex } from "viem";
 import { useSnackbar } from "notistack";
@@ -22,6 +22,7 @@ interface UseTransactionParams {
   submittedMessage?: string;
   successMessage?: string;
   suppressErrorSnackbar?: boolean;
+  snackbarKeyPrefix?: string;
 }
 
 interface ExecuteTransactionParams {
@@ -89,9 +90,14 @@ export const useTransaction = ({
   submittedMessage = "Transaction submitted",
   successMessage = "Transaction successful!",
   suppressErrorSnackbar = false,
+  snackbarKeyPrefix,
 }: UseTransactionParams = {}) => {
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
+
+  const uniqueId = useId();
+
+  const snackbarKeyPrefixFinal = snackbarKeyPrefix ?? `transaction-${uniqueId}`;
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { writeContractAsync, isPending } = useWriteContract();
@@ -116,9 +122,9 @@ export const useTransaction = ({
 
       try {
         setStatus("executing");
-        closeSnackbar("transaction-error");
+        closeSnackbar(`${snackbarKeyPrefixFinal}-error`);
         enqueueSnackbar(pendingMessage, {
-          key: "transaction-pending",
+          key: `${snackbarKeyPrefixFinal}-pending`,
           variant: "info",
         });
 
@@ -130,24 +136,24 @@ export const useTransaction = ({
         });
 
         setTxHash(hash);
-        closeSnackbar("transaction-pending");
+        closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
         enqueueSnackbar(submittedMessage, {
           variant: "info",
-          key: "transaction-submitted",
+          key: `${snackbarKeyPrefixFinal}-submitted`,
           action: (
             <TransactionNotificationActions
               txHash={hash}
-              id="transaction-submitted"
+              id={`${snackbarKeyPrefixFinal}-submitted`}
             />
           ),
         });
       } catch (error) {
         setStatus("error");
-        closeSnackbar("transaction-pending");
+        closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
         if (!suppressErrorSnackbar) {
           enqueueSnackbar(
             parseErrorMessage(error, "Transaction failed to submit"),
-            { variant: "error", key: "transaction-error" },
+            { variant: "error", key: `${snackbarKeyPrefixFinal}-error` },
           );
         }
         onError?.(error);
@@ -156,10 +162,11 @@ export const useTransaction = ({
     [
       enabled,
       status,
+      closeSnackbar,
+      snackbarKeyPrefixFinal,
       enqueueSnackbar,
       pendingMessage,
       writeContractAsync,
-      closeSnackbar,
       submittedMessage,
       suppressErrorSnackbar,
       onError,
@@ -182,7 +189,7 @@ export const useTransaction = ({
           if (!suppressErrorSnackbar) {
             enqueueSnackbar(
               parseErrorMessage(txReceipt.error, "Transaction failed"),
-              { variant: "error" },
+              { variant: "error", key: `${snackbarKeyPrefixFinal}-error` },
             );
           }
           onError?.(txReceipt.error);
@@ -192,12 +199,12 @@ export const useTransaction = ({
           setStatus("success");
 
           enqueueSnackbar(successMessage, {
-            key: "transaction-success",
+            key: `${snackbarKeyPrefixFinal}-success`,
             variant: "success",
             action: txHash ? (
               <TransactionNotificationActions
                 txHash={txHash}
-                id="transaction-success"
+                id={`${snackbarKeyPrefixFinal}-success`}
               />
             ) : undefined,
           });
@@ -218,6 +225,7 @@ export const useTransaction = ({
     successMessage,
     txHash,
     suppressErrorSnackbar,
+    snackbarKeyPrefixFinal,
   ]);
 
   return {

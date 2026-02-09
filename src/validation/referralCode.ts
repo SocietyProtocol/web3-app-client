@@ -10,7 +10,7 @@ export const referralCodeValidationSchema = z
 
       const bytes = hexToBytes(value);
 
-      const address = bytes.slice(0, 20); // First 20 characters for the address
+      const address = bytes.slice(0, 20); // First 20 bytes for the address
 
       return isAddress(bytesToHex(address), {
         strict: false,

@@ -106,18 +106,7 @@ const AccountSetupWizardContent = ({
       console.error("Error creating/updating profile:", err);
 
       if (err instanceof ValidationError) {
-        const hasReferralError = err.details?.referralCode;
-
-        if (hasReferralError) {
-          setActiveStep(0);
-        }
-
-        const hasAccountInfoError =
-          err.details?.name || err.details?.bio || err.details?.imageUrl;
-
-        if (hasAccountInfoError) {
-          setActiveStep(1);
-        }
+        setActiveStep(0);
 
         enqueueSnackbar("Validation error occurred. Please check your input.", {
           variant: "error",
@@ -162,7 +151,7 @@ const AccountSetupWizardContent = ({
         onNext={handleNext}
         onBack={handleBack}
         onFinish={handleFinish}
-        nextDisabled={form.formState.isValid}
+        nextDisabled={!form.formState.isValid || isMutatingProfile}
         showReset={false}
         minHeight={{ xs: 400, sm: 554 }}
         isLoading={isMutatingProfile}

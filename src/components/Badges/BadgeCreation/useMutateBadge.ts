@@ -4,7 +4,7 @@ import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { parseErrorMessage, throwResponseError } from "@/utils/errors";
+import { throwResponseError } from "@/utils/errors";
 import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
 import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useTransaction } from "@/hooks/useTransaction";
@@ -60,13 +60,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
       });
     },
 
-    onError: (error) => {
-      closeSnackbar("ipfs-upload");
-      const message = parseErrorMessage(error);
-
-      enqueueSnackbar(message, { variant: "error", key: "ipfs-upload-error" });
-      onError?.(error);
-    },
+    onError,
     onSuccess: () => {
       closeSnackbar("ipfs-upload");
 

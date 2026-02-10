@@ -66,10 +66,6 @@ export const useProfileMutation = (overrideAddress?: Address) => {
         ...data,
       });
 
-      if (!ipfsData.uri) {
-        throw new Error("Failed to generate profile URI");
-      }
-
       await transaction.execute({
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,

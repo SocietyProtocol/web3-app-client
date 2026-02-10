@@ -7,8 +7,10 @@ import { useWatch } from "react-hook-form";
 export const BadgePreview = () => {
   const { address } = useAccount();
   const { form } = useBadgeCreation();
-  const { name, imageUrl, isOfficial, isCommunity } = useWatch({
+
+  const [name, imageUrl, isOfficial, isCommunity] = useWatch({
     control: form.control,
+    name: ["name", "imageUrl", "isOfficial", "isCommunity"],
   });
 
   return (

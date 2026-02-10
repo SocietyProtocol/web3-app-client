@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { useRouter } from "next/navigation";
 import { Wizard, WizardStep } from "../../Wizard";
 import { BadgeInfoStep } from "./BadgeInfoStep";
 import { BadgePermissionsStep } from "./BadgePermissionsStep";
@@ -13,26 +12,18 @@ import {
 import { useAccount } from "wagmi";
 import { Box, Stack } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
-import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 import { BadgePreview } from "./BadgePreview";
-import { decodeBadgeId } from "@/data/badges/utils";
 
 const steps: WizardStep[] = [
   { label: "Badge Info", description: "Basic badge information" },
   { label: "Permissions", description: "Set permissions and managers" },
 ];
 
-const BadgeCreationWizardContent = ({
-  onComplete,
-}: {
-  onComplete?: () => void;
-}) => {
+const BadgeCreationWizardContent = () => {
   const [activeStep, setActiveStep] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
-  const router = useRouter();
-  const hasCompletedRef = useRef(false);
   const {
     form,
     onSubmit,
@@ -40,63 +31,11 @@ const BadgeCreationWizardContent = ({
     isUploadingToIpfs,
     isWritingContract,
     isTransactionPending,
-    isTransactionConfirmed,
-    transactionReceipt,
-    reset,
+    isSyncing,
   } = useBadgeCreation();
 
   const { address } = useAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
-
-  // Derive target block from transaction receipt
-  const targetBlock = useMemo(
-    () =>
-      isTransactionConfirmed && transactionReceipt
-        ? transactionReceipt.blockNumber
-        : undefined,
-    [isTransactionConfirmed, transactionReceipt],
-  );
-
-  const { isSynced, isWaiting: isWaitingForSync } =
-    useWaitForSubgraphSync(targetBlock);
-
-  // Watch for transaction confirmation and set target block
-  useEffect(() => {
-    if (
-      isTransactionConfirmed &&
-      !hasCompletedRef.current &&
-      transactionReceipt
-    ) {
-      enqueueSnackbar("Badge created successfully!", {
-        variant: "success",
-        key: "badge-creation-success",
-      });
-    }
-  }, [isTransactionConfirmed, transactionReceipt, enqueueSnackbar]);
-
-  // Watch for subgraph sync and redirect
-  useEffect(() => {
-    if (isSynced && !hasCompletedRef.current && transactionReceipt) {
-      hasCompletedRef.current = true;
-      form.reset();
-      reset();
-
-      if (onComplete) {
-        onComplete();
-      } else {
-        const createdBadgeId = decodeBadgeId(transactionReceipt);
-
-        if (createdBadgeId) {
-          // Redirect to the newly created badge details page
-          router.push(`/badges/${createdBadgeId.toString()}`);
-          return;
-        }
-
-        // Redirect to badges page
-        router.push("/badges");
-      }
-    }
-  }, [isSynced, onComplete, form, reset, router, transactionReceipt]);
 
   const nextDisabled = !form.formState.isValid;
 
@@ -174,15 +113,10 @@ const BadgeCreationWizardContent = ({
   const loadingText = useMemo(() => {
     if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
     if (isWritingContract) return "Waiting for wallet confirmation...";
+    if (isSyncing) return "Waiting for blockchain sync...";
     if (isTransactionPending) return "Creating badge...";
-    if (isWaitingForSync) return "Waiting for blockchain sync...";
     return "Processing...";
-  }, [
-    isUploadingToIpfs,
-    isWritingContract,
-    isTransactionPending,
-    isWaitingForSync,
-  ]);
+  }, [isUploadingToIpfs, isWritingContract, isTransactionPending, isSyncing]);
 
   return (
     <Stack
@@ -201,7 +135,7 @@ const BadgeCreationWizardContent = ({
           nextDisabled={nextDisabled}
           backDisabled={activeStep === 0}
           finishDisabled={!form.formState.isValid}
-          isLoading={isMutating || isWaitingForSync}
+          isLoading={isMutating || isSyncing}
           loadingText={loadingText}
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
@@ -223,14 +157,10 @@ const BadgeCreationWizardContent = ({
   );
 };
 
-export const BadgeCreationWizard = ({
-  onComplete,
-}: {
-  onComplete?: () => void;
-}) => {
+export const BadgeCreationWizard = () => {
   return (
     <BadgeCreationProvider>
-      <BadgeCreationWizardContent onComplete={onComplete} />
+      <BadgeCreationWizardContent />
     </BadgeCreationProvider>
   );
 };

@@ -8,14 +8,23 @@ import { throwResponseError } from "@/utils/errors";
 import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
 import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useTransaction } from "@/hooks/useTransaction";
+import { TransactionReceipt, zeroAddress } from "viem";
+import { useSnackbar } from "notistack";
 
-export const useMutateBadge = () => {
+interface UseMutateBadgeProps {
+  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
+  onError?: (error: unknown) => void;
+}
+
+export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
   const { chainId } = useAccount();
   const contractAddress = useMemo(
     () => getBadgesContractAddress(chainId),
     [chainId],
   );
   const { generateAuthPayload } = useAuth();
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const uploadIpfsResult = useMutation<
     UploadMetadataResponse,
@@ -43,11 +52,30 @@ export const useMutateBadge = () => {
 
       return responseData;
     },
+    onMutate: () => {
+      enqueueSnackbar("Uploading metadata to IPFS...", {
+        variant: "info",
+        key: "ipfs-upload",
+        persist: true,
+      });
+    },
+
+    onError,
+    onSuccess: () => {
+      closeSnackbar("ipfs-upload");
+
+      enqueueSnackbar("Metadata uploaded to IPFS", {
+        variant: "success",
+        key: "ipfs-upload-success",
+      });
+    },
   });
 
   const transaction = useTransaction({
-    waitForSync: false,
+    waitForSync: true,
     successMessage: "Badge created successfully",
+    onSuccess,
+    onError,
   });
 
   const mutate = useCallback(
@@ -57,12 +85,7 @@ export const useMutateBadge = () => {
         ...(data.metadata ? JSON.parse(data.metadata) : {}),
       };
 
-      // Upload metadata to IPFS first
-      const ipfsData = await uploadIpfsResult.mutateAsync(metadata);
-
-      if (!ipfsData.uri) {
-        throw new Error("IPFS upload did not return a valid URI");
-      }
+      const res = await uploadIpfsResult.mutateAsync(metadata);
 
       // Call the contract
       await transaction.execute({
@@ -73,7 +96,8 @@ export const useMutateBadge = () => {
           data.name,
           data.isOfficial,
           data.isCommunity,
-          ipfsData.uri,
+          zeroAddress,
+          res.uri,
           data.minters,
           data.transferers,
           data.burners,
@@ -81,7 +105,7 @@ export const useMutateBadge = () => {
         ],
       });
     },
-    [contractAddress, uploadIpfsResult, transaction],
+    [transaction, contractAddress, uploadIpfsResult],
   );
 
   const reset = useCallback(() => {
@@ -100,6 +124,7 @@ export const useMutateBadge = () => {
     isWritingContract: transaction.isExecuting,
     isTransactionPending: transaction.isLoading,
     isTransactionConfirmed: transaction.isSuccess,
+    isSyncing: transaction.isSyncing,
     isMutating,
     error,
     reset,

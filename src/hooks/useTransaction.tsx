@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { Hex } from "viem";
+import { Hex, TransactionReceipt } from "viem";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { parseErrorMessage } from "@/utils/errors";
@@ -16,7 +16,7 @@ type TransactionStatus = "idle" | "executing" | "success" | "error";
 interface UseTransactionParams {
   enabled?: boolean;
   waitForSync?: boolean;
-  onSuccess?: () => void;
+  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
   pendingMessage?: string;
   submittedMessage?: string;
@@ -208,7 +208,7 @@ export const useTransaction = ({
               />
             ) : undefined,
           });
-          onSuccess?.();
+          onSuccess?.(txReceipt.data);
         });
       }
     }
@@ -217,6 +217,7 @@ export const useTransaction = ({
     txReceipt.isFetched,
     txReceipt.status,
     txReceipt.error,
+    txReceipt.data,
     isSynced,
     waitForSync,
     enqueueSnackbar,
@@ -226,6 +227,7 @@ export const useTransaction = ({
     txHash,
     suppressErrorSnackbar,
     snackbarKeyPrefixFinal,
+    txReceipt,
   ]);
 
   return {

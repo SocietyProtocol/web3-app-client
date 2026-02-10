@@ -6,8 +6,9 @@ import {
   ReactNode,
   useMemo,
   useCallback,
+  useEffect,
 } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm, UseFormReturn, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutateBadge } from "./useMutateBadge";
 import {
@@ -19,6 +20,8 @@ import { TransactionReceipt } from "viem";
 import { decodeBadgeId } from "@/data/badges/utils";
 import { useRouter } from "next/navigation";
 import { ValidationError } from "@/errors/ValidationError";
+import { useAccount } from "wagmi";
+import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
 
 interface BadgeCreationContextType {
   form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
@@ -55,6 +58,8 @@ export const BadgeCreationProvider = ({
   children,
 }: BadgeCreationProviderProps) => {
   const router = useRouter();
+  const { address } = useAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
 
   const form = useForm<BadgeInputData, unknown, BadgeTransformedData>({
     resolver: zodResolver(badgeValidationSchema),
@@ -70,6 +75,11 @@ export const BadgeCreationProvider = ({
       editors: [],
     },
     mode: "onChange",
+  });
+
+  const isOfficial = useWatch({
+    control: form.control,
+    name: "isOfficial",
   });
 
   const {
@@ -109,6 +119,16 @@ export const BadgeCreationProvider = ({
     },
     [serverError],
   );
+
+  useEffect(() => {
+    if (
+      !hasOfficialBadgeCreatorRole.isLoading &&
+      !hasOfficialBadgeCreatorRole.data &&
+      isOfficial
+    ) {
+      form.setValue("isOfficial", false);
+    }
+  }, [hasOfficialBadgeCreatorRole, router, isOfficial, form]);
 
   const value = useMemo(
     () => ({

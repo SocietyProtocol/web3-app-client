@@ -20,7 +20,7 @@ export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
     },
   });
 
-  return useReadContract({
+  const hasRole = useReadContract({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,
     functionName: "hasRole",
@@ -34,4 +34,9 @@ export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
       gcTime: Infinity,
     },
   });
+
+  return {
+    ...hasRole,
+    isLoading: officialBadgeCreatorRole.isLoading || hasRole.isLoading,
+  };
 };

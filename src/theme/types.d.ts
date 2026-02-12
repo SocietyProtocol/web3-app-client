@@ -3,20 +3,6 @@ import "@mui/material/styles";
 // Augment MUI Select variant types
 
 declare module "@mui/material/styles" {
-  interface Palette {
-    gold: Palette["primary"];
-    neutral: {
-      main: string;
-    };
-  }
-
-  interface PaletteOptions {
-    gold?: PaletteOptions["primary"];
-    neutral?: {
-      main?: string;
-    };
-  }
-
   interface PaletteColor {
     100?: string;
   }
@@ -36,7 +22,17 @@ declare module "@mui/material/styles" {
     toggleButtonHover: string;
   }
 
+  interface TypeText {
+    primary: string;
+    secondary: string;
+    tertiary: string;
+  }
+
   interface Palette {
+    gold: Palette["primary"];
+    neutral: {
+      main: string;
+    };
     border: {
       light: string;
       input: string;
@@ -60,6 +56,10 @@ declare module "@mui/material/styles" {
   }
 
   interface PaletteOptions {
+    gold?: PaletteOptions["primary"];
+    neutral?: {
+      main?: string;
+    };
     border?: {
       light?: string;
       input?: string;

@@ -1,51 +1,50 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  useTheme,
-  useMediaQuery,
-  SxProps,
-} from "@mui/material";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 interface DropAreaProps {
   descriptionTop?: string;
   descriptionBottom?: string;
   accept?: string; // e.g. "text/csv"
-  maxSizeBytes?: number; // e.g. 2 * 1024 * 1024
   onFile?: (file: File) => void;
+  error?: boolean;
+  helperText?: string;
 }
 
 export const DropArea: React.FC<DropAreaProps> = ({
   descriptionTop,
   descriptionBottom,
   accept,
-  maxSizeBytes = 2 * 1024 * 1024,
   onFile,
+  error,
+  helperText,
 }) => {
-  const theme = useTheme();
-  const isSm = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const { enqueueSnackbar } = useSnackbar();
   const [isDragging, setIsDragging] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const validateAndEmit = useCallback(
     (file: File) => {
-      setError(null);
-      if (accept && file.type && !file.type.match(accept)) {
-        setError("File type not supported");
-        return;
-      }
-      if (maxSizeBytes && file.size > maxSizeBytes) {
-        setError("File is too large");
+      if (
+        accept &&
+        file.type &&
+        !file.type.match(
+          new RegExp(
+            accept
+              .split(",")
+              .map((a) => a.trim().replace("*", ".*"))
+              .join("|"),
+          ),
+        )
+      ) {
+        enqueueSnackbar("Invalid file type", { variant: "error" });
         return;
       }
       onFile?.(file);
     },
-    [accept, maxSizeBytes, onFile],
+    [accept, onFile, enqueueSnackbar],
   );
 
   const onDrop = useCallback(
@@ -89,13 +88,6 @@ export const DropArea: React.FC<DropAreaProps> = ({
     [validateAndEmit],
   );
 
-  const contentSx: SxProps = {
-    display: "flex",
-    alignItems: "center",
-    gap: 1,
-    flexDirection: isSm ? "column" : "row",
-  };
-
   return (
     <Box
       onDrop={onDrop}
@@ -103,20 +95,23 @@ export const DropArea: React.FC<DropAreaProps> = ({
       onDragLeave={onDragLeave}
       sx={(theme) => ({
         width: "100%",
-        height: 116,
+        minHeight: 128,
         boxSizing: "border-box",
-        py: 1, // 8px vertical padding
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
         borderStyle: "dashed",
         borderWidth: 2,
-        borderColor: theme.palette.border.dropArea,
+        borderColor:
+          error && !isDragging
+            ? theme.palette.error.main
+            : theme.palette.border.dropArea,
         borderRadius: 1,
         transition: "background-color 150ms, border-color 150ms",
         position: "relative",
         px: 2,
+        py: 2,
         backgroundColor: isDragging
           ? theme.palette.action.hover
           : "transparent",
@@ -130,13 +125,23 @@ export const DropArea: React.FC<DropAreaProps> = ({
         style={{ display: "none" }}
       />
 
-      <Box sx={contentSx}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
+        }}
+      >
         {!isDragging && (
           <label htmlFor="drop-area-file-input">
             <Button
               variant="outlined"
               component="span"
-              startIcon={<UploadFileIcon />}
+              startIcon={<FileUploadIcon />}
               sx={{ textTransform: "none" }}
               size="small"
             >
@@ -147,38 +152,40 @@ export const DropArea: React.FC<DropAreaProps> = ({
 
         <Typography
           variant="body2"
-          color={isDragging ? "primary" : "text.secondary"}
+          color={isDragging ? "primary" : "text.primary"}
         >
           {isDragging ? "Drop file to upload" : "or drag and drop"}
         </Typography>
       </Box>
 
-      <Box sx={{ mt: 1, textAlign: "center" }}>
-        {descriptionTop ? (
-          <Typography variant="caption" color="text.secondary">
-            {descriptionTop}
-          </Typography>
-        ) : null}
-        {descriptionBottom ? (
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block" }}
-          >
-            {descriptionBottom}
-          </Typography>
-        ) : null}
+      {!isDragging && (
+        <Stack spacing={1} sx={{ mt: 1, textAlign: "center" }}>
+          {descriptionTop && (
+            <Typography variant="caption" color="text.tertiary">
+              {descriptionTop}
+            </Typography>
+          )}
+          {descriptionBottom && (
+            <Typography
+              variant="caption"
+              color="text.tertiary"
+              sx={{ display: "block" }}
+            >
+              {descriptionBottom}
+            </Typography>
+          )}
 
-        {error ? (
-          <Typography
-            variant="caption"
-            color="error"
-            sx={{ display: "block", mt: 0.5 }}
-          >
-            {error}
-          </Typography>
-        ) : null}
-      </Box>
+          {helperText && (
+            <Typography
+              variant="caption"
+              color={error ? "error" : "text.secondary"}
+              sx={{ display: "block" }}
+            >
+              {helperText}
+            </Typography>
+          )}
+        </Stack>
+      )}
     </Box>
   );
 };

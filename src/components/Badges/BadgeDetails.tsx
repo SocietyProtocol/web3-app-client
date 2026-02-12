@@ -269,7 +269,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: 800,
         }}
       >
         <Stack direction="row" justifyContent="space-between" mb={2}>

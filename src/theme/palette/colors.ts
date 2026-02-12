@@ -20,6 +20,7 @@ export const BACKGROUND_TOGGLE_BUTTON_HOVER = "#2A2827";
 // Text colors
 export const TEXT_PRIMARY = "#CACACA";
 export const TEXT_SECONDARY = "#7A7A7A";
+export const TEXT_TERTIARY = "#999999";
 
 // Success colors
 export const SUCCESS_MAIN = "#008C73";

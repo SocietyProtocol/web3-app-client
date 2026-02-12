@@ -21,6 +21,7 @@ export const dark: PaletteOptions = {
   text: {
     primary: colors.TEXT_PRIMARY,
     secondary: colors.TEXT_SECONDARY,
+    tertiary: colors.TEXT_TERTIARY,
   },
   success: {
     main: colors.SUCCESS_MAIN,

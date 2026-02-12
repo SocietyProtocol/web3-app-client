@@ -53,3 +53,7 @@ export const searchInCollection = <T extends object>(
     }),
   );
 };
+
+export function uniq<T extends string>(arr: T[]): T[] {
+  return Array.from(new Set(arr));
+}

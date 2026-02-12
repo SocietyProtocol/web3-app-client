@@ -1,25 +1,27 @@
 import {
   Box,
-  TextField,
-  Stack,
-  IconButton,
   Autocomplete,
-  CircularProgress,
   AutocompleteProps,
   createFilterOptions,
+  TextField,
+  CircularProgress,
 } from "@mui/material";
-import { useCallback, useMemo, useState } from "react";
-import CancelIcon from "@mui/icons-material/Cancel";
+import { useMemo, useState } from "react";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
+import { ValueDisplay } from "./ValueDisplay";
 
-interface CustomAutocompleteProps<T> extends Omit<
-  AutocompleteProps<T, true, false, false>,
-  "onChange" | "renderInput"
+interface CustomAutocompleteProps<
+  T,
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+  FreeSolo extends boolean = false,
+> extends Omit<
+  AutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
+  "renderInput"
 > {
-  label: string;
+  label?: string;
   tooltip?: string;
-  onChange: (value: string[]) => void;
   valueKey: keyof T;
   mapNewValue?: (value: string) => T | undefined;
   validateNewValue?: (value: string) => boolean;
@@ -27,7 +29,12 @@ interface CustomAutocompleteProps<T> extends Omit<
   placeholder?: string;
 }
 
-export const CustomAutocomplete = <T,>({
+export const CustomAutocomplete = <
+  T,
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+  FreeSolo extends boolean = false,
+>({
   label,
   tooltip,
   value,
@@ -42,38 +49,31 @@ export const CustomAutocomplete = <T,>({
   onInputChange,
   renderItem,
   placeholder,
-}: CustomAutocompleteProps<T>) => {
+  multiple,
+  freeSolo,
+  disableClearable,
+}: CustomAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) => {
   const [open, setOpen] = useState(false);
 
   const filter = useMemo(() => createFilterOptions<T>(), []);
 
-  const handleRemove = useCallback(
-    (removedItemValue: string) => {
-      onChange(
-        value
-          ?.filter(
-            (v) =>
-              !isEqualCaseInsensitive(v[valueKey] as string, removedItemValue),
-          )
-          .map((item) => item[valueKey] as string) ?? [],
-      );
-    },
-    [onChange, value, valueKey],
-  );
-
   return (
     <Box>
-      <WithTooltip
-        variant="subtitle1"
-        fontWeight={600}
-        mb={0.5}
-        tooltip={tooltip}
-      >
-        {label}
-      </WithTooltip>
+      {label && (
+        <WithTooltip
+          variant="subtitle1"
+          fontWeight={600}
+          mb={0.5}
+          tooltip={tooltip}
+        >
+          {label}
+        </WithTooltip>
+      )}
 
       <Autocomplete
-        multiple
+        multiple={multiple}
+        freeSolo={freeSolo}
+        disableClearable={disableClearable}
         open={open}
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
@@ -81,32 +81,31 @@ export const CustomAutocomplete = <T,>({
         loading={loading}
         value={value}
         getOptionLabel={getOptionLabel}
-        onChange={(_, newValue) => {
-          if (newValue && "inputValue" in newValue && newValue.inputValue) {
-            onChange([
-              ...newValue.map((v) => v[valueKey] as string),
-              (newValue.inputValue as string).toLowerCase(),
-            ]);
-          } else {
-            onChange(
-              (newValue as T[]).map((item) =>
-                (item[valueKey] as string).toLowerCase(),
-              ),
-            );
-          }
-        }}
+        onChange={onChange}
         filterOptions={(options, params) => {
           const filtered = filter(options, params);
 
           const { inputValue } = params;
+
           // Suggest the creation of a new value
           const isExisting =
             options.some((option) =>
-              isEqualCaseInsensitive(inputValue, option[valueKey] as string),
+              isEqualCaseInsensitive(
+                inputValue,
+                typeof option === "string"
+                  ? option
+                  : (option[valueKey] as string),
+              ),
             ) ||
-            value?.some((val) =>
-              isEqualCaseInsensitive(inputValue, val[valueKey] as string),
-            );
+            (typeof value === "string"
+              ? isEqualCaseInsensitive(inputValue, value as string)
+              : Array.isArray(value) &&
+                value?.some((val) =>
+                  isEqualCaseInsensitive(
+                    inputValue,
+                    typeof val === "string" ? val : (val[valueKey] as string),
+                  ),
+                ));
 
           if (
             inputValue !== "" &&
@@ -124,51 +123,43 @@ export const CustomAutocomplete = <T,>({
         }}
         inputValue={inputValue}
         onInputChange={onInputChange}
-        renderValue={(value, getItemProps) =>
-          value.map((item, index) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { key, onDelete, ...itemProps } = getItemProps({ index });
+        renderValue={(val, getItemProps, ownerState) => {
+          if (ownerState.multiple) {
+            const items = Array.isArray(val) ? val : val == null ? [] : [val];
 
-            const realValue =
-              typeof item === "string" ? item : (item[valueKey] as string);
+            return items.map((item, index) => {
+              const { key, ...itemProps } = getItemProps({ index }) as {
+                key: string | number;
+                className: string;
+                disabled: boolean;
+                "data-item-index": number;
+                tabIndex: -1;
+                onDelete: (event: unknown) => void;
+              };
 
-            return (
-              <Box
-                key={key}
-                {...itemProps}
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  px: 1,
-                  py: 0.25,
-                  mr: 0.5,
-                  mb: 0.5,
-                }}
-              >
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  {renderItem(item)}
+              const realValue =
+                typeof item === "string" ? item : (item[valueKey] as string);
 
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemove(realValue);
-                    }}
-                    sx={{
-                      p: 0.25,
-                      ml: 0.5,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <CancelIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-                </Stack>
-              </Box>
-            );
-          })
-        }
+              return (
+                <ValueDisplay<T>
+                  {...itemProps}
+                  key={key}
+                  value={realValue}
+                  item={typeof item === "string" ? undefined : item}
+                  renderItem={renderItem}
+                />
+              );
+            });
+          } else {
+            if (val == null) return null;
+
+            if (typeof val === "string") {
+              return val;
+            }
+          }
+
+          return renderItem(val as T);
+        }}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -183,7 +174,6 @@ export const CustomAutocomplete = <T,>({
                 py: 0.5,
               },
               "& .MuiInputBase-input": {
-                minWidth: "120px !important",
                 flex: 1,
               },
             }}

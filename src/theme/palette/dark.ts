@@ -63,6 +63,7 @@ export const dark: PaletteOptions = {
     bubble: colors.BORDER_BUBBLE,
     counter: colors.BORDER_COUNTER,
     area: colors.BORDER_AREA,
+    dropArea: colors.DROP_AREA_BORDER,
   },
   action: {
     hover: alpha(colors.PRIMARY_MAIN, 0.11),
@@ -83,4 +84,6 @@ export const dark: PaletteOptions = {
     stroke: colors.CHART_STROKE,
     fill: colors.CHART_FILL,
   },
+  // expose selected toggle color to palette consumer
+  selectedToggle: colors.SELECTED_TOGGLE,
 };

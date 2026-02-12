@@ -19,10 +19,11 @@ export const mergeOptions = (
 ): UserQueryOptions & {
   pageSize: number;
 } => {
-  const { searchText } = options || {};
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { searchText, onSuccess, ...rest } = options || {};
   return {
     ...defaultOptions,
-    ...options,
+    ...rest,
     searchText: (searchText ?? defaultOptions.searchText)
       ?.toLowerCase()
       .trim()

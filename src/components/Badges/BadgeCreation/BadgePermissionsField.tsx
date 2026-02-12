@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { SyntheticEvent, useCallback } from "react";
 import { useWatch } from "react-hook-form";
 import { useBadgeCreation } from "./BadgeCreationContext";
 import { BadgeAutocomplete } from "./BadgeAutocomplete";
@@ -20,8 +20,22 @@ export const BadgePermissionsField = ({
   const values = useWatch({ control, name: field, defaultValue: [] });
 
   const handleOnChange = useCallback(
-    (newValues: string[]) => {
-      setValue(field, newValues);
+    (
+      event: SyntheticEvent<Element, Event>,
+      newValues: (
+        | string
+        | {
+            id: string;
+            name: string;
+          }
+      )[],
+    ) => {
+      setValue(
+        field,
+        newValues.map((value) =>
+          typeof value === "string" ? value : value.id,
+        ),
+      );
     },
     [field, setValue],
   );

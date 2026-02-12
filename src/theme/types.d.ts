@@ -44,6 +44,7 @@ declare module "@mui/material/styles" {
       card: string;
       counter: string;
       area: string;
+      dropArea: string;
     };
     gradients: {
       official: string;
@@ -55,6 +56,7 @@ declare module "@mui/material/styles" {
       stroke: string;
       fill: string;
     };
+    selectedToggle: string;
   }
 
   interface PaletteOptions {
@@ -65,6 +67,7 @@ declare module "@mui/material/styles" {
       card?: string;
       counter?: string;
       area?: string;
+      dropArea?: string;
     };
     gradients?: {
       official?: string;
@@ -75,6 +78,8 @@ declare module "@mui/material/styles" {
       stroke?: string;
       fill?: string;
     };
+
+    selectedToggle?: string;
   }
 
   interface TypeAction {

@@ -81,6 +81,7 @@ export const buildWhereClause = (options: {
       or: [
         { name_contains_nocase: trimmedSearch },
         { creatorAddress_contains_nocase: trimmedSearch },
+        { id: trimmedSearch },
       ],
     });
   }

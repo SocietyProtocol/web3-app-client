@@ -1,19 +1,17 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { getBadgesContractAddress } from "@/lib/wagmi";
-import { useMemo } from "react";
+import { useChainVar } from "@/hooks/useChainVar";
+import { expectedNetwork, getBadgesContractAddress } from "@/lib/wagmi";
 import { Hex } from "viem";
-import { useAccount, useReadContract } from "wagmi";
+import { useReadContract } from "wagmi";
 
 export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
-  const { chainId } = useAccount();
-  const contractAddress = useMemo(
-    () => getBadgesContractAddress(chainId),
-    [chainId],
-  );
+  const contractAddress = useChainVar(getBadgesContractAddress);
+
   const officialBadgeCreatorRole = useReadContract({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,
     functionName: "OFFICIAL_BADGE_CREATOR_ROLE",
+    chainId: expectedNetwork.id,
     query: {
       staleTime: Infinity,
       gcTime: Infinity,
@@ -28,6 +26,7 @@ export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
       officialBadgeCreatorRole.data && address
         ? [officialBadgeCreatorRole.data, address]
         : undefined,
+    chainId: expectedNetwork.id,
     query: {
       enabled: !!officialBadgeCreatorRole.data && !!address,
       staleTime: Infinity,

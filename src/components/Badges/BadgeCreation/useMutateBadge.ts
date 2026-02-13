@@ -1,5 +1,4 @@
-import { useCallback, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useCallback } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
@@ -10,6 +9,7 @@ import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useTransaction } from "@/hooks/useTransaction";
 import { TransactionReceipt, zeroAddress } from "viem";
 import { useSnackbar } from "notistack";
+import { useChainVar } from "@/hooks/useChainVar";
 
 interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -17,11 +17,8 @@ interface UseMutateBadgeProps {
 }
 
 export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
-  const { chainId } = useAccount();
-  const contractAddress = useMemo(
-    () => getBadgesContractAddress(chainId),
-    [chainId],
-  );
+  const contractAddress = useChainVar(getBadgesContractAddress);
+
   const { generateAuthPayload } = useAuth();
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();

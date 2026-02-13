@@ -4,7 +4,13 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { BubbleBase } from "./BubbleBase";
 import { useAccount } from "wagmi";
 
-export const WrongNetworkBubble: React.FC = () => {
+interface WrongNetworkBubbleProps {
+  message?: string;
+}
+
+export const WrongNetworkBubble: React.FC<WrongNetworkBubbleProps> = ({
+  message = "You are connected to the wrong network.",
+}) => {
   const { isConnected } = useAccount();
   const { expectedNetwork, isWrongNetwork, switchChain, isSwitching } =
     useCheckWrongNetwork();
@@ -29,7 +35,7 @@ export const WrongNetworkBubble: React.FC = () => {
         gutterBottom
         sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
       >
-        You are connected to the wrong network.
+        {message}
       </Typography>
       <Typography
         variant="h6"

@@ -1,3 +1,4 @@
+import { expectedNetwork } from "@/lib/wagmi";
 import { erc20Abi, Hex } from "viem";
 import { useReadContract } from "wagmi";
 
@@ -20,6 +21,7 @@ export const useAllowance = ({
       ownerAddress && spenderAddress
         ? [ownerAddress, spenderAddress]
         : undefined,
+    chainId: expectedNetwork.id,
     query: {
       enabled: Boolean(ownerAddress && spenderAddress && tokenAddress),
       staleTime: 5_000,

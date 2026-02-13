@@ -1,19 +1,15 @@
 "use client";
 
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
-import { AccountSetupBubble } from "@/components/Bubbles/AccountSetupBubble";
-import { ConnectWalletBubble } from "@/components/Bubbles/ConnectWalletBubble";
 import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useProfile } from "@/components/AccountSetup/useProfile";
-import { Stack } from "@mui/material";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
-import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
-import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { parseAsBoolean, useQueryState } from "nuqs";
+import { ContentGuard } from "../Bubbles/ContentGuard";
 
 export const Profile = () => {
   const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
@@ -23,7 +19,6 @@ export const Profile = () => {
 
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
-  const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
 
   const isInitialLoading =
@@ -44,34 +39,18 @@ export const Profile = () => {
 
   return (
     <ErrorBoundary>
-      <Stack
-        alignItems="center"
-        justifyContent="center"
-        sx={{
-          maxWidth: 600,
-          marginX: "auto",
-        }}
+      <ContentGuard
+        requireNetwork={!profile.profileData.data}
+        requireAccount={!accountSetupOpen}
       >
-        {!isConnected ? (
-          <ConnectWalletBubble />
-        ) : isWrongNetwork ? (
-          <WrongNetworkBubble />
+        {profile.profileData.data ? (
+          <AccountDetails />
         ) : (
-          !profile.profileData.data &&
-          !accountSetupOpen && (
-            <AccountSetupBubble
-              onActionClick={() => setAccountSetupOpen(true)}
-            />
+          accountSetupOpen && (
+            <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
           )
         )}
-      </Stack>
-      {!isConnected || isWrongNetwork ? null : profile.profileData.data ? (
-        <AccountDetails />
-      ) : (
-        accountSetupOpen && (
-          <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
-        )
-      )}
+      </ContentGuard>
     </ErrorBoundary>
   );
 };

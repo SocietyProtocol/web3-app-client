@@ -14,9 +14,7 @@ export const isProd = env.environment === "production";
 
 export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
 
-export function getExpectedNetwork() {
-  return isProd ? mainnet : sepolia;
-}
+export const expectedNetwork = isProd ? mainnet : sepolia;
 
 export function getBadgesContractAddress(chainId?: number) {
   if (chainId === sepolia.id) return contracts.sepolia.badges;

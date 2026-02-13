@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Box,
   Container,
@@ -12,15 +11,13 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { ConnectWalletBubble } from "@/components/Bubbles/ConnectWalletBubble";
-import { AccountSetupBubble } from "@/components/Bubbles/AccountSetupBubble";
 import { useAccount } from "wagmi";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useProfile } from "@/components/AccountSetup/useProfile";
-import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
 import { faqData } from "@/data/faq";
 import HomeSkeleton from "@/components/Skeletons/HomeSkeleton";
 import { useWagmiReady } from "@/atoms/wagmiReady";
+import { ContentGuard } from "@/components/Bubbles/ContentGuard";
 
 export default function Home() {
   // allow multiple panels to be expanded
@@ -47,8 +44,6 @@ export default function Home() {
     (profile.uri.data === undefined && profile.uri.isLoading) ||
     (profile.profileData.data === undefined && profile.profileData.isLoading);
 
-  const router = useRouter();
-
   const showBubble =
     !isConnected || isWrongNetwork || !profile.profileData.data;
 
@@ -64,30 +59,11 @@ export default function Home() {
         px: { xs: 2, sm: 0 },
       }}
     >
-      {showBubble && (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: { xs: 1.5, sm: 2 },
-            maxWidth: { xs: "100%", sm: 600 },
-            marginX: "auto",
-            width: "100%",
-          }}
-        >
-          {!isConnected ? (
-            <ConnectWalletBubble message="Society Protocol is a framework for building synchronized network states." />
-          ) : isWrongNetwork ? (
-            <WrongNetworkBubble />
-          ) : (
-            !profile.profileData.data && (
-              <AccountSetupBubble
-                onActionClick={() => router.push("/profile?setupOpen=true")}
-              />
-            )
-          )}
-        </Box>
-      )}
+      <ContentGuard
+        requireNetwork
+        requireAccount
+        connectWalletMessage="Society Protocol is a framework for building synchronized network states."
+      />
 
       <Box
         sx={{ mt: showBubble ? { xs: 6, sm: 10 } : { xs: 3, sm: 5 } }}

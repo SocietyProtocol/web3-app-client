@@ -65,6 +65,13 @@ export const DropArea: React.FC<DropAreaProps> = ({
     [disabled, validateAndEmit],
   );
 
+  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      document.getElementById("drop-area-file-input")?.click();
+    }
+  }, []);
+
   const onDragOver = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -128,12 +135,8 @@ export const DropArea: React.FC<DropAreaProps> = ({
       })}
       role="region"
       aria-label="File upload area"
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          document.getElementById("drop-area-file-input")?.click();
-        }
-      }}
+      onKeyDown={onKeyDown}
+      tabIndex={0}
     >
       <input
         id="drop-area-file-input"

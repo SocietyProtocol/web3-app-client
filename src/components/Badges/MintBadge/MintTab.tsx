@@ -107,44 +107,44 @@ export const MintTab = ({ id }: MintTabProps) => {
       newValues: (string | UserOption)[],
       reason: AutocompleteChangeReason,
     ) => {
-      if (
-        reason === "clear" ||
-        reason === "removeOption" ||
+      const cleanNewValues = newValues.map((v) =>
+        typeof v === "string" ? v : v.id,
+      );
+
+      if (reason === "clear" || reason === "removeOption") {
+        form.setValue("recipients", cleanNewValues);
+      } else if (
+        reason === "createOption" ||
+        reason === "blur" ||
         reason === "selectOption"
       ) {
-        const cleanNewValues = newValues.map((v) =>
-          typeof v === "string" ? v : v.id,
+        const invalidAddressIdx = newValues.findIndex(
+          (v) => typeof v === "string" && !isAddress(v, { strict: false }),
         );
-        form.setValue("recipients", cleanNewValues);
-      } else if (reason === "createOption" || reason === "blur") {
-        const invalidAddresses = [];
-        const duplicateAddresses = [];
-        const cleanedValues = [];
 
-        for (const value of newValues) {
-          const id = typeof value === "string" ? value : value.id;
-
-          if (!isAddress(id, { strict: false })) {
-            invalidAddresses.push(id);
-            continue;
-          }
-
-          if (holders.includes(id.toLowerCase())) {
-            duplicateAddresses.push(id);
-            continue;
-          }
-
-          cleanedValues.push(id);
+        if (invalidAddressIdx !== -1) {
+          const invalidAddress = newValues[invalidAddressIdx];
+          enqueueSnackbar(`Invalid address (${invalidAddress})`, {
+            variant: "error",
+          });
+          return;
         }
 
-        enqueueSnackbar(
-          `Removed ${invalidAddresses.length} invalid address(es) and ${duplicateAddresses.length} duplicate address(es)`,
-          {
-            variant: "warning",
-          },
+        const holder = holders.find((h) =>
+          cleanNewValues.some((v) => v.toLowerCase() === h),
         );
 
-        form.setValue("recipients", cleanedValues);
+        if (holder) {
+          enqueueSnackbar(
+            `User with address ${holder} already holds this badge`,
+            {
+              variant: "error",
+            },
+          );
+          return;
+        }
+
+        form.setValue("recipients", cleanNewValues);
       }
     },
     [enqueueSnackbar, form, holders],

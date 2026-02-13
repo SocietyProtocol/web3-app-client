@@ -1,13 +1,16 @@
-import { useMemo, useReducer, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { useUsersQuery } from "@/data/users/useUsersQuery";
 import { Hex, isAddress } from "viem";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
 import { UserHandle } from "@/components/User/UserHandle";
 import { AutocompleteProps } from "@mui/material";
-import { UsersQuery } from "../../../../.graphclient";
-import { upsertIntoMapByKey } from "@/utils/map";
-import { prop, toLowerCase } from "@/utils/curry";
+import { useAtom } from "jotai";
+import { usersAtom } from "@/atoms/users";
+
+type SelectedUsers<Multiple extends boolean> = Multiple extends true
+  ? UserOption[]
+  : UserOption | null;
 
 export interface UserOption {
   id: string;
@@ -21,6 +24,8 @@ interface UserAutocompleteProps<Multiple extends boolean = false> {
   value: Multiple extends true ? string[] : string | undefined;
   onChange: AutocompleteProps<UserOption, Multiple, false, true>["onChange"];
   multiple?: Multiple;
+  disabled?: boolean;
+  excludeIds?: string[];
 }
 
 export const UserAutocomplete = <Multiple extends boolean = false>({
@@ -29,19 +34,10 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
   value,
   onChange,
   multiple,
+  disabled = false,
+  excludeIds = [],
 }: UserAutocompleteProps<Multiple>) => {
-  const [allUsersMap, setAllUsersMap] = useReducer<
-    Map<string, UserOption>,
-    [UsersQuery]
-  >(
-    (prev, next) =>
-      upsertIntoMapByKey(
-        prev,
-        next.users as UserOption[],
-        toLowerCase(prop("id")),
-      ),
-    new Map(),
-  );
+  const [allUsersMap, upsertAllUserMap] = useAtom(usersAtom);
 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
@@ -49,7 +45,7 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
   const { data, isLoading, isFetching } = useUsersQuery({
     searchText: debouncedSearchQuery,
     pageSize: 50,
-    onSuccess: setAllUsersMap,
+    onSuccess: upsertAllUserMap,
   });
 
   const users: UserOption[] = useMemo(
@@ -64,23 +60,21 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
     [data],
   );
 
-  const selectedUsers: Multiple extends true
-    ? UserOption[]
-    : UserOption | null = useMemo(() => {
+  const selectedUsers: SelectedUsers<Multiple> = useMemo(() => {
     if (multiple) {
       return (value as string[]).map(
         (id) =>
           allUsersMap.get(id.toLowerCase()) ?? {
             id,
           },
-      ) as Multiple extends true ? UserOption[] : UserOption | null;
+      ) as SelectedUsers<Multiple>;
     } else {
       if (value) {
         return (allUsersMap.get((value as string).toLowerCase()) ?? {
           id: value as string,
-        }) as Multiple extends true ? UserOption[] : UserOption | null;
+        }) as SelectedUsers<Multiple>;
       } else {
-        return null as Multiple extends true ? UserOption[] : UserOption | null;
+        return null as SelectedUsers<Multiple>;
       }
     }
   }, [multiple, allUsersMap, value]);
@@ -89,14 +83,15 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
     () =>
       users
         .map(({ id }) => allUsersMap.get(id))
-        .filter((u): u is UserOption => !!u),
-    [allUsersMap, users],
+        .filter((u): u is UserOption => !!u && !excludeIds.includes(u.id)),
+    [allUsersMap, users, excludeIds],
   );
 
   return (
     <CustomAutocomplete
       multiple={multiple}
       freeSolo
+      disabled={disabled}
       label={label}
       tooltip={tooltip}
       onChange={onChange}

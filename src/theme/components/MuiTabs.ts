@@ -29,9 +29,17 @@ export const MuiTabs: Components<
           minHeight: "36px",
           lineHeight: 1,
 
+          "&.Mui-disabled": {
+            color: theme.palette.text.tertiary,
+          },
+
           "&.Mui-selected": {
             color: theme.palette.text.primary,
             zIndex: 1,
+
+            "&.Mui-disabled": {
+              backgroundColor: theme.palette.action.disabledBackground,
+            },
           },
         },
       },

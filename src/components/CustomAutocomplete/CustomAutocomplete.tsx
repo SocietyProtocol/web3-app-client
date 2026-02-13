@@ -52,6 +52,7 @@ export const CustomAutocomplete = <
   multiple,
   freeSolo,
   disableClearable,
+  disabled = false,
 }: CustomAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) => {
   const [open, setOpen] = useState(false);
 
@@ -71,6 +72,7 @@ export const CustomAutocomplete = <
       )}
 
       <Autocomplete
+        disabled={disabled}
         multiple={multiple}
         freeSolo={freeSolo}
         disableClearable={disableClearable}

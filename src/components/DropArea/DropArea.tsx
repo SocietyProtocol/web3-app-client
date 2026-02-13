@@ -12,6 +12,7 @@ interface DropAreaProps {
   onFile?: (file: File) => void;
   error?: boolean;
   helperText?: string;
+  disabled?: boolean;
 }
 
 export const DropArea: React.FC<DropAreaProps> = ({
@@ -21,6 +22,7 @@ export const DropArea: React.FC<DropAreaProps> = ({
   onFile,
   error,
   helperText,
+  disabled = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [isDragging, setIsDragging] = useState(false);
@@ -51,6 +53,7 @@ export const DropArea: React.FC<DropAreaProps> = ({
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
+      if (disabled) return;
       setIsDragging(false);
 
       const dt = e.dataTransfer;
@@ -59,19 +62,23 @@ export const DropArea: React.FC<DropAreaProps> = ({
         validateAndEmit(file);
       }
     },
-    [validateAndEmit],
+    [disabled, validateAndEmit],
   );
 
-  const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // mark as dragging only when files are present
-    const hasFiles =
-      Boolean(e.dataTransfer) &&
-      Boolean(e.dataTransfer.items) &&
-      Array.from(e.dataTransfer.items).some((it) => it.kind === "file");
-    setIsDragging(hasFiles);
-  }, []);
+  const onDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (disabled) return;
+      // mark as dragging only when files are present
+      const hasFiles =
+        Boolean(e.dataTransfer) &&
+        Boolean(e.dataTransfer.items) &&
+        Array.from(e.dataTransfer.items).some((it) => it.kind === "file");
+      setIsDragging(hasFiles);
+    },
+    [disabled],
+  );
 
   const onDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -81,11 +88,12 @@ export const DropArea: React.FC<DropAreaProps> = ({
 
   const onFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (disabled) return;
       const files = e.target.files;
       if (files && files[0]) validateAndEmit(files[0]);
       e.currentTarget.value = "";
     },
-    [validateAndEmit],
+    [disabled, validateAndEmit],
   );
 
   return (
@@ -101,12 +109,14 @@ export const DropArea: React.FC<DropAreaProps> = ({
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
-        borderStyle: "dashed",
-        borderWidth: 2,
+        borderStyle: disabled ? "solid" : "dashed",
+        borderWidth: disabled ? 1 : 2,
         borderColor:
           error && !isDragging
             ? theme.palette.error.main
-            : theme.palette.border.dropArea,
+            : disabled
+              ? theme.palette.border.counter
+              : theme.palette.border.dropArea,
         borderRadius: 1,
         transition: "background-color 150ms, border-color 150ms",
         position: "relative",
@@ -144,6 +154,7 @@ export const DropArea: React.FC<DropAreaProps> = ({
               startIcon={<FileUploadIcon />}
               sx={{ textTransform: "none" }}
               size="small"
+              disabled={disabled}
             >
               UPLOAD FILE
             </Button>
@@ -152,7 +163,13 @@ export const DropArea: React.FC<DropAreaProps> = ({
 
         <Typography
           variant="body2"
-          color={isDragging ? "primary" : "text.primary"}
+          color={
+            isDragging
+              ? "primary"
+              : disabled
+                ? "text.secondary"
+                : "text.primary"
+          }
         >
           {isDragging ? "Drop file to upload" : "or drag and drop"}
         </Typography>
@@ -161,14 +178,17 @@ export const DropArea: React.FC<DropAreaProps> = ({
       {!isDragging && (
         <Stack spacing={1} sx={{ mt: 1, textAlign: "center" }}>
           {descriptionTop && (
-            <Typography variant="caption" color="text.tertiary">
+            <Typography
+              variant="caption"
+              color={disabled ? "text.secondary" : "text.tertiary"}
+            >
               {descriptionTop}
             </Typography>
           )}
           {descriptionBottom && (
             <Typography
               variant="caption"
-              color="text.tertiary"
+              color={disabled ? "text.secondary" : "text.tertiary"}
               sx={{ display: "block" }}
             >
               {descriptionBottom}

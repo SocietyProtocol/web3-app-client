@@ -14,7 +14,7 @@ export const useSubgraphUser = (address?: Address) =>
         id: address.toLowerCase(),
       });
 
-      return res.data as UserQuery;
+      return res.data.user as UserQuery["user"];
     },
     enabled: !!address && isAddress(address),
   });

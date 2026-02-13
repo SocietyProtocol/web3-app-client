@@ -20,6 +20,7 @@ export const ValueDisplay = <T,>({
   renderItem,
   value,
   item,
+  disabled,
 }: ValueDisplayProps<T>) => {
   return (
     <Box
@@ -40,20 +41,22 @@ export const ValueDisplay = <T,>({
       <Stack direction="row" alignItems="center" spacing={1}>
         {item ? renderItem(item) : value}
 
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(value);
-          }}
-          sx={{
-            p: 0.25,
-            ml: 0.5,
-            "&:hover": { bgcolor: "action.hover" },
-          }}
-        >
-          <CancelIcon sx={{ fontSize: 18 }} />
-        </IconButton>
+        {!disabled && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(value);
+            }}
+            sx={{
+              p: 0.25,
+              ml: 0.5,
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+          >
+            <CancelIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        )}
       </Stack>
     </Box>
   );

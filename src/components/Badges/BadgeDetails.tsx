@@ -255,10 +255,12 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         <BadgeManagers
           label="Who can Manage:"
           tooltip="These are the users who can manage the badge."
-          isLoading={isLoading}
+          loading={isLoading}
           managers={data?.badge?.managers}
         />
         <BadgeActions
+          id={id}
+          loading={isLoading}
           canMint={canMint}
           canBurn={canBurn}
           canTransfer={canTransfer}

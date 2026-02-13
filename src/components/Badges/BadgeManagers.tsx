@@ -7,14 +7,14 @@ import { BadgeData } from "@/data/badges/types";
 interface BadgeManagersProps {
   label: string;
   tooltip: string;
-  isLoading?: boolean;
+  loading?: boolean;
   managers?: BadgeData["managers"];
 }
 
 export const BadgeManagers = ({
   label,
   tooltip,
-  isLoading = false,
+  loading = false,
   managers,
 }: BadgeManagersProps) => {
   return (
@@ -62,7 +62,7 @@ export const BadgeManagers = ({
                 flexWrap: "wrap",
               }}
             >
-              {isLoading ? (
+              {loading ? (
                 <Skeleton width={100} height={20} />
               ) : (
                 managers?.map(({ id, name, imageUrl, bio }) => (

@@ -1,5 +1,5 @@
 import { Stack, Tabs, Tab, Box, Skeleton } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
 
@@ -11,6 +11,12 @@ interface BadgeActionsProps {
   loading?: boolean;
 }
 
+enum TabKey {
+  MINT = "mint",
+  TRANSFER = "transfer",
+  BURN = "burn",
+}
+
 export const BadgeActions = ({
   id,
   canMint,
@@ -18,15 +24,19 @@ export const BadgeActions = ({
   canTransfer,
   loading = false,
 }: BadgeActionsProps) => {
-  const actions = [
-    { key: "mint", label: "Mint", enabled: canMint },
-    { key: "transfer", label: "Transfer", enabled: canTransfer },
-    { key: "burn", label: "Burn", enabled: canBurn, color: "error" },
-  ];
+  const actions = useMemo(
+    () => [
+      { key: TabKey.MINT, label: "Mint", enabled: canMint },
+      { key: TabKey.TRANSFER, label: "Transfer", enabled: canTransfer },
+      { key: TabKey.BURN, label: "Burn", enabled: canBurn, color: "error" },
+    ],
+    [canMint, canBurn, canTransfer],
+  );
 
-  const available = actions.filter((a) => a.enabled);
-  const [value, setValue] = useState<string | false>(
-    available.length ? available[0].key : false,
+  const available = useMemo(() => actions.filter((a) => a.enabled), [actions]);
+
+  const [tab, setTab] = useState<TabKey | false>(
+    available.length ? (available[0]?.key ?? false) : TabKey.MINT,
   );
 
   if (loading) {
@@ -56,7 +66,7 @@ export const BadgeActions = ({
     );
   }
 
-  if (!available.length) return null;
+  if (!tab) return null;
 
   return (
     <Box padding={1} paddingTop={4}>
@@ -79,8 +89,8 @@ export const BadgeActions = ({
         }}
       >
         <Tabs
-          value={value}
-          onChange={(_, v) => setValue(v)}
+          value={tab}
+          onChange={(_, v) => setTab(v)}
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
@@ -120,11 +130,11 @@ export const BadgeActions = ({
         </Tabs>
       </Stack>
 
-      {value === "mint" && <MintTab id={id} />}
-      {value === "transfer" && (
+      {tab === "mint" && <MintTab id={id} />}
+      {tab === "transfer" && (
         <Box marginTop={2}>Transfer functionality is not available yet.</Box>
       )}
-      {value === "burn" && (
+      {tab === "burn" && (
         <Box marginTop={2}>Burn functionality is not available yet.</Box>
       )}
     </Box>

@@ -272,11 +272,10 @@ export const MintTab = ({ id }: MintTabProps) => {
             <Controller
               name="fileContent"
               control={form.control}
-              render={({ field, fieldState }) => {
+              render={({ fieldState }) => {
                 return (
                   <>
                     <DropArea
-                      {...field}
                       disabled={transaction.isLoading}
                       error={fieldState.invalid}
                       helperText={fieldState.error?.message}

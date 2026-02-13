@@ -46,7 +46,7 @@ export const ValueDisplay = <T,>({
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              onDelete(value);
+              onDelete(e);
             }}
             sx={{
               p: 0.25,

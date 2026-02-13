@@ -82,7 +82,7 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
   const options = useMemo(
     () =>
       users
-        .map(({ id }) => allUsersMap.get(id))
+        .map(({ id }) => allUsersMap.get(id.toLowerCase()))
         .filter((u): u is UserOption => !!u && !excludeIds.includes(u.id)),
     [allUsersMap, users, excludeIds],
   );

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { get, searchInCollection } from "../collection";
+import { get, searchInCollection, uniq } from "../collection";
 
 type Item = {
   id: string;
@@ -40,5 +40,21 @@ describe("searchInCollection", () => {
     const res = searchInCollection(items, "bar", ["meta.nested.value"]);
     expect(res).toHaveLength(1);
     expect(res[0].id).toBe("2");
+  });
+});
+
+describe("uniq", () => {
+  it("removes duplicates and preserves order", () => {
+    const arr = ["a", "b", "a", "c", "b"] as const;
+    const result = uniq(Array.from(arr));
+    expect(result).toEqual(["a", "b", "c"]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(uniq([])).toEqual([]);
+  });
+
+  it("keeps all elements when already unique", () => {
+    expect(uniq(["x", "y", "z"])).toEqual(["x", "y", "z"]);
   });
 });

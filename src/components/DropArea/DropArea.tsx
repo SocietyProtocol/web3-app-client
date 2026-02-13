@@ -126,6 +126,14 @@ export const DropArea: React.FC<DropAreaProps> = ({
           ? theme.palette.action.hover
           : "transparent",
       })}
+      role="region"
+      aria-label="File upload area"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          document.getElementById("drop-area-file-input")?.click();
+        }
+      }}
     >
       <input
         id="drop-area-file-input"

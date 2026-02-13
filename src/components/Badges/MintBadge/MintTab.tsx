@@ -176,23 +176,27 @@ export const MintTab = ({ id }: MintTabProps) => {
           });
         }
       };
+      reader.onerror = (e) => {
+        console.error("Error reading file", e);
+        enqueueSnackbar("Error reading file", { variant: "error" });
+      };
       reader.readAsText(file);
       form.setValue("file", file, {
         shouldValidate: true,
       });
     },
-    [form, holders],
+    [enqueueSnackbar, form, holders],
   );
 
   const invalidAddresses = useMemo(() => {
     if (mintMode === MintMode.SINGLE) {
-      return [0, 0];
+      return [];
     }
 
-    const adresses = fileContent?.split(",").map((line) => line.trim()) ?? [];
+    const addresses = fileContent?.split(",").map((line) => line.trim()) ?? [];
 
     const invalids = uniq(
-      adresses.filter(
+      addresses.filter(
         (line) =>
           line !== "" &&
           (!isAddress(line, { strict: false }) ||
@@ -360,7 +364,7 @@ export const MintTab = ({ id }: MintTabProps) => {
                   >
                     {invalidAddresses.map((address, index) => (
                       <Typography
-                        key={index}
+                        key={`${address}-${index}`}
                         color="error.main"
                         variant="body2"
                       >

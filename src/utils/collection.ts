@@ -54,6 +54,12 @@ export const searchInCollection = <T extends object>(
   );
 };
 
+/**
+ * Removes duplicate strings from an array while preserving the original order.
+ *
+ * @param arr The array of strings to be processed.
+ * @returns A new array containing only unique strings from the input array.
+ */
 export function uniq<T extends string>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }

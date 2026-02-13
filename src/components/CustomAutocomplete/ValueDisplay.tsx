@@ -53,6 +53,7 @@ export const ValueDisplay = <T,>({
               ml: 0.5,
               "&:hover": { bgcolor: "action.hover" },
             }}
+            aria-label={`Remove ${value}`}
           >
             <CancelIcon sx={{ fontSize: 18 }} />
           </IconButton>

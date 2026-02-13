@@ -121,6 +121,12 @@ export const BadgeActions = ({
       </Stack>
 
       {value === "mint" && <MintTab id={id} />}
+      {value === "transfer" && (
+        <Box marginTop={2}>Transfer functionality is not available yet.</Box>
+      )}
+      {value === "burn" && (
+        <Box marginTop={2}>Burn functionality is not available yet.</Box>
+      )}
     </Box>
   );
 };

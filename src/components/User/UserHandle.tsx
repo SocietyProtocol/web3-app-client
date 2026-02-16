@@ -49,7 +49,7 @@ export const UserHandle = ({
             loading={loading}
             id={id}
             imageUrl={imageUrl}
-            name={name ?? truncateAddress(id as Hex)}
+            name={name ?? (id && truncateAddress(id as Hex))}
             bio={bio}
             showAddress
             readonly

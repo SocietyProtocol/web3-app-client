@@ -35,18 +35,15 @@ export const BadgeActions = ({
 
   const available = useMemo(() => actions.filter((a) => a.enabled), [actions]);
 
-  const [tab, setTab] = useState<TabKey | false>(() => {
-    if (available.length === 0) return false;
-    return available[0]?.key ?? false;
-  });
+  const [tab, setTab] = useState<TabKey | false>(false);
 
   // Reconcile tab state with available actions
   const validTab = useMemo(() => {
     if (available.length === 0) return false;
     
     // Check if current tab is still available
-    const isTabAvailable = available.some((a) => a.key === tab);
-    if (isTabAvailable) return tab;
+    const isCurrentTabAvailable = available.some((a) => a.key === tab);
+    if (isCurrentTabAvailable) return tab;
     
     // If not, return first available
     return available[0]?.key ?? false;

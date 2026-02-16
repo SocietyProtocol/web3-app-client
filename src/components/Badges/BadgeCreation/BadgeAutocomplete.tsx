@@ -3,11 +3,17 @@ import { BadgeHandle } from "../BadgeHandle";
 import { useBadgesQuery } from "../../../data/badges/useBadgesQuery";
 import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
+import { AutocompleteProps } from "@mui/material";
 
 interface BadgeAutocompleteProps {
   label: string;
   value: string[];
-  onChange: (value: string[]) => void;
+  onChange: AutocompleteProps<
+    { id: string; name: string },
+    true,
+    false,
+    true
+  >["onChange"];
   tooltip?: string;
 }
 
@@ -57,6 +63,8 @@ export const BadgeAutocomplete = ({
 
   return (
     <CustomAutocomplete
+      multiple
+      freeSolo
       label={label}
       tooltip={tooltip}
       onChange={onChange}
@@ -64,7 +72,11 @@ export const BadgeAutocomplete = ({
       value={selectedBadges}
       loading={isLoading || isFetching}
       valueKey="id"
-      getOptionLabel={(option) => `${option.name} (ID: ${option.id})`}
+      getOptionLabel={(option) =>
+        typeof option === "string"
+          ? option
+          : `${option.name} (ID: ${option.id})`
+      }
       renderItem={(item) => <BadgeHandle id={item.id} name={item.name} />}
       inputValue={searchQuery}
       onInputChange={(_, value, reason) => {

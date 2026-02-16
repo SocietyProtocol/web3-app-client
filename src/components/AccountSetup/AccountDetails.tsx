@@ -32,9 +32,13 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
       ? truncateAddress(overrideAddress)
       : "Unknown User",
   } = useProfile(overrideAddress);
+
   const { data: profile, isLoading } = profileData;
 
-  const badgesCount = subgraphData.data?.user?.badges?.length;
+  const badgesCount = useMemo(
+    () => subgraphData.data?.badges?.length,
+    [subgraphData.data],
+  );
 
   const stats = useMemo(
     () =>
@@ -163,7 +167,13 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 Badges held by {username} (
                 {subgraphData.isLoading ? (
-                  <Skeleton variant="text" width={20} />
+                  <Skeleton
+                    variant="text"
+                    width={20}
+                    sx={{
+                      display: "inline-block",
+                    }}
+                  />
                 ) : (
                   badgesCount
                 )}
@@ -217,7 +227,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                         <BadgeCard loading />
                       </Grid>
                     ))
-                  : subgraphData.data?.user?.badges.slice(0, 6).map((badge) => (
+                  : subgraphData.data?.badges.slice(0, 6).map((badge) => (
                       <Grid
                         key={badge.id}
                         size={1}
@@ -269,7 +279,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             open={isBadgesModalOpen}
             onClose={handleCloseBadgesModal}
             username={username}
-            badges={subgraphData.data?.user?.badges || []}
+            badges={subgraphData.data?.badges || []}
           />
         </Stack>
       )}

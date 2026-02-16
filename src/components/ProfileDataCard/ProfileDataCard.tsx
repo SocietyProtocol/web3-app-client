@@ -4,20 +4,17 @@ import { DataItem } from "./DataItem";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
 import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
-import { UserHandle } from "../User/UserHandle";
+import { ReferredBy } from "./ReferredBy";
 
 interface ProfileDataCardProps {
   address: Address;
   profileId: number;
-  referredBy?: Address;
   readonly?: boolean;
 }
 
 export const ProfileDataCard = ({
   address,
   profileId,
-  // This is a placeholder until referral system is implemented
-  referredBy = "0xA52bdb9c052ef1365DA10E87a114e42dAa487576",
   readonly = false,
 }: ProfileDataCardProps) => {
   return (
@@ -84,13 +81,7 @@ export const ProfileDataCard = ({
           </DataItem>
         </Grid>
         <Grid size={1} container direction="column" spacing={4}>
-          <DataItem
-            label="Referred by"
-            tooltip="The user who referred this account."
-          >
-            <UserHandle id={referredBy} showPreview highlightYou link />
-          </DataItem>
-
+          <ReferredBy readonly={readonly} address={address} />
           {!readonly && <ReferralCodeGenerator />}
         </Grid>
       </Grid>

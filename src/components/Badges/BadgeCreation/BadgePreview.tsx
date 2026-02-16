@@ -2,16 +2,16 @@ import { Box, Typography } from "@mui/material";
 import { useBadgeCreation } from "./BadgeCreationContext";
 import { BadgeCard } from "../BadgeCard";
 import { useAccount } from "wagmi";
+import { useWatch } from "react-hook-form";
 
 export const BadgePreview = () => {
   const { address } = useAccount();
   const { form } = useBadgeCreation();
-  const { watch } = form;
 
-  const name = watch("name");
-  const imageUrl = watch("imageUrl");
-  const isOfficial = watch("isOfficial");
-  const isCommunity = watch("isCommunity");
+  const [name, imageUrl, isOfficial, isCommunity] = useWatch({
+    control: form.control,
+    name: ["name", "imageUrl", "isOfficial", "isCommunity"],
+  });
 
   return (
     <Box

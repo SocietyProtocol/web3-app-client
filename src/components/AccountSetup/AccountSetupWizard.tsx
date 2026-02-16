@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { Wizard, WizardStep } from "../Wizard";
-import { ReferralStep } from "./ReferralStep";
 import { AccountInfoStep } from "./AccountInfoStep";
 import { ReviewStep } from "./ReviewStep";
 import { AccountSetupProvider, useAccountSetup } from "./AccountSetupContext";
@@ -12,7 +11,6 @@ import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 
 const steps: WizardStep[] = [
-  { label: "Referral", description: "Enter your referral code" },
   { label: "Account Info", description: "Set up your profile" },
   { label: "Review", description: "Review your information" },
 ];
@@ -65,19 +63,9 @@ const AccountSetupWizardContent = ({
     reset,
   ]);
 
-  const nextDisabled =
-    !form.formState.isValid &&
-    (Boolean(activeStep === 0 && form.formState.errors.referralCode) ||
-      Boolean(
-        activeStep === 1 &&
-        (form.formState.errors.name ||
-          form.formState.errors.bio ||
-          form.formState.errors.imageUrl),
-      ));
-
   const handleNext = async () => {
     // Validate account info step before moving forward
-    if (activeStep === 1) {
+    if (activeStep === 0) {
       const isValid = await form.trigger();
 
       if (!isValid) {
@@ -118,18 +106,7 @@ const AccountSetupWizardContent = ({
       console.error("Error creating/updating profile:", err);
 
       if (err instanceof ValidationError) {
-        const hasReferralError = err.details?.referralCode;
-
-        if (hasReferralError) {
-          setActiveStep(0);
-        }
-
-        const hasAccountInfoError =
-          err.details?.name || err.details?.bio || err.details?.imageUrl;
-
-        if (hasAccountInfoError) {
-          setActiveStep(1);
-        }
+        setActiveStep(0);
 
         enqueueSnackbar("Validation error occurred. Please check your input.", {
           variant: "error",
@@ -174,16 +151,15 @@ const AccountSetupWizardContent = ({
         onNext={handleNext}
         onBack={handleBack}
         onFinish={handleFinish}
-        nextDisabled={nextDisabled}
+        nextDisabled={!form.formState.isValid || isMutatingProfile}
         showReset={false}
         minHeight={{ xs: 400, sm: 554 }}
         isLoading={isMutatingProfile}
         loadingText={getLoadingText()}
         showActions={!isWrongNetwork}
       >
-        {activeStep === 0 && <ReferralStep />}
-        {activeStep === 1 && <AccountInfoStep />}
-        {activeStep === 2 && <ReviewStep />}
+        {activeStep === 0 && <AccountInfoStep />}
+        {activeStep === 1 && <ReviewStep />}
       </Wizard>
       {/* Toasts handled by notistack */}
     </Box>

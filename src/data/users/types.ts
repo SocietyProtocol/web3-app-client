@@ -3,6 +3,7 @@ import {
   OrderDirection,
   User,
   User_orderBy,
+  UsersQuery,
 } from "../../../.graphclient";
 
 export interface UserQueryOptions {
@@ -11,6 +12,7 @@ export interface UserQueryOptions {
   orderDirection?: OrderDirection;
   pageSize?: number;
   skip?: number;
+  onSuccess?: (data: UsersQuery) => void;
 }
 
 export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {

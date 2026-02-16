@@ -19,6 +19,7 @@ export const UserHandle = ({
   highlightYou = false,
   size = "medium",
   loading,
+  fullAddress = false,
 }: UserHandleProps) => {
   const { address: connectedAddress } = useAccount();
 
@@ -66,7 +67,9 @@ export const UserHandle = ({
           flex: 0,
         }}
         aria-label={
-          (name ?? id) ? `User profile link for ${name ?? id}` : undefined
+          !loading && (name ?? id)
+            ? `User profile link for ${name ?? id}`
+            : undefined
         }
       >
         <Stack
@@ -92,7 +95,7 @@ export const UserHandle = ({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              maxWidth: size === "small" ? 80 : 150,
+              maxWidth: size === "small" ? 80 : 350,
               fontWeight: 800,
               fontSize: (theme) =>
                 theme.typography.pxToRem(size === "small" ? 10 : 12),
@@ -101,7 +104,7 @@ export const UserHandle = ({
             {loading ? (
               <Skeleton width={50} />
             ) : (
-              `${name ?? truncateAddress(id as Hex, size === "small" ? 4 : 6)}`
+              `${name ?? (fullAddress ? id : truncateAddress(id as Hex, size === "small" ? 4 : 6))}`
             )}
           </Typography>
 

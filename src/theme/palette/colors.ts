@@ -20,6 +20,7 @@ export const BACKGROUND_TOGGLE_BUTTON_HOVER = "#2A2827";
 // Text colors
 export const TEXT_PRIMARY = "#CACACA";
 export const TEXT_SECONDARY = "#7A7A7A";
+export const TEXT_TERTIARY = "#999999";
 
 // Success colors
 export const SUCCESS_MAIN = "#008C73";
@@ -60,9 +61,15 @@ export const BORDER_CARD = "#595959";
 export const BORDER_COUNTER = "#4E4E4E";
 export const BORDER_AREA = "#616161";
 
+// Drop area border color
+export const DROP_AREA_BORDER = "#636363";
+
 // Divider
 export const DIVIDER = "rgba(255, 255, 255, 0.4)";
 
 export const CHART_STROKE = "#73B46A";
 
 export const CHART_FILL = "#31B47A";
+
+// Additional UI colors
+export const SELECTED_TOGGLE = "#252525";

@@ -1,3 +1,4 @@
+import { expectedNetwork } from "@/lib/wagmi";
 import { erc20Abi, Hex } from "viem";
 import { useReadContract } from "wagmi";
 
@@ -13,5 +14,6 @@ export const useBalanceOf = ({ address, tokenAddress }: UseBalanceOfParams) => {
     functionName: "balanceOf",
     args: address ? [address] : undefined,
     query: { enabled: Boolean(address && tokenAddress), staleTime: 5_000 },
+    chainId: expectedNetwork.id,
   });
 };

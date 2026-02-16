@@ -14,6 +14,8 @@ import { mockAccountStats } from "./accountStats";
 import { BadgeCard } from "../Badges/BadgeCard";
 import { BadgesModal } from "../Badges/BadgesModal";
 import { truncateAddress } from "@/utils/string";
+import { ContentGuard } from "../Bubbles/ContentGuard";
+import { parseAsBoolean, useQueryState } from "nuqs";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -54,7 +56,13 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
     [badgesCount],
   );
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useQueryState(
+    "edit",
+    parseAsBoolean.withDefault(false).withOptions({
+      history: "push",
+    }),
+  );
+
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
 
   const toggleEditing = () => {
@@ -85,9 +93,14 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
       }}
     >
       {isEditing ? (
-        <AccountSetupProvider>
-          <AccountDetailsEdit onCancel={toggleEditing} onSave={toggleEditing} />
-        </AccountSetupProvider>
+        <ContentGuard requireNetwork showBackButton>
+          <AccountSetupProvider>
+            <AccountDetailsEdit
+              onCancel={toggleEditing}
+              onSave={toggleEditing}
+            />
+          </AccountSetupProvider>
+        </ContentGuard>
       ) : (
         <Stack spacing={{ xs: 2, sm: 5 }}>
           {/* Header with Edit Button */}

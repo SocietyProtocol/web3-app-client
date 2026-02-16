@@ -1,20 +1,17 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { getBadgesContractAddress } from "@/lib/wagmi";
-import { useMemo } from "react";
-import { useChainId, useReadContract } from "wagmi";
+import { useChainVar } from "@/hooks/useChainVar";
+import { expectedNetwork, getBadgesContractAddress } from "@/lib/wagmi";
+import { useReadContract } from "wagmi";
 
 export const useProfileUri = (profileId?: bigint) => {
-  const chainId = useChainId();
-  const contractAddress = useMemo(
-    () => getBadgesContractAddress(chainId),
-    [chainId]
-  );
+  const contractAddress = useChainVar(getBadgesContractAddress);
 
   const uriResult = useReadContract({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,
     functionName: "uri",
     args: profileId ? [profileId] : undefined,
+    chainId: expectedNetwork.id,
     query: {
       enabled: Boolean(profileId && profileId !== BigInt(0) && contractAddress),
       staleTime: Infinity,

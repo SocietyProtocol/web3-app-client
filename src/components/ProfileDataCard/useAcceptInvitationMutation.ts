@@ -1,11 +1,11 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
 import { getBadgesContractAddress } from "@/lib/wagmi";
 import { parseErrorMessage } from "@/utils/errors";
 import { useSnackbar } from "notistack";
 import { useCallback } from "react";
 import { Address, Hex } from "viem";
-import { useChainId } from "wagmi";
 
 interface UseAcceptInvitationMutationParams {
   onSuccess?: () => void;
@@ -22,8 +22,8 @@ export const useAcceptInvitationMutation = ({
   onSuccess,
   onError,
 }: UseAcceptInvitationMutationParams) => {
-  const chainId = useChainId();
-  const contractAddress = getBadgesContractAddress(chainId);
+  const contractAddress = useChainVar(getBadgesContractAddress);
+
   const { enqueueSnackbar } = useSnackbar();
 
   const transaction = useTransaction({

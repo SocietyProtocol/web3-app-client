@@ -34,12 +34,7 @@ export default function UserProfilePage({
     return redirect("/profile");
   }
 
-  const isInitialLoading =
-    (profile.profileId.data === undefined && profile.profileId.isLoading) ||
-    (profile.uri.data === undefined && profile.uri.isLoading) ||
-    (profile.profileData.data === undefined && profile.profileData.isLoading);
-
-  if (!wagmiReady || isInitialLoading) {
+  if (!wagmiReady || profile.isInitialLoading) {
     return <AccountSkeleton />;
   }
 

@@ -1,17 +1,18 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { getBadgesContractAddress } from "@/lib/wagmi";
+import { useChainVar } from "@/hooks/useChainVar";
+import { expectedNetwork, getBadgesContractAddress } from "@/lib/wagmi";
 import { Hex } from "viem";
-import { useChainId, useReadContract } from "wagmi";
+import { useReadContract } from "wagmi";
 
 export const useInvitedBy = (address?: Hex) => {
-  const chainId = useChainId();
-  const contractAddress = getBadgesContractAddress(chainId);
+  const contractAddress = useChainVar(getBadgesContractAddress);
 
   return useReadContract({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,
     functionName: "invitedBy",
     args: address ? [address] : undefined,
+    chainId: expectedNetwork.id,
     query: {
       enabled: !!address,
       staleTime: Infinity,

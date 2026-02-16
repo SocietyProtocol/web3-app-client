@@ -1,19 +1,15 @@
 "use client";
 
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
-import { AccountSetupBubble } from "@/components/Bubbles/AccountSetupBubble";
-import { ConnectWalletBubble } from "@/components/Bubbles/ConnectWalletBubble";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import { useProfile } from "@/components/AccountSetup/useProfile";
-import { Stack } from "@mui/material";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
-import { WrongNetworkBubble } from "@/components/Bubbles/WrongNetworkBubble";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
-import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { parseAsBoolean, useQueryState } from "nuqs";
+import { ContentGuard } from "../Bubbles/ContentGuard";
 
 export const Profile = () => {
   const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
@@ -23,55 +19,39 @@ export const Profile = () => {
 
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
-  const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
-
-  const isInitialLoading =
-    (profile.profileId.data === undefined && profile.profileId.isLoading) ||
-    (profile.uri.data === undefined && profile.uri.isLoading) ||
-    (profile.profileData.data === undefined && profile.profileData.isLoading);
+  const isInitialMount = useRef(true);
 
   // reset accountSetupOpen when user connects/disconnects or address changes
   useEffect(() => {
+    // Skip the initial mount to preserve setupOpen from URL
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     // Close the setup whenever connection or address changes
     // (covers connect, disconnect, and switching accounts)
     setAccountSetupOpen(false);
   }, [isConnected, address, setAccountSetupOpen]);
 
-  if (!wagmiReady || isInitialLoading) {
+  if (!wagmiReady || profile.isInitialLoading) {
     return <AccountSkeleton />;
   }
 
   return (
     <ErrorBoundary>
-      <Stack
-        alignItems="center"
-        justifyContent="center"
-        sx={{
-          maxWidth: 600,
-          marginX: "auto",
-        }}
+      <ContentGuard
+        requireNetwork={!profile.profileData.data}
+        requireAccount={!accountSetupOpen}
       >
-        {!isConnected ? (
-          <ConnectWalletBubble />
-        ) : isWrongNetwork ? (
-          <WrongNetworkBubble />
+        {profile.profileData.data ? (
+          <AccountDetails />
         ) : (
-          !profile.profileData.data &&
-          !accountSetupOpen && (
-            <AccountSetupBubble
-              onActionClick={() => setAccountSetupOpen(true)}
-            />
+          accountSetupOpen && (
+            <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
           )
         )}
-      </Stack>
-      {!isConnected || isWrongNetwork ? null : profile.profileData.data ? (
-        <AccountDetails />
-      ) : (
-        accountSetupOpen && (
-          <AccountSetupWizard onComplete={() => setAccountSetupOpen(false)} />
-        )
-      )}
+      </ContentGuard>
     </ErrorBoundary>
   );
 };

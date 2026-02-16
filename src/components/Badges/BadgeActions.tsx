@@ -1,5 +1,5 @@
-import { Stack, Tabs, Tab, Box, Skeleton } from "@mui/material";
-import { useMemo, useState } from "react";
+import { Stack, Tabs, Tab, Box, Skeleton, Typography } from "@mui/material";
+import { useMemo, useState, useEffect } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
 
@@ -36,8 +36,22 @@ export const BadgeActions = ({
   const available = useMemo(() => actions.filter((a) => a.enabled), [actions]);
 
   const [tab, setTab] = useState<TabKey | false>(
-    available.length ? (available[0]?.key ?? false) : TabKey.MINT,
+    available.length ? (available[0]?.key ?? false) : false,
   );
+
+  // Sync tab state when available actions change
+  useEffect(() => {
+    if (available.length === 0) {
+      setTab(false);
+      return;
+    }
+
+    // If current tab is not in available, switch to first available
+    const isCurrentTabAvailable = available.some((a) => a.key === tab);
+    if (!isCurrentTabAvailable) {
+      setTab(available[0]?.key ?? false);
+    }
+  }, [available, tab]);
 
   if (loading) {
     return (
@@ -66,7 +80,32 @@ export const BadgeActions = ({
     );
   }
 
-  if (!tab) return null;
+  if (!tab) {
+    return (
+      <Box padding={1} paddingTop={4}>
+        <WithTooltip
+          variant="body1"
+          sx={{
+            fontWeight: 700,
+            color: "text.primary",
+            fontSize: (theme) => theme.typography.pxToRem(16),
+          }}
+          tooltip="Actions you can perform with this badge"
+        >
+          Actions
+        </WithTooltip>
+        <Typography
+          variant="body2"
+          sx={{
+            mt: 2,
+            color: "text.secondary",
+          }}
+        >
+          No actions available for this badge.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box padding={1} paddingTop={4}>

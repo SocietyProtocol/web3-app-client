@@ -47,11 +47,14 @@ export const BadgeActions = ({
     }
 
     // If current tab is not in available, switch to first available
-    const isCurrentTabAvailable = available.some((a) => a.key === tab);
-    if (!isCurrentTabAvailable) {
-      setTab(available[0]?.key ?? false);
-    }
-  }, [available, tab]);
+    setTab((currentTab) => {
+      const isCurrentTabAvailable = available.some((a) => a.key === currentTab);
+      if (!isCurrentTabAvailable) {
+        return available[0]?.key ?? false;
+      }
+      return currentTab;
+    });
+  }, [available]);
 
   if (loading) {
     return (

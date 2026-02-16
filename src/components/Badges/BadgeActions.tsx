@@ -35,9 +35,19 @@ export const BadgeActions = ({
 
   const available = useMemo(() => actions.filter((a) => a.enabled), [actions]);
 
-  const [tab, setTab] = useState<TabKey | false>(
-    available.length ? (available[0]?.key ?? false) : TabKey.MINT,
-  );
+  const [tab, setTab] = useState<TabKey | false>(false);
+
+  // Reconcile tab state with available actions
+  const validTab = useMemo(() => {
+    if (available.length === 0) return false;
+
+    // Check if current tab is still available
+    const isCurrentTabAvailable = available.some((a) => a.key === tab);
+    if (isCurrentTabAvailable) return tab;
+
+    // If not, return first available
+    return available[0]?.key ?? false;
+  }, [available, tab]);
 
   if (loading) {
     return (
@@ -66,7 +76,9 @@ export const BadgeActions = ({
     );
   }
 
-  if (!tab) return null;
+  if (!validTab) {
+    return null;
+  }
 
   return (
     <Box padding={1} paddingTop={4}>
@@ -89,7 +101,7 @@ export const BadgeActions = ({
         }}
       >
         <Tabs
-          value={tab}
+          value={validTab}
           onChange={(_, v) => setTab(v)}
           variant="scrollable"
           scrollButtons="auto"
@@ -130,11 +142,11 @@ export const BadgeActions = ({
         </Tabs>
       </Stack>
 
-      {tab === "mint" && <MintTab id={id} />}
-      {tab === "transfer" && (
+      {validTab === TabKey.MINT && <MintTab id={id} />}
+      {validTab === TabKey.TRANSFER && (
         <Box marginTop={2}>Transfer functionality is not available yet.</Box>
       )}
-      {tab === "burn" && (
+      {validTab === TabKey.BURN && (
         <Box marginTop={2}>Burn functionality is not available yet.</Box>
       )}
     </Box>

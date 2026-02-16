@@ -21,7 +21,7 @@ export const BadgePermissionsField = ({
 
   const handleOnChange = useCallback(
     (
-      event: SyntheticEvent<Element, Event>,
+      _: SyntheticEvent<Element, Event>,
       newValues: (
         | string
         | {

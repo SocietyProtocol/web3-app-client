@@ -65,12 +65,18 @@ export const DropArea: React.FC<DropAreaProps> = ({
     [disabled, validateAndEmit],
   );
 
-  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      document.getElementById("drop-area-file-input")?.click();
-    }
-  }, []);
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (disabled) {
+        return;
+      }
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        document.getElementById("drop-area-file-input")?.click();
+      }
+    },
+    [disabled],
+  );
 
   const onDragOver = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {

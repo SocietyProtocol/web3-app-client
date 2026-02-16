@@ -20,10 +20,7 @@ export const BadgeEditorsField = ({
   const values = useWatch({ control, name: field, defaultValue: [] });
 
   const handleOnChange = useCallback(
-    (
-      event: SyntheticEvent<Element, Event>,
-      newValues: (string | UserOption)[],
-    ) => {
+    (_: SyntheticEvent<Element, Event>, newValues: (string | UserOption)[]) => {
       setValue(
         field,
         newValues.map((value) =>

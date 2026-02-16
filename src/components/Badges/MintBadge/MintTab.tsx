@@ -73,7 +73,7 @@ export const MintTab = ({ id }: MintTabProps) => {
 
   const handleOnChangeSingle = useCallback(
     (
-      event: SyntheticEvent<Element, Event>,
+      _: SyntheticEvent<Element, Event>,
       newValue: string | null | UserOption,
     ) => {
       const newUserId = typeof newValue === "string" ? newValue : newValue?.id;
@@ -103,7 +103,7 @@ export const MintTab = ({ id }: MintTabProps) => {
 
   const handleOnChangeBatch = useCallback(
     (
-      event: SyntheticEvent<Element, Event>,
+      _: SyntheticEvent<Element, Event>,
       newValues: (string | UserOption)[],
       reason: AutocompleteChangeReason,
     ) => {

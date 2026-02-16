@@ -22,7 +22,11 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
       });
 
       if (onSuccess) {
-        onSuccess(result);
+        try {
+          onSuccess(result);
+        } catch (error) {
+          console.error("Error in onSuccess callback of useUsersQuery:", error);
+        }
       }
 
       return result;

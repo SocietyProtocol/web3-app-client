@@ -1,5 +1,5 @@
-import { Stack, Tabs, Tab, Box, Skeleton, Typography } from "@mui/material";
-import { useMemo, useState, useEffect } from "react";
+import { Stack, Tabs, Tab, Box, Skeleton } from "@mui/material";
+import { useMemo, useState } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
 
@@ -35,26 +35,22 @@ export const BadgeActions = ({
 
   const available = useMemo(() => actions.filter((a) => a.enabled), [actions]);
 
-  const [tab, setTab] = useState<TabKey | false>(
-    available.length ? (available[0]?.key ?? false) : false,
-  );
+  const [tab, setTab] = useState<TabKey | false>(() => {
+    if (available.length === 0) return false;
+    return available[0]?.key ?? false;
+  });
 
-  // Sync tab state when available actions change
-  useEffect(() => {
-    if (available.length === 0) {
-      setTab(false);
-      return;
-    }
-
-    // If current tab is not in available, switch to first available
-    setTab((currentTab) => {
-      const isCurrentTabAvailable = available.some((a) => a.key === currentTab);
-      if (!isCurrentTabAvailable) {
-        return available[0]?.key ?? false;
-      }
-      return currentTab;
-    });
-  }, [available]);
+  // Reconcile tab state with available actions
+  const validTab = useMemo(() => {
+    if (available.length === 0) return false;
+    
+    // Check if current tab is still available
+    const isTabAvailable = available.some((a) => a.key === tab);
+    if (isTabAvailable) return tab;
+    
+    // If not, return first available
+    return available[0]?.key ?? false;
+  }, [available, tab]);
 
   if (loading) {
     return (
@@ -83,31 +79,8 @@ export const BadgeActions = ({
     );
   }
 
-  if (!tab) {
-    return (
-      <Box padding={1} paddingTop={4}>
-        <WithTooltip
-          variant="body1"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            fontSize: (theme) => theme.typography.pxToRem(16),
-          }}
-          tooltip="Actions you can perform with this badge"
-        >
-          Actions
-        </WithTooltip>
-        <Typography
-          variant="body2"
-          sx={{
-            mt: 2,
-            color: "text.secondary",
-          }}
-        >
-          No actions available for this badge.
-        </Typography>
-      </Box>
-    );
+  if (!validTab) {
+    return null;
   }
 
   return (
@@ -131,7 +104,7 @@ export const BadgeActions = ({
         }}
       >
         <Tabs
-          value={tab}
+          value={validTab}
           onChange={(_, v) => setTab(v)}
           variant="scrollable"
           scrollButtons="auto"
@@ -172,11 +145,11 @@ export const BadgeActions = ({
         </Tabs>
       </Stack>
 
-      {tab === "mint" && <MintTab id={id} />}
-      {tab === "transfer" && (
+      {validTab === "mint" && <MintTab id={id} />}
+      {validTab === "transfer" && (
         <Box marginTop={2}>Transfer functionality is not available yet.</Box>
       )}
-      {tab === "burn" && (
+      {validTab === "burn" && (
         <Box marginTop={2}>Burn functionality is not available yet.</Box>
       )}
     </Box>

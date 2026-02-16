@@ -3,13 +3,7 @@
 import React from "react";
 import { Box, Container, Skeleton, Stack } from "@mui/material";
 
-interface HomeSkeletonProps {
-  showBubble?: boolean;
-}
-
-export const HomeSkeleton: React.FC<HomeSkeletonProps> = ({
-  showBubble = true,
-}) => {
+export const HomeSkeleton: React.FC = () => {
   return (
     <Container
       maxWidth="md"
@@ -18,26 +12,6 @@ export const HomeSkeleton: React.FC<HomeSkeletonProps> = ({
         px: { xs: 2, sm: 0 },
       }}
     >
-      {showBubble && (
-        <Box
-          sx={{
-            mb: { xs: 3, sm: 4 },
-            width: "100%",
-            maxWidth: { xs: "100%", sm: 600 },
-            mx: "auto",
-          }}
-        >
-          <Stack spacing={1}>
-            <Skeleton
-              variant="rectangular"
-              height={40}
-              sx={{ borderRadius: 1 }}
-            />
-            <Skeleton variant="text" width="60%" sx={{ fontSize: "1rem" }} />
-          </Stack>
-        </Box>
-      )}
-
       <Box sx={{ mt: { xs: 4, sm: 8 } }}>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
           <Skeleton

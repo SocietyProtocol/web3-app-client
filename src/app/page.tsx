@@ -12,7 +12,6 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useAccount } from "wagmi";
-import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useProfile } from "@/components/AccountSetup/useProfile";
 import { faqData } from "@/data/faq";
 import HomeSkeleton from "@/components/Skeletons/HomeSkeleton";
@@ -35,15 +34,11 @@ export default function Home() {
   );
   const wagmiReady = useWagmiReady();
 
-  const { address, isConnected } = useAccount();
-  const { isWrongNetwork } = useCheckWrongNetwork();
+  const { address } = useAccount();
   const profile = useProfile(address);
 
-  const showBubble =
-    !isConnected || isWrongNetwork || !profile.profileData.data;
-
   if (!wagmiReady || profile.isInitialLoading) {
-    return <HomeSkeleton showBubble={showBubble} />;
+    return <HomeSkeleton />;
   }
 
   return (
@@ -58,10 +53,16 @@ export default function Home() {
         requireNetwork
         requireAccount
         connectWalletMessage="Society Protocol is a framework for building synchronized network states."
+        sx={{
+          mb: {
+            xs: 6,
+            sm: 10,
+          },
+        }}
       />
 
       <Box
-        sx={{ mt: showBubble ? { xs: 6, sm: 10 } : { xs: 3, sm: 5 } }}
+        sx={{ mt: { xs: 3, sm: 5 } }}
         role="region"
         aria-labelledby="faq-heading"
       >

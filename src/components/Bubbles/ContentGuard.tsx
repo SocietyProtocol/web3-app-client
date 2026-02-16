@@ -40,9 +40,9 @@ export const ContentGuard = ({
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
-  const profile = useProfile(address);
+  const profile = useProfile(requireAccount ? address : undefined);
 
-  if (loading || !wagmiReady || (profile.isInitialLoading && requireAccount)) {
+  if (loading || !wagmiReady || (requireAccount && profile.isInitialLoading)) {
     return fallback;
   }
 

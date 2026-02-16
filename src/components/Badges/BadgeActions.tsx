@@ -40,11 +40,11 @@ export const BadgeActions = ({
   // Reconcile tab state with available actions
   const validTab = useMemo(() => {
     if (available.length === 0) return false;
-    
+
     // Check if current tab is still available
     const isCurrentTabAvailable = available.some((a) => a.key === tab);
     if (isCurrentTabAvailable) return tab;
-    
+
     // If not, return first available
     return available[0]?.key ?? false;
   }, [available, tab]);
@@ -142,11 +142,11 @@ export const BadgeActions = ({
         </Tabs>
       </Stack>
 
-      {validTab === "mint" && <MintTab id={id} />}
-      {validTab === "transfer" && (
+      {validTab === TabKey.MINT && <MintTab id={id} />}
+      {validTab === TabKey.TRANSFER && (
         <Box marginTop={2}>Transfer functionality is not available yet.</Box>
       )}
-      {validTab === "burn" && (
+      {validTab === TabKey.BURN && (
         <Box marginTop={2}>Burn functionality is not available yet.</Box>
       )}
     </Box>

@@ -42,12 +42,7 @@ export const ContentGuard = ({
   const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
 
-  const isInitialLoading =
-    (profile.profileId.data === undefined && profile.profileId.isLoading) ||
-    (profile.uri.data === undefined && profile.uri.isLoading) ||
-    (profile.profileData.data === undefined && profile.profileData.isLoading);
-
-  if (loading || !wagmiReady || (isInitialLoading && requireAccount)) {
+  if (loading || !wagmiReady || (profile.isInitialLoading && requireAccount)) {
     return fallback;
   }
 

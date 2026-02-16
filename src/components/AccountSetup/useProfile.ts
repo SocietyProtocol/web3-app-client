@@ -52,5 +52,9 @@ export function useProfile(addressOverride?: Address) {
     subgraphData,
     username,
     refetch,
+    isInitialLoading:
+      (profileIdResult.data === undefined && profileIdResult.isLoading) ||
+      (uriResult.data === undefined && uriResult.isLoading) ||
+      (profileDataResult.data === undefined && profileDataResult.isLoading),
   };
 }

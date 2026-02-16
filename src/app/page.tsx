@@ -39,15 +39,10 @@ export default function Home() {
   const { isWrongNetwork } = useCheckWrongNetwork();
   const profile = useProfile(address);
 
-  const isInitialLoading =
-    (profile.profileId.data === undefined && profile.profileId.isLoading) ||
-    (profile.uri.data === undefined && profile.uri.isLoading) ||
-    (profile.profileData.data === undefined && profile.profileData.isLoading);
-
   const showBubble =
     !isConnected || isWrongNetwork || !profile.profileData.data;
 
-  if (!wagmiReady || isInitialLoading) {
+  if (!wagmiReady || profile.isInitialLoading) {
     return <HomeSkeleton showBubble={showBubble} />;
   }
 

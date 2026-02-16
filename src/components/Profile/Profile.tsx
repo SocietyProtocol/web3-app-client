@@ -21,11 +21,6 @@ export const Profile = () => {
   const { address, isConnected } = useAccount();
   const profile = useProfile(address);
 
-  const isInitialLoading =
-    (profile.profileId.data === undefined && profile.profileId.isLoading) ||
-    (profile.uri.data === undefined && profile.uri.isLoading) ||
-    (profile.profileData.data === undefined && profile.profileData.isLoading);
-
   // reset accountSetupOpen when user connects/disconnects or address changes
   useEffect(() => {
     // Close the setup whenever connection or address changes
@@ -33,7 +28,7 @@ export const Profile = () => {
     setAccountSetupOpen(false);
   }, [isConnected, address, setAccountSetupOpen]);
 
-  if (!wagmiReady || isInitialLoading) {
+  if (!wagmiReady || profile.isInitialLoading) {
     return <AccountSkeleton />;
   }
 

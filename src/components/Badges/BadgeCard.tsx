@@ -140,7 +140,15 @@ export const BadgeCard = ({
       {loading ? (
         <Skeleton width="80%" />
       ) : (
-        <OptionalLink href={`/badges/${id}`}>
+        <OptionalLink
+          href={`/badges/${id}`}
+          style={{
+            maxWidth: "180px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           <Typography
             component="span"
             variant="body2"
@@ -148,10 +156,6 @@ export const BadgeCard = ({
               fontWeight: 700,
               color: "text.primary",
               textAlign: "center",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              width: "100%",
               flexShrink: 0,
               minHeight: 36,
             }}

@@ -23,4 +23,5 @@ export interface UserHandleProps extends Partial<UserData> {
   highlightYou?: boolean;
   size?: "small" | "medium";
   link?: boolean;
+  fullAddress?: boolean;
 }

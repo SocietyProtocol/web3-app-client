@@ -3,14 +3,15 @@ import { fetchUsers, mergeOptions } from "./utils";
 import { UserQueryOptions } from "./types";
 
 export const useUsersQuery = (options?: UserQueryOptions) => {
-  const mergedOptions = mergeOptions(options);
+  const { onSuccess, ...restOptions } = options || {};
+  const mergedOptions = mergeOptions(restOptions);
 
   const queryClient = useQueryClient();
 
   return useInfiniteQuery({
     queryKey: ["users", mergedOptions],
     initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
       const result = await fetchUsers({
         ...mergedOptions,
         skip: pageParam * mergedOptions.pageSize,
@@ -19,6 +20,14 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
       result.users.forEach((user) => {
         queryClient.setQueryData(["user", user.id.toLowerCase()], user);
       });
+
+      if (onSuccess) {
+        try {
+          onSuccess(result);
+        } catch (error) {
+          console.error("Error in onSuccess callback of useUsersQuery:", error);
+        }
+      }
 
       return result;
     },

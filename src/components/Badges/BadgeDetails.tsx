@@ -27,6 +27,7 @@ import { BadgeManagers } from "./BadgeManagers";
 import { HoldersModal } from "./HoldersModal";
 import { getBadgePermissions } from "../../data/badges/utils";
 import { UserCard } from "../User/UserCard";
+import { BadgeActions } from "./BadgeActions";
 
 export interface BadgeDetailsProps {
   id: string;
@@ -254,8 +255,15 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         <BadgeManagers
           label="Who can Manage:"
           tooltip="These are the users who can manage the badge."
-          isLoading={isLoading}
+          loading={isLoading}
           managers={data?.badge?.managers}
+        />
+        <BadgeActions
+          id={id}
+          loading={isLoading}
+          canMint={canMint}
+          canBurn={canBurn}
+          canTransfer={canTransfer}
         />
       </Stack>
 
@@ -263,7 +271,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: 800,
         }}
       >
         <Stack direction="row" justifyContent="space-between" mb={2}>
@@ -355,73 +362,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           </Grid>
         )}
       </Box>
-
-      {/* Actions */}
-      <Stack
-        direction={{
-          xs: "column",
-          sm: "row",
-        }}
-        spacing={2}
-        sx={{
-          width: {
-            xs: "100%",
-            sm: "auto",
-          },
-        }}
-      >
-        {canMint && (
-          <Button
-            variant="outlined"
-            color="primary"
-            size="medium"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              width: {
-                xs: "100%",
-                sm: 160,
-              },
-            }}
-          >
-            Mint
-          </Button>
-        )}
-        {canBurn && (
-          <Button
-            variant="outlined"
-            color="primary"
-            size="medium"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              width: {
-                xs: "100%",
-                sm: 160,
-              },
-            }}
-          >
-            Burn
-          </Button>
-        )}
-        {canTransfer && (
-          <Button
-            variant="outlined"
-            color="primary"
-            size="medium"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              width: {
-                xs: "100%",
-                sm: 160,
-              },
-            }}
-          >
-            Transfer
-          </Button>
-        )}
-      </Stack>
 
       <HoldersModal
         open={isHoldersModalOpen}

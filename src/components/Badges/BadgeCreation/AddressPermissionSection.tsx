@@ -1,7 +1,7 @@
 import { useWatch } from "react-hook-form";
 import { useBadgeCreation } from "./BadgeCreationContext";
-import { UserAutocomplete } from "./UserAutocomplete";
-import { useCallback } from "react";
+import { UserAutocomplete, UserOption } from "./UserAutocomplete";
+import { SyntheticEvent, useCallback } from "react";
 
 interface BadgeEditorsFieldProps {
   field: "editors";
@@ -20,14 +20,20 @@ export const BadgeEditorsField = ({
   const values = useWatch({ control, name: field, defaultValue: [] });
 
   const handleOnChange = useCallback(
-    (newValues: string[]) => {
-      setValue(field, newValues);
+    (_: SyntheticEvent<Element, Event>, newValues: (string | UserOption)[]) => {
+      setValue(
+        field,
+        newValues.map((value) =>
+          typeof value === "string" ? value : value.id,
+        ),
+      );
     },
     [setValue, field],
   );
 
   return (
     <UserAutocomplete
+      multiple
       label={label}
       tooltip={description}
       value={values}

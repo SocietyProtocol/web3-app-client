@@ -12,6 +12,7 @@ import { MuiDialogContent } from "./components/MuiDialogContent";
 import { breakpoints } from "./breakpoints";
 import { MuiPaginationItem } from "./components/MuiPaginationItem";
 import { MuiChip } from "./components/MuiChip";
+import { MuiTabs } from "./components/MuiTabs";
 import { MuiAccordion } from "./components/MuiAccordion";
 import { MuiAccordionSummary } from "./components/MuiAccordionSummary";
 import { MuiAccordionDetails } from "./components/MuiAccordionDetails";
@@ -44,6 +45,7 @@ const baseTheme = createTheme({
     MuiAccordionDetails,
     MuiPaginationItem,
     MuiChip,
+    MuiTabs,
   },
   typography: {
     fontFamily: "var(--font-space-grotesk), sans-serif",

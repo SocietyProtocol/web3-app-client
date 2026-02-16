@@ -17,6 +17,7 @@ import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
 import { useAuctionContext } from "./AuctionContext";
 import { TransactionFeedback } from "../Transaction/TransactionFeedback";
 import { useBidMutation } from "./useBidMutation";
+import { ContentGuard } from "../Bubbles/ContentGuard";
 
 export const BidControl = () => {
   const { address } = useAccount();
@@ -126,157 +127,166 @@ export const BidControl = () => {
   }, [values, decimalsAuctioningToken]);
 
   return (
-    <Paper
-      elevation={0}
+    <ContentGuard
+      requireNetwork
+      switchNetworkMessage="Please switch to the correct network to place a bid."
       sx={{
-        padding: { xs: 2, sm: 3 },
         maxWidth: { xs: "100%", lg: 400 },
         width: { xs: "100%", lg: "auto" },
-        minWidth: {
-          xs: "100%",
-          sm: 400,
-        },
-        backgroundColor: "transparent",
-        border: (theme) => `1px solid ${theme.palette.border.area}`,
-        borderRadius: "12px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
       }}
     >
-      <Box>
-        <Typography variant="body2" color="textPrimary" component="div">
-          Minimum bid amount:{" "}
-          {minBid !== undefined && biddingTokenDecimals !== undefined ? (
-            <FormattedNumber
-              value={minBid}
-              scaleDownDecimals={biddingTokenDecimals}
-              maxDecimals={4}
-              minThreshold={0.0001}
-              symbol={symbolBiddingToken}
-              variant="body2"
-              color="textPrimary"
-              component="span"
-              fontWeight={700}
-            />
-          ) : (
-            "N/A"
-          )}
-        </Typography>
-        <Typography variant="body2" color="textPrimary" component="div">
-          Minimum price:{" "}
-          {minPrice !== undefined && biddingTokenDecimals !== undefined ? (
-            <FormattedNumber
-              value={minPrice}
-              scaleDownDecimals={biddingTokenDecimals}
-              maxDecimals={4}
-              minThreshold={0.0001}
-              symbol={symbolBiddingToken}
-              variant="body2"
-              color="textPrimary"
-              component="span"
-              fontWeight={700}
-            />
-          ) : (
-            "N/A"
-          )}
-        </Typography>
-      </Box>
-      <Controller
-        name="sellAmount"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <AmountInput
-            label="Amount"
-            tokenSymbol={symbolBiddingToken}
-            decimals={biddingTokenDecimals}
-            value={field.value}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            max={userBiddingTokenBalance.data}
-            error={fieldState.invalid}
-            helperText={fieldState.error?.message}
-            disabled={form.formState.disabled || isLoading}
-            fullWidth
-          />
-        )}
-      />
-
-      <Controller
-        name="price"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <AmountInput
-            label={`${symbolBiddingToken} Per ${symbolAuctioningToken} price`}
-            tokenSymbol={symbolBiddingToken}
-            decimals={biddingTokenDecimals}
-            value={field.value}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            error={fieldState.invalid}
-            helperText={fieldState.error?.message}
-            disabled={form.formState.disabled || isLoading}
-            fullWidth
-          />
-        )}
-      />
-
-      {form.formState.isValid && amountSpecBigInt !== undefined && (
-        <Typography variant="body2" color="textPrimary">
-          You will receive approximately{" "}
-          <FormattedNumber
-            value={amountSpecBigInt}
-            scaleDownDecimals={decimalsAuctioningToken}
-            maxDecimals={4}
-            minThreshold={0.0001}
-            symbol="SPEC"
-            variant="body2"
-            color="textPrimary"
-            fontWeight={700}
-            component="span"
-          />
-        </Typography>
-      )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={isActionDisabled}
-        onClick={mutate}
+      <Paper
+        elevation={0}
+        sx={{
+          padding: { xs: 2, sm: 3 },
+          maxWidth: { xs: "100%", lg: 400 },
+          width: { xs: "100%", lg: "auto" },
+          minWidth: {
+            xs: "100%",
+            sm: 400,
+          },
+          backgroundColor: "transparent",
+          border: (theme) => `1px solid ${theme.palette.border.area}`,
+          borderRadius: "12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+        }}
       >
-        {isSyncing
-          ? "Syncing with subgraph..."
-          : bidReceipt.isFetching
-            ? "Confirming bid..."
-            : approveReceipt.isFetching
-              ? "Confirming approval..."
-              : isApproving
-                ? "Approving..."
-                : isBidding
-                  ? "Placing bid..."
-                  : isSuccess
-                    ? "Bid Placed!"
-                    : approveRequired
-                      ? "Approve"
-                      : "Place Bid"}
-      </Button>
-
-      {approveReceipt.data && !bidReceipt.data && (
-        <TransactionFeedback
-          hash={approveReceipt.data?.transactionHash}
-          status={approveReceipt.data?.status}
-          successMessage="Approval confirmed"
+        <Box>
+          <Typography variant="body2" color="textPrimary" component="div">
+            Minimum bid amount:{" "}
+            {minBid !== undefined && biddingTokenDecimals !== undefined ? (
+              <FormattedNumber
+                value={minBid}
+                scaleDownDecimals={biddingTokenDecimals}
+                maxDecimals={4}
+                minThreshold={0.0001}
+                symbol={symbolBiddingToken}
+                variant="body2"
+                color="textPrimary"
+                component="span"
+                fontWeight={700}
+              />
+            ) : (
+              "N/A"
+            )}
+          </Typography>
+          <Typography variant="body2" color="textPrimary" component="div">
+            Minimum price:{" "}
+            {minPrice !== undefined && biddingTokenDecimals !== undefined ? (
+              <FormattedNumber
+                value={minPrice}
+                scaleDownDecimals={biddingTokenDecimals}
+                maxDecimals={4}
+                minThreshold={0.0001}
+                symbol={symbolBiddingToken}
+                variant="body2"
+                color="textPrimary"
+                component="span"
+                fontWeight={700}
+              />
+            ) : (
+              "N/A"
+            )}
+          </Typography>
+        </Box>
+        <Controller
+          name="sellAmount"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <AmountInput
+              label="Amount"
+              tokenSymbol={symbolBiddingToken}
+              decimals={biddingTokenDecimals}
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              max={userBiddingTokenBalance.data}
+              error={fieldState.invalid}
+              helperText={fieldState.error?.message}
+              disabled={form.formState.disabled || isLoading}
+              fullWidth
+            />
+          )}
         />
-      )}
 
-      {bidReceipt.data && (
-        <TransactionFeedback
-          hash={bidReceipt.data?.transactionHash}
-          status={bidReceipt.data?.status}
-          successMessage="Bid placed successfully!"
+        <Controller
+          name="price"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <AmountInput
+              label={`${symbolBiddingToken} Per ${symbolAuctioningToken} price`}
+              tokenSymbol={symbolBiddingToken}
+              decimals={biddingTokenDecimals}
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={fieldState.invalid}
+              helperText={fieldState.error?.message}
+              disabled={form.formState.disabled || isLoading}
+              fullWidth
+            />
+          )}
         />
-      )}
-    </Paper>
+
+        {form.formState.isValid && amountSpecBigInt !== undefined && (
+          <Typography variant="body2" color="textPrimary">
+            You will receive approximately{" "}
+            <FormattedNumber
+              value={amountSpecBigInt}
+              scaleDownDecimals={decimalsAuctioningToken}
+              maxDecimals={4}
+              minThreshold={0.0001}
+              symbol="SPEC"
+              variant="body2"
+              color="textPrimary"
+              fontWeight={700}
+              component="span"
+            />
+          </Typography>
+        )}
+
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={isActionDisabled}
+          onClick={mutate}
+        >
+          {isSyncing
+            ? "Syncing with subgraph..."
+            : bidReceipt.isFetching
+              ? "Confirming bid..."
+              : approveReceipt.isFetching
+                ? "Confirming approval..."
+                : isApproving
+                  ? "Approving..."
+                  : isBidding
+                    ? "Placing bid..."
+                    : isSuccess
+                      ? "Bid Placed!"
+                      : approveRequired
+                        ? "Approve"
+                        : "Place Bid"}
+        </Button>
+
+        {approveReceipt.data && !bidReceipt.data && (
+          <TransactionFeedback
+            hash={approveReceipt.data?.transactionHash}
+            status={approveReceipt.data?.status}
+            successMessage="Approval confirmed"
+          />
+        )}
+
+        {bidReceipt.data && (
+          <TransactionFeedback
+            hash={bidReceipt.data?.transactionHash}
+            status={bidReceipt.data?.status}
+            successMessage="Bid placed successfully!"
+          />
+        )}
+      </Paper>
+    </ContentGuard>
   );
 };

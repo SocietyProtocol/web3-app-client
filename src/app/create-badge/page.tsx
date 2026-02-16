@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { BadgeCreationWizard } from "@/components/Badges/BadgeCreation/BadgeCreationWizard";
+import { ContentGuard } from "@/components/Bubbles/ContentGuard";
 
 export default function CreateBadgePage() {
   return (
@@ -26,7 +27,12 @@ export default function CreateBadgePage() {
           </Box>
         }
       >
-        <BadgeCreationWizard />
+        <ContentGuard
+          requireNetwork
+          connectWalletMessage="Please connect your wallet to create a badge."
+        >
+          <BadgeCreationWizard />
+        </ContentGuard>
       </Suspense>
     </Box>
   );

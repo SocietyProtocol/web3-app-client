@@ -25,15 +25,11 @@ export const ConnectButton = ({
   variant,
 }: ConnectButtonProps) => {
   const {
-    profileId: { data: profileId, isLoading: profileIdLoading },
-    uri: { data: uri, isLoading: uriLoading },
+    profileId: { isLoading: profileIdLoading },
+    uri: { isLoading: uriLoading },
     profileData: { data: profileData, isLoading: profileDataLoading },
+    isInitialLoading,
   } = useProfile();
-
-  const isInitialLoading =
-    (profileId === undefined && profileIdLoading) ||
-    (uri === undefined && uriLoading) ||
-    (profileData === undefined && profileDataLoading);
 
   return (
     <RainbowConnectButton.Custom>

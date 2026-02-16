@@ -47,7 +47,7 @@ export const ContentGuard = ({
     (profile.uri.data === undefined && profile.uri.isLoading) ||
     (profile.profileData.data === undefined && profile.profileData.isLoading);
 
-  if (loading || !wagmiReady || isInitialLoading) {
+  if (loading || !wagmiReady || (isInitialLoading && requireAccount)) {
     return fallback;
   }
 

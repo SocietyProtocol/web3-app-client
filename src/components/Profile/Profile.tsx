@@ -1,7 +1,7 @@
 "use client";
 
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import { useProfile } from "@/components/AccountSetup/useProfile";
 import { useWagmiReady } from "@/atoms/wagmiReady";
@@ -20,9 +20,15 @@ export const Profile = () => {
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
   const profile = useProfile(address);
+  const isInitialMount = useRef(true);
 
   // reset accountSetupOpen when user connects/disconnects or address changes
   useEffect(() => {
+    // Skip the initial mount to preserve setupOpen from URL
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     // Close the setup whenever connection or address changes
     // (covers connect, disconnect, and switching accounts)
     setAccountSetupOpen(false);

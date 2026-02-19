@@ -33,6 +33,7 @@ export const BadgeEditorsField = ({
 
   return (
     <UserAutocomplete
+      freeSolo
       multiple
       label={label}
       tooltip={description}

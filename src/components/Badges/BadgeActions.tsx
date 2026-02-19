@@ -2,6 +2,7 @@ import { Stack, Tabs, Tab, Box, Skeleton } from "@mui/material";
 import { useMemo, useState } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
+import { TransferTab } from "./TransferTab/TransferTab";
 
 interface BadgeActionsProps {
   id: string;
@@ -143,9 +144,7 @@ export const BadgeActions = ({
       </Stack>
 
       {validTab === TabKey.MINT && <MintTab id={id} />}
-      {validTab === TabKey.TRANSFER && (
-        <Box marginTop={2}>Transfer functionality is not available yet.</Box>
-      )}
+      {validTab === TabKey.TRANSFER && <TransferTab id={id} />}
       {validTab === TabKey.BURN && (
         <Box marginTop={2}>Burn functionality is not available yet.</Box>
       )}

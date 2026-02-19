@@ -4,13 +4,15 @@ import { useUsersQuery } from "@/data/users/useUsersQuery";
 import { Hex, isAddress } from "viem";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
 import { UserHandle } from "@/components/User/UserHandle";
-import { AutocompleteProps } from "@mui/material";
+import { AutocompleteProps, AutocompleteValue } from "@mui/material";
 import { useAtom } from "jotai";
 import { usersAtom } from "@/atoms/users";
 
-type SelectedUsers<Multiple extends boolean> = Multiple extends true
-  ? UserOption[]
-  : UserOption | null;
+type SelectedUsers<
+  Multiple extends boolean,
+  DisableClearable extends boolean,
+  FreeSolo extends boolean,
+> = AutocompleteValue<UserOption, Multiple, DisableClearable, FreeSolo>;
 
 export interface UserOption {
   id: string;
@@ -18,25 +20,49 @@ export interface UserOption {
   imageUrl?: string;
 }
 
-interface UserAutocompleteProps<Multiple extends boolean = false> {
+interface UserAutocompleteProps<
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+  FreeSolo extends boolean = false,
+> {
   label?: string;
   tooltip?: string;
   value: Multiple extends true ? string[] : string | undefined;
-  onChange: AutocompleteProps<UserOption, Multiple, false, true>["onChange"];
+  onChange: AutocompleteProps<
+    UserOption,
+    Multiple,
+    DisableClearable,
+    FreeSolo
+  >["onChange"];
   multiple?: Multiple;
   disabled?: boolean;
-  excludeIds?: string[];
+  filterOptions?: AutocompleteProps<
+    UserOption,
+    Multiple,
+    DisableClearable,
+    FreeSolo
+  >["filterOptions"];
+  error?: boolean;
+  helperText?: string;
+  freeSolo?: FreeSolo;
 }
 
-export const UserAutocomplete = <Multiple extends boolean = false>({
+export const UserAutocomplete = <
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+  FreeSolo extends boolean = false,
+>({
   label,
   tooltip,
   value,
   onChange,
   multiple,
+  freeSolo,
   disabled = false,
-  excludeIds = [],
-}: UserAutocompleteProps<Multiple>) => {
+  filterOptions,
+  error,
+  helperText,
+}: UserAutocompleteProps<Multiple, DisableClearable, FreeSolo>) => {
   const [allUsersMap, upsertAllUserMap] = useAtom(usersAtom);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,37 +86,38 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
     [data],
   );
 
-  const selectedUsers: SelectedUsers<Multiple> = useMemo(() => {
-    if (multiple) {
-      return (value as string[]).map(
-        (id) =>
-          allUsersMap.get(id.toLowerCase()) ?? {
-            id,
-          },
-      ) as SelectedUsers<Multiple>;
-    } else {
-      if (value) {
-        return (allUsersMap.get((value as string).toLowerCase()) ?? {
-          id: value as string,
-        }) as SelectedUsers<Multiple>;
+  const selectedUsers: SelectedUsers<Multiple, DisableClearable, FreeSolo> =
+    useMemo(() => {
+      if (multiple) {
+        return (value as string[]).map(
+          (id) =>
+            allUsersMap.get(id.toLowerCase()) ?? {
+              id,
+            },
+        ) as SelectedUsers<Multiple, DisableClearable, FreeSolo>;
       } else {
-        return null as SelectedUsers<Multiple>;
+        if (value) {
+          return (allUsersMap.get((value as string).toLowerCase()) ?? {
+            id: value as string,
+          }) as SelectedUsers<Multiple, DisableClearable, FreeSolo>;
+        } else {
+          return null as SelectedUsers<Multiple, DisableClearable, FreeSolo>;
+        }
       }
-    }
-  }, [multiple, allUsersMap, value]);
+    }, [multiple, allUsersMap, value]);
 
   const options = useMemo(
     () =>
       users
         .map(({ id }) => allUsersMap.get(id.toLowerCase()))
-        .filter((u): u is UserOption => !!u && !excludeIds.includes(u.id)),
-    [allUsersMap, users, excludeIds],
+        .filter((u): u is UserOption => !!u),
+    [allUsersMap, users],
   );
 
   return (
     <CustomAutocomplete
       multiple={multiple}
-      freeSolo
+      freeSolo={freeSolo}
       disabled={disabled}
       label={label}
       tooltip={tooltip}
@@ -99,11 +126,22 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
       value={selectedUsers}
       loading={isLoading || isFetching}
       valueKey="id"
-      mapNewValue={(id) => ({
-        id,
-        name: "Add ",
-        imageUrl: undefined,
-      })}
+      mapNewValue={(id) => {
+        if (
+          freeSolo &&
+          isAddress(id, {
+            strict: false,
+          })
+        ) {
+          return {
+            id,
+            name: "Add ",
+            imageUrl: undefined,
+          };
+        }
+
+        return undefined;
+      }}
       validateNewValue={isAddress}
       getOptionLabel={(option) => {
         if (typeof option === "string") {
@@ -132,6 +170,9 @@ export const UserAutocomplete = <Multiple extends boolean = false>({
           ? "Search users by name or ID..."
           : ""
       }
+      filterOptions={filterOptions}
+      error={error}
+      helperText={helperText}
     />
   );
 };

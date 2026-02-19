@@ -5,10 +5,10 @@ import { scaleUp } from "@/utils/bigint";
 import { Hex } from "viem";
 import { EasyAuctionAbi } from "@/abis/EasyAuction";
 import { useAuctionContext } from "./AuctionContext";
-import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 
 const PREV_SELL_ORDER =
   "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex;

@@ -25,7 +25,7 @@ interface UseTransactionParams {
   snackbarKeyPrefix?: string;
 }
 
-interface ExecuteTransactionParams {
+export interface ExecuteTransactionParams {
   address: Hex;
   abi: readonly unknown[];
   functionName: string;

@@ -21,7 +21,7 @@ import { Hex, isAddress, zeroAddress } from "viem";
 import { useSnackbar } from "notistack";
 import { parseErrorMessage } from "@/utils/errors";
 import { isEqualCaseInsensitive } from "@/utils/string";
-import { useInvitedBy } from "./useInvitedBy";
+import { useReferredBy } from "./useReferredBy";
 import {
   generateReferralCode,
   generateReferralMessage,
@@ -69,7 +69,15 @@ const AddressInput = ({
   );
 };
 
-export const ReferralCodeGenerator = () => {
+interface ReferralCodeGeneratorProps {
+  referredBy?: Hex;
+  loading?: boolean;
+}
+
+export const ReferralCodeGenerator = ({
+  referredBy,
+  loading,
+}: ReferralCodeGeneratorProps) => {
   const [referralCodeMap, setReferralCodeMap] = useState<
     Record<Hex, Record<Hex, Hex | null>>
   >({});
@@ -81,21 +89,24 @@ export const ReferralCodeGenerator = () => {
   const form = useForm({
     resolver: zodResolver(
       z.object({
-        address: z.union([
-          addressValidationSchema.refine(
+        address: addressValidationSchema
+          .refine(
             (value) =>
               account ? !isEqualCaseInsensitive(value as Hex, account) : true,
-            {
-              message:
-                "You cannot generate a referral code for your own address",
-            },
-          ),
-          z.literal(""),
-        ]),
+            "You cannot generate a referral code for your own address",
+          )
+          .refine(
+            (value) =>
+              referredBy
+                ? !isEqualCaseInsensitive(value as Hex, referredBy)
+                : true,
+            "You cannot generate a referral code for the address that referred you",
+          )
+          .optional(),
       }),
     ),
     defaultValues: {
-      address: "",
+      address: undefined,
     },
     mode: "onChange",
   });
@@ -104,21 +115,23 @@ export const ReferralCodeGenerator = () => {
     control: form.control,
   });
 
-  const invitedBy = useInvitedBy(
+  const existingReferrer = useReferredBy(
     useMemo(
       () =>
         address &&
         account &&
         isAddress(address, { strict: false }) &&
-        !isEqualCaseInsensitive(address, account as Hex)
+        !isEqualCaseInsensitive(address, account as Hex) &&
+        !isEqualCaseInsensitive(address, referredBy as Hex)
           ? address
           : undefined,
-      [account, address],
+      [account, address, referredBy],
     ),
   );
 
   const alreadyReferred =
-    invitedBy.data !== undefined && invitedBy.data !== zeroAddress;
+    existingReferrer.data !== undefined &&
+    existingReferrer.data !== zeroAddress;
 
   const referralCode = useMemo(() => {
     if (!account || !address) return null;
@@ -140,8 +153,9 @@ export const ReferralCodeGenerator = () => {
 
     try {
       const text = await navigator.clipboard.readText();
-      form.setValue("address", text);
-      form.trigger("address");
+      form.setValue("address", text, {
+        shouldValidate: true,
+      });
     } catch {
       enqueueSnackbar("Unable to read from clipboard. Please paste manually.", {
         variant: "error",
@@ -156,7 +170,7 @@ export const ReferralCodeGenerator = () => {
   const onSubmit = form.handleSubmit(
     useCallback(
       async (data) => {
-        if (!account || !data.address) {
+        if (!account || data.address === undefined) {
           return;
         }
 
@@ -167,11 +181,13 @@ export const ReferralCodeGenerator = () => {
 
           const referralCode = generateReferralCode(signature, account);
 
+          const normalizedAddress = data.address.toLowerCase() as Hex;
+
           setReferralCodeMap((prev) => ({
             ...prev,
             [account]: {
               ...prev[account],
-              [data.address.toLowerCase()]: referralCode,
+              [normalizedAddress]: referralCode,
             },
           }));
         } catch (error) {
@@ -192,6 +208,7 @@ export const ReferralCodeGenerator = () => {
     <DataItem
       label="Generate a Referral Code"
       tooltip="Referral codes will be used to invite new users to the platform"
+      loading={loading}
     >
       <Controller
         name="address"
@@ -202,9 +219,9 @@ export const ReferralCodeGenerator = () => {
           const referrer =
             account &&
             alreadyReferred &&
-            isEqualCaseInsensitive(invitedBy.data, account)
+            isEqualCaseInsensitive(existingReferrer.data, account)
               ? "you"
-              : invitedBy.data;
+              : existingReferrer.data;
 
           const helperText = fieldState.error
             ? fieldState.error.message
@@ -215,11 +232,13 @@ export const ReferralCodeGenerator = () => {
           return (
             <AddressInput
               {...field}
-              loading={invitedBy.isLoading}
+              value={field.value ?? ""}
+              loading={loading || existingReferrer.isLoading}
               onCancel={onCancel}
               onPaste={onPaste}
               error={error}
               helperText={helperText}
+              autoComplete="off"
             />
           );
         }}
@@ -251,7 +270,8 @@ export const ReferralCodeGenerator = () => {
             !address ||
             !form.formState.isValid ||
             alreadyReferred ||
-            invitedBy.isLoading
+            loading ||
+            existingReferrer.isLoading
           }
           onClick={onSubmit}
         >

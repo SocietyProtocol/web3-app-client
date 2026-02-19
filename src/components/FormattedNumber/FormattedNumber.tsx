@@ -3,8 +3,10 @@ import { Tooltip, Typography, TypographyProps } from "@mui/material";
 import { useMemo } from "react";
 import { formatUnits } from "viem";
 
-export interface FormattedNumberProps
-  extends Omit<TypographyProps, "children"> {
+export interface FormattedNumberProps extends Omit<
+  TypographyProps,
+  "children"
+> {
   value?: number | string | bigint;
   scaleDownDecimals?: number;
   minDecimals?: number;
@@ -12,6 +14,7 @@ export interface FormattedNumberProps
   minThreshold?: number;
   trimTrailingZeros?: boolean;
   symbol?: string;
+  compact?: boolean;
 }
 
 export const FormattedNumber: React.FC<FormattedNumberProps> = ({
@@ -20,7 +23,8 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
   minDecimals,
   maxDecimals,
   minThreshold,
-  trimTrailingZeros = false,
+  trimTrailingZeros,
+  compact,
   symbol,
   ...typographyProps
 }) => {
@@ -39,13 +43,15 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
 
   const formatted = useMemo(() => {
     if (num === undefined) return undefined;
+
     return formatAuto(num, {
       minDecimals,
       maxDecimals,
       minThreshold,
       trimTrailingZeros,
+      compact,
     });
-  }, [maxDecimals, minDecimals, minThreshold, trimTrailingZeros, num]);
+  }, [num, compact, minDecimals, maxDecimals, minThreshold, trimTrailingZeros]);
 
   return (
     num !== undefined && (

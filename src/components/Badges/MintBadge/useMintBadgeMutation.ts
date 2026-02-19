@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useCallback } from "react";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useTransaction } from "@/hooks/useTransaction";
 import { Hex, TransactionReceipt } from "viem";
+import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
 
 interface UseMintBadgeMutationProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -19,11 +19,7 @@ export const useMintBadgeMutation = ({
   onSuccess,
   onError,
 }: UseMintBadgeMutationProps) => {
-  const { chainId } = useAccount();
-  const contractAddress = useMemo(
-    () => getBadgesContractAddress(chainId),
-    [chainId],
-  );
+  const contractAddress = useChainVar(contracts.badges);
 
   const transaction = useTransaction({
     successMessage: "Badge minted successfully",

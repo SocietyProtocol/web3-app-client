@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useMemo } from "react";
 import { scaleUp } from "@/utils/bigint";
-import { useChainId } from "wagmi";
 import { Hex } from "viem";
 import { EasyAuctionAbi } from "@/abis/EasyAuction";
-import { getAuctionContractAddress } from "@/lib/wagmi";
 import { useAuctionContext } from "./AuctionContext";
 import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useSnackbar } from "notistack";
+import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
 
 const PREV_SELL_ORDER =
   "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex;
@@ -28,12 +28,8 @@ export const useBidMutation = ({
 }: UseBidMutationValues) => {
   const { enqueueSnackbar } = useSnackbar();
   const { auctionDetail, refetch, refetchOrders } = useAuctionContext();
-  const chainId = useChainId();
 
-  const contractAddress = useMemo(
-    () => getAuctionContractAddress(chainId),
-    [chainId],
-  );
+  const contractAddress = useChainVar(contracts.auction);
 
   const { auctionId, addressBiddingToken, decimalsAuctioningToken } =
     auctionDetail ?? {};

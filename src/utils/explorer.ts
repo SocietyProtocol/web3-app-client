@@ -1,5 +1,5 @@
 import { mainnet, sepolia } from "wagmi/chains";
-import { URLS } from "@/config/const";
+import { URLS } from "@/consts/urls";
 import { Address, Hex } from "viem";
 
 type ExplorerLinkParams = { tx: Hex } | { address: Address };

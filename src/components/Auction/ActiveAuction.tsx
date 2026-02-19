@@ -26,9 +26,14 @@ export const ActiveAuction = () => {
     symbolBiddingToken,
     decimalsBiddingToken,
     decimalsAuctioningToken,
+    addressAuctioningToken,
     symbolAuctioningToken,
     endTimeTimestamp,
   } = auctionDetail ?? {};
+
+  console.log({
+    addressAuctioningToken,
+  });
 
   const xReferenceLines = useMemo(() => {
     if (currentClearingPrice === undefined) return [];

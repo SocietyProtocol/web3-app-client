@@ -1,0 +1,12 @@
+import { expectedNetwork } from "@/lib/wagmi";
+import { erc20Abi, Hex } from "viem";
+import { useReadContract } from "wagmi";
+
+export const useDecimals = (tokenAddress: Hex | undefined) =>
+  useReadContract({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "decimals",
+    query: { enabled: !!tokenAddress, staleTime: Infinity },
+    chainId: expectedNetwork.id,
+  });

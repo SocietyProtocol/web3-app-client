@@ -22,26 +22,19 @@ export const DataItem = ({
         width: "100%",
       }}
     >
-      {loading ? (
-        <>
-          <Skeleton variant="text" width={150} />
-          {children}
-        </>
-      ) : (
-        <>
-          <WithTooltip
-            component="div"
-            variant="subtitle2"
-            gutterBottom
-            color="textPrimary"
-            tooltip={tooltip}
-            iconPosition="end"
-          >
-            {label}
-          </WithTooltip>
-          {children}
-        </>
-      )}
+      <>
+        <WithTooltip
+          component="div"
+          variant="subtitle2"
+          gutterBottom
+          color="textPrimary"
+          tooltip={tooltip}
+          iconPosition="end"
+        >
+          {label}
+        </WithTooltip>
+        {loading ? <Skeleton variant="text" width={200} /> : children}
+      </>
     </Stack>
   );
 };

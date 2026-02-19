@@ -4,7 +4,7 @@ import { expectedNetwork, getBadgesContractAddress } from "@/lib/wagmi";
 import { Hex } from "viem";
 import { useReadContract } from "wagmi";
 
-export const useInvitedBy = (address?: Hex) => {
+export const useReferredBy = (address?: Hex) => {
   const contractAddress = useChainVar(getBadgesContractAddress);
 
   return useReadContract({

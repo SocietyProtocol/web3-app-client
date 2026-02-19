@@ -10,14 +10,14 @@ import { useCallback } from "react";
 import { useSnackbar } from "notistack";
 import { useAcceptInvitationMutation } from "./useAcceptInvitationMutation";
 import { useAccount } from "wagmi";
-import { useInvitedBy } from "./useInvitedBy";
+import { useReferredBy } from "./useReferredBy";
 import { generateReferralMessage } from "@/utils/referralCode";
 
 export const AcceptInvitation = () => {
   const { address } = useAccount();
   const { enqueueSnackbar } = useSnackbar();
 
-  const invitedBy = useInvitedBy(address);
+  const referredBy = useReferredBy(address);
 
   const form = useForm({
     resolver: zodResolver(
@@ -34,7 +34,7 @@ export const AcceptInvitation = () => {
   const { mutate, isExecuting, isSuccess } = useAcceptInvitationMutation({
     onSuccess: () => {
       form.reset();
-      invitedBy.refetch();
+      referredBy.refetch();
     },
   });
 

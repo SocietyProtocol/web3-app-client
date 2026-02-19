@@ -5,11 +5,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { throwResponseError } from "@/utils/errors";
 import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
-import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useTransaction } from "@/hooks/useTransaction";
 import { TransactionReceipt, zeroAddress } from "viem";
 import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
 
 interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -17,7 +17,7 @@ interface UseMutateBadgeProps {
 }
 
 export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
-  const contractAddress = useChainVar(getBadgesContractAddress);
+  const contractAddress = useChainVar(contracts.badges);
 
   const { generateAuthPayload } = useAuth();
 

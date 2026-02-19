@@ -7,7 +7,7 @@
  */
 export const formatExact = (
   value: number | string,
-  decimals: number
+  decimals: number,
 ): string => {
   const num = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(num)) {
@@ -63,7 +63,8 @@ export const formatAuto = (
     maxDecimals?: number;
     minThreshold?: number;
     trimTrailingZeros?: boolean;
-  }
+    compact?: boolean;
+  },
 ): string => {
   const num = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(num)) {
@@ -84,6 +85,7 @@ export const formatAuto = (
     maxDecimals = 6,
     minThreshold = 1e-6,
     trimTrailingZeros = false,
+    compact = false,
   } = options || {};
 
   // Too small → threshold display
@@ -93,37 +95,15 @@ export const formatAuto = (
 
   const decimalsToShow = Math.min(
     maxDecimals,
-    Math.max(minDecimals ?? 0, maxDecimals - magnitude - 1)
+    Math.max(minDecimals ?? 0, maxDecimals - magnitude - 1),
   );
 
   const formatted = new Intl.NumberFormat("en-US", {
+    notation: compact ? "compact" : "standard",
+    compactDisplay: "short",
     minimumFractionDigits: minDecimals,
     maximumFractionDigits: decimalsToShow,
   }).format(num);
 
   return trimTrailingZeros ? trimZeros(formatted) : formatted;
-};
-
-/**
- * Formats a number in compact notation (e.g., 1.2K, 3.4M).
- *
- * @param value The number or string to format
- * @param decimals The number of decimal places to include
- * @returns The formatted number as a string
- */
-export const formatCompact = (
-  value: number | string,
-  decimals: number = 2
-): string => {
-  const num = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(num)) {
-    return String(num);
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    compactDisplay: "short",
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(num);
 };

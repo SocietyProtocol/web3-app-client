@@ -1,11 +1,12 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
-import { expectedNetwork, getBadgesContractAddress } from "@/lib/wagmi";
+import { expectedNetwork } from "@/lib/wagmi";
 import { Hex } from "viem";
 import { useReadContract } from "wagmi";
 
 export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
-  const contractAddress = useChainVar(getBadgesContractAddress);
+  const contractAddress = useChainVar(contracts.badges);
 
   const officialBadgeCreatorRole = useReadContract({
     address: contractAddress,

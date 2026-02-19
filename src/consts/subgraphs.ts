@@ -1,16 +1,12 @@
-import { URLS } from "./const";
+import { ChainVariable } from "./types";
+import { URLS } from "./urls";
 
 interface SubgraphEndpoints {
   badges: string;
   auction: string;
 }
 
-interface Subgraphs {
-  sepolia: SubgraphEndpoints;
-  mainnet: SubgraphEndpoints;
-}
-
-export const subgraphs: Subgraphs = {
+export const subgraphs: ChainVariable<SubgraphEndpoints> = {
   sepolia: {
     badges: URLS.SUBGRAPH.SEPOLIA.BADGES,
     auction: URLS.SUBGRAPH.SEPOLIA.AUCTION,

@@ -10,12 +10,15 @@ import { UserCard } from "../User/UserCard";
 import { ProfileDataCard } from "../ProfileDataCard/ProfileDataCard";
 import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkeleton";
 import { Address } from "viem";
-import { mockAccountStats } from "./accountStats";
 import { BadgeCard } from "../Badges/BadgeCard";
 import { BadgesModal } from "../Badges/BadgesModal";
 import { truncateAddress } from "@/utils/string";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import { parseAsBoolean, useQueryState } from "nuqs";
+import { useChainVar } from "@/hooks/useChainVar";
+import { tokens } from "@/consts/tokens";
+import { useFullBalanceOf } from "@/hooks/erc20/useFullBalance";
+import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -30,6 +33,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
     profileId,
     profileData,
     subgraphData,
+
     username = overrideAddress
       ? truncateAddress(overrideAddress)
       : "Unknown User",
@@ -37,23 +41,26 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
 
   const { data: profile, isLoading } = profileData;
 
+  const tokenAddress = useChainVar(tokens.spec);
+
+  const {
+    rawBalance: specRawBalance,
+    symbol: specSymbol,
+    decimals: specDecimals,
+    isLoading: isSpecBalanceLoading,
+  } = useFullBalanceOf({
+    address: overrideAddress,
+    tokenAddress,
+  });
+
   const badgesCount = useMemo(
     () => subgraphData.data?.badges?.length,
     [subgraphData.data],
   );
 
-  const stats = useMemo(
-    () =>
-      mockAccountStats.map((stat) => {
-        if (stat.label === "Badges") {
-          return {
-            ...stat,
-            value: badgesCount ?? 0,
-          };
-        }
-        return stat;
-      }),
-    [badgesCount],
+  const communityCount = useMemo(
+    () => subgraphData.data?.badges.filter((b) => b.isCommunity).length,
+    [subgraphData.data],
   );
 
   const [isEditing, setIsEditing] = useQueryState(
@@ -124,14 +131,49 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             spacing={{ xs: 2, sm: 3 }}
             overflow="hidden"
           >
-            {stats.map((stat) => (
-              <AccountStat
-                key={stat.label}
-                label={stat.label}
-                value={stat.value}
-                tooltip={stat.tooltip}
-              />
-            ))}
+            <AccountStat
+              label="Total Balance"
+              value={
+                <FormattedNumber
+                  value={specRawBalance.data}
+                  symbol={specSymbol.data}
+                  scaleDownDecimals={specDecimals.data}
+                  component="span"
+                  maxDecimals={2}
+                  compact
+                />
+              }
+              loading={isSpecBalanceLoading}
+              tooltip="Total SPEC token balance."
+            />
+
+            <AccountStat
+              label="Communities"
+              value={
+                <FormattedNumber
+                  value={communityCount}
+                  component="span"
+                  maxDecimals={2}
+                  compact
+                />
+              }
+              loading={subgraphData.isLoading}
+              tooltip="Number of communities you are a member of."
+            />
+
+            <AccountStat
+              label="Badges"
+              value={
+                <FormattedNumber
+                  value={badgesCount}
+                  component="span"
+                  maxDecimals={2}
+                  compact
+                />
+              }
+              loading={subgraphData.isLoading}
+              tooltip="Number of badges you have earned."
+            />
           </Grid>
           {/* Profile and Data Cards */}
           <Grid

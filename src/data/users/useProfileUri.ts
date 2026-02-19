@@ -1,10 +1,11 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
-import { expectedNetwork, getBadgesContractAddress } from "@/lib/wagmi";
+import { expectedNetwork } from "@/lib/wagmi";
 import { useReadContract } from "wagmi";
 
 export const useProfileUri = (profileId?: bigint) => {
-  const contractAddress = useChainVar(getBadgesContractAddress);
+  const contractAddress = useChainVar(contracts.badges);
 
   const uriResult = useReadContract({
     address: contractAddress,

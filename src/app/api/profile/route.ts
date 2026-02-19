@@ -3,7 +3,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { accountValidationSchema } from "@/validation/account";
 import { NextRequest, NextResponse } from "next/server";
 import { flattenError } from "zod";
-import { URLS } from "@/config/const";
+import { URLS } from "@/consts/urls";
 
 export interface ProfileResponse {
   uri: string;

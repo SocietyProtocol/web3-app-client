@@ -120,6 +120,7 @@ export const ReferralCodeGenerator = ({
       () =>
         address &&
         account &&
+        referredBy &&
         isAddress(address, { strict: false }) &&
         !isEqualCaseInsensitive(address, account as Hex) &&
         !isEqualCaseInsensitive(address, referredBy as Hex)

@@ -1,4 +1,4 @@
-import { Address } from "viem";
+import { Address, zeroAddress } from "viem";
 import { ChainVariable } from "./types";
 
 interface Tokens {
@@ -8,6 +8,6 @@ interface Tokens {
 export const tokens: Tokens = {
   spec: {
     sepolia: "0xe4a566a04aed9f938bba16d47d859a706bc4949a",
-    mainnet: "0x0",
+    mainnet: zeroAddress, // Placeholder, replace with actual address when available
   },
 };

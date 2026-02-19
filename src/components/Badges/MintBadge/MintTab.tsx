@@ -96,6 +96,7 @@ export const MintTab = ({ id }: MintTabProps) => {
       form.setValue(
         "recipients",
         newValue ? [typeof newValue === "string" ? newValue : newValue.id] : [],
+        { shouldValidate: true },
       );
     },
     [holders, form, enqueueSnackbar],
@@ -111,9 +112,7 @@ export const MintTab = ({ id }: MintTabProps) => {
         typeof v === "string" ? v : v.id,
       );
 
-      if (reason === "clear" || reason === "removeOption") {
-        form.setValue("recipients", cleanNewValues);
-      } else if (
+      if (
         reason === "createOption" ||
         reason === "blur" ||
         reason === "selectOption"
@@ -143,9 +142,9 @@ export const MintTab = ({ id }: MintTabProps) => {
           );
           return;
         }
-
-        form.setValue("recipients", cleanNewValues);
       }
+
+      form.setValue("recipients", cleanNewValues, { shouldValidate: true });
     },
     [enqueueSnackbar, form, holders],
   );

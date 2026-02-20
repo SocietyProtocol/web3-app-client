@@ -289,7 +289,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                         sx={{
                           width: {
                             xs: "100%",
-                            sm: "200px",
+                            sm: "240px",
                           },
                         }}
                       >
@@ -298,6 +298,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                           name={badge.name}
                           imageUrl={badge.imageUrl}
                           isOfficial={badge.isOfficial}
+                          isCommunity={badge.isCommunity}
                           creatorAddress={badge.creatorAddress}
                           uri={badge.uri}
                         />

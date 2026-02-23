@@ -19,6 +19,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { tokens } from "@/consts/tokens";
 import { useFullBalanceOf } from "@/hooks/erc20/useFullBalance";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
+import { CardRow } from "../Cards/CardRow";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -217,119 +218,41 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             )}
           </Grid>
 
-          <Box>
-            <Stack direction="row" justifyContent="space-between" mb={2}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          <CardRow
+            title={
+              <>
                 Badges held by {username} (
                 {subgraphData.isLoading ? (
                   <Skeleton
                     variant="text"
                     width={20}
-                    sx={{
-                      display: "inline-block",
-                    }}
+                    sx={{ display: "inline-block" }}
                   />
                 ) : (
                   badgesCount
                 )}
                 )
-              </Typography>
-              {badgesCount && badgesCount > 6 && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleOpenBadgesModal}
-                >
-                  View All Badges
-                </Button>
-              )}
-            </Stack>
-            {badgesCount === 0 ? (
-              <Stack
-                justifyContent="center"
-                alignItems="center"
-                minHeight={100}
-              >
-                <Typography variant="body1" color="text.secondary">
-                  No badges found
-                </Typography>
-              </Stack>
-            ) : (
-              <Grid
-                container
-                columns={{
-                  xs: 1,
-                  sm: 2,
-                  md: 4,
-                }}
-                spacing={{
-                  xs: 2,
-                  sm: 3,
-                }}
-              >
-                {subgraphData.isLoading
-                  ? Array.from({ length: 4 }).map((_, index) => (
-                      <Grid
-                        key={`skeleton-${index}`}
-                        size={1}
-                        sx={{
-                          width: {
-                            xs: "100%",
-                            sm: "200px",
-                          },
-                        }}
-                      >
-                        <BadgeCard loading />
-                      </Grid>
-                    ))
-                  : subgraphData.data?.badges.slice(0, 6).map((badge) => (
-                      <Grid
-                        key={badge.id}
-                        size={1}
-                        sx={{
-                          width: {
-                            xs: "100%",
-                            sm: "240px",
-                          },
-                        }}
-                      >
-                        <BadgeCard
-                          id={badge.id}
-                          name={badge.name}
-                          imageUrl={badge.imageUrl}
-                          isOfficial={badge.isOfficial}
-                          isCommunity={badge.isCommunity}
-                          creatorAddress={badge.creatorAddress}
-                          uri={badge.uri}
-                        />
-                      </Grid>
-                    ))}
-
-                {badgesCount && badgesCount > 6 && (
-                  <Grid
-                    size={1}
-                    sx={{
-                      width: {
-                        xs: "100%",
-                        sm: "200px",
-                      },
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.primary"
-                      sx={{ textAlign: "center" }}
-                    >
-                      And {badgesCount - 6} more badges...
-                    </Typography>
-                  </Grid>
-                )}
-              </Grid>
+              </>
+            }
+            loading={subgraphData.isLoading}
+            items={subgraphData.data?.badges}
+            renderItem={(badge) => (
+              <BadgeCard
+                id={badge.id}
+                name={badge.name}
+                imageUrl={badge.imageUrl}
+                isOfficial={badge.isOfficial}
+                isCommunity={badge.isCommunity}
+                creatorAddress={badge.creatorAddress}
+                uri={badge.uri}
+                loading={badge.loading}
+              />
             )}
-          </Box>
+            noneFoundText="No badges found"
+            andMoreText="And {count} more badges..."
+            viewAllText="View All Badges"
+            viewAllOnClick={handleOpenBadgesModal}
+          />
 
           <BadgesModal
             open={isBadgesModalOpen}

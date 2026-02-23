@@ -8,7 +8,6 @@ import {
   Typography,
   Button,
   Skeleton,
-  Grid,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
@@ -28,6 +27,7 @@ import { HoldersModal } from "./HoldersModal";
 import { getBadgePermissions } from "../../data/badges/utils";
 import { UserCard } from "../User/UserCard";
 import { BadgeActions } from "./BadgeActions";
+import { CardRow } from "../Cards/CardRow";
 
 export interface BadgeDetailsProps {
   id: string;
@@ -267,101 +267,35 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         />
       </Stack>
 
-      {/* Holders Section */}
-      <Box
+      <CardRow
+        title={
+          <>
+            Holders (
+            {isLoading ? <Skeleton variant="text" width={20} /> : holdersCount})
+          </>
+        }
+        loading={isLoading}
+        items={data?.badge?.holders}
+        renderItem={(holder) => (
+          <UserCard
+            id={holder.id as Hex}
+            name={holder.name ?? truncateAddress(holder.id as Hex)}
+            bio={holder.bio}
+            imageUrl={holder.imageUrl}
+            loading={holder.loading}
+            size="small"
+            highlightYou
+            link
+          />
+        )}
+        andMoreText="And {count} more holders..."
+        noneFoundText="No holders found"
+        viewAllText="View All Holders"
+        viewAllOnClick={handleOpenHoldersModal}
         sx={{
           width: "100%",
         }}
-      >
-        <Stack direction="row" justifyContent="space-between" mb={2}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Holders (
-            {isLoading ? <Skeleton variant="text" width={20} /> : holdersCount})
-          </Typography>
-          {holdersCount > 6 && (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleOpenHoldersModal}
-            >
-              View All Holders
-            </Button>
-          )}
-        </Stack>
-        {holdersCount === 0 ? (
-          <Stack justifyContent="center" alignItems="center" minHeight={100}>
-            <Typography variant="body1" color="text.secondary">
-              No holders found
-            </Typography>
-          </Stack>
-        ) : (
-          <Grid
-            container
-            columns={{
-              xs: 1,
-              sm: 2,
-              md: 3,
-            }}
-            spacing={{
-              xs: 2,
-              sm: 3,
-            }}
-          >
-            {isLoading
-              ? Array.from({ length: 6 }).map((_, index) => (
-                  <Grid
-                    key={`skeleton-${index}`}
-                    size={1}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <UserCard loading />
-                  </Grid>
-                ))
-              : data?.badge?.holders?.slice(0, 6).map((holder) => (
-                  <Grid
-                    key={holder.id}
-                    size={1}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <UserCard
-                      id={holder.id as Hex}
-                      name={holder.name ?? truncateAddress(holder.id as Hex)}
-                      bio={holder.bio}
-                      imageUrl={holder.imageUrl}
-                      size="small"
-                      highlightYou
-                      link
-                    />
-                  </Grid>
-                ))}
-
-            {holdersCount > 6 && (
-              <Grid
-                size={1}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ textAlign: "center" }}
-                >
-                  And {holdersCount - 6} more holders...
-                </Typography>
-              </Grid>
-            )}
-          </Grid>
-        )}
-      </Box>
+      />
 
       <HoldersModal
         open={isHoldersModalOpen}

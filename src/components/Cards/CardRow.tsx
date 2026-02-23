@@ -90,7 +90,7 @@ export const CardRow = <T extends { id: string }>({
                   sx={{
                     width: {
                       xs: "100%",
-                      sm: "240px",
+                      sm: "200px",
                     },
                   }}
                 >

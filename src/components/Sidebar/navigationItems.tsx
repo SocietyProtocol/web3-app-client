@@ -25,6 +25,13 @@ export const navigationItems: NavigationItem[] = [
     url: "/profile",
   },
   {
+    text: "Accounts",
+    icon: (
+      <Image src="/icons/accounts.svg" alt="Accounts" width={24} height={24} />
+    ),
+    url: "/accounts",
+  },
+  {
     text: "Badges",
     icon: <Image src="/icons/badges.svg" alt="Badges" width={24} height={24} />,
     url: "/badges",

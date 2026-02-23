@@ -1,29 +1,29 @@
 "use client";
 
-import { BadgeCard } from "./BadgeCard";
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
 import {
   Stack,
   TextField,
   Box,
   InputAdornment,
-  Tabs,
-  Tab,
   Typography,
   Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useAccount } from "wagmi";
-import { isAddress } from "viem";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
-import { CreatedByOption, TabOption } from "../../data/badges/types";
-import { useBadges } from "@/data/badges/useBadges";
-import { filterOptions, sortOptions } from "../../data/badges/consts";
+import { useAccounts } from "@/data/accounts/useAccounts";
+import { sortOptions } from "../../data/accounts/consts";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
+import { UserTag } from "../User/UserTag";
+import { truncateAddress } from "@/utils/string";
+import { Hex } from "viem";
+import { useRouter } from "next/navigation";
+import { useProfile } from "../AccountSetup/useProfile";
 
-export const Badges = () => {
-  const { address: userAddress } = useAccount();
+export const Accounts = () => {
+  const router = useRouter();
+  const profile = useProfile();
 
   const {
     data,
@@ -35,17 +35,11 @@ export const Badges = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    activeTab,
     searchQuery,
-    createdBy,
-    createdByAddress,
     orderBy,
     setSearchQuery,
-    setActiveTab,
-    setCreatedBy,
-    setCreatedByAddress,
     setSortBy,
-  } = useBadges();
+  } = useAccounts();
 
   const { start, complete } = useLoadingBar();
 
@@ -58,8 +52,8 @@ export const Badges = () => {
     }
   }, [complete, isFetching, start]);
 
-  const allBadges = useMemo(
-    () => data?.pages.flatMap((page) => page.badges) || [],
+  const allAccounts = useMemo(
+    () => data?.pages.flatMap((page) => page.users) || [],
     [data],
   );
 
@@ -88,53 +82,54 @@ export const Badges = () => {
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const onCreatedByAddressChange = (value: string) => {
-    setCreatedByAddress(isAddress(value) ? value : null);
-  };
+  const handleSetupAccountClick = useCallback(() => {
+    router.push("/profile?setupOpen=true");
+  }, [router]);
 
   return (
     <>
       <Stack spacing={3} width="100%" marginTop={3}>
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onChange={(_, value) => setActiveTab(value)}
-          variant="fullWidth"
-          sx={{
-            borderBottom: 1,
-            borderColor: "divider",
-          }}
-        >
-          <Tab label="All" value={TabOption.All} />
-          <Tab
-            label="Managed by me"
-            value={TabOption.Managed}
-            disabled={!userAddress}
-          />
-          <Tab
-            label="My badges"
-            value={TabOption.MyBadges}
-            disabled={!userAddress}
-          />
-        </Tabs>
-
         {/* Controls */}
         <Box
           sx={{
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
-            gap: 2,
-            justifyContent: "space-between",
             alignItems: { xs: "stretch", md: "center" },
+            justifyContent: "space-between",
           }}
         >
-          <Stack
-            direction={{
-              xs: "column",
-              md: "row",
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 2,
+              alignItems: { xs: "stretch", md: "center" },
             }}
-            spacing={2}
           >
+            {/* Search */}
+            <TextField
+              id="accounts-search-input"
+              placeholder="Search by name or address..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              size="small"
+              sx={{
+                flex: {
+                  xs: 1,
+                  md: "unset",
+                },
+                minWidth: { xs: "100%", md: 300 },
+              }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
             {/* Sort */}
             <FilterSelect
               label="Sort by"
@@ -142,52 +137,16 @@ export const Badges = () => {
               options={sortOptions}
               onChange={setSortBy}
             />
+          </Box>
 
-            {/* Filter */}
-            <FilterSelect
-              label="Created by"
-              value={createdBy}
-              options={filterOptions}
-              onChange={(value) => {
-                setCreatedBy(value);
-                if (value !== CreatedByOption.Address) {
-                  setCreatedByAddress(null);
-                }
-              }}
-              customOption={CreatedByOption.Address}
-              customInputValue={createdByAddress ?? undefined}
-              onCustomInputChange={onCreatedByAddressChange}
-              customInputPlaceholder="0x..."
-            />
-          </Stack>
-
-          {/* Search */}
-          <TextField
-            id="badges-search-input"
-            placeholder="Search by name or address..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            size="small"
-            sx={{
-              flex: {
-                xs: 1,
-                md: "unset",
-              },
-              minWidth: { xs: "100%", md: 300 },
-            }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
+          {!profile.profileData.isLoading && !profile.profileData.data && (
+            <Button variant="contained" onClick={handleSetupAccountClick}>
+              Setup Account
+            </Button>
+          )}
         </Box>
 
-        {/* Badge Grid */}
+        {/* Accounts Grid */}
         <Box
           sx={{
             display: "grid",
@@ -213,9 +172,9 @@ export const Badges = () => {
             />
           ) : isLoading ? (
             Array.from({ length: 12 }).map((_, index) => (
-              <BadgeCard key={`skeleton-${index}`} loading />
+              <UserTag key={`skeleton-${index}`} loading link />
             ))
-          ) : allBadges.length === 0 ? (
+          ) : allAccounts.length === 0 ? (
             <Box
               sx={{
                 gridColumn: "1 / -1",
@@ -226,11 +185,27 @@ export const Badges = () => {
               }}
             >
               <Typography variant="body1" color="text.primary">
-                No badges found
+                No accounts found
               </Typography>
             </Box>
           ) : (
-            allBadges.map((badge) => <BadgeCard key={badge.id} {...badge} />)
+            allAccounts.map((account) => (
+              <Box
+                key={account.id}
+                sx={{
+                  position: "relative",
+                }}
+              >
+                <UserTag
+                  id={account.id}
+                  name={account.name ?? truncateAddress(account.id as Hex)}
+                  bio={account.bio}
+                  imageUrl={account.imageUrl}
+                  link
+                  highlightYou
+                />
+              </Box>
+            ))
           )}
         </Box>
 
@@ -241,7 +216,7 @@ export const Badges = () => {
         {isFetchingNextPage && (
           <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Loading more badges...
+              Loading more accounts...
             </Typography>
           </Box>
         )}

@@ -1,6 +1,5 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { mainnet, sepolia } from "wagmi/chains";
-import { contracts } from "@/config/contracts";
 import { http, watchAccount } from "@wagmi/core";
 import {
   wagmiConnectionAttemptedAtom,
@@ -15,20 +14,6 @@ export const isProd = env.environment === "production";
 export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
 
 export const expectedNetwork = isProd ? mainnet : sepolia;
-
-export function getBadgesContractAddress(chainId?: number) {
-  if (chainId === sepolia.id) return contracts.sepolia.badges;
-  if (chainId === mainnet.id) return contracts.mainnet.badges;
-  // fallback to env
-  return isProd ? contracts.mainnet.badges : contracts.sepolia.badges;
-}
-
-export const getAuctionContractAddress = (chainId?: number) => {
-  if (chainId === sepolia.id) return contracts.sepolia.auction;
-  if (chainId === mainnet.id) return contracts.mainnet.auction;
-  // fallback to env
-  return isProd ? contracts.mainnet.auction : contracts.sepolia.auction;
-};
 
 export const wagmiConfig = getDefaultConfig({
   appName: "Society Protocol",

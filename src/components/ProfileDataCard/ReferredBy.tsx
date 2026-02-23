@@ -1,4 +1,3 @@
-import { useInvitedBy } from "./useInvitedBy";
 import { DataItem } from "./DataItem";
 import { UserHandle } from "../User/UserHandle";
 import { Hex, zeroAddress } from "viem";
@@ -8,30 +7,30 @@ import { useProfile } from "../AccountSetup/useProfile";
 interface ReferredByProps {
   readonly?: boolean;
   address?: Hex;
+  loading?: boolean;
 }
 
-export const ReferredBy = ({ readonly = false, address }: ReferredByProps) => {
-  const invitedBy = useInvitedBy(address);
-
+export const ReferredBy = ({
+  readonly = false,
+  address,
+  loading,
+}: ReferredByProps) => {
   const profile = useProfile(
-    invitedBy.data && invitedBy.data !== zeroAddress
-      ? invitedBy.data
-      : undefined,
+    address && address !== zeroAddress ? address : undefined,
   );
 
-  return !readonly && invitedBy.data === zeroAddress && !invitedBy.isLoading ? (
+  return !readonly && address === zeroAddress && !loading ? (
     <AcceptInvitation />
   ) : (
     <DataItem
-      loading={invitedBy.isLoading}
+      loading={loading}
       label="Referred by"
       tooltip="The user who referred this account."
     >
-      {invitedBy.isLoading ||
-      (invitedBy.data && invitedBy.data !== zeroAddress) ? (
+      {loading || (address && address !== zeroAddress) ? (
         <UserHandle
-          loading={invitedBy.isLoading}
-          id={invitedBy.data}
+          loading={loading}
+          id={address}
           name={profile.username}
           bio={profile.profileData.data?.bio}
           imageUrl={profile.profileData.data?.imageUrl}

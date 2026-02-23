@@ -1,7 +1,7 @@
 import { pinata } from "@/lib/pinata";
 import { authenticateRequest } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { URLS } from "@/config/const";
+import { URLS } from "@/consts/urls";
 
 export interface UploadMetadataResponse {
   uri: string;

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mainnet, sepolia } from "wagmi/chains";
 import { getExplorerLinkBuilder } from "../explorer";
 import { Hex } from "viem";
-import { URLS } from "../../config/const";
+import { URLS } from "../../consts/urls";
 
 describe("getExplorerLinkBuilder", () => {
   it("builds tx and address links for mainnet", () => {

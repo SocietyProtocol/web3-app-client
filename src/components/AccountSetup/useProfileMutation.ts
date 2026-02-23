@@ -1,6 +1,5 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { ProfileResponse } from "@/app/api/profile/route";
-import { getBadgesContractAddress } from "@/lib/wagmi";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
@@ -11,9 +10,10 @@ import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
-  const contractAddress = useChainVar(getBadgesContractAddress);
+  const contractAddress = useChainVar(contracts.badges);
   const { address } = useAccount();
   const userAddress = overrideAddress || address;
   const { generateAuthPayload } = useAuth();

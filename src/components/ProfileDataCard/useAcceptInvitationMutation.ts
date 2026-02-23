@@ -1,7 +1,7 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
-import { getBadgesContractAddress } from "@/lib/wagmi";
 import { parseErrorMessage } from "@/utils/errors";
 import { useSnackbar } from "notistack";
 import { useCallback } from "react";
@@ -22,7 +22,7 @@ export const useAcceptInvitationMutation = ({
   onSuccess,
   onError,
 }: UseAcceptInvitationMutationParams) => {
-  const contractAddress = useChainVar(getBadgesContractAddress);
+  const contractAddress = useChainVar(contracts.badges);
 
   const { enqueueSnackbar } = useSnackbar();
 

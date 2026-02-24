@@ -8,7 +8,7 @@ interface ContractAddresses {
 
 export const contracts: ContractAddresses = {
   badges: {
-    sepolia: "0x76Aa1B43a651acc4320a4610af896ddfe38B428a",
+    sepolia: "0x7a225238504970b579363D7572b987aA00EbCd00",
     mainnet: zeroAddress, // Placeholder, replace with actual address when available
   },
   auction: {

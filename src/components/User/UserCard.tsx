@@ -53,6 +53,13 @@ export const UserCard = ({
         elevation={1}
         size={size}
         highlight={highlightYou && isConnectedUser}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          px: size === "large" ? 2 : 1,
+          py: size === "large" ? 2 : 1,
+        }}
       >
         <Stack spacing={size === "large" ? 2 : 1} alignItems="center">
           {/* Avatar and Name Section */}

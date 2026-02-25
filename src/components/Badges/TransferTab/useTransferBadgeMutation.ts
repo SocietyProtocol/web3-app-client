@@ -1,10 +1,10 @@
-import { useCallback, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useCallback } from "react";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { getBadgesContractAddress } from "@/lib/wagmi";
 import { Hex, TransactionReceipt } from "viem";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransaction } from "@/hooks/useTransaction";
+import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
 
 interface UseTransferBadgeMutationProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -21,11 +21,7 @@ export const useTransferBadgeMutation = ({
   onSuccess,
   onError,
 }: UseTransferBadgeMutationProps) => {
-  const { chainId } = useAccount();
-  const contractAddress = useMemo(
-    () => getBadgesContractAddress(chainId),
-    [chainId],
-  );
+  const contractAddress = useChainVar(contracts.badges);
 
   const queryClient = useQueryClient();
 

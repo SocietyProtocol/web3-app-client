@@ -9,11 +9,9 @@ export const UserCardPaper = styled(Paper, {
   padding: theme.spacing(size === "large" ? 2 : 1, 1),
   borderRadius: Number(theme.shape.borderRadius) * 2,
   boxShadow: "none",
-  minHeight: size === "large" ? 220 : 74,
+  minHeight: size === "large" ? 220 : "unset",
   width: size === "large" ? 214 : 140,
   position: "relative",
-  display: "flex",
-  alignItems: "center",
 
   [theme.breakpoints.down("sm")]: {
     width: "100%",

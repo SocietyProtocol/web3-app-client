@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { Hex, TransactionReceipt } from "viem";
-import { useQueryClient } from "@tanstack/react-query";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
@@ -23,11 +22,10 @@ export const useTransferBadgeMutation = ({
 }: UseTransferBadgeMutationProps) => {
   const contractAddress = useChainVar(contracts.badges);
 
-  const queryClient = useQueryClient();
-
   const transaction = useTransaction({
     onSuccess,
     onError,
+    successMessage: "Badge transferred successfully",
   });
 
   const mutate = useCallback(
@@ -38,16 +36,8 @@ export const useTransferBadgeMutation = ({
         functionName: "safeTransferFrom",
         args: [data.from, data.to, data.id, BigInt(1), "0x"],
       });
-
-      // Invalidate queries after transaction completes
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["badge", data.id.toString()],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
-      ]);
     },
-    [transaction, contractAddress, queryClient],
+    [transaction, contractAddress],
   );
 
   return { mutate, transaction };

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
 import { TransferTab } from "./TransferTab/TransferTab";
+import { BurnTab } from "./BurnBadge/BurnTab";
 
 interface BadgeActionsProps {
   id: string;
@@ -145,9 +146,7 @@ export const BadgeActions = ({
 
       {validTab === TabKey.MINT && <MintTab id={id} />}
       {validTab === TabKey.TRANSFER && <TransferTab id={id} />}
-      {validTab === TabKey.BURN && (
-        <Box marginTop={2}>Burn functionality is not available yet.</Box>
-      )}
+      {validTab === TabKey.BURN && <BurnTab id={id} />}
     </Box>
   );
 };

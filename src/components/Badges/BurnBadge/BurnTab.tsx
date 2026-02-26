@@ -1,4 +1,11 @@
-import { Box, Button, Stack } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,17 +16,18 @@ import {
 import { useBadge } from "@/data/badges/useBadge";
 import z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
-import { transferBadgeValidationSchema } from "./validation";
+import { useBurnBadgeMutation } from "./useBurnBadgeMutation";
+import { burnBadgeValidationSchema } from "./validation";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
-interface TransferTabProps {
+interface BurnTabProps {
   id: string;
 }
 
-type TransferFormInput = z.input<typeof transferBadgeValidationSchema>;
-type TransferFormOutput = z.output<typeof transferBadgeValidationSchema>;
+type BurnFormInput = z.input<typeof burnBadgeValidationSchema>;
+type BurnFormOutput = z.output<typeof burnBadgeValidationSchema>;
 
-export const TransferTab = ({ id }: TransferTabProps) => {
+export const BurnTab = ({ id }: BurnTabProps) => {
   const { data } = useBadge(id);
   const queryClient = useQueryClient();
 
@@ -28,28 +36,22 @@ export const TransferTab = ({ id }: TransferTabProps) => {
     [data],
   );
 
-  const filterFromOptions = useCallback(
+  const filterOptions = useCallback(
     (options: UserOption[]) =>
       options.filter((option) => holders.includes(option.id.toLowerCase())),
     [holders],
   );
 
-  const filterToOptions = useCallback(
-    (options: UserOption[]) =>
-      options.filter((option) => !holders.includes(option.id.toLowerCase())),
-    [holders],
-  );
-
-  const form = useForm<TransferFormInput, unknown, TransferFormOutput>({
-    resolver: zodResolver(transferBadgeValidationSchema),
+  const form = useForm<BurnFormInput, unknown, BurnFormOutput>({
+    resolver: zodResolver(burnBadgeValidationSchema),
     defaultValues: {
-      from: undefined,
-      to: undefined,
+      holder: undefined,
+      confirmed: false,
     },
     mode: "onChange",
   });
 
-  const { mutate, transaction } = useTransferBadgeMutation({
+  const { mutate, transaction } = useBurnBadgeMutation({
     onSuccess: () => {
       form.reset();
       Promise.all([
@@ -63,7 +65,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
   });
 
   const handleSubmit = form.handleSubmit((values) => {
-    mutate({ id: BigInt(id), from: values.from, to: values.to });
+    mutate({ id: BigInt(id), holder: values.holder });
   });
 
   return (
@@ -71,19 +73,19 @@ export const TransferTab = ({ id }: TransferTabProps) => {
       <Box>
         <Stack spacing={2}>
           <Controller
-            name="from"
+            name="holder"
             control={form.control}
             render={({ field, fieldState }) => (
               <UserAutocomplete
-                label="From"
-                tooltip="Select the current holder to transfer the badge from"
+                label="Badge Holder"
+                tooltip="Select the holder whose badge will be burned"
                 value={field.value}
                 onChange={(_, newValue) => {
                   const newId =
                     typeof newValue === "string" ? newValue : newValue?.id;
                   field.onChange(newId ?? "");
                 }}
-                filterOptions={filterFromOptions}
+                filterOptions={filterOptions}
                 disabled={transaction.isLoading || holders.length === 0}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
@@ -91,24 +93,29 @@ export const TransferTab = ({ id }: TransferTabProps) => {
             )}
           />
 
+          <Stack direction="row" spacing={1} alignItems="flex-start">
+            <WarningAmberIcon sx={{ color: "error.main" }} />
+            <Typography color="error.main">
+              Burning a badge is irreversible. This action permanently removes
+              the badge.
+            </Typography>
+          </Stack>
+
           <Controller
-            name="to"
+            name="confirmed"
             control={form.control}
-            render={({ field, fieldState }) => (
-              <UserAutocomplete
-                label="To"
-                tooltip="Recipient address (search users or paste an address)"
-                value={field.value}
-                onChange={(_, newValue) => {
-                  const newId =
-                    typeof newValue === "string" ? newValue : newValue?.id;
-                  field.onChange(newId ?? "");
-                }}
-                freeSolo
-                filterOptions={filterToOptions}
-                disabled={transaction.isLoading}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
+            render={({ field }) => (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={field.value}
+                    onChange={field.onChange}
+                    disabled={transaction.isLoading}
+                    sx={{ ml: "-9px" }}
+                  />
+                }
+                label="I understand this action cannot be undone."
+                sx={{ ml: 0 }}
               />
             )}
           />
@@ -118,16 +125,17 @@ export const TransferTab = ({ id }: TransferTabProps) => {
       <Box>
         <Button
           variant="outlined"
+          color="error"
           disabled={!form.formState.isValid || transaction.isLoading}
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
         >
-          {transaction.isLoading ? "Transferring..." : "Transfer Badge"}
+          {transaction.isLoading ? "Burning..." : "Burn Badge"}
         </Button>
       </Box>
     </Stack>
   );
 };
 
-export default TransferTab;
+export default BurnTab;

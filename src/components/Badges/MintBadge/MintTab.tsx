@@ -14,7 +14,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import {
   UserAutocomplete,
   UserOption,
-} from "../BadgeCreation/UserAutocomplete";
+} from "../../User/UserAutocomplete/UserAutocomplete";
 import DropArea from "../../DropArea/DropArea";
 import { WithTooltip } from "../../WithTooltip/WithTooltip";
 import { isAddress } from "viem";

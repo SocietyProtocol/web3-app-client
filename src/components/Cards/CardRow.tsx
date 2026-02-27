@@ -9,6 +9,7 @@ interface CardRowProps<T extends { id: string }> {
   noneFoundText?: string;
   andMoreText?: string;
   viewAllText?: string;
+  minItemWidth?: number | string;
   items?: T[];
   renderItem: (
     item: T & {
@@ -23,6 +24,7 @@ export const CardRow = <T extends { id: string }>({
   loading = false,
   viewAllOnClick,
   minCountForViewAll = 6,
+  minItemWidth = 240,
   noneFoundText = "No items found",
   andMoreText = "And {count} more...",
   viewAllText = "View All",
@@ -53,16 +55,13 @@ export const CardRow = <T extends { id: string }>({
           </Typography>
         </Stack>
       ) : (
-        <Grid
-          container
-          columns={{
-            xs: 1,
-            sm: 2,
-            md: 4,
-          }}
-          spacing={{
-            xs: 2,
-            sm: 3,
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns:
+              `repeat(auto-fill, minmax(min(100%, ${minItemWidth}px), 1fr))`,
+            gap: 2,
+            width: "100%",
           }}
         >
           {loading
@@ -73,7 +72,7 @@ export const CardRow = <T extends { id: string }>({
                   sx={{
                     width: {
                       xs: "100%",
-                      sm: "200px",
+                      sm: `${minItemWidth}px`,
                     },
                   }}
                 >
@@ -90,7 +89,7 @@ export const CardRow = <T extends { id: string }>({
                   sx={{
                     width: {
                       xs: "100%",
-                      sm: "200px",
+                      sm: `${minItemWidth}px`,
                     },
                   }}
                 >
@@ -104,7 +103,7 @@ export const CardRow = <T extends { id: string }>({
               sx={{
                 width: {
                   xs: "100%",
-                  sm: "200px",
+                  sm: `${minItemWidth}px`,
                 },
                 display: "flex",
                 justifyContent: "center",
@@ -120,7 +119,7 @@ export const CardRow = <T extends { id: string }>({
               </Typography>
             </Grid>
           )}
-        </Grid>
+        </Box>
       )}
     </Box>
   );

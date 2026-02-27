@@ -86,9 +86,7 @@ export const buildWhereClause = (options: {
     });
   }
 
-  if (whereClauses.length === 0) {
-    return undefined;
-  }
+  whereClauses.push({ isProfile: false });
 
   return { and: whereClauses };
 };

@@ -54,9 +54,7 @@ export const buildWhereClause = (options: { searchText?: string | null }) => {
     });
   }
 
-  if (whereClauses.length === 0) {
-    return undefined;
-  }
+  whereClauses.push({ profile_not: null });
 
   return { and: whereClauses };
 };
@@ -74,6 +72,7 @@ export const fetchUsers = async (options?: UserQueryOptions) => {
     searchText: mergedOptions.searchText,
   });
 
+  console.log({ where });
   const res = await execute(UsersDocument, {
     first: mergedOptions.pageSize,
     skip: mergedOptions.skip,

@@ -191,13 +191,8 @@ export const Badges = () => {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(1, 1fr)",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
-              lg: "repeat(4, 1fr)",
-              xl: "repeat(6, 1fr)",
-            },
+            gridTemplateColumns:
+              "repeat(auto-fill, minmax(min(100%, 240px), 1fr))",
             gap: 2,
             width: "100%",
           }}

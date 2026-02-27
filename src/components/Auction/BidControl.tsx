@@ -19,6 +19,8 @@ import { useAuctionContext } from "./AuctionContext";
 import { TransactionFeedback } from "../Transaction/TransactionFeedback";
 import { useBidMutation } from "./useBidMutation";
 import { ContentGuard } from "../Bubbles/ContentGuard";
+import { GasEstimation } from "../Transaction/GasEstimation";
+import { SimulationError } from "../Transaction/SimulationError";
 
 export const BidControl = () => {
   const { address } = useAccount();
@@ -83,12 +85,17 @@ export const BidControl = () => {
     isSuccess,
     approveReceipt,
     bidReceipt,
+    simulation,
+    gas,
+    gasLoading,
+    gasError,
   } = useBidMutation({
     ...values,
     onSuccess: () => {
       userBiddingTokenBalance.refetch();
       form.reset();
     },
+    enabled: form.formState.isValid,
   });
 
   const isActionDisabled = useMemo(() => {
@@ -100,7 +107,9 @@ export const BidControl = () => {
       isLoading ||
       isApproving ||
       isBidding ||
-      isSyncing
+      isSyncing ||
+      simulation.isLoading ||
+      simulation.isError
     );
   }, [
     form.formState.isValid,
@@ -111,6 +120,8 @@ export const BidControl = () => {
     isApproving,
     isBidding,
     isSyncing,
+    simulation.isLoading,
+    simulation.isError,
   ]);
 
   const amountSpecBigInt = useMemo(() => {
@@ -248,12 +259,21 @@ export const BidControl = () => {
           </Typography>
         )}
 
+        {!isActionDisabled && (
+          <GasEstimation
+            value={gas}
+            isLoading={gasLoading}
+            isError={gasError}
+          />
+        )}
+
         <TransactionButton
           variant="contained"
           color="primary"
           fullWidth
           disabled={isActionDisabled}
           onClick={mutate}
+          simulating={simulation.isLoading}
           loading={isLoading || isApproving || isBidding || isSyncing}
           loadingText={
             isSyncing
@@ -275,6 +295,8 @@ export const BidControl = () => {
               ? "Approve"
               : "Place Bid"}
         </TransactionButton>
+
+        <SimulationError error={simulation.error} />
 
         {approveReceipt.data && !bidReceipt.data && (
           <TransactionFeedback

@@ -19,6 +19,7 @@ import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { getQueryClient } from "@/lib/tanstack-query";
 import { LoadingBarContainer } from "react-top-loading-bar";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import "@/instrumentation"; // Import the instrumentation to patch BigInt serialization
 
 const queryClient = getQueryClient();
 

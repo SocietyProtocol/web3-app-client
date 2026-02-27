@@ -140,12 +140,13 @@ export const useTransaction = ({
 
   // Simulate the transaction
   const simulation = useSimulateContract(
-    simulate && address && abi && functionName && args
+    simulate && address && abi && functionName && args && enabled
       ? ({
           address,
           abi,
           functionName,
           args,
+
           ...(value !== undefined && { value }),
         } as Parameters<typeof useSimulateContract>[0])
       : undefined,

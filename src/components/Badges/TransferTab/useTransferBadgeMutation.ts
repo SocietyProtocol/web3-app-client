@@ -4,11 +4,7 @@ import { Hex, TransactionReceipt } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
-
-interface UseTransferBadgeMutationProps {
-  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
-  onError?: (error: unknown) => void;
-}
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BadgeTransferData {
   id: bigint;
@@ -16,31 +12,40 @@ interface BadgeTransferData {
   to: Hex;
 }
 
+interface UseTransferBadgeMutationProps {
+  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
+  onError?: (error: unknown) => void;
+  args?: BadgeTransferData;
+}
+
 export const useTransferBadgeMutation = ({
   onSuccess,
   onError,
+  args,
 }: UseTransferBadgeMutationProps) => {
+  const queryClient = useQueryClient();
   const contractAddress = useChainVar(contracts.badges);
 
-  const transaction = useTransaction({
-    onSuccess,
-    onError,
-    successMessage: "Badge transferred successfully",
-  });
-
-  const mutate = useCallback(
-    async (data: BadgeTransferData) => {
-      await transaction.execute({
-        address: contractAddress,
-        abi: SocietyProtocolBadgesABI,
-        functionName: "safeTransferFrom",
-        args: [data.from, data.to, data.id, BigInt(1), "0x"],
-      });
+  const handleSuccess = useCallback(
+    (transactionReceipt: TransactionReceipt) => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["badge", args?.id] }),
+        queryClient.invalidateQueries({ queryKey: ["user"] }),
+      ]);
+      onSuccess?.(transactionReceipt);
     },
-    [transaction, contractAddress],
+    [queryClient, args?.id, onSuccess],
   );
 
-  return { mutate, transaction };
+  return useTransaction({
+    address: contractAddress,
+    abi: SocietyProtocolBadgesABI,
+    functionName: "safeTransferFrom",
+    args: args
+      ? [args.from, args.to, args.id, BigInt(1), "0x" as const]
+      : undefined,
+    successMessage: "Badge transferred successfully",
+    onSuccess: handleSuccess,
+    onError,
+  });
 };
-
-export default useTransferBadgeMutation;

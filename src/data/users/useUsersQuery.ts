@@ -42,5 +42,7 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
     },
     placeholderData: (prev) => prev,
     gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };

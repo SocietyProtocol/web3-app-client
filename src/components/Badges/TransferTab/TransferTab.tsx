@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { useCallback, useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UserAutocomplete,
@@ -8,10 +8,11 @@ import {
 } from "../../User/UserAutocomplete/UserAutocomplete";
 import { useBadge } from "@/data/badges/useBadge";
 import z from "zod";
-import { useQueryClient } from "@tanstack/react-query";
-import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
 import { transferBadgeValidationSchema } from "./validation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
+import { SimulationError } from "@/components/Transaction/SimulationError";
+import { isAddress } from "viem";
+import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
 
 interface TransferTabProps {
   id: string;
@@ -22,7 +23,6 @@ type TransferFormOutput = z.output<typeof transferBadgeValidationSchema>;
 
 export const TransferTab = ({ id }: TransferTabProps) => {
   const { data } = useBadge(id);
-  const queryClient = useQueryClient();
 
   const holders = useMemo(
     () => data?.badge?.holders.map((h) => h.id.toLowerCase()) || [],
@@ -50,22 +50,28 @@ export const TransferTab = ({ id }: TransferTabProps) => {
     mode: "onChange",
   });
 
-  const { mutate, transaction } = useTransferBadgeMutation({
+  // Watch form values for simulation
+  const { from: fromValue, to: toValue } = useWatch({ control: form.control });
+
+  const transaction = useTransferBadgeMutation({
+    args:
+      fromValue &&
+      toValue &&
+      isAddress(fromValue) &&
+      isAddress(toValue) &&
+      form.formState.isValid
+        ? {
+            id: BigInt(id),
+            from: fromValue,
+            to: toValue,
+          }
+        : undefined,
     onSuccess: () => {
       form.reset();
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["badge", id] }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
-      ]);
-    },
-    onError: (err) => {
-      console.error(err);
     },
   });
 
-  const handleSubmit = form.handleSubmit((values) => {
-    mutate({ id: BigInt(id), from: values.from, to: values.to });
-  });
+  const handleSubmit = form.handleSubmit(() => transaction.execute());
 
   return (
     <Stack marginTop={3} spacing={3} sx={{ minHeight: 200 }}>
@@ -116,13 +122,20 @@ export const TransferTab = ({ id }: TransferTabProps) => {
         </Stack>
       </Box>
 
+      <SimulationError error={transaction.simulation.error} />
+
       <Box>
         <TransactionButton
           variant="outlined"
-          disabled={!form.formState.isValid}
+          disabled={
+            !form.formState.isValid ||
+            transaction.simulation.isFetching ||
+            transaction.simulation.isError
+          }
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
+          simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Transferring..."
         >

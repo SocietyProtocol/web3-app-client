@@ -33,5 +33,7 @@ export const useBadgesQuery = (options?: BadgeQueryOptions) => {
     },
     placeholderData: (prev) => prev,
     gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };

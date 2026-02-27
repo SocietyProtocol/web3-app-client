@@ -3,10 +3,12 @@ import { Button, ButtonProps, CircularProgress } from "@mui/material";
 interface TransactionButtonProps extends ButtonProps {
   loading?: boolean;
   loadingText?: string;
+  simulating?: boolean;
 }
 
 export const TransactionButton = ({
   loading = false,
+  simulating = false,
   loadingText,
   children,
   disabled,
@@ -16,10 +18,16 @@ export const TransactionButton = ({
   return (
     <Button
       {...props}
-      disabled={disabled || loading}
-      startIcon={loading ? <CircularProgress size={20} /> : startIcon}
+      disabled={disabled || loading || simulating}
+      startIcon={
+        loading || simulating ? <CircularProgress size={20} /> : startIcon
+      }
     >
-      {loading ? loadingText || "Processing..." : children}
+      {simulating
+        ? "Simulating..."
+        : loading
+          ? loadingText || "Processing..."
+          : children}
     </Button>
   );
 };

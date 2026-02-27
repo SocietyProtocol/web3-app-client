@@ -14,6 +14,50 @@ export interface ParsedError {
 }
 
 /**
+ * Contract error messages mapping
+ */
+const CONTRACT_ERROR_MESSAGES: Record<string, string> = {
+  AccessControlBadConfirmation: "Access control confirmation failed",
+  AccessControlUnauthorizedAccount: "Unauthorized account",
+  AddressEmptyCode: "Address does not contain code",
+  AlreadyInvited: "User has already been invited",
+  BadgeDoesNotExist: "Badge does not exist",
+  BurnDeniedByHook: "Burn operation denied by hook",
+  BurnNotAuthorized: "You are not authorized to burn this badge",
+  ERC1155InsufficientBalance: "User does not hold this badge",
+  ERC1155InvalidApprover: "Invalid approver",
+  ERC1155InvalidArrayLength: "Array length mismatch",
+  ERC1155InvalidOperator: "Invalid operator",
+  ERC1155InvalidReceiver: "Invalid receiver",
+  ERC1155InvalidSender: "Invalid sender",
+  ERC1155MissingApprovalForAll: "Missing approval for all",
+  ERC1967InvalidImplementation: "Invalid implementation",
+  ERC1967NonPayable: "Non-payable function",
+  FailedCall: "Call failed",
+  InvalidInitialization: "Invalid initialization",
+  InvalidSignature: "Invalid signature",
+  MintDeniedByHook: "Mint operation denied by hook",
+  MintNotAuthorized: "You are not authorized to mint this badge",
+  NotInitializing: "Contract is not initializing",
+  NotProfileOwner: "You are not the profile owner",
+  ProfileAlreadyExists: "Profile already exists",
+  SelfInvitation: "Cannot invite yourself",
+  StringsInsufficientHexLength: "Insufficient hex length",
+  TransferDeniedByHook: "Transfer operation denied by hook",
+  TransferNotAuthorized: "You are not authorized to transfer this badge",
+  UUPSUnauthorizedCallContext: "Unauthorized call context",
+  UUPSUnsupportedProxiableUUID: "Unsupported proxiable UUID",
+  Unauthorized: "Unauthorized action",
+  // ERC20 errors
+  ERC20InsufficientBalance: "Insufficient token balance",
+  ERC20InvalidSender: "Invalid sender address",
+  ERC20InvalidReceiver: "Invalid receiver address",
+  ERC20InsufficientAllowance: "Insufficient token allowance",
+  ERC20InvalidApprover: "Invalid approver address",
+  ERC20InvalidSpender: "Invalid spender address",
+};
+
+/**
  * Gets the validation error message for a specific field
  *
  * @param error - The unknown error to extract the field error from
@@ -41,6 +85,26 @@ export function parseErrorMessage(
   error: unknown,
   defaultMessage = "An unexpected error occurred",
 ): string {
+  // Check for contract error in error.cause.data.errorName
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "cause" in error &&
+    typeof error.cause === "object" &&
+    error.cause !== null &&
+    "data" in error.cause &&
+    typeof error.cause.data === "object" &&
+    error.cause.data !== null &&
+    "errorName" in error.cause.data &&
+    typeof error.cause.data.errorName === "string"
+  ) {
+    const errorName = error.cause.data.errorName;
+    const contractMessage = CONTRACT_ERROR_MESSAGES[errorName];
+    if (contractMessage) {
+      return contractMessage;
+    }
+  }
+
   if (error instanceof ValidationError) {
     return error.message;
   } else if (error instanceof ContractFunctionExecutionError) {

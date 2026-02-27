@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Skeleton, Tooltip } from "@mui/material";
+import { Box, Typography, Skeleton, Tooltip, Stack } from "@mui/material";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 import { Status } from "./Status";
@@ -9,6 +9,7 @@ import { Order } from "../../../../.graphclient";
 import { FormattedNumber } from "@/components/FormattedNumber/FormattedNumber";
 import { useCancelBidMutation } from "./useCancelBidMutation";
 import { useAuctionContext } from "../AuctionContext";
+import { SimulationError } from "@/components/Transaction/SimulationError";
 
 export interface BidProps extends Partial<Order> {
   loading?: boolean;
@@ -26,17 +27,12 @@ export const Bid = ({
   loading,
   id: orderId,
 }: BidProps) => {
-  const { isCancellationPastDeadline, refetch, refetchOrders, auctionDetail } =
-    useAuctionContext();
+  const { isCancellationPastDeadline, auctionDetail } = useAuctionContext();
 
   const { decimalsBiddingToken } = auctionDetail || {};
 
   const cancelBid = useCancelBidMutation({
     orderId,
-    onSuccess: () => {
-      refetch();
-      refetchOrders();
-    },
   });
 
   if (loading) {
@@ -155,28 +151,41 @@ export const Bid = ({
         }}
       >
         {(status === "Placed" || status === "Pending") && (
-          <Tooltip
-            title={
-              isCancellationPastDeadline ? "Cancellation period has ended" : ""
-            }
-            arrow
-          >
-            <span>
-              <TransactionButton
-                size="small"
-                variant="contained"
-                onClick={cancelBid.mutate}
-                disabled={isCancellationPastDeadline}
-                loading={cancelBid.isLoading}
-                loadingText="Canceling..."
-                sx={{
-                  width: { xs: "100%", sm: "200px", md: "auto" },
-                }}
-              >
-                Cancel
-              </TransactionButton>
-            </span>
-          </Tooltip>
+          <Stack spacing={1} sx={{ width: "100%" }}>
+            <SimulationError error={cancelBid.simulation.error} />
+
+            <Tooltip
+              title={
+                isCancellationPastDeadline ? (
+                  "Cancellation period has ended"
+                ) : (
+                  <SimulationError error={cancelBid.simulation.error} />
+                )
+              }
+              arrow
+            >
+              <span>
+                <TransactionButton
+                  size="small"
+                  variant="contained"
+                  onClick={() => cancelBid.execute()}
+                  disabled={
+                    isCancellationPastDeadline ||
+                    cancelBid.simulation?.isFetching ||
+                    cancelBid.simulation?.isError
+                  }
+                  simulating={cancelBid.simulation?.isFetching}
+                  loading={cancelBid.isLoading}
+                  loadingText="Canceling..."
+                  sx={{
+                    width: { xs: "100%", sm: "200px", md: "auto" },
+                  }}
+                >
+                  Cancel
+                </TransactionButton>
+              </span>
+            </Tooltip>
+          </Stack>
         )}
       </Box>
     </Tr>

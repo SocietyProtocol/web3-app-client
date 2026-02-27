@@ -6,7 +6,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useCallback, useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   UserAutocomplete,
@@ -14,11 +14,12 @@ import {
 } from "../../User/UserAutocomplete/UserAutocomplete";
 import { useBadge } from "@/data/badges/useBadge";
 import z from "zod";
-import { useQueryClient } from "@tanstack/react-query";
-import { useBurnBadgeMutation } from "./useBurnBadgeMutation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { burnBadgeValidationSchema } from "./validation";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import { useBurnBadgeMutation } from "./useBurnBadgeMutation";
+import { isAddress } from "viem";
+import { SimulationError } from "@/components/Transaction/SimulationError";
 
 interface BurnTabProps {
   id: string;
@@ -29,7 +30,6 @@ type BurnFormOutput = z.output<typeof burnBadgeValidationSchema>;
 
 export const BurnTab = ({ id }: BurnTabProps) => {
   const { data } = useBadge(id);
-  const queryClient = useQueryClient();
 
   const holders = useMemo(
     () => data?.badge?.holders.map((h) => h.id.toLowerCase()) || [],
@@ -51,22 +51,19 @@ export const BurnTab = ({ id }: BurnTabProps) => {
     mode: "onChange",
   });
 
-  const { mutate, transaction } = useBurnBadgeMutation({
-    onSuccess: () => {
-      form.reset();
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["badge", id] }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
-      ]);
-    },
-    onError: (err) => {
-      console.error(err);
-    },
+  const formValues = useWatch({ control: form.control });
+
+  const transaction = useBurnBadgeMutation({
+    args:
+      formValues.holder &&
+      isAddress(formValues.holder) &&
+      form.formState.isValid
+        ? { id: BigInt(id), holder: formValues.holder }
+        : undefined,
+    onSuccess: () => form.reset(),
   });
 
-  const handleSubmit = form.handleSubmit((values) => {
-    mutate({ id: BigInt(id), holder: values.holder });
-  });
+  const handleSubmit = form.handleSubmit(() => transaction.execute());
 
   return (
     <Stack marginTop={3} spacing={3} sx={{ minHeight: 200 }}>
@@ -122,14 +119,21 @@ export const BurnTab = ({ id }: BurnTabProps) => {
         </Stack>
       </Box>
 
+      <SimulationError error={transaction.simulation.error} />
+
       <Box>
         <TransactionButton
           variant="outlined"
           color="error"
-          disabled={!form.formState.isValid}
+          disabled={
+            !form.formState.isValid ||
+            transaction.simulation.isFetching ||
+            transaction.simulation.isError
+          }
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
+          simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Burning..."
         >

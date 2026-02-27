@@ -4,42 +4,47 @@ import { Hex, TransactionReceipt } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
-
-interface UseBurnBadgeMutationProps {
-  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
-  onError?: (error: unknown) => void;
-}
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BadgeBurnData {
   id: bigint;
   holder: Hex;
 }
 
+interface UseBurnBadgeMutationProps {
+  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
+  onError?: (error: unknown) => void;
+  args?: BadgeBurnData;
+}
+
 export const useBurnBadgeMutation = ({
   onSuccess,
   onError,
+  args,
 }: UseBurnBadgeMutationProps) => {
+  const queryClient = useQueryClient();
   const contractAddress = useChainVar(contracts.badges);
 
-  const transaction = useTransaction({
-    onSuccess,
-    onError,
-    successMessage: "Badge burned successfully",
-  });
-
-  const mutate = useCallback(
-    async (data: BadgeBurnData) => {
-      await transaction.execute({
-        address: contractAddress,
-        abi: SocietyProtocolBadgesABI,
-        functionName: "burn",
-        args: [data.holder, data.id, BigInt(1)],
-      });
+  const handleSuccess = useCallback(
+    (transactionReceipt: TransactionReceipt) => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["badge", args?.id] }),
+        queryClient.invalidateQueries({ queryKey: ["user"] }),
+      ]);
+      onSuccess?.(transactionReceipt);
     },
-    [transaction, contractAddress],
+    [queryClient, args?.id, onSuccess],
   );
 
-  return { mutate, transaction };
+  return useTransaction({
+    address: contractAddress,
+    abi: SocietyProtocolBadgesABI,
+    functionName: "burn",
+    args: args ? [args.holder, args.id, BigInt(1)] : undefined,
+    successMessage: "Badge burned successfully",
+    onSuccess: handleSuccess,
+    onError,
+  });
 };
 
 export default useBurnBadgeMutation;

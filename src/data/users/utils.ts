@@ -72,7 +72,6 @@ export const fetchUsers = async (options?: UserQueryOptions) => {
     searchText: mergedOptions.searchText,
   });
 
-  console.log({ where });
   const res = await execute(UsersDocument, {
     first: mergedOptions.pageSize,
     skip: mergedOptions.skip,

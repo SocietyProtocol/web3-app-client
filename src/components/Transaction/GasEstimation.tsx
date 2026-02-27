@@ -13,7 +13,7 @@ export const GasEstimation = ({
   isLoading = false,
   isError = false,
 }: GasEstimationProps) => {
-  if (isError || (!value && !isLoading)) {
+  if (isError || (!isLoading && value === undefined)) {
     return null;
   }
 

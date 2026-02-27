@@ -22,7 +22,7 @@ export const TransactionButton = ({
   gasError,
   ...props
 }: TransactionButtonProps) => {
-  const showGas = gas || gasLoading;
+  const showGas = gas !== undefined || gasLoading;
 
   return (
     <Stack direction="row" spacing={2} alignItems="center">

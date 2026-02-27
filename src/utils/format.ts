@@ -68,14 +68,15 @@ export const formatAuto = (
   },
 ): string => {
   const num = typeof value === "number" ? value : Number(value);
+
   if (!Number.isFinite(num)) {
-    return String(num);
+    return `${options?.prefix ?? ""}${String(num)}`;
   }
 
   const abs = Math.abs(num);
 
   if (abs === 0) {
-    return "0";
+    return `${options?.prefix ?? ""}0`;
   }
 
   // Order of magnitude (base 10)
@@ -106,5 +107,5 @@ export const formatAuto = (
     maximumFractionDigits: decimalsToShow,
   }).format(num);
 
-  return trimTrailingZeros ? trimZeros(formatted) : formatted;
+  return `${options?.prefix ?? ""}${trimTrailingZeros ? trimZeros(formatted) : formatted}`;
 };

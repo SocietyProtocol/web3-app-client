@@ -10,7 +10,7 @@ export const renderUserOption = (
   option: UserOption,
 ) => {
   return (
-    <Box component="li" {...props}>
+    <Box component="li" {...props} key={option.id}>
       <UserHandle
         id={option.id}
         name={option.name}

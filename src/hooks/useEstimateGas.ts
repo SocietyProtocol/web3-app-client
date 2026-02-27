@@ -1,7 +1,7 @@
 "use client";
 
 import { useEstimateGas as useWagmiEstimateGas, useGasPrice } from "wagmi";
-import { Hex, encodeFunctionData } from "viem";
+import { Hex, encodeFunctionData, etherUnits } from "viem";
 import { useMemo } from "react";
 import { useEthPrice } from "./useEthPrice";
 
@@ -32,11 +32,11 @@ export const useEstimateGas = ({
     to: address,
     value,
     data:
-      abi && functionName && args
+      address && abi && functionName && args && enabled
         ? encodeFunctionData({ abi, functionName, args })
         : undefined,
     query: {
-      enabled: enabled && !!address && !!abi && !!functionName,
+      enabled: enabled && !!address && !!abi && !!functionName && !!args,
     },
   });
 
@@ -45,7 +45,9 @@ export const useEstimateGas = ({
   const usdValue = useMemo(() => {
     if (estimation.data && gasPrice.data && ethPrice.data) {
       const totalGasCost = estimation.data * gasPrice.data;
-      return (totalGasCost * ethPrice.data) / BigInt(1e18); // Convert from wei to ether
+      return (
+        (totalGasCost * ethPrice.data) / BigInt(10) ** BigInt(etherUnits.wei)
+      ); // Convert from wei to ether
     }
     return undefined;
   }, [estimation.data, gasPrice.data, ethPrice.data]);
@@ -53,7 +55,7 @@ export const useEstimateGas = ({
   return {
     priceWei: gasPrice.data,
     priceUsd: ethPrice.data,
-    decimalsWei: 18,
+    decimalsWei: etherUnits.wei,
     decimalsUsd: 8,
     totalWei: estimation.data,
     totalUsd: usdValue,

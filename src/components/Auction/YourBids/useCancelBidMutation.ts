@@ -32,7 +32,7 @@ export const useCancelBidMutation = ({
   }, [orderId]);
 
   const handleSuccess = useCallback(() => {
-    Promise.all([
+    void Promise.all([
       queryClient.invalidateQueries({ queryKey: ["orders"] }),
       queryClient.invalidateQueries({ queryKey: ["auction"] }),
     ]);

@@ -18,6 +18,10 @@ describe("format utils", () => {
     expect(formatAuto(0.00000045, { minThreshold })).toBe(`< ${minThreshold}`);
     // value above threshold prints a numeric string
     expect(formatAuto(0.0000023, { minThreshold })).toMatch(/0\.000002/);
+    // with prefix
+    expect(formatAuto(0.00000045, { minThreshold, prefix: "$" })).toBe(
+      `< $${minThreshold}`,
+    );
   });
 
   it("formatAuto can trim trailing zeros when requested", () => {
@@ -83,6 +87,9 @@ describe("format utils", () => {
     expect(formatAuto(-Infinity)).toBe("-Infinity");
     expect(formatAuto(NaN)).toBe("NaN");
     expect(formatAuto("not-a-number")).toBe("NaN");
+    // with prefix
+    expect(formatAuto(Infinity, { prefix: "$" })).toBe("$Infinity");
+    expect(formatAuto(NaN, { prefix: "€" })).toBe("€NaN");
   });
 
   it("formatAuto handles negative numbers", () => {
@@ -98,6 +105,18 @@ describe("format utils", () => {
     expect(formatAuto(12345678, { maxDecimals: 6 })).toBe("12,345,678");
     expect(formatAuto(1000000000, { minDecimals: 2, maxDecimals: 6 })).toBe(
       "1,000,000,000.00",
+    );
+  });
+
+  it("formatAuto respects prefix option", () => {
+    expect(formatAuto(0, { prefix: "$" })).toBe("$0");
+    expect(
+      formatAuto(1.2345, { prefix: "$", minDecimals: 2, maxDecimals: 2 }),
+    ).toBe("$1.23");
+    expect(formatAuto(1000, { prefix: "€" })).toBe("€1,000");
+    expect(formatAuto(-500, { prefix: "$" })).toBe("$-500");
+    expect(formatAuto(0.00012345, { prefix: "¥", maxDecimals: 4 })).toMatch(
+      /¥0\.0001/,
     );
   });
 });

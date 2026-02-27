@@ -9,6 +9,7 @@ import {
 import { Hex, TransactionReceipt } from "viem";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
+import { useEstimateGas } from "@/hooks/useEstimateGas";
 import { parseErrorMessage } from "@/utils/errors";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -157,6 +158,16 @@ export const useTransaction = ({
   const { isSynced, isWaiting } = useWaitForSubgraphSync(
     txReceipt.data?.blockNumber,
   );
+
+  // Estimate gas for the transaction
+  const gasEstimation = useEstimateGas({
+    address,
+    abi,
+    functionName,
+    args,
+    value,
+    enabled: enabled && simulate,
+  });
 
   const execute = useCallback(
     async (params?: ExecuteTransactionParams) => {
@@ -312,6 +323,10 @@ export const useTransaction = ({
       isSuccess: simulation.isSuccess,
     },
 
+    // Gas estimation
+    gas: gasEstimation.totalUsd,
+    gasLoading: gasEstimation.isLoading,
+    gasError: gasEstimation.isError,
     txReceipt,
     txHash,
   };

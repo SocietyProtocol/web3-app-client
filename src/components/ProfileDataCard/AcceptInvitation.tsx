@@ -155,6 +155,9 @@ export const AcceptInvitation = () => {
           loading={transaction.isExecuting}
           loadingText="Accepting..."
           onClick={onSubmit}
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
         >
           {transaction.isSuccess ? "Invitation Accepted!" : "Accept Invitation"}
         </TransactionButton>

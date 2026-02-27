@@ -163,7 +163,7 @@ export const BidControl = () => {
                 scaleDownDecimals={biddingTokenDecimals}
                 maxDecimals={4}
                 minThreshold={0.0001}
-                symbol={symbolBiddingToken}
+                suffix={symbolBiddingToken}
                 variant="body2"
                 color="textPrimary"
                 component="span"
@@ -181,7 +181,7 @@ export const BidControl = () => {
                 scaleDownDecimals={biddingTokenDecimals}
                 maxDecimals={4}
                 minThreshold={0.0001}
-                symbol={symbolBiddingToken}
+                suffix={symbolBiddingToken}
                 variant="body2"
                 color="textPrimary"
                 component="span"
@@ -239,7 +239,7 @@ export const BidControl = () => {
               scaleDownDecimals={decimalsAuctioningToken}
               maxDecimals={4}
               minThreshold={0.0001}
-              symbol="SPEC"
+              suffix="SPEC"
               variant="body2"
               color="textPrimary"
               fontWeight={700}

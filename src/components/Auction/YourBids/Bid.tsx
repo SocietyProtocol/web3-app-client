@@ -76,7 +76,7 @@ export const Bid = ({
           {biddingTokenSymbol && sellAmount && decimalsBiddingToken && (
             <FormattedNumber
               value={BigInt(sellAmount)}
-              symbol={biddingTokenSymbol}
+              suffix={biddingTokenSymbol}
               scaleDownDecimals={Number(decimalsBiddingToken)}
               fontWeight={700}
               component="span"
@@ -114,7 +114,7 @@ export const Bid = ({
               <FormattedNumber
                 value={price}
                 maxDecimals={Number(decimalsBiddingToken)}
-                symbol={biddingTokenSymbol}
+                suffix={biddingTokenSymbol}
                 fontWeight={700}
                 component="span"
               />{" "}
@@ -177,6 +177,9 @@ export const Bid = ({
                   simulating={cancelBid.simulation?.isFetching}
                   loading={cancelBid.isLoading}
                   loadingText="Canceling..."
+                  gas={cancelBid.gas}
+                  gasLoading={cancelBid.gasLoading}
+                  gasError={cancelBid.gasError}
                   sx={{
                     width: { xs: "100%", sm: "200px", md: "auto" },
                   }}

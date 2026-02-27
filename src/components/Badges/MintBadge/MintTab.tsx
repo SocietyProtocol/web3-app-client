@@ -389,6 +389,9 @@ export const MintTab = ({ id }: MintTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Minting..."
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
         >
           Mint Badge
         </TransactionButton>

@@ -71,7 +71,7 @@ export const ActiveAuction = () => {
               value={Number(currentClearingPrice)}
               maxDecimals={4}
               minThreshold={0.0001}
-              symbol={`${symbolBiddingToken}/${symbolAuctioningToken}`}
+              suffix={`${symbolBiddingToken}/${symbolAuctioningToken}`}
               component="div"
               color="primary.main"
               sx={{
@@ -102,7 +102,7 @@ export const ActiveAuction = () => {
               scaleDownDecimals={decimalsAuctioningToken}
               maxDecimals={4}
               minThreshold={0.0001}
-              symbol={symbolAuctioningToken}
+              suffix={symbolAuctioningToken}
               component="div"
               color="primary.main"
               sx={{
@@ -123,7 +123,7 @@ export const ActiveAuction = () => {
               scaleDownDecimals={decimalsBiddingToken}
               maxDecimals={4}
               minThreshold={0.0001}
-              symbol={`${symbolBiddingToken}/${symbolAuctioningToken}`}
+              suffix={`${symbolBiddingToken}/${symbolAuctioningToken}`}
               component="div"
               color="primary.main"
               sx={{

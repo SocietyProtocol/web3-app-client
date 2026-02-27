@@ -30,7 +30,7 @@ export const useAcceptInvitationMutation = ({
   const referredBy = useReferredBy(args?.inviter);
 
   const handleSuccess = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: referredBy.queryKey });
+    void queryClient.invalidateQueries({ queryKey: referredBy.queryKey });
     onSuccess?.();
   }, [queryClient, referredBy.queryKey, onSuccess]);
 

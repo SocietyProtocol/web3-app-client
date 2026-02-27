@@ -18,7 +18,7 @@ import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { burnBadgeValidationSchema } from "./validation";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { useBurnBadgeMutation } from "./useBurnBadgeMutation";
-import { isAddress } from "viem";
+import { Hex } from "viem";
 import { SimulationError } from "@/components/Transaction/SimulationError";
 
 interface BurnTabProps {
@@ -55,10 +55,8 @@ export const BurnTab = ({ id }: BurnTabProps) => {
 
   const transaction = useBurnBadgeMutation({
     args:
-      formValues.holder &&
-      isAddress(formValues.holder) &&
-      form.formState.isValid
-        ? { id: BigInt(id), holder: formValues.holder }
+      formValues.holder && form.formState.isValid
+        ? { id: BigInt(id), holder: formValues.holder as Hex }
         : undefined,
     onSuccess: () => form.reset(),
   });
@@ -136,6 +134,9 @@ export const BurnTab = ({ id }: BurnTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Burning..."
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
         >
           Burn Badge
         </TransactionButton>

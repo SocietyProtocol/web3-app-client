@@ -64,6 +64,7 @@ export const formatAuto = (
     minThreshold?: number;
     trimTrailingZeros?: boolean;
     compact?: boolean;
+    prefix?: string;
   },
 ): string => {
   const num = typeof value === "number" ? value : Number(value);
@@ -90,7 +91,7 @@ export const formatAuto = (
 
   // Too small → threshold display
   if (minThreshold !== undefined && abs < minThreshold) {
-    return `< ${minThreshold}`;
+    return `< ${options?.prefix ?? ""}${minThreshold}`;
   }
 
   const decimalsToShow = Math.min(

@@ -137,7 +137,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               value={
                 <FormattedNumber
                   value={specRawBalance.data}
-                  symbol={specSymbol.data}
+                  suffix={specSymbol.data}
                   scaleDownDecimals={specDecimals.data}
                   component="span"
                   maxDecimals={2}

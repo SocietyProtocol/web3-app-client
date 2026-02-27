@@ -27,7 +27,7 @@ export const useMintBadgeMutation = ({
 
   const handleSuccess = useCallback(
     (transactionReceipt: TransactionReceipt) => {
-      Promise.all([
+      void Promise.all([
         queryClient.invalidateQueries({ queryKey: ["badge", args?.id] }),
         queryClient.invalidateQueries({ queryKey: ["user"] }),
       ]);

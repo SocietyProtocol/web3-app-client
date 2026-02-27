@@ -11,7 +11,7 @@ import z from "zod";
 import { transferBadgeValidationSchema } from "./validation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { SimulationError } from "@/components/Transaction/SimulationError";
-import { isAddress } from "viem";
+import { Hex } from "viem";
 import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
 
 interface TransferTabProps {
@@ -55,15 +55,11 @@ export const TransferTab = ({ id }: TransferTabProps) => {
 
   const transaction = useTransferBadgeMutation({
     args:
-      fromValue &&
-      toValue &&
-      isAddress(fromValue) &&
-      isAddress(toValue) &&
-      form.formState.isValid
+      fromValue && toValue && form.formState.isValid
         ? {
             id: BigInt(id),
-            from: fromValue,
-            to: toValue,
+            from: fromValue as Hex,
+            to: toValue as Hex,
           }
         : undefined,
     onSuccess: () => {
@@ -138,6 +134,9 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Transferring..."
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
         >
           Transfer Badge
         </TransactionButton>

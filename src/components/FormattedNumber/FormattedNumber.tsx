@@ -13,7 +13,8 @@ export interface FormattedNumberProps extends Omit<
   maxDecimals?: number;
   minThreshold?: number;
   trimTrailingZeros?: boolean;
-  symbol?: string;
+  prefix?: string;
+  suffix?: string;
   compact?: boolean;
 }
 
@@ -25,7 +26,8 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
   minThreshold,
   trimTrailingZeros,
   compact,
-  symbol,
+  prefix,
+  suffix,
   ...typographyProps
 }) => {
   const num = useMemo(() => {
@@ -50,14 +52,26 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
       minThreshold,
       trimTrailingZeros,
       compact,
+      prefix,
     });
-  }, [num, compact, minDecimals, maxDecimals, minThreshold, trimTrailingZeros]);
+  }, [
+    num,
+    minDecimals,
+    maxDecimals,
+    minThreshold,
+    trimTrailingZeros,
+    compact,
+    prefix,
+  ]);
 
   return (
     num !== undefined && (
-      <Tooltip title={num + (symbol ? ` ${symbol}` : "")} arrow>
+      <Tooltip
+        title={(prefix ? `${prefix}` : "") + num + (suffix ? ` ${suffix}` : "")}
+        arrow
+      >
         <Typography {...typographyProps}>
-          {formatted} {symbol}
+          {formatted} {suffix}
         </Typography>
       </Tooltip>
     )

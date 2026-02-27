@@ -4,6 +4,7 @@ import {
   AutocompleteProps,
   Box,
   Button,
+  CircularProgress,
   Stack,
   Tab,
   Tabs,
@@ -240,13 +241,7 @@ export const MintTab = ({ id }: MintTabProps) => {
   });
 
   return (
-    <Stack
-      marginTop={3}
-      spacing={3}
-      sx={{
-        minHeight: 400,
-      }}
-    >
+    <Stack marginTop={3} spacing={3} sx={{ minHeight: 200 }}>
       <Tabs value={mintMode} onChange={handleToggleMintMode} className="pill">
         <Tab
           value={MintMode.SINGLE}
@@ -400,6 +395,12 @@ export const MintTab = ({ id }: MintTabProps) => {
             minWidth: 160,
           }}
           onClick={handleSubmit}
+          loading={transaction.isLoading}
+          loadingIndicator={
+            <Box display="flex" alignItems="center" gap={4}>
+              Minting... <CircularProgress size={20} />
+            </Box>
+          }
         >
           Mint Badge
         </Button>

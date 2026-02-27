@@ -1,4 +1,4 @@
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button, CircularProgress, Stack } from "@mui/material";
 import { useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -122,8 +122,14 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
+          loading={transaction.isLoading}
+          loadingIndicator={
+            <Box display="flex" alignItems="center" gap={4}>
+              Transferring... <CircularProgress size={20} />
+            </Box>
+          }
         >
-          {transaction.isLoading ? "Transferring..." : "Transfer Badge"}
+          Transfer Badge
         </Button>
       </Box>
     </Stack>

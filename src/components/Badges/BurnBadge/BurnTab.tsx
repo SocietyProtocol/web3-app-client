@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   FormControlLabel,
   Stack,
   Typography,
@@ -130,8 +131,14 @@ export const BurnTab = ({ id }: BurnTabProps) => {
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
+          loading={transaction.isLoading}
+          loadingIndicator={
+            <Box display="flex" alignItems="center" gap={4}>
+              Burning... <CircularProgress size={20} />
+            </Box>
+          }
         >
-          {transaction.isLoading ? "Burning..." : "Burn Badge"}
+          Burn Badge
         </Button>
       </Box>
     </Stack>

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { Hex, TransactionReceipt, zeroAddress } from "viem";
+import { Hex, TransactionReceipt } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
@@ -32,8 +32,8 @@ export const useBurnBadgeMutation = ({
       await transaction.execute({
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
-        functionName: "safeTransferFrom",
-        args: [data.holder, zeroAddress, data.id, BigInt(1), "0x"],
+        functionName: "burn",
+        args: [data.holder, data.id, BigInt(1)],
       });
     },
     [transaction, contractAddress],

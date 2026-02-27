@@ -1,4 +1,5 @@
 import { Stack, Typography, Button, TextField } from "@mui/material";
+import { TransactionButton } from "../Transaction/TransactionButton";
 import { useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { Controller, useWatch } from "react-hook-form";
@@ -83,20 +84,6 @@ export const AccountDetailsEdit = ({
     isTransactionPending ||
     isTransactionConfirmed;
 
-  // Determine button text based on state
-  const getButtonText = () => {
-    if (isUploadingToIpfs) {
-      return "Uploading to IPFS...";
-    }
-    if (isWritingContract) {
-      return "Confirm transaction...";
-    }
-    if (isTransactionPending) {
-      return "Confirming...";
-    }
-    return "Save";
-  };
-
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
       {/* Header with Edit Button */}
@@ -112,16 +99,28 @@ export const AccountDetailsEdit = ({
         </Typography>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button
+          <TransactionButton
             startIcon={<SaveIcon />}
             onClick={handleSaveClick}
             variant="contained"
             size="small"
             disabled={disabled || !form.formState.isDirty}
+            loading={
+              isUploadingToIpfs || isWritingContract || isTransactionPending
+            }
+            loadingText={
+              isUploadingToIpfs
+                ? "Uploading to IPFS..."
+                : isWritingContract
+                  ? "Confirm transaction..."
+                  : isTransactionPending
+                    ? "Confirming..."
+                    : undefined
+            }
             sx={{ width: { xs: "100%", sm: "auto" } }}
           >
-            {getButtonText()}
-          </Button>
+            Save
+          </TransactionButton>
           <Button
             startIcon={<CancelIcon />}
             onClick={handleCancelClick}

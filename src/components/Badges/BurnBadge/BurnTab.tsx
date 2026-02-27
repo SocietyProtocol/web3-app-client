@@ -1,8 +1,6 @@
 import {
   Box,
-  Button,
   Checkbox,
-  CircularProgress,
   FormControlLabel,
   Stack,
   Typography,
@@ -18,6 +16,7 @@ import { useBadge } from "@/data/badges/useBadge";
 import z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useBurnBadgeMutation } from "./useBurnBadgeMutation";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { burnBadgeValidationSchema } from "./validation";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
@@ -124,22 +123,18 @@ export const BurnTab = ({ id }: BurnTabProps) => {
       </Box>
 
       <Box>
-        <Button
+        <TransactionButton
           variant="outlined"
           color="error"
-          disabled={!form.formState.isValid || transaction.isLoading}
+          disabled={!form.formState.isValid}
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
           loading={transaction.isLoading}
-          loadingIndicator={
-            <Box display="flex" alignItems="center" gap={4}>
-              Burning... <CircularProgress size={20} />
-            </Box>
-          }
+          loadingText="Burning..."
         >
           Burn Badge
-        </Button>
+        </TransactionButton>
       </Box>
     </Stack>
   );

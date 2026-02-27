@@ -4,7 +4,6 @@ import {
   AutocompleteProps,
   Box,
   Button,
-  CircularProgress,
   Stack,
   Tab,
   Tabs,
@@ -23,6 +22,7 @@ import { uniq } from "@/utils/collection";
 import { useMintBadgeMutation } from "./useMintBadgeMutation";
 import { mintBadgeValidationSchema } from "./validation";
 import { useQueryClient } from "@tanstack/react-query";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { useBadge } from "@/data/badges/useBadge";
 import { prop, toLowerCase } from "@/utils/curry";
 import { useSnackbar } from "notistack";
@@ -383,27 +383,17 @@ export const MintTab = ({ id }: MintTabProps) => {
         </Stack>
       </Box>
       <Box>
-        <Button
+        <TransactionButton
           variant="outlined"
-          disabled={
-            !form.formState.isValid ||
-            recipients.length === 0 ||
-            transaction.isLoading
-          }
+          disabled={!form.formState.isValid || recipients.length === 0}
           size="small"
-          sx={{
-            minWidth: 160,
-          }}
+          sx={{ minWidth: 160 }}
           onClick={handleSubmit}
           loading={transaction.isLoading}
-          loadingIndicator={
-            <Box display="flex" alignItems="center" gap={4}>
-              Minting... <CircularProgress size={20} />
-            </Box>
-          }
+          loadingText="Minting..."
         >
           Mint Badge
-        </Button>
+        </TransactionButton>
       </Box>
     </Stack>
   );

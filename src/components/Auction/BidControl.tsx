@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Button, Paper, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
+import { TransactionButton } from "../Transaction/TransactionButton";
 import { AmountInput } from "../AmountInput/AmountInput";
 import { useMemo } from "react";
 import { scaleUp } from "@/utils/bigint";
@@ -247,29 +248,33 @@ export const BidControl = () => {
           </Typography>
         )}
 
-        <Button
+        <TransactionButton
           variant="contained"
           color="primary"
           fullWidth
           disabled={isActionDisabled}
           onClick={mutate}
+          loading={isLoading || isApproving || isBidding || isSyncing}
+          loadingText={
+            isSyncing
+              ? "Syncing with subgraph..."
+              : bidReceipt.isFetching
+                ? "Confirming bid..."
+                : approveReceipt.isFetching
+                  ? "Confirming approval..."
+                  : isApproving
+                    ? "Approving..."
+                    : isBidding
+                      ? "Placing bid..."
+                      : undefined
+          }
         >
-          {isSyncing
-            ? "Syncing with subgraph..."
-            : bidReceipt.isFetching
-              ? "Confirming bid..."
-              : approveReceipt.isFetching
-                ? "Confirming approval..."
-                : isApproving
-                  ? "Approving..."
-                  : isBidding
-                    ? "Placing bid..."
-                    : isSuccess
-                      ? "Bid Placed!"
-                      : approveRequired
-                        ? "Approve"
-                        : "Place Bid"}
-        </Button>
+          {isSuccess
+            ? "Bid Placed!"
+            : approveRequired
+              ? "Approve"
+              : "Place Bid"}
+        </TransactionButton>
 
         {approveReceipt.data && !bidReceipt.data && (
           <TransactionFeedback

@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { useCallback, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,7 @@ import z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
 import { transferBadgeValidationSchema } from "./validation";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
 
 interface TransferTabProps {
   id: string;
@@ -116,21 +117,17 @@ export const TransferTab = ({ id }: TransferTabProps) => {
       </Box>
 
       <Box>
-        <Button
+        <TransactionButton
           variant="outlined"
-          disabled={!form.formState.isValid || transaction.isLoading}
+          disabled={!form.formState.isValid}
           size="small"
           sx={{ minWidth: 160 }}
           onClick={handleSubmit}
           loading={transaction.isLoading}
-          loadingIndicator={
-            <Box display="flex" alignItems="center" gap={4}>
-              Transferring... <CircularProgress size={20} />
-            </Box>
-          }
+          loadingText="Transferring..."
         >
           Transfer Badge
-        </Button>
+        </TransactionButton>
       </Box>
     </Stack>
   );

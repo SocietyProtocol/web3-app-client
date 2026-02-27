@@ -1,4 +1,5 @@
-import { Button, IconButton, TextField } from "@mui/material";
+import { IconButton, TextField } from "@mui/material";
+import { TransactionButton } from "../Transaction/TransactionButton";
 import { DataItem } from "./DataItem";
 import { Controller, useForm } from "react-hook-form";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -122,15 +123,17 @@ export const AcceptInvitation = () => {
         )}
       />
 
-      <Button
+      <TransactionButton
         variant="outlined"
         sx={{ alignSelf: "flex-start" }}
         size="small"
-        disabled={!form.formState.isValid || isExecuting || isSuccess}
+        disabled={!form.formState.isValid || isSuccess}
+        loading={isExecuting}
+        loadingText="Accepting..."
         onClick={onSubmit}
       >
-        Accept Invitation
-      </Button>
+        {isSuccess ? "Invitation Accepted!" : "Accept Invitation"}
+      </TransactionButton>
     </DataItem>
   );
 };

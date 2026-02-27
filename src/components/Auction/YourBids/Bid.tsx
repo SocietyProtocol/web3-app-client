@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Typography, Button, Skeleton, Tooltip } from "@mui/material";
+import { Box, Typography, Skeleton, Tooltip } from "@mui/material";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 import { Status } from "./Status";
 import { Tr } from "./Tr";
@@ -161,17 +162,19 @@ export const Bid = ({
             arrow
           >
             <span>
-              <Button
+              <TransactionButton
                 size="small"
                 variant="contained"
                 onClick={cancelBid.mutate}
-                disabled={cancelBid.isLoading || isCancellationPastDeadline}
+                disabled={isCancellationPastDeadline}
+                loading={cancelBid.isLoading}
+                loadingText="Canceling..."
                 sx={{
                   width: { xs: "100%", sm: "200px", md: "auto" },
                 }}
               >
-                {cancelBid.isMutating ? "Canceling..." : "Cancel"}
-              </Button>
+                Cancel
+              </TransactionButton>
             </span>
           </Tooltip>
         )}

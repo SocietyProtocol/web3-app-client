@@ -47,6 +47,17 @@ export const MintTab = ({ id }: MintTabProps) => {
     [data],
   );
 
+  const filterOptions = useCallback(
+    (options: UserOption[]) => {
+      const filtered = options.filter(
+        (option) => !holders.includes(option.id.toLowerCase()),
+      );
+
+      return filtered;
+    },
+    [holders],
+  );
+
   const form = useForm({
     resolver: zodResolver(mintBadgeValidationSchema),
     defaultValues: {
@@ -300,6 +311,7 @@ export const MintTab = ({ id }: MintTabProps) => {
           )}
 
           <UserAutocomplete
+            freeSolo
             multiple={mintMode === MintMode.BATCH}
             value={mintMode === "batch" ? recipients : recipients[0]}
             onChange={
@@ -313,7 +325,7 @@ export const MintTab = ({ id }: MintTabProps) => {
               >["onChange"]
             }
             disabled={transaction.isLoading}
-            excludeIds={holders}
+            filterOptions={filterOptions}
           />
           {mintMode === "batch" &&
             file &&

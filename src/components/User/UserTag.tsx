@@ -41,9 +41,10 @@ export const UserTag = ({
       href={url}
       style={{
         textDecoration: "none",
-        width: "214px",
         flex: 0,
         display: "block",
+        minWidth: 214,
+        maxWidth: 280,
       }}
     >
       <UserCardPaper
@@ -51,9 +52,12 @@ export const UserTag = ({
         elevation={1}
         size="small"
         sx={{
-          px: 1,
+          px: 2,
           py: 1,
-          width: 214,
+          width: "100%",
+          minHeight: 74,
+          display: "flex",
+          alignItems: "center",
         }}
       >
         <Stack

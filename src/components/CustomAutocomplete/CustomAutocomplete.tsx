@@ -27,6 +27,8 @@ interface CustomAutocompleteProps<
   validateNewValue?: (value: string) => boolean;
   renderItem: (item: T) => React.ReactNode;
   placeholder?: string;
+  error?: boolean;
+  helperText?: string;
 }
 
 export const CustomAutocomplete = <
@@ -53,10 +55,16 @@ export const CustomAutocomplete = <
   freeSolo,
   disableClearable,
   disabled = false,
+  filterOptions,
+  error,
+  helperText,
 }: CustomAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) => {
   const [open, setOpen] = useState(false);
 
-  const filter = useMemo(() => createFilterOptions<T>(), []);
+  const filter = useMemo(
+    () => filterOptions || createFilterOptions<T>(),
+    [filterOptions],
+  );
 
   return (
     <Box>
@@ -165,6 +173,8 @@ export const CustomAutocomplete = <
         renderInput={(params) => (
           <TextField
             {...params}
+            error={error}
+            helperText={helperText}
             size="small"
             placeholder={placeholder}
             sx={{

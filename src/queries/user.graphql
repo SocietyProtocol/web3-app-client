@@ -4,7 +4,7 @@ query User($id: ID!) {
     name
     bio
     imageUrl
-    badges {
+    badges(where: { isProfile: false }) {
       id
       name
       isOfficial
@@ -55,7 +55,7 @@ query User($id: ID!) {
         }
       }
     }
-    managedBadges {
+    managedBadges(where: { isProfile: false }) {
       id
       name
       isOfficial

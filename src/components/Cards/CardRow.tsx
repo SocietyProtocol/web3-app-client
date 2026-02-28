@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Stack, SxProps, Typography } from "@mui/material";
+import { Box, Button, Stack, SxProps, Typography } from "@mui/material";
 import { ReactNode } from "react";
 
 interface CardRowProps<T extends { id: string }> {
@@ -9,6 +9,7 @@ interface CardRowProps<T extends { id: string }> {
   noneFoundText?: string;
   andMoreText?: string;
   viewAllText?: string;
+  minItemWidth?: number;
   items?: T[];
   renderItem: (
     item: T & {
@@ -23,6 +24,7 @@ export const CardRow = <T extends { id: string }>({
   loading = false,
   viewAllOnClick,
   minCountForViewAll = 6,
+  minItemWidth = 240,
   noneFoundText = "No items found",
   andMoreText = "And {count} more...",
   viewAllText = "View All",
@@ -53,27 +55,22 @@ export const CardRow = <T extends { id: string }>({
           </Typography>
         </Stack>
       ) : (
-        <Grid
-          container
-          columns={{
-            xs: 1,
-            sm: 2,
-            md: 4,
-          }}
-          spacing={{
-            xs: 2,
-            sm: 3,
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minItemWidth}px), 1fr))`,
+            gap: 2,
+            width: "100%",
           }}
         >
           {loading
             ? Array.from({ length: 4 }).map((_, index) => (
-                <Grid
+                <Box
                   key={`skeleton-${index}`}
-                  size={1}
                   sx={{
-                    width: {
+                    minWidth: {
                       xs: "100%",
-                      sm: "200px",
+                      sm: `${minItemWidth}px`,
                     },
                   }}
                 >
@@ -81,30 +78,28 @@ export const CardRow = <T extends { id: string }>({
                     id: `skeleton-${index}`,
                     loading: true,
                   } as T & { loading: boolean })}
-                </Grid>
+                </Box>
               ))
             : items?.slice(0, 6).map((item) => (
-                <Grid
+                <Box
                   key={item.id}
-                  size={1}
                   sx={{
-                    width: {
+                    minWidth: {
                       xs: "100%",
-                      sm: "200px",
+                      sm: `${minItemWidth}px`,
                     },
                   }}
                 >
                   {renderItem(item)}
-                </Grid>
+                </Box>
               ))}
 
           {items && items.length > 6 && (
-            <Grid
-              size={1}
+            <Box
               sx={{
-                width: {
+                minWidth: {
                   xs: "100%",
-                  sm: "200px",
+                  sm: `${minItemWidth}px`,
                 },
                 display: "flex",
                 justifyContent: "center",
@@ -118,9 +113,9 @@ export const CardRow = <T extends { id: string }>({
               >
                 {andMoreText.replace("{count}", String(items.length - 6))}
               </Typography>
-            </Grid>
+            </Box>
           )}
-        </Grid>
+        </Box>
       )}
     </Box>
   );

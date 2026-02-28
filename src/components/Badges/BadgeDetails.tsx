@@ -276,6 +276,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         }
         loading={isLoading}
         items={data?.badge?.holders}
+        minItemWidth={140}
         renderItem={(holder) => (
           <UserCard
             id={holder.id as Hex}

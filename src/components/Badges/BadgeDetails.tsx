@@ -8,6 +8,7 @@ import {
   Typography,
   Button,
   Skeleton,
+  Link,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
@@ -16,7 +17,7 @@ import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { UserTag } from "../User/UserTag";
@@ -28,6 +29,11 @@ import { getBadgePermissions } from "../../data/badges/utils";
 import { UserCard } from "../User/UserCard";
 import { BadgeActions } from "./BadgeActions";
 import { CardRow } from "../Cards/CardRow";
+import { parseAsBoolean, useQueryState } from "nuqs";
+import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
+import { BadgeDetailsEdit } from "./BadgeDetailsEdit";
+import { ContentGuard } from "../Bubbles/ContentGuard";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 export interface BadgeDetailsProps {
   id: string;
@@ -36,10 +42,58 @@ export interface BadgeDetailsProps {
 export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const router = useRouter();
   const [isHoldersModalOpen, setIsHoldersModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useQueryState(
+    "edit",
+    parseAsBoolean.withDefault(false).withOptions({
+      history: "push",
+    }),
+  );
 
   const { address: userAddress } = useAccount();
 
-  const { data, isLoading } = useBadge(id);
+  const { data, isLoading, refetch } = useBadge(id);
+
+  // Fetch metadata for editing
+  const [initialEditData, setInitialEditData] = useState<{
+    name: string;
+    imageUrl: string | null;
+    metadata: string;
+    isOfficial: boolean;
+    isCommunity: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      if (isEditing && data?.badge && !initialEditData) {
+        let metadataString = "";
+        if (data.badge.uri) {
+          try {
+            const response = await fetch(data.badge.uri);
+            if (response.ok) {
+              const metadata = await response.json();
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { imageUrl, ...rest } = metadata;
+              if (Object.keys(rest).length > 0) {
+                metadataString = JSON.stringify(rest, null, 2);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching metadata from IPFS:", error);
+          }
+        }
+
+        setInitialEditData({
+          name: data.badge.name || "",
+          imageUrl: data.badge.imageUrl || null,
+          metadata: metadataString,
+          isOfficial: data.badge.isOfficial ?? false,
+          isCommunity: data.badge.isCommunity ?? false,
+        });
+      }
+    };
+
+    fetchMetadata();
+  }, [isEditing, data?.badge, initialEditData]);
 
   const creatorAddress = data?.badge?.creatorAddress
     ? (data?.badge?.creatorAddress as Hex)
@@ -74,6 +128,42 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const handleCloseHoldersModal = () => {
     setIsHoldersModalOpen(false);
   };
+
+  const toggleEditing = () => {
+    setIsEditing((prev) => !prev);
+    // Reset initial edit data when closing
+    if (isEditing) {
+      setInitialEditData(null);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    // Refetch badge data after successful update
+    await refetch();
+    toggleEditing();
+  };
+
+  if (isEditing && initialEditData) {
+    return (
+      <Box
+        sx={{
+          py: { xs: 2, md: 3 },
+          px: { xs: 2, sm: 0 },
+          width: "100%",
+        }}
+      >
+        <ContentGuard requireNetwork showBackButton>
+          <BadgeEditProvider badgeId={id} initialData={initialEditData}>
+            <BadgeDetailsEdit
+              onCancel={toggleEditing}
+              onSave={handleSaveEdit}
+              badgeName={data?.badge?.name ?? ""}
+            />
+          </BadgeEditProvider>
+        </ContentGuard>
+      </Box>
+    );
+  }
 
   return (
     <Stack
@@ -186,6 +276,25 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
       </Typography>
 
+      {/* IPFS Metadata Link */}
+      {data?.badge?.uri && (
+        <Link
+          href={data.badge.uri}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="body2"
+          color="text.primary"
+          sx={{
+            mt: -1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          View Metadata <OpenInNewIcon sx={{ fontSize: 16 }} />
+        </Link>
+      )}
+
       {/* Creator Handle and Manage Button */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -210,6 +319,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             variant="outlined"
             color="primary"
             size="small"
+            onClick={() => setIsEditing(true)}
             sx={{
               textTransform: "none",
               fontWeight: 600,

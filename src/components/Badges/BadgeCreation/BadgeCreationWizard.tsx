@@ -111,12 +111,10 @@ const BadgeCreationWizardContent = () => {
 
   // Determine loading text based on state
   const loadingText = useMemo(() => {
-    if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
-    if (isWritingContract) return "Waiting for wallet confirmation...";
-    if (isSyncing) return "Waiting for blockchain sync...";
-    if (isTransactionPending) return "Creating badge...";
-    return "Processing...";
-  }, [isUploadingToIpfs, isWritingContract, isTransactionPending, isSyncing]);
+    if (isUploadingToIpfs) return "Uploading to IPFS...";
+    if (isWritingContract) return "Confirm transaction...";
+    return "Saving...";
+  }, [isUploadingToIpfs, isWritingContract]);
 
   return (
     <Stack

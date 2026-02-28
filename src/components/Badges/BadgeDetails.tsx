@@ -45,7 +45,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const [isEditing, setIsEditing] = useQueryState(
     "edit",
     parseAsBoolean.withDefault(false).withOptions({
-      history: "push",
+      history: "replace",
     }),
   );
 
@@ -184,7 +184,13 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       >
         <Button
           variant="text"
-          onClick={() => router.back()}
+          onClick={() => {
+            if (window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/badges");
+            }
+          }}
           startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
           sx={{
             color: "primary.main",

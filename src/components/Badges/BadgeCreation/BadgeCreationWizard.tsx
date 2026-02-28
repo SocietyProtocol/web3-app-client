@@ -24,15 +24,8 @@ const steps: WizardStep[] = [
 const BadgeCreationWizardContent = () => {
   const [activeStep, setActiveStep] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
-  const {
-    form,
-    onSubmit,
-    isMutating,
-    isUploadingToIpfs,
-    isWritingContract,
-    isTransactionPending,
-    isSyncing,
-  } = useBadgeCreation();
+  const { form, onSubmit, isMutating, isTransactionPending, isSyncing } =
+    useBadgeCreation();
 
   const { address } = useAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
@@ -111,10 +104,10 @@ const BadgeCreationWizardContent = () => {
 
   // Determine loading text based on state
   const loadingText = useMemo(() => {
-    if (isUploadingToIpfs) return "Uploading to IPFS...";
-    if (isWritingContract) return "Confirm transaction...";
+    if (isTransactionPending) return "Waiting for transaction confirmation...";
+    if (isSyncing) return "Waiting for subgraph to sync...";
     return "Saving...";
-  }, [isUploadingToIpfs, isWritingContract]);
+  }, [isTransactionPending, isSyncing]);
 
   return (
     <Stack

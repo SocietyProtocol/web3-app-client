@@ -37,7 +37,6 @@ export const BadgeDetailsEdit = ({
   const hasCompletedRef = useRef(false);
   const {
     form,
-    refetch,
     onSubmit,
     reset,
     isMutating,
@@ -59,17 +58,14 @@ export const BadgeDetailsEdit = ({
   useEffect(() => {
     if (isTransactionConfirmed && !hasCompletedRef.current) {
       hasCompletedRef.current = true;
-      // Transaction confirmed, refetch badge data
-      refetch().then(() => {
-        enqueueSnackbar("Badge updated successfully!", {
-          variant: "success",
-        });
-        onSave();
-        form.reset();
-        reset();
+      enqueueSnackbar("Badge updated successfully!", {
+        variant: "success",
       });
+      onSave();
+      form.reset();
+      reset();
     }
-  }, [isTransactionConfirmed, refetch, onSave, form, enqueueSnackbar, reset]);
+  }, [isTransactionConfirmed, onSave, form, enqueueSnackbar, reset]);
 
   const handleCancelClick = () => {
     form.reset();

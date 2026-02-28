@@ -23,15 +23,10 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const uploadIpfsResult = useMutation<
     UploadMetadataResponse,
     Error,
-    BadgeEditTransformedData
+    Record<string, unknown>
   >({
     mutationFn: async (data) => {
       const authPayload = await generateAuthPayload();
-
-      const metadata = {
-        imageUrl: data.imageUrl,
-        ...(data.metadata ? JSON.parse(data.metadata) : {}),
-      };
 
       const response = await fetch("/api/upload-metadata", {
         method: "POST",
@@ -39,7 +34,7 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
           "Content-Type": "application/json",
           "x-auth-payload": JSON.stringify(authPayload),
         },
-        body: JSON.stringify(metadata),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
@@ -66,7 +61,12 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
 
       let uri = "";
       if (hasMetadata) {
-        const ipfsData = await uploadIpfsResult.mutateAsync(data);
+        const metadata = {
+          imageUrl: data.imageUrl,
+          ...(data.metadata ? JSON.parse(data.metadata) : {}),
+        } as Record<string, unknown>;
+
+        const ipfsData = await uploadIpfsResult.mutateAsync(metadata);
         uri = ipfsData.uri;
       }
 

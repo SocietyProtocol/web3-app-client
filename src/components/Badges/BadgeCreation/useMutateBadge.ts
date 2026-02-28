@@ -26,7 +26,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
   const uploadIpfsResult = useMutation<
     UploadMetadataResponse,
     Error,
-    BadgeTransformedData
+    Record<string, unknown>
   >({
     mutationFn: async (data) => {
       // Generate authentication payload
@@ -84,7 +84,8 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
         const metadata = {
           imageUrl: data.imageUrl,
           ...(data.metadata ? JSON.parse(data.metadata) : {}),
-        };
+        } as Record<string, unknown>;
+
         const res = await uploadIpfsResult.mutateAsync(metadata);
         uri = res.uri;
       }

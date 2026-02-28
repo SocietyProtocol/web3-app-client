@@ -63,36 +63,56 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   } | null>(null);
 
   useEffect(() => {
+    if (!isEditing && initialEditData) {
+      queueMicrotask(() => {
+        setInitialEditData(null);
+      });
+      return;
+    }
+
+    let isCurrent = true;
+    const controller = new AbortController();
     const fetchMetadata = async () => {
-      if (isEditing && data?.badge && !initialEditData) {
-        let metadataString = "";
-        if (data.badge.uri) {
-          try {
-            const response = await fetch(data.badge.uri);
-            if (response.ok) {
-              const metadata = await response.json();
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { imageUrl, ...rest } = metadata;
-              if (Object.keys(rest).length > 0) {
-                metadataString = JSON.stringify(rest, null, 2);
-              }
+      if (!isEditing || !data?.badge || initialEditData) {
+        return;
+      }
+      let metadataString = "";
+      if (data.badge.uri) {
+        try {
+          const response = await fetch(data.badge.uri, {
+            signal: controller.signal,
+          });
+          if (response.ok) {
+            const metadata = await response.json();
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { imageUrl, ...rest } = metadata;
+            if (Object.keys(rest).length > 0) {
+              metadataString = JSON.stringify(rest, null, 2);
             }
-          } catch (error) {
+          }
+        } catch (error) {
+          // Ignore abort errors; log others
+          if ((error as Error).name !== "AbortError") {
             console.error("Error fetching metadata from IPFS:", error);
           }
         }
-
-        setInitialEditData({
-          name: data.badge.name || "",
-          imageUrl: data.badge.imageUrl || null,
-          metadata: metadataString,
-          isOfficial: data.badge.isOfficial ?? false,
-          isCommunity: data.badge.isCommunity ?? false,
-        });
       }
+      if (!isCurrent) {
+        return;
+      }
+      setInitialEditData({
+        name: data.badge.name || "",
+        imageUrl: data.badge.imageUrl || null,
+        metadata: metadataString,
+        isOfficial: data.badge.isOfficial ?? false,
+        isCommunity: data.badge.isCommunity ?? false,
+      });
     };
-
     fetchMetadata();
+    return () => {
+      isCurrent = false;
+      controller.abort();
+    };
   }, [isEditing, data?.badge, initialEditData]);
 
   const creatorAddress = data?.badge?.creatorAddress

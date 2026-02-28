@@ -68,7 +68,7 @@ export const CardRow = <T extends { id: string }>({
                 <Box
                   key={`skeleton-${index}`}
                   sx={{
-                    width: {
+                    minWidth: {
                       xs: "100%",
                       sm: `${minItemWidth}px`,
                     },
@@ -84,7 +84,7 @@ export const CardRow = <T extends { id: string }>({
                 <Box
                   key={item.id}
                   sx={{
-                    width: {
+                    minWidth: {
                       xs: "100%",
                       sm: `${minItemWidth}px`,
                     },
@@ -97,7 +97,7 @@ export const CardRow = <T extends { id: string }>({
           {items && items.length > 6 && (
             <Box
               sx={{
-                width: {
+                minWidth: {
                   xs: "100%",
                   sm: `${minItemWidth}px`,
                 },

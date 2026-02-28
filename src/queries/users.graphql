@@ -67,7 +67,7 @@ query Users(
         }
       }
     }
-    managedBadges {
+    managedBadges(where: { isProfile: false }) {
       id
       name
       isOfficial

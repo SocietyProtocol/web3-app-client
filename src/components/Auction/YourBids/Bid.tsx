@@ -10,6 +10,8 @@ import { FormattedNumber } from "@/components/FormattedNumber/FormattedNumber";
 import { useCancelBidMutation } from "./useCancelBidMutation";
 import { useAuctionContext } from "../AuctionContext";
 import { SimulationError } from "@/components/Transaction/SimulationError";
+import { parseErrorMessage } from "@/utils/errors";
+import { useCallback } from "react";
 
 export interface BidProps extends Partial<Order> {
   loading?: boolean;
@@ -34,6 +36,12 @@ export const Bid = ({
   const cancelBid = useCancelBidMutation({
     orderId,
   });
+
+  const handleCancelClick = useCallback(() => {
+    if (isCancellationPastDeadline && !cancelBid.simulation.error) {
+      cancelBid.execute();
+    }
+  }, [cancelBid, isCancellationPastDeadline]);
 
   if (loading) {
     return (
@@ -156,11 +164,11 @@ export const Bid = ({
 
             <Tooltip
               title={
-                isCancellationPastDeadline ? (
-                  "Cancellation period has ended"
-                ) : (
-                  <SimulationError error={cancelBid.simulation.error} />
-                )
+                isCancellationPastDeadline
+                  ? "Cancellation period has ended"
+                  : cancelBid.simulation.error
+                    ? parseErrorMessage(cancelBid.simulation.error)
+                    : "Canceling a bid will remove it from the order book and return your funds, but it may take some time to process. If the cancellation period has ended, you may not be able to cancel your bid."
               }
               arrow
             >
@@ -168,7 +176,7 @@ export const Bid = ({
                 <TransactionButton
                   size="small"
                   variant="contained"
-                  onClick={() => cancelBid.execute()}
+                  onClick={handleCancelClick}
                   disabled={
                     isCancellationPastDeadline ||
                     cancelBid.simulation?.isFetching ||

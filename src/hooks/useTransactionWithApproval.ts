@@ -97,6 +97,10 @@ export const useTransactionWithApproval = ({
       resetTransaction();
     }
 
+    if (allowance.data === undefined) {
+      return;
+    }
+
     if (approveRequired) {
       await approve();
     } else {
@@ -105,6 +109,7 @@ export const useTransactionWithApproval = ({
   }, [
     enabled,
     mainTransaction.status,
+    allowance.data,
     approveRequired,
     resetApproval,
     resetTransaction,

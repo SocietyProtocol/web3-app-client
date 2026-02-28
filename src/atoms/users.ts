@@ -1,4 +1,4 @@
-import { UserOption } from "@/components/Badges/BadgeCreation/UserAutocomplete";
+import { UserOption } from "@/components/User/UserAutocomplete/UserAutocomplete";
 import { atom } from "jotai";
 import { Hex } from "viem";
 import { UsersQuery } from "../../.graphclient";

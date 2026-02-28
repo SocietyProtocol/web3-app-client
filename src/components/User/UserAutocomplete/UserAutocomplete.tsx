@@ -3,10 +3,11 @@ import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { useUsersQuery } from "@/data/users/useUsersQuery";
 import { Hex, isAddress } from "viem";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
-import { UserHandle } from "@/components/User/UserHandle";
 import { AutocompleteProps, AutocompleteValue } from "@mui/material";
 import { useAtom } from "jotai";
 import { usersAtom } from "@/atoms/users";
+import { renderUserOption } from "./renderUserOption";
+import { renderUserItem } from "./renderUserItem";
 
 type SelectedUsers<
   Multiple extends boolean,
@@ -149,15 +150,8 @@ export const UserAutocomplete = <
         }
         return option.name ? `${option.name} (${option.id})` : option.id;
       }}
-      renderItem={(item) => (
-        <UserHandle
-          id={item.id as Hex}
-          name={item.name}
-          imageUrl={item.imageUrl}
-          highlightYou
-          fullAddress={!multiple}
-        />
-      )}
+      renderOption={renderUserOption}
+      renderItem={(item) => renderUserItem(item, !!multiple)}
       inputValue={searchQuery}
       onInputChange={(_, value, reason) => {
         if (reason !== "reset") {

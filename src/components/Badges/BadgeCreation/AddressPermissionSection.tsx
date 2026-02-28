@@ -1,6 +1,9 @@
 import { useWatch } from "react-hook-form";
 import { useBadgeCreation } from "./BadgeCreationContext";
-import { UserAutocomplete, UserOption } from "./UserAutocomplete";
+import {
+  UserAutocomplete,
+  UserOption,
+} from "../../User/UserAutocomplete/UserAutocomplete";
 import { SyntheticEvent, useCallback } from "react";
 
 interface BadgeEditorsFieldProps {

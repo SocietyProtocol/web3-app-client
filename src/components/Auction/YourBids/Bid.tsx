@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Typography, Button, Skeleton, Tooltip } from "@mui/material";
+import { Box, Typography, Skeleton, Tooltip, Stack } from "@mui/material";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 import { Status } from "./Status";
 import { Tr } from "./Tr";
@@ -8,6 +9,9 @@ import { Order } from "../../../../.graphclient";
 import { FormattedNumber } from "@/components/FormattedNumber/FormattedNumber";
 import { useCancelBidMutation } from "./useCancelBidMutation";
 import { useAuctionContext } from "../AuctionContext";
+import { SimulationError } from "@/components/Transaction/SimulationError";
+import { parseErrorMessage } from "@/utils/errors";
+import { useCallback } from "react";
 
 export interface BidProps extends Partial<Order> {
   loading?: boolean;
@@ -25,18 +29,19 @@ export const Bid = ({
   loading,
   id: orderId,
 }: BidProps) => {
-  const { isCancellationPastDeadline, refetch, refetchOrders, auctionDetail } =
-    useAuctionContext();
+  const { isCancellationPastDeadline, auctionDetail } = useAuctionContext();
 
   const { decimalsBiddingToken } = auctionDetail || {};
 
   const cancelBid = useCancelBidMutation({
     orderId,
-    onSuccess: () => {
-      refetch();
-      refetchOrders();
-    },
   });
+
+  const handleCancelClick = useCallback(() => {
+    if (isCancellationPastDeadline && !cancelBid.simulation.error) {
+      cancelBid.execute();
+    }
+  }, [cancelBid, isCancellationPastDeadline]);
 
   if (loading) {
     return (
@@ -79,7 +84,7 @@ export const Bid = ({
           {biddingTokenSymbol && sellAmount && decimalsBiddingToken && (
             <FormattedNumber
               value={BigInt(sellAmount)}
-              symbol={biddingTokenSymbol}
+              suffix={biddingTokenSymbol}
               scaleDownDecimals={Number(decimalsBiddingToken)}
               fontWeight={700}
               component="span"
@@ -117,7 +122,7 @@ export const Bid = ({
               <FormattedNumber
                 value={price}
                 maxDecimals={Number(decimalsBiddingToken)}
-                symbol={biddingTokenSymbol}
+                suffix={biddingTokenSymbol}
                 fontWeight={700}
                 component="span"
               />{" "}
@@ -154,26 +159,44 @@ export const Bid = ({
         }}
       >
         {(status === "Placed" || status === "Pending") && (
-          <Tooltip
-            title={
-              isCancellationPastDeadline ? "Cancellation period has ended" : ""
-            }
-            arrow
-          >
-            <span>
-              <Button
-                size="small"
-                variant="contained"
-                onClick={cancelBid.mutate}
-                disabled={cancelBid.isLoading || isCancellationPastDeadline}
-                sx={{
-                  width: { xs: "100%", sm: "200px", md: "auto" },
-                }}
-              >
-                {cancelBid.isMutating ? "Canceling..." : "Cancel"}
-              </Button>
-            </span>
-          </Tooltip>
+          <Stack spacing={1} sx={{ width: "100%" }}>
+            <SimulationError error={cancelBid.simulation.error} />
+
+            <Tooltip
+              title={
+                isCancellationPastDeadline
+                  ? "Cancellation period has ended"
+                  : cancelBid.simulation.error
+                    ? parseErrorMessage(cancelBid.simulation.error)
+                    : "Canceling a bid will remove it from the order book and return your funds, but it may take some time to process. If the cancellation period has ended, you may not be able to cancel your bid."
+              }
+              arrow
+            >
+              <span>
+                <TransactionButton
+                  size="small"
+                  variant="contained"
+                  onClick={handleCancelClick}
+                  disabled={
+                    isCancellationPastDeadline ||
+                    cancelBid.simulation?.isFetching ||
+                    cancelBid.simulation?.isError
+                  }
+                  simulating={cancelBid.simulation?.isFetching}
+                  loading={cancelBid.isLoading}
+                  loadingText="Canceling..."
+                  gas={cancelBid.gas}
+                  gasLoading={cancelBid.gasLoading}
+                  gasError={cancelBid.gasError}
+                  sx={{
+                    width: { xs: "100%", sm: "200px", md: "auto" },
+                  }}
+                >
+                  Cancel
+                </TransactionButton>
+              </span>
+            </Tooltip>
+          </Stack>
         )}
       </Box>
     </Tr>

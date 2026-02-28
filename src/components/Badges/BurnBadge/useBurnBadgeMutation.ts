@@ -6,23 +6,22 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 
-interface BadgeTransferData {
+interface BadgeBurnData {
   id: bigint;
-  from: Hex;
-  to: Hex;
+  holder: Hex;
 }
 
-interface UseTransferBadgeMutationProps {
+interface UseBurnBadgeMutationProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
-  args?: BadgeTransferData;
+  args?: BadgeBurnData;
 }
 
-export const useTransferBadgeMutation = ({
+export const useBurnBadgeMutation = ({
   onSuccess,
   onError,
   args,
-}: UseTransferBadgeMutationProps) => {
+}: UseBurnBadgeMutationProps) => {
   const queryClient = useQueryClient();
   const contractAddress = useChainVar(contracts.badges);
 
@@ -40,12 +39,12 @@ export const useTransferBadgeMutation = ({
   return useTransaction({
     address: contractAddress,
     abi: SocietyProtocolBadgesABI,
-    functionName: "safeTransferFrom",
-    args: args
-      ? [args.from, args.to, args.id, BigInt(1), "0x" as const]
-      : undefined,
-    successMessage: "Badge transferred successfully",
+    functionName: "burn",
+    args: args ? [args.holder, args.id, BigInt(1)] : undefined,
+    successMessage: "Badge burned successfully",
     onSuccess: handleSuccess,
     onError,
   });
 };
+
+export default useBurnBadgeMutation;

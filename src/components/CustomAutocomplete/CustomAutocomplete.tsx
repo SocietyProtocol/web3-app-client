@@ -50,6 +50,7 @@ export const CustomAutocomplete = <
   inputValue,
   onInputChange,
   renderItem,
+  renderOption,
   placeholder,
   multiple,
   freeSolo,
@@ -170,6 +171,7 @@ export const CustomAutocomplete = <
 
           return renderItem(val as T);
         }}
+        renderOption={renderOption}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -181,7 +183,6 @@ export const CustomAutocomplete = <
               "& .MuiInputBase-root": {
                 flexWrap: "wrap",
                 alignItems: "flex-start",
-                minHeight: 40,
                 height: "auto !important",
                 py: 0.5,
               },

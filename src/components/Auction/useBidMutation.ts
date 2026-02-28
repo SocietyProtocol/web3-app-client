@@ -18,6 +18,7 @@ interface UseBidMutationValues {
   price?: bigint;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
+  enabled?: boolean;
 }
 
 export const useBidMutation = ({
@@ -25,6 +26,7 @@ export const useBidMutation = ({
   price,
   onSuccess,
   onError,
+  enabled = true,
 }: UseBidMutationValues) => {
   const { enqueueSnackbar } = useSnackbar();
   const { auctionDetail, refetch, refetchOrders } = useAuctionContext();
@@ -59,12 +61,28 @@ export const useBidMutation = ({
     tokenAddress: addressBiddingToken,
     spenderAddress: contractAddress,
     amount: sellAmount,
+    address: contractAddress,
+    abi: EasyAuctionAbi,
+    functionName: "placeSellOrders",
+    args:
+      auctionId !== undefined &&
+      buyAmount !== undefined &&
+      sellAmount !== undefined
+        ? [
+            BigInt(auctionId),
+            [buyAmount],
+            [sellAmount],
+            [PREV_SELL_ORDER],
+            "0x" as Hex,
+          ]
+        : undefined,
     onSuccess: () => {
       refetch();
       refetchOrders();
       onSuccess?.();
     },
     onError,
+    enabled,
   });
 
   const placeBid = useCallback(async () => {
@@ -85,26 +103,8 @@ export const useBidMutation = ({
       return;
     }
 
-    await transaction.execute({
-      address: contractAddress,
-      abi: EasyAuctionAbi,
-      functionName: "placeSellOrders",
-      args: [
-        BigInt(auctionId),
-        [buyAmount],
-        [sellAmount],
-        [PREV_SELL_ORDER],
-        "0x" as Hex,
-      ],
-    });
-  }, [
-    auctionId,
-    buyAmount,
-    sellAmount,
-    contractAddress,
-    transaction,
-    enqueueSnackbar,
-  ]);
+    await transaction.execute();
+  }, [auctionId, buyAmount, sellAmount, transaction, enqueueSnackbar]);
 
   // Auto-execute transaction after approval
   useEffect(() => {
@@ -143,5 +143,17 @@ export const useBidMutation = ({
     approveRequired: transaction.approveRequired,
     bidReceipt: transaction.txReceipt,
     approveReceipt: transaction.approveReceipt,
+    simulation: transaction.approveRequired
+      ? transaction.approvalTransaction.simulation
+      : transaction.mainTransaction.simulation,
+    gas: transaction.approveRequired
+      ? transaction.approvalTransaction.gas
+      : transaction.mainTransaction.gas,
+    gasLoading: transaction.approveRequired
+      ? transaction.approvalTransaction.gasLoading
+      : transaction.mainTransaction.gasLoading,
+    gasError: transaction.approveRequired
+      ? transaction.approvalTransaction.gasError
+      : transaction.mainTransaction.gasError,
   };
 };

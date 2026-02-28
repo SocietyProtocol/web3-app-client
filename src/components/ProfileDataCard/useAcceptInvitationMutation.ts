@@ -2,15 +2,10 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
-import { parseErrorMessage } from "@/utils/errors";
-import { useSnackbar } from "notistack";
-import { useCallback } from "react";
 import { Address, Hex } from "viem";
-
-interface UseAcceptInvitationMutationParams {
-  onSuccess?: () => void;
-  onError?: (error: unknown) => void;
-}
+import { useReferredBy } from "./useReferredBy";
+import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AcceptInvitationData {
   inviter: Address;
@@ -18,48 +13,36 @@ interface AcceptInvitationData {
   signature: Hex;
 }
 
+interface UseAcceptInvitationMutationParams {
+  onSuccess?: () => void;
+  onError?: (error: unknown) => void;
+  args?: AcceptInvitationData;
+}
+
 export const useAcceptInvitationMutation = ({
   onSuccess,
   onError,
+  args,
 }: UseAcceptInvitationMutationParams) => {
   const contractAddress = useChainVar(contracts.badges);
+  const queryClient = useQueryClient();
 
-  const { enqueueSnackbar } = useSnackbar();
+  const referredBy = useReferredBy(args?.inviter);
 
-  const transaction = useTransaction({
-    onSuccess,
-    onError: (err) => {
-      enqueueSnackbar(
-        parseErrorMessage(
-          err,
-          "Failed to accept invitation, make sure you have a valid referral code from your inviter and try again",
-        ),
-        {
-          variant: "error",
-          key: "transaction-error",
-        },
-      );
-      onError?.(err);
-    },
+  const handleSuccess = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: referredBy.queryKey });
+    onSuccess?.();
+  }, [queryClient, referredBy.queryKey, onSuccess]);
+
+  return useTransaction({
+    address: contractAddress,
+    abi: SocietyProtocolBadgesABI,
+    functionName: "acceptInvite",
+    args: args ? [args.inviter, args.message, args.signature] : undefined,
     successMessage: "Invitation accepted successfully",
+    errorMessage: "Failed to accept invitation",
+    onSuccess: handleSuccess,
+    onError,
     waitForSync: true,
-    suppressErrorSnackbar: true,
   });
-
-  const mutate = useCallback(
-    async ({ inviter, message, signature }: AcceptInvitationData) => {
-      await transaction.execute({
-        address: contractAddress,
-        abi: SocietyProtocolBadgesABI,
-        functionName: "acceptInvite",
-        args: [inviter, message, signature],
-      });
-    },
-    [contractAddress, transaction],
-  );
-
-  return {
-    mutate,
-    ...transaction,
-  };
 };

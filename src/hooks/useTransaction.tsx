@@ -1,10 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
-import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import {
+  useSimulateContract,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { Hex, TransactionReceipt } from "viem";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
+import { useEstimateGas } from "@/hooks/useEstimateGas";
 import { parseErrorMessage } from "@/utils/errors";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -14,13 +19,29 @@ import { IconButton, Link, Tooltip } from "@mui/material";
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
 interface UseTransactionParams {
+  // Transaction parameters (for upfront configuration)
+  address?: Hex;
+  abi?: readonly unknown[];
+  functionName?: string;
+  args?: unknown[];
+  value?: bigint;
+
+  // Simulation options
+  simulate?: boolean;
+
+  // Execution options
   enabled?: boolean;
   waitForSync?: boolean;
+
+  // Callbacks
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
+
+  // Messages
   pendingMessage?: string;
   submittedMessage?: string;
   successMessage?: string;
+  errorMessage?: string;
   suppressErrorSnackbar?: boolean;
   snackbarKeyPrefix?: string;
 }
@@ -30,6 +51,7 @@ export interface ExecuteTransactionParams {
   abi: readonly unknown[];
   functionName: string;
   args?: unknown[];
+  value?: bigint;
 }
 
 const TransactionNotificationActions = ({
@@ -82,13 +104,27 @@ const TransactionNotificationActions = ({
 };
 
 export const useTransaction = ({
+  // Transaction parameters
+  address,
+  abi,
+  functionName,
+  args,
+  value,
+
+  // Options
+  simulate = true,
   enabled = true,
   waitForSync = true,
+
+  // Callbacks
   onSuccess,
   onError,
+
+  // Messages
   pendingMessage = "Please confirm the transaction in your wallet",
   submittedMessage = "Transaction submitted",
   successMessage = "Transaction successful!",
+  errorMessage = "Transaction failed",
   suppressErrorSnackbar = false,
   snackbarKeyPrefix,
 }: UseTransactionParams = {}) => {
@@ -102,6 +138,20 @@ export const useTransaction = ({
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { writeContractAsync, isPending } = useWriteContract();
 
+  // Simulate the transaction
+  const simulation = useSimulateContract(
+    simulate && address && abi && functionName && args && enabled
+      ? ({
+          address,
+          abi,
+          functionName,
+          args,
+
+          ...(value !== undefined && { value }),
+        } as Parameters<typeof useSimulateContract>[0])
+      : undefined,
+  );
+
   const txReceipt = useWaitForTransactionReceipt({
     hash: txHash,
   });
@@ -110,9 +160,25 @@ export const useTransaction = ({
     txReceipt.data?.blockNumber,
   );
 
+  // Estimate gas for the transaction
+  const gasEstimation = useEstimateGas({
+    address,
+    abi,
+    functionName,
+    args,
+    value,
+    enabled: enabled && simulate,
+  });
+
   const execute = useCallback(
-    async (params: ExecuteTransactionParams) => {
-      if (!enabled) return;
+    async (params?: ExecuteTransactionParams) => {
+      const finalAddress = params?.address ?? address;
+      const finalAbi = params?.abi ?? abi;
+      const finalFunctionName = params?.functionName ?? functionName;
+      const finalArgs = params?.args ?? args;
+      const finalValue = params?.value ?? value;
+
+      if (!enabled || !finalAddress || !finalAbi || !finalFunctionName) return;
 
       // Reset previous transaction state when starting a new transaction
       if (status === "success" || status === "error") {
@@ -129,11 +195,12 @@ export const useTransaction = ({
         });
 
         const hash = await writeContractAsync({
-          address: params.address,
-          abi: params.abi,
-          functionName: params.functionName,
-          args: params.args,
-        });
+          address: finalAddress,
+          abi: finalAbi,
+          functionName: finalFunctionName,
+          args: finalArgs,
+          ...(finalValue !== undefined && { value: finalValue }),
+        } as Parameters<typeof writeContractAsync>[0]);
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
@@ -151,15 +218,20 @@ export const useTransaction = ({
         setStatus("error");
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
         if (!suppressErrorSnackbar) {
-          enqueueSnackbar(
-            parseErrorMessage(error, "Transaction failed to submit"),
-            { variant: "error", key: `${snackbarKeyPrefixFinal}-error` },
-          );
+          enqueueSnackbar(parseErrorMessage(error, errorMessage), {
+            variant: "error",
+            key: `${snackbarKeyPrefixFinal}-error`,
+          });
         }
         onError?.(error);
       }
     },
     [
+      address,
+      abi,
+      functionName,
+      args,
+      value,
       enabled,
       status,
       closeSnackbar,
@@ -170,6 +242,7 @@ export const useTransaction = ({
       submittedMessage,
       suppressErrorSnackbar,
       onError,
+      errorMessage,
     ],
   );
 
@@ -187,10 +260,10 @@ export const useTransaction = ({
         queueMicrotask(() => {
           setStatus("error");
           if (!suppressErrorSnackbar) {
-            enqueueSnackbar(
-              parseErrorMessage(txReceipt.error, "Transaction failed"),
-              { variant: "error", key: `${snackbarKeyPrefixFinal}-error` },
-            );
+            enqueueSnackbar(parseErrorMessage(txReceipt.error, errorMessage), {
+              variant: "error",
+              key: `${snackbarKeyPrefixFinal}-error`,
+            });
           }
           onError?.(txReceipt.error);
         });
@@ -228,6 +301,7 @@ export const useTransaction = ({
     suppressErrorSnackbar,
     snackbarKeyPrefixFinal,
     txReceipt,
+    errorMessage,
   ]);
 
   return {
@@ -240,6 +314,20 @@ export const useTransaction = ({
     isSuccess: status === "success",
     isError: status === "error",
     isSyncing: status === "executing" && waitForSync && isWaiting,
+
+    // Simulation state
+    simulation: {
+      isError: simulation.isError,
+      error: simulation.error,
+      isFetching: simulation.isFetching,
+      isLoading: simulation.isLoading,
+      isSuccess: simulation.isSuccess,
+    },
+
+    // Gas estimation
+    gas: gasEstimation.totalUsd,
+    gasLoading: gasEstimation.isLoading,
+    gasError: gasEstimation.isError,
     txReceipt,
     txHash,
   };

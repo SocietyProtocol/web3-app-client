@@ -28,10 +28,10 @@ const BadgeCreationWizardContent = () => {
     form,
     onSubmit,
     isMutating,
-    isUploadingToIpfs,
-    isWritingContract,
     isTransactionPending,
     isSyncing,
+    isUploadingToIpfs,
+    isWritingContract,
   } = useBadgeCreation();
 
   const { address } = useAccount();
@@ -112,11 +112,11 @@ const BadgeCreationWizardContent = () => {
   // Determine loading text based on state
   const loadingText = useMemo(() => {
     if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
+    if (isTransactionPending) return "Waiting for transaction confirmation...";
+    if (isSyncing) return "Waiting for subgraph to sync...";
     if (isWritingContract) return "Waiting for wallet confirmation...";
-    if (isSyncing) return "Waiting for blockchain sync...";
-    if (isTransactionPending) return "Creating badge...";
-    return "Processing...";
-  }, [isUploadingToIpfs, isWritingContract, isTransactionPending, isSyncing]);
+    return "Saving...";
+  }, [isUploadingToIpfs, isTransactionPending, isSyncing, isWritingContract]);
 
   return (
     <Stack

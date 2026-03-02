@@ -1,27 +1,24 @@
 import { useCallback } from "react";
-import { BadgeTransformedData } from "@/validation/badge";
+import { BadgeEditTransformedData } from "@/validation/badgeEdit";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { throwResponseError } from "@/utils/errors";
 import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
-import { useTransaction } from "@/hooks/useTransaction";
-import { TransactionReceipt, zeroAddress } from "viem";
-import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { useBadge } from "@/data/badges/useBadge";
+import { useTransaction } from "@/hooks/useTransaction";
 
-interface UseMutateBadgeProps {
-  onSuccess?: (transactionReceipt: TransactionReceipt) => void;
-  onError?: (error: unknown) => void;
+interface UseUpdateBadgeProps {
+  badgeId: string;
 }
 
-export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
+export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
+  const { data: badgeData, refetch } = useBadge(badgeId);
 
   const { generateAuthPayload } = useAuth();
-
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const uploadIpfsResult = useMutation<
     UploadMetadataResponse,
@@ -29,7 +26,6 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
     Record<string, unknown>
   >({
     mutationFn: async (data) => {
-      // Generate authentication payload
       const authPayload = await generateAuthPayload();
 
       const response = await fetch("/api/upload-metadata", {
@@ -45,38 +41,22 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
         await throwResponseError(response);
       }
 
-      const responseData = await response.json();
+      const responseData: UploadMetadataResponse = await response.json();
 
       return responseData;
-    },
-    onMutate: () => {
-      enqueueSnackbar("Uploading metadata to IPFS...", {
-        variant: "info",
-        key: "ipfs-upload",
-        persist: true,
-      });
-    },
-
-    onError,
-    onSuccess: () => {
-      closeSnackbar("ipfs-upload");
-
-      enqueueSnackbar("Metadata uploaded to IPFS", {
-        variant: "success",
-        key: "ipfs-upload-success",
-      });
     },
   });
 
   const transaction = useTransaction({
     waitForSync: true,
-    successMessage: "Badge created successfully",
-    onSuccess,
-    onError,
   });
 
   const mutate = useCallback(
-    async (data: BadgeTransformedData) => {
+    async (data: BadgeEditTransformedData) => {
+      if (!badgeData?.badge) {
+        throw new Error("Badge data not available");
+      }
+
       const hasMetadata = !!data.imageUrl || !!data.metadata;
 
       let uri = "";
@@ -86,52 +66,50 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
           ...(data.metadata ? JSON.parse(data.metadata) : {}),
         } as Record<string, unknown>;
 
-        const res = await uploadIpfsResult.mutateAsync(metadata);
-        uri = res.uri;
+        const ipfsData = await uploadIpfsResult.mutateAsync(metadata);
+        uri = ipfsData.uri;
       }
 
-      // Call the contract
       await transaction.execute({
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
-        functionName: "createBadge",
+        functionName: "modifyBadge",
         args: [
+          BigInt(badgeId),
           data.name,
           data.isOfficial,
           data.isCommunity,
-          zeroAddress,
           uri,
-          data.minters,
-          data.transferers,
-          data.burners,
-          data.editors,
         ],
       });
     },
-    [transaction, contractAddress, uploadIpfsResult],
+    [contractAddress, badgeData, badgeId, uploadIpfsResult, transaction],
   );
 
   const reset = useCallback(() => {
     uploadIpfsResult.reset();
     transaction.reset();
-  }, [transaction, uploadIpfsResult]);
+  }, [uploadIpfsResult, transaction]);
 
   const error =
     uploadIpfsResult.error ||
-    (transaction.isError ? new Error("Transaction failed") : null);
+    (transaction.isError
+      ? (transaction.txReceipt.error ?? new Error("Transaction failed"))
+      : null);
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {
-    mutate,
+    isMutating,
     isUploadingToIpfs: uploadIpfsResult.isPending,
     isWritingContract: transaction.isExecuting,
+    error,
+    ipfsData: uploadIpfsResult.data,
+    transactionReceipt: transaction.txReceipt.data,
+    transactionHash: transaction.txHash,
     isTransactionPending: transaction.isLoading,
     isTransactionConfirmed: transaction.isSuccess,
-    isSyncing: transaction.isSyncing,
-    isMutating,
-    error,
+    refetch,
+    mutate,
     reset,
-    transactionHash: transaction.txHash,
-    transactionReceipt: transaction.txReceipt.data,
   };
 };

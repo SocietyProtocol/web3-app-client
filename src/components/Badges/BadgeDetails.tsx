@@ -8,6 +8,7 @@ import {
   Typography,
   Button,
   Skeleton,
+  Link,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,11 @@ import { getBadgePermissions } from "../../data/badges/utils";
 import { UserCard } from "../User/UserCard";
 import { BadgeActions } from "./BadgeActions";
 import { CardRow } from "../Cards/CardRow";
+import { parseAsBoolean, useQueryState } from "nuqs";
+import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
+import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
+import { ContentGuard } from "../Bubbles/ContentGuard";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 export interface BadgeDetailsProps {
   id: string;
@@ -36,16 +42,16 @@ export interface BadgeDetailsProps {
 export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const router = useRouter();
   const [isHoldersModalOpen, setIsHoldersModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useQueryState(
+    "edit",
+    parseAsBoolean.withDefault(false).withOptions({
+      history: "replace",
+    }),
+  );
 
   const { address: userAddress } = useAccount();
 
-  const { data, isLoading } = useBadge(id);
-
-  const creatorAddress = data?.badge?.creatorAddress
-    ? (data?.badge?.creatorAddress as Hex)
-    : undefined;
-
-  const creator = useProfile(creatorAddress);
+  const { data, isLoading, refetch } = useBadge(id);
 
   const isManager = useMemo(() => {
     if (!data?.badge?.managers || !userAddress) return false;
@@ -56,6 +62,12 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       isEqualCaseInsensitive(manager.id, userAddress),
     );
   }, [data?.badge?.managers, userAddress]);
+
+  const creatorAddress = data?.badge?.creatorAddress
+    ? (data?.badge?.creatorAddress as Hex)
+    : undefined;
+
+  const creator = useProfile(creatorAddress);
 
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
@@ -74,6 +86,37 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   const handleCloseHoldersModal = () => {
     setIsHoldersModalOpen(false);
   };
+
+  const toggleEditing = () => {
+    setIsEditing((prev) => !prev);
+  };
+
+  const handleSaveEdit = async () => {
+    // Refetch badge data after successful update
+    await refetch();
+    toggleEditing();
+  };
+
+  if (isEditing && isManager) {
+    return (
+      <Box
+        sx={{
+          p: { xs: 2, sm: 3 },
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <ContentGuard requireNetwork showBackButton>
+          <BadgeEditProvider badgeId={id}>
+            <BadgeDetailsEdit
+              onCancel={toggleEditing}
+              onSave={handleSaveEdit}
+            />
+          </BadgeEditProvider>
+        </ContentGuard>
+      </Box>
+    );
+  }
 
   return (
     <Stack
@@ -94,7 +137,13 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       >
         <Button
           variant="text"
-          onClick={() => router.back()}
+          onClick={() => {
+            if (window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/badges");
+            }
+          }}
           startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
           sx={{
             color: "primary.main",
@@ -186,6 +235,25 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
       </Typography>
 
+      {/* IPFS Metadata Link */}
+      {data?.badge?.uri && (
+        <Link
+          href={data.badge.uri}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="body2"
+          color="text.primary"
+          sx={{
+            mt: -1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          View Metadata <OpenInNewIcon sx={{ fontSize: 16 }} />
+        </Link>
+      )}
+
       {/* Creator Handle and Manage Button */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -210,6 +278,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             variant="outlined"
             color="primary"
             size="small"
+            onClick={() => setIsEditing(true)}
             sx={{
               textTransform: "none",
               fontWeight: 600,

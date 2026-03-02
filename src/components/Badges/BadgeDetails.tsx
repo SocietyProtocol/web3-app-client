@@ -167,9 +167,9 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
     return (
       <Box
         sx={{
-          py: { xs: 2, md: 3 },
-          px: { xs: 2, sm: 0 },
+          p: { xs: 2, sm: 3 },
           width: "100%",
+          overflow: "hidden",
         }}
       >
         <ContentGuard requireNetwork showBackButton>

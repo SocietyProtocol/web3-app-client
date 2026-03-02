@@ -97,41 +97,6 @@ export const AccountDetailsEdit = ({
         <Typography variant="h6">
           Account details {address && truncateAddress(address)}
         </Typography>
-
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <TransactionButton
-            startIcon={<SaveIcon />}
-            onClick={handleSaveClick}
-            variant="contained"
-            size="small"
-            disabled={disabled || !form.formState.isDirty}
-            loading={
-              isUploadingToIpfs || isWritingContract || isTransactionPending
-            }
-            loadingText={
-              isUploadingToIpfs
-                ? "Uploading to IPFS..."
-                : isWritingContract
-                  ? "Confirm transaction..."
-                  : isTransactionPending
-                    ? "Confirming..."
-                    : undefined
-            }
-            sx={{ width: { xs: "100%", sm: "auto" } }}
-          >
-            Save
-          </TransactionButton>
-          <Button
-            startIcon={<CancelIcon />}
-            onClick={handleCancelClick}
-            variant="outlined"
-            size="small"
-            disabled={disabled}
-            sx={{ width: { xs: "100%", sm: "auto" } }}
-          >
-            Cancel
-          </Button>
-        </Stack>
       </Stack>
 
       {/* Avatar and Name Section */}
@@ -211,6 +176,50 @@ export const AccountDetailsEdit = ({
           );
         }}
       />
+
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        justifyContent="flex-end"
+      >
+        <Button
+          startIcon={<CancelIcon />}
+          onClick={handleCancelClick}
+          variant="outlined"
+          disabled={disabled}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Cancel
+        </Button>
+        <TransactionButton
+          startIcon={<SaveIcon />}
+          onClick={handleSaveClick}
+          variant="contained"
+          disabled={disabled || !form.formState.isDirty}
+          loading={
+            isUploadingToIpfs || isWritingContract || isTransactionPending
+          }
+          loadingText={
+            isUploadingToIpfs
+              ? "Uploading to IPFS..."
+              : isWritingContract
+                ? "Confirm transaction..."
+                : isTransactionPending
+                  ? "Confirming..."
+                  : undefined
+          }
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            minWidth: 140,
+          }}
+        >
+          Update Profile
+        </TransactionButton>
+      </Stack>
     </Stack>
   );
 };

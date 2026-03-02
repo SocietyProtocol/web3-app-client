@@ -93,7 +93,7 @@ export const BadgeDetailsEdit = ({
     isTransactionConfirmed;
 
   return (
-    <Stack spacing={{ xs: 3, sm: 4 }}>
+    <Stack spacing={{ xs: 2, sm: 3 }}>
       {/* Header */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -101,9 +101,7 @@ export const BadgeDetailsEdit = ({
         alignItems={{ xs: "stretch", sm: "center" }}
         spacing={{ xs: 1.5, sm: 0 }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Edit Badge: {badgeName}
-        </Typography>
+        <Typography variant="h6">Edit Badge: {badgeName}</Typography>
       </Stack>
 
       {/* Form */}

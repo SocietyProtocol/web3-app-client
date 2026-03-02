@@ -17,7 +17,7 @@ import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { UserTag } from "../User/UserTag";
@@ -31,7 +31,7 @@ import { BadgeActions } from "./BadgeActions";
 import { CardRow } from "../Cards/CardRow";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
-import { BadgeDetailsEdit } from "./BadgeDetailsEdit";
+import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
@@ -53,74 +53,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
   const { data, isLoading, refetch } = useBadge(id);
 
-  // Fetch metadata for editing
-  const [initialEditData, setInitialEditData] = useState<{
-    name: string;
-    imageUrl: string | null;
-    metadata: string;
-    isOfficial: boolean;
-    isCommunity: boolean;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!isEditing && initialEditData) {
-      queueMicrotask(() => {
-        setInitialEditData(null);
-      });
-      return;
-    }
-
-    let isCurrent = true;
-    const controller = new AbortController();
-    const fetchMetadata = async () => {
-      if (!isEditing || !data?.badge || initialEditData) {
-        return;
-      }
-      let metadataString = "";
-      if (data.badge.uri) {
-        try {
-          const response = await fetch(data.badge.uri, {
-            signal: controller.signal,
-          });
-          if (response.ok) {
-            const metadata = await response.json();
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { imageUrl, ...rest } = metadata;
-            if (Object.keys(rest).length > 0) {
-              metadataString = JSON.stringify(rest, null, 2);
-            }
-          }
-        } catch (error) {
-          // Ignore abort errors; log others
-          if ((error as Error).name !== "AbortError") {
-            console.error("Error fetching metadata from IPFS:", error);
-          }
-        }
-      }
-      if (!isCurrent) {
-        return;
-      }
-      setInitialEditData({
-        name: data.badge.name || "",
-        imageUrl: data.badge.imageUrl || null,
-        metadata: metadataString,
-        isOfficial: data.badge.isOfficial ?? false,
-        isCommunity: data.badge.isCommunity ?? false,
-      });
-    };
-    fetchMetadata();
-    return () => {
-      isCurrent = false;
-      controller.abort();
-    };
-  }, [isEditing, data?.badge, initialEditData]);
-
-  const creatorAddress = data?.badge?.creatorAddress
-    ? (data?.badge?.creatorAddress as Hex)
-    : undefined;
-
-  const creator = useProfile(creatorAddress);
-
   const isManager = useMemo(() => {
     if (!data?.badge?.managers || !userAddress) return false;
 
@@ -130,6 +62,12 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       isEqualCaseInsensitive(manager.id, userAddress),
     );
   }, [data?.badge?.managers, userAddress]);
+
+  const creatorAddress = data?.badge?.creatorAddress
+    ? (data?.badge?.creatorAddress as Hex)
+    : undefined;
+
+  const creator = useProfile(creatorAddress);
 
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
@@ -151,10 +89,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
-    // Reset initial edit data when closing
-    if (isEditing) {
-      setInitialEditData(null);
-    }
   };
 
   const handleSaveEdit = async () => {
@@ -163,7 +97,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
     toggleEditing();
   };
 
-  if (isEditing && initialEditData) {
+  if (isEditing && isManager) {
     return (
       <Box
         sx={{
@@ -173,11 +107,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         }}
       >
         <ContentGuard requireNetwork showBackButton>
-          <BadgeEditProvider badgeId={id} initialData={initialEditData}>
+          <BadgeEditProvider badgeId={id}>
             <BadgeDetailsEdit
               onCancel={toggleEditing}
               onSave={handleSaveEdit}
-              badgeName={data?.badge?.name ?? ""}
             />
           </BadgeEditProvider>
         </ContentGuard>

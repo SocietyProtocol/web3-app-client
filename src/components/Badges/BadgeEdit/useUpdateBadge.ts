@@ -93,7 +93,9 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
 
   const error =
     uploadIpfsResult.error ||
-    (transaction.isError ? new Error("Transaction failed") : null);
+    (transaction.isError
+      ? (transaction.txReceipt.error ?? new Error("Transaction failed"))
+      : null);
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {

@@ -6,6 +6,7 @@ import {
   ReactNode,
   useMemo,
   useCallback,
+  useEffect,
 } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +17,8 @@ import {
   badgeEditValidationSchema,
 } from "@/validation/badgeEdit";
 import { ValidationError } from "@/errors/ValidationError";
+import { useFetch } from "@/hooks/useFetch";
+import { useBadge } from "@/data/badges/useBadge";
 
 interface BadgeEditContextType {
   form: UseFormReturn<BadgeEditInputData, unknown, BadgeEditTransformedData>;
@@ -35,6 +38,8 @@ interface BadgeEditContextType {
   transactionHash: `0x${string}` | undefined;
   getServerFieldError: (field: keyof BadgeEditInputData) => string | undefined;
   reset: () => void;
+  badge?: ReturnType<typeof useBadge>;
+  metadata?: ReturnType<typeof useFetch<Record<string, unknown>>>;
 }
 
 const BadgeEditContext = createContext<BadgeEditContextType | undefined>(
@@ -52,25 +57,49 @@ export const useBadgeEdit = () => {
 interface BadgeEditProviderProps {
   children: ReactNode;
   badgeId: string;
-  initialData: {
-    name: string;
-    imageUrl: string | null;
-    metadata: string;
-    isOfficial: boolean;
-    isCommunity: boolean;
-  };
 }
 
 export const BadgeEditProvider = ({
   children,
   badgeId,
-  initialData,
 }: BadgeEditProviderProps) => {
+  const badge = useBadge(badgeId);
+
+  const metadata = useFetch<Record<string, unknown>>(badge.data?.badge?.uri, {
+    enabled: !!badge.data?.badge?.uri,
+  });
+
   const form = useForm<BadgeEditInputData, unknown, BadgeEditTransformedData>({
     resolver: zodResolver(badgeEditValidationSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      name: badge.data?.badge?.name,
+      isCommunity: badge.data?.badge?.isCommunity,
+      isOfficial: badge.data?.badge?.isOfficial,
+      imageUrl: badge.data?.badge?.imageUrl,
+    },
     mode: "onChange",
   });
+
+  useEffect(() => {
+    if (metadata.data) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { imageUrl, ...rest } = metadata.data;
+      form.reset({
+        name: badge.data?.badge?.name,
+        isCommunity: badge.data?.badge?.isCommunity,
+        isOfficial: badge.data?.badge?.isOfficial,
+        imageUrl: badge.data?.badge?.imageUrl,
+        metadata: JSON.stringify(rest, null, 2),
+      });
+    }
+  }, [
+    badge.data?.badge?.imageUrl,
+    badge.data?.badge?.isCommunity,
+    badge.data?.badge?.isOfficial,
+    badge.data?.badge?.name,
+    form,
+    metadata.data,
+  ]);
 
   const {
     mutate: updateBadge,
@@ -113,6 +142,8 @@ export const BadgeEditProvider = ({
       transactionHash,
       getServerFieldError,
       reset,
+      badge,
+      metadata,
     }),
     [
       form,
@@ -126,6 +157,8 @@ export const BadgeEditProvider = ({
       transactionHash,
       getServerFieldError,
       reset,
+      badge,
+      metadata,
     ],
   );
 

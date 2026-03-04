@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useChainId } from "wagmi";
 import { getExplorerLinkBuilder } from "@/utils/explorer";
+import { expectedNetwork } from "@/lib/wagmi";
 
 /**
  * Hook that returns a function to build explorer links for the current chain.
@@ -13,7 +13,5 @@ import { getExplorerLinkBuilder } from "@/utils/explorer";
  * const addressUrl = buildLink({ address: "0x..." });
  */
 export function useExplorerLinkBuilder() {
-  const chainId = useChainId();
-
-  return useMemo(() => getExplorerLinkBuilder(chainId), [chainId]);
+  return useMemo(() => getExplorerLinkBuilder(expectedNetwork.id), []);
 }

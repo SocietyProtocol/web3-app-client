@@ -227,13 +227,13 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         {data?.badge?.creatorAddress && (
           <UserTag
             id={creatorAddress}
-            loading={isLoading || creator.profileData.isLoading}
+            loading={isLoading || creator.subgraphData.isLoading}
             name={
-              creator.profileData.data?.name ??
+              creator.subgraphData.data?.name ??
               (creatorAddress ? truncateAddress(creatorAddress) : "")
             }
-            imageUrl={creator.profileData.data?.imageUrl}
-            bio={creator.profileData.data?.bio}
+            imageUrl={creator.subgraphData.data?.imageUrl}
+            bio={creator.subgraphData.data?.bio}
             link
           />
         )}

@@ -32,8 +32,8 @@ export const ReferredBy = ({
           loading={loading}
           id={address}
           name={profile.username}
-          bio={profile.profileData.data?.bio}
-          imageUrl={profile.profileData.data?.imageUrl}
+          bio={profile.subgraphData.data?.bio}
+          imageUrl={profile.subgraphData.data?.imageUrl}
           showPreview
           highlightYou
           link

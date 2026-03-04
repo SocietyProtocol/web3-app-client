@@ -1,7 +1,7 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useAccount } from "wagmi";
 import { useProfile } from "./useProfile";
@@ -13,6 +13,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
+  const queryClient = useQueryClient();
   const contractAddress = useChainVar(contracts.badges);
   const { address } = useAccount();
   const userAddress = overrideAddress || address;
@@ -47,7 +48,12 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   });
 
   const transaction = useTransaction({
-    waitForSync: false,
+    onSuccess: () => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["user", userAddress] }),
+        queryClient.invalidateQueries({ queryKey: ["users"] }),
+      ]);
+    },
   });
 
   const mutate = useCallback(
@@ -92,11 +98,11 @@ export const useProfileMutation = (overrideAddress?: Address) => {
     username: profile.username,
     profileId: profile.profileId,
     profileUri: profile.uri,
-    profileData: profile.profileData,
+    profileData: profile.subgraphData,
     isLoading:
       profile.profileId.isLoading ||
       profile.uri.isLoading ||
-      profile.profileData.isLoading,
+      profile.subgraphData.isLoading,
     isMutating,
     isUploadingToIpfs: uploadIpfsResult.isPending,
     isWritingContract: transaction.isExecuting,

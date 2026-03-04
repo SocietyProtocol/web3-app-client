@@ -12,7 +12,6 @@ import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkele
 import { Address } from "viem";
 import { BadgeCard } from "../Badges/BadgeCard";
 import { BadgesModal } from "../Badges/BadgesModal";
-import { truncateAddress } from "@/utils/string";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { useChainVar } from "@/hooks/useChainVar";
@@ -31,17 +30,9 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   const { address: accountAddress } = useAccount();
   const overrideAddress = address || accountAddress;
 
-  const {
-    profileId,
-    profileData,
-    subgraphData,
+  const { profileId, subgraphData, username } = useProfile(overrideAddress);
 
-    username = overrideAddress
-      ? truncateAddress(overrideAddress)
-      : "Unknown User",
-  } = useProfile(overrideAddress);
-
-  const { data: profile, isLoading } = profileData;
+  const { data: profile, isLoading } = subgraphData;
 
   const tokenAddress = useChainVar(tokens.spec);
 

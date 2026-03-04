@@ -139,7 +139,7 @@ export const Accounts = () => {
             />
           </Box>
 
-          {!profile.profileData.isLoading && !profile.profileData.data && (
+          {!profile.subgraphData.isLoading && !profile.subgraphData.data && (
             <Button variant="contained" onClick={handleSetupAccountClick}>
               Setup Account
             </Button>

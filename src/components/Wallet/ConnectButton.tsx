@@ -28,7 +28,7 @@ export const ConnectButton = ({
   const {
     profileId: { isLoading: profileIdLoading },
     uri: { isLoading: uriLoading },
-    profileData: { data: profileData, isLoading: profileDataLoading },
+    subgraphData: { data: profileData, isLoading: profileDataLoading },
     isInitialLoading,
   } = useProfile();
 

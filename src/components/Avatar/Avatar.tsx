@@ -19,7 +19,7 @@ export const Avatar = ({
   loading,
 }: AvatarProps) => {
   const {
-    profileData: { data: profileData },
+    subgraphData: { data: profileData },
   } = useProfile(address && isAddress(address) ? address : undefined);
 
   const image = profileData?.imageUrl || ensImage;

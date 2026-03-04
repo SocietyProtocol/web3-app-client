@@ -41,7 +41,7 @@ export const Profile = () => {
   return (
     <ErrorBoundary>
       <ContentGuard
-        requireNetwork={!profile.profileData.data}
+        requireNetwork={!profile.subgraphData.data}
         requireAccount={!accountSetupOpen}
         sx={{
           paddingX: { xs: 3, md: 6 },
@@ -49,7 +49,7 @@ export const Profile = () => {
           overflow: "hidden",
         }}
       >
-        {profile.profileData.data ? (
+        {profile.subgraphData.data ? (
           <AccountDetails />
         ) : (
           accountSetupOpen && (

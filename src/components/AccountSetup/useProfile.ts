@@ -2,9 +2,8 @@ import { Address } from "viem";
 import { useAccount } from "wagmi";
 import { useProfileId } from "@/data/users/useProfileId";
 import { useProfileUri } from "@/data/users/useProfileUri";
-import { useMemo } from "react";
-import { useFetch } from "@/hooks/useFetch";
 import { useSubgraphUser } from "@/data/users/useSubgraphUser";
+import { truncateAddress } from "@/utils/string";
 
 export interface ProfileData {
   name?: string;
@@ -23,38 +22,23 @@ export function useProfile(addressOverride?: Address) {
   // Read uri for the profileId (only if profileId is defined and not zero)
   const uriResult = useProfileUri(profileIdResult.data);
 
-  // Read profile data from IPFS using the uri
-  const profileDataResult = useFetch<ProfileData>(uriResult.data);
-
   const subgraphData = useSubgraphUser(userAddress);
 
   const refetch = async () => {
     await profileIdResult.refetch();
     await uriResult.refetch();
-    await profileDataResult.refetch();
   };
-
-  const username = useMemo(() => {
-    if (
-      profileDataResult.data?.name &&
-      profileDataResult.data.name.trim() !== ""
-    ) {
-      return profileDataResult.data.name;
-    }
-
-    return undefined;
-  }, [profileDataResult.data]);
 
   return {
     profileId: profileIdResult,
     uri: uriResult,
-    profileData: profileDataResult,
     subgraphData,
-    username,
+    username:
+      subgraphData.data?.name ||
+      (userAddress ? truncateAddress(userAddress) : "Unknown User"),
     refetch,
     isInitialLoading:
       (profileIdResult.data === undefined && profileIdResult.isLoading) ||
-      (uriResult.data === undefined && uriResult.isLoading) ||
-      (profileDataResult.data === undefined && profileDataResult.isLoading),
+      (uriResult.data === undefined && uriResult.isLoading),
   };
 }

@@ -54,7 +54,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
   if (
     isConnected &&
     (!requireNetwork || !isWrongNetwork) &&
-    (!requireAccount || profile.profileData.data)
+    (!requireAccount || profile.subgraphData.data)
   ) {
     return children;
   }
@@ -113,7 +113,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
           <WrongNetworkBubble message={switchNetworkMessage} />
         ) : (
           requireAccount &&
-          !profile.profileData.data && (
+          !profile.subgraphData.data && (
             <AccountSetupBubble
               onActionClick={() => router.push("/profile?setupOpen=true")}
             />

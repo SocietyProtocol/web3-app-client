@@ -88,11 +88,13 @@ export const ContentGuard = ({
       <Stack
         alignItems="center"
         justifyContent="center"
-        sx={{
-          maxWidth: 600,
-          marginX: "auto",
-          ...sx,
-        }}
+        sx={[
+          {
+            maxWidth: 600,
+            marginX: "auto",
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
       >
         {!isConnected ? (
           <ConnectWalletBubble message={connectWalletMessage} />

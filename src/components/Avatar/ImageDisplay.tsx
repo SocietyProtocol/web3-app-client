@@ -19,11 +19,13 @@ export const ImageDisplay = ({
     return (
       <Skeleton
         variant="circular"
-        sx={{
-          ...sx,
-          width: size,
-          height: size,
-        }}
+        sx={[
+          ...(Array.isArray(sx) ? sx : [sx]),
+          {
+            width: size,
+            height: size,
+          },
+        ]}
       />
     );
   }
@@ -32,15 +34,17 @@ export const ImageDisplay = ({
     <MUIAvatar
       {...(src && { src: src })}
       aria-label={ariaLabel}
-      sx={{
-        ...sx,
-        width: size,
-        height: size,
+      sx={[
+        ...(Array.isArray(sx) ? sx : [sx]),
+        {
+          width: size,
+          height: size,
 
-        "& .MuiAvatar-fallback": {
-          display: "none",
+          "& .MuiAvatar-fallback": {
+            display: "none",
+          },
         },
-      }}
+      ]}
     />
   );
 };

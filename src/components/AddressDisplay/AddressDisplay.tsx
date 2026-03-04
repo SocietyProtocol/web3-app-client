@@ -34,12 +34,12 @@ export const AddressDisplay = ({
 
   const displayAddress = useMemo(
     () => (truncate ? truncateAddress(address) : address),
-    [address, truncate]
+    [address, truncate],
   );
 
   const explorerUrl = useMemo(
     () => buildExplorerLink({ address }),
-    [buildExplorerLink, address]
+    [buildExplorerLink, address],
   );
 
   return (
@@ -51,15 +51,17 @@ export const AddressDisplay = ({
     >
       <Typography
         variant="body2"
-        sx={{
-          fontFamily: "monospace",
-          color: "text.primary",
-          fontSize: size === "small" ? "0.875rem" : "1rem",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          ...sx,
-        }}
+        sx={[
+          {
+            fontFamily: "monospace",
+            color: "text.primary",
+            fontSize: size === "small" ? "0.875rem" : "1rem",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
         title={address}
       >
         {displayAddress}

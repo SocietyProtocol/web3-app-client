@@ -1,30 +1,69 @@
-import { IconButton, TextField } from "@mui/material";
+import { IconButton, TextField, Stack } from "@mui/material";
 import { TransactionButton } from "../Transaction/TransactionButton";
 import { DataItem } from "./DataItem";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { referralCodeValidationSchema } from "@/validation/referralCode";
-import z from "zod";
 import { useCallback, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { useAcceptInvitationMutation } from "./useAcceptInvitationMutation";
-import { useAccount } from "wagmi";
+import { useAccount, useConfig } from "wagmi";
 import { generateReferralMessage } from "@/utils/referralCode";
 import { SimulationError } from "@/components/Transaction/SimulationError";
-import { Stack } from "@mui/material";
+import { readContract } from "@wagmi/core";
+import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
+import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+import { expectedNetwork } from "@/lib/wagmi";
+import { isEqualCaseInsensitive } from "@/utils/string";
+import { type Hex } from "viem";
 
 export const AcceptInvitation = () => {
+  const wagmiConfig = useConfig();
+  const badgesContract = useChainVar(contracts.badges);
   const { address } = useAccount();
   const { enqueueSnackbar } = useSnackbar();
 
+  const validateCrossReferral = useCallback(
+    async (value: string) => {
+      if (!address) {
+        return "Wallet address is not available. Please connect your wallet.";
+      }
+
+      let inviter: Hex;
+      try {
+        ({ inviter } = referralCodeValidationSchema.parse(value));
+      } catch {
+        return "Invalid referral code format.";
+      }
+
+      if (isEqualCaseInsensitive(inviter, address)) {
+        return "You cannot use your own referral code.";
+      }
+
+      try {
+        const inviterInviter = await readContract(wagmiConfig, {
+          address: badgesContract,
+          abi: SocietyProtocolBadgesABI,
+          functionName: "invitedBy",
+          args: [inviter],
+          chainId: expectedNetwork.id,
+        });
+
+        if (isEqualCaseInsensitive(inviterInviter, address)) {
+          return "You cannot use a referral code from someone you have already invited.";
+        }
+
+        return true;
+      } catch {
+        return "Unable to validate referral code. Please check your network connection and try again.";
+      }
+    },
+    [address, badgesContract, wagmiConfig],
+  );
+
   const form = useForm({
-    resolver: zodResolver(
-      z.object({
-        referralCode: referralCodeValidationSchema,
-      }),
-    ),
     defaultValues: {
       referralCode: "",
     },
@@ -40,12 +79,19 @@ export const AcceptInvitation = () => {
     if (
       !address ||
       !referralCode ||
-      typeof referralCode === "string" ||
+      typeof referralCode !== "string" ||
       !form.formState.isValid
-    )
+    ) {
       return undefined;
+    }
 
-    const { inviter, signature } = referralCode;
+    const parsed = referralCodeValidationSchema.safeParse(referralCode);
+
+    if (!parsed.success) {
+      return undefined;
+    }
+
+    const { inviter, signature } = parsed.data;
     const message = generateReferralMessage(address);
 
     return { inviter, signature, message };
@@ -101,42 +147,38 @@ export const AcceptInvitation = () => {
       tooltip="If you have received a referral code from an existing user, enter it here to accept the invitation and link your account to the referrer."
     >
       <Stack spacing={2}>
-        <Controller
-          name="referralCode"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <TextField
-              size="small"
-              fullWidth
-              placeholder={"Paste or enter a referral code"}
-              {...field}
-              error={fieldState.invalid}
-              helperText={fieldState.error?.message}
-              disabled={
-                transaction.isExecuting ||
-                transaction.isSuccess ||
-                field.disabled
-              }
-              slotProps={{
-                input: {
-                  endAdornment: field.value ? (
-                    <IconButton size="small" onClick={onCancel} title="Clear">
-                      <CancelIcon
-                        fontSize="small"
-                        sx={{
-                          color: "error.main",
-                        }}
-                      />
-                    </IconButton>
-                  ) : (
-                    <IconButton size="small" onClick={onPaste} title="Paste">
-                      <ContentPasteIcon fontSize="small" />
-                    </IconButton>
-                  ),
-                },
-              }}
-            />
-          )}
+        <TextField
+          size="small"
+          fullWidth
+          placeholder="Paste or enter a referral code"
+          {...form.register("referralCode", {
+            validate: validateCrossReferral,
+          })}
+          error={!!form.formState.errors.referralCode}
+          helperText={form.formState.errors.referralCode?.message}
+          disabled={
+            transaction.isExecuting ||
+            transaction.isSuccess ||
+            form.formState.disabled
+          }
+          slotProps={{
+            input: {
+              endAdornment: referralCode ? (
+                <IconButton size="small" onClick={onCancel} title="Clear">
+                  <CancelIcon
+                    fontSize="small"
+                    sx={{
+                      color: "error.main",
+                    }}
+                  />
+                </IconButton>
+              ) : (
+                <IconButton size="small" onClick={onPaste} title="Paste">
+                  <ContentPasteIcon fontSize="small" />
+                </IconButton>
+              ),
+            },
+          }}
         />
 
         <SimulationError error={transaction.simulation.error} />

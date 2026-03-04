@@ -37,11 +37,7 @@ export const Bid = ({
     orderId,
   });
 
-  const handleCancelClick = useCallback(() => {
-    if (isCancellationPastDeadline && !cancelBid.simulation.error) {
-      cancelBid.execute();
-    }
-  }, [cancelBid, isCancellationPastDeadline]);
+  const handleCancelClick = useCallback(() => cancelBid.execute(), [cancelBid]);
 
   if (loading) {
     return (
@@ -159,7 +155,7 @@ export const Bid = ({
         }}
       >
         {(status === "Placed" || status === "Pending") && (
-          <Stack spacing={1} sx={{ width: "100%" }}>
+          <Stack spacing={1} sx={{ width: "100%", alignItems: "center" }}>
             <SimulationError error={cancelBid.simulation.error} />
 
             <Tooltip

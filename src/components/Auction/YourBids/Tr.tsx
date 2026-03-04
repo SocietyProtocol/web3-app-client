@@ -4,7 +4,7 @@ import { Box, styled } from "@mui/material";
 
 export const Tr = styled(Box)(({ theme }) => ({
   display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr 60px",
+  gridTemplateColumns: "1fr 1fr 1fr 200px",
   padding: theme.spacing(2, 1),
   alignItems: "center",
   gap: theme.spacing(1),

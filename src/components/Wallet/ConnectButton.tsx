@@ -73,7 +73,9 @@ export const ConnectButton = ({
 
         return (
           <Tooltip
-            title={chain?.unsupported ? "Wrong network — click to switch" : ""}
+            title={
+              chain?.unsupported ? "Wrong network — click to switch" : undefined
+            }
             arrow
           >
             <Button

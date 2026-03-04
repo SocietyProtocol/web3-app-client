@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import { ConnectButtonSkeleton } from "./ConnectButtonSkeleton";
 import type { SxProps } from "@mui/system";
 import type { ButtonPropsVariantOverrides } from "@mui/material/Button";
 import { OverridableStringUnion } from "@mui/types";
 import { ConnectButton as RainbowConnectButton } from "@rainbow-me/rainbowkit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ErrorIcon from "@mui/icons-material/Error";
 import { Avatar } from "../Avatar/Avatar";
 import { useProfile } from "../AccountSetup/useProfile";
 
@@ -35,7 +36,9 @@ export const ConnectButton = ({
     <RainbowConnectButton.Custom>
       {({
         account,
+        chain,
         openAccountModal,
+        openChainModal,
         mounted: wagmiReady,
         openConnectModal,
       }) => {
@@ -71,8 +74,13 @@ export const ConnectButton = ({
         return (
           <Button
             variant={variant || "wallet"}
-            onClick={openAccountModal}
-            sx={sx}
+            onClick={chain?.unsupported ? openChainModal : openAccountModal}
+            sx={{
+              ...sx,
+              ...(chain?.unsupported && {
+                border: (theme) => `1px solid ${theme.palette.error.dark}`,
+              }),
+            }}
             fullWidth={fullWidth}
           >
             <Stack
@@ -95,13 +103,25 @@ export const ConnectButton = ({
               >
                 {profileData?.name || account.displayName}
               </Typography>
-              <ExpandMoreIcon
-                fontSize="small"
-                sx={{
-                  ml: { xs: 0, sm: 0.5 },
-                  fontSize: { xs: "0.875rem", sm: "1.25rem" },
-                }}
-              />
+              {chain?.unsupported ? (
+                <Tooltip title="Wrong network — click to switch" arrow>
+                  <ErrorIcon
+                    sx={{
+                      ml: { xs: 0, sm: 0.5 },
+                      fontSize: { xs: "0.875rem", sm: "1.25rem" },
+                      color: "error.dark",
+                    }}
+                  />
+                </Tooltip>
+              ) : (
+                <ExpandMoreIcon
+                  fontSize="small"
+                  sx={{
+                    ml: { xs: 0, sm: 0.5 },
+                    fontSize: { xs: "0.875rem", sm: "1.25rem" },
+                  }}
+                />
+              )}
             </Stack>
           </Button>
         );

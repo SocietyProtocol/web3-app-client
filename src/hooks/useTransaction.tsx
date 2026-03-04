@@ -172,8 +172,6 @@ export const useTransaction = ({
 
   const execute = useCallback(
     async (params?: ExecuteTransactionParams) => {
-      console.log({ params });
-
       const finalAddress = params?.address ?? address;
       const finalAbi = params?.abi ?? abi;
       const finalFunctionName = params?.functionName ?? functionName;

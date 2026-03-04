@@ -33,11 +33,12 @@ export const Bid = ({
 
   const { decimalsBiddingToken } = auctionDetail || {};
 
-  const cancelBid = useCancelBidMutation({
-    orderId,
-  });
+  const { simulation, execute, isLoading, gas, gasError, gasLoading } =
+    useCancelBidMutation({
+      orderId,
+    });
 
-  const handleCancelClick = useCallback(() => cancelBid.execute(), [cancelBid]);
+  const handleCancelClick = useCallback(() => execute(), [execute]);
 
   if (loading) {
     return (
@@ -156,14 +157,14 @@ export const Bid = ({
       >
         {(status === "Placed" || status === "Pending") && (
           <Stack spacing={1} sx={{ width: "100%", alignItems: "center" }}>
-            <SimulationError error={cancelBid.simulation.error} />
+            <SimulationError error={simulation.error} />
 
             <Tooltip
               title={
                 isCancellationPastDeadline
                   ? "Cancellation period has ended"
-                  : cancelBid.simulation.error
-                    ? parseErrorMessage(cancelBid.simulation.error)
+                  : simulation.error
+                    ? parseErrorMessage(simulation.error)
                     : "Canceling a bid will remove it from the order book and return your funds, but it may take some time to process. If the cancellation period has ended, you may not be able to cancel your bid."
               }
               arrow
@@ -175,15 +176,15 @@ export const Bid = ({
                   onClick={handleCancelClick}
                   disabled={
                     isCancellationPastDeadline ||
-                    cancelBid.simulation?.isFetching ||
-                    cancelBid.simulation?.isError
+                    simulation?.isFetching ||
+                    simulation?.isError
                   }
-                  simulating={cancelBid.simulation?.isFetching}
-                  loading={cancelBid.isLoading}
+                  simulating={simulation?.isFetching}
+                  loading={isLoading}
                   loadingText="Canceling..."
-                  gas={cancelBid.gas}
-                  gasLoading={cancelBid.gasLoading}
-                  gasError={cancelBid.gasError}
+                  gas={gas}
+                  gasLoading={gasLoading}
+                  gasError={gasError}
                   sx={{
                     width: { xs: "100%", sm: "200px", md: "auto" },
                   }}

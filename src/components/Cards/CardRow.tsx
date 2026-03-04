@@ -33,11 +33,7 @@ export const CardRow = <T extends { id: string }>({
   sx,
 }: CardRowProps<T>) => {
   return (
-    <Box
-      sx={{
-        ...sx,
-      }}
-    >
+    <Box sx={sx}>
       <Stack direction="row" justifyContent="space-between" mb={2}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
           {title}

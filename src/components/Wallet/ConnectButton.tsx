@@ -75,12 +75,12 @@ export const ConnectButton = ({
           <Button
             variant={variant || "wallet"}
             onClick={chain?.unsupported ? openChainModal : openAccountModal}
-            sx={{
-              ...sx,
-              ...(chain?.unsupported && {
+            sx={[
+              ...(Array.isArray(sx) ? sx : [sx]),
+              chain?.unsupported && {
                 border: (theme) => `1px solid ${theme.palette.error.dark}`,
-              }),
-            }}
+              },
+            ]}
             fullWidth={fullWidth}
           >
             <Stack

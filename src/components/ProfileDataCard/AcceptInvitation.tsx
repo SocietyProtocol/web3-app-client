@@ -17,6 +17,7 @@ import { contracts } from "@/consts/contracts";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { expectedNetwork } from "@/lib/wagmi";
 import { isEqualCaseInsensitive } from "@/utils/string";
+import { type Hex } from "viem";
 
 export const AcceptInvitation = () => {
   const wagmiConfig = useConfig();
@@ -30,13 +31,18 @@ export const AcceptInvitation = () => {
         return "Wallet address is not available. Please connect your wallet.";
       }
 
+      let inviter: Hex;
       try {
-        const { inviter } = referralCodeValidationSchema.parse(value);
+        ({ inviter } = referralCodeValidationSchema.parse(value));
+      } catch {
+        return "Invalid referral code format.";
+      }
 
-        if (isEqualCaseInsensitive(inviter, address)) {
-          return "You cannot use your own referral code.";
-        }
+      if (isEqualCaseInsensitive(inviter, address)) {
+        return "You cannot use your own referral code.";
+      }
 
+      try {
         const inviterInviter = await readContract(wagmiConfig, {
           address: badgesContract,
           abi: SocietyProtocolBadgesABI,
@@ -51,7 +57,7 @@ export const AcceptInvitation = () => {
 
         return true;
       } catch {
-        return "Invalid referral code format.";
+        return "Unable to validate referral code. Please check your network connection and try again.";
       }
     },
     [address, badgesContract, wagmiConfig],

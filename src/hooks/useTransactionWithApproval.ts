@@ -75,6 +75,9 @@ export const useTransactionWithApproval = ({
     functionName,
     args,
     enabled,
+    // Only simulate when allowance is known and sufficient — avoids false
+    // ERC20InsufficientAllowance errors while approval is pending or loading.
+    simulate: enabled && allowance.data !== undefined && !approveRequired,
     onSuccess: () => {
       allowance.refetch();
       onSuccess?.();

@@ -304,6 +304,12 @@ export const useTransaction = ({
     errorMessage,
   ]);
 
+  useEffect(() => {
+    if (simulation.isError) {
+      console.error("Transaction simulation error:", simulation.error);
+    }
+  }, [simulation.isError, simulation.error]);
+
   return {
     execute,
     reset,

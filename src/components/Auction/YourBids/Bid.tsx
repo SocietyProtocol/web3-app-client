@@ -31,7 +31,7 @@ export const Bid = ({
   id: orderId,
 }: BidProps) => {
   const { isCancellationPastDeadline, auctionDetail } = useAuctionContext();
-  const { isWrongNetwork, chainId } = useCheckWrongNetwork();
+  const { isWrongNetwork } = useCheckWrongNetwork();
 
   const { decimalsBiddingToken } = auctionDetail || {};
 
@@ -41,13 +41,6 @@ export const Bid = ({
     });
 
   const handleCancelClick = useCallback(() => execute(), [execute]);
-
-  console.log({
-    chainId,
-    isWrongNetwork,
-    isCancellationPastDeadline,
-    simulationError: simulation.error,
-  });
 
   if (loading) {
     return (

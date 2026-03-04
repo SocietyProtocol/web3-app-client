@@ -100,6 +100,9 @@ export const BadgeActions = ({
         requireNetwork
         connectWalletMessage="Connect your wallet to perform badge actions"
         switchNetworkMessage="Switch to the correct network to perform badge actions"
+        sx={{
+          marginTop: 2,
+        }}
       >
         <Stack
           marginTop={2}

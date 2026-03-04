@@ -11,9 +11,9 @@ import { env } from "@/lib/env";
 
 export const isProd = env.environment === "production";
 
-export const SUPPORTED_CHAINS = [isProd ? mainnet : sepolia] as const;
-
 export const expectedNetwork = isProd ? mainnet : sepolia;
+
+export const SUPPORTED_CHAINS = [expectedNetwork] as const;
 
 export const transports = {
   [mainnet.id]: http(

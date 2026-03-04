@@ -1,4 +1,4 @@
-import { IconButton, TextField } from "@mui/material";
+import { IconButton, TextField, Stack } from "@mui/material";
 import { TransactionButton } from "../Transaction/TransactionButton";
 import { DataItem } from "./DataItem";
 import { useForm, useWatch } from "react-hook-form";
@@ -11,7 +11,6 @@ import { useAcceptInvitationMutation } from "./useAcceptInvitationMutation";
 import { useAccount, useConfig } from "wagmi";
 import { generateReferralMessage } from "@/utils/referralCode";
 import { SimulationError } from "@/components/Transaction/SimulationError";
-import { Stack } from "@mui/material";
 import { readContract } from "@wagmi/core";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
@@ -80,8 +79,13 @@ export const AcceptInvitation = () => {
       return undefined;
     }
 
-    const { inviter, signature } =
-      referralCodeValidationSchema.parse(referralCode);
+    const parsed = referralCodeValidationSchema.safeParse(referralCode);
+
+    if (!parsed.success) {
+      return undefined;
+    }
+
+    const { inviter, signature } = parsed.data;
     const message = generateReferralMessage(address);
 
     return { inviter, signature, message };

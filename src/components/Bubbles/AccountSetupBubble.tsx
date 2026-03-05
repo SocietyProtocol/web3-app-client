@@ -17,6 +17,7 @@ export const AccountSetupBubble = ({
 
   return (
     <BubbleBase
+      variant="info"
       actions={
         <Button variant="contained" fullWidth onClick={onActionClick}>
           Setup your Account

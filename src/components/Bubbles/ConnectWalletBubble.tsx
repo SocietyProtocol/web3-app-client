@@ -10,7 +10,10 @@ export const ConnectWalletBubble = ({
   message = "Society Protocol is a framework for building synchronized network states.",
 }: ConnectWalletBubbleProps) => {
   return (
-    <BubbleBase actions={<ConnectButton variant="contained" fullWidth />}>
+    <BubbleBase
+      variant="info"
+      actions={<ConnectButton variant="contained" fullWidth />}
+    >
       <Typography
         variant="h5"
         gutterBottom

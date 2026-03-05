@@ -5,15 +5,16 @@ import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
 import { AutocompleteProps } from "@mui/material";
 
+type OptionType = {
+  id: string;
+  name: string;
+  profileUser?: { name?: string | null } | null;
+};
+
 interface BadgeAutocompleteProps {
   label: string;
   value: string[];
-  onChange: AutocompleteProps<
-    { id: string; name: string },
-    true,
-    false,
-    true
-  >["onChange"];
+  onChange: AutocompleteProps<OptionType, true, false, true>["onChange"];
   tooltip?: string;
 }
 
@@ -24,7 +25,7 @@ export const BadgeAutocomplete = ({
   tooltip,
 }: BadgeAutocompleteProps) => {
   const [selectedBadgeMap, setSelectedBadgeMap] = useState<
-    Map<string, { id: string; name: string }>
+    Map<string, OptionType>
   >(new Map());
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,7 +58,7 @@ export const BadgeAutocomplete = ({
     () =>
       value
         .map((id) => selectedBadgeMap.get(id))
-        .filter((badge): badge is { id: string; name: string } => !!badge),
+        .filter((badge): badge is OptionType => !!badge),
     [value, selectedBadgeMap],
   );
 
@@ -77,7 +78,13 @@ export const BadgeAutocomplete = ({
           ? option
           : `${option.name} (ID: ${option.id})`
       }
-      renderItem={(item) => <BadgeHandle id={item.id} name={item.name} />}
+      renderItem={(item) => (
+        <BadgeHandle
+          id={item.id}
+          name={item.name}
+          profileUser={item.profileUser}
+        />
+      )}
       inputValue={searchQuery}
       onInputChange={(_, value, reason) => {
         if (reason !== "reset") {

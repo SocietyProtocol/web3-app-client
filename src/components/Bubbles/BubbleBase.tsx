@@ -15,7 +15,7 @@ export interface BubbleBaseProps {
   title?: React.ReactNode;
   show?: boolean;
   showIcon?: boolean;
-  variant?: "default" | "warning";
+  variant?: "info" | "warning" | "none";
 }
 
 export const BubbleBase = ({
@@ -24,7 +24,7 @@ export const BubbleBase = ({
   title,
   show = true,
   showIcon = true,
-  variant = "default",
+  variant = "none",
 }: BubbleBaseProps) => {
   if (!show) {
     return null;
@@ -52,14 +52,14 @@ export const BubbleBase = ({
               sx={{ flex: 1 }}
             >
               {showIcon &&
-                (variant === "default" ? (
+                (variant === "info" ? (
                   <ChatBubbleOutlineOutlinedIcon fontSize="large" />
-                ) : (
+                ) : variant === "warning" ? (
                   <WarningAmberOutlinedIcon
                     fontSize="large"
                     sx={{ color: "warning.light" }}
                   />
-                ))}
+                ) : null)}
 
               {title ?? ""}
             </Stack>

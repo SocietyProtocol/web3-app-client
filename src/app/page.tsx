@@ -3,7 +3,6 @@
 import React, { useCallback, useState } from "react";
 import {
   Box,
-  Container,
   Typography,
   Accordion,
   AccordionSummary,
@@ -17,6 +16,7 @@ import { faqData } from "@/data/faq";
 import HomeSkeleton from "@/components/Skeletons/HomeSkeleton";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { ContentGuard } from "@/components/Bubbles/ContentGuard";
+import { Page } from "@/components/Page/Page";
 
 export default function Home() {
   // allow multiple panels to be expanded
@@ -42,13 +42,7 @@ export default function Home() {
   }
 
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        marginBottom: 6,
-        px: { xs: 2, sm: 0 },
-      }}
-    >
+    <Page>
       <ContentGuard
         requireNetwork
         requireAccount
@@ -136,6 +130,6 @@ export default function Home() {
           </Accordion>
         ))}
       </Box>
-    </Container>
+    </Page>
   );
 }

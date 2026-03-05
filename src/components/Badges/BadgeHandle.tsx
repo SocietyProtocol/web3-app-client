@@ -1,9 +1,12 @@
-import { Box, Chip, Skeleton, Typography } from "@mui/material";
+import { Box, Chip, Skeleton, Tooltip, Typography } from "@mui/material";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 
 export interface BadgeHandleProps {
   id: string;
   name: string;
+  profileUser?: {
+    name?: string | null;
+  } | null;
   loading?: boolean;
   link?: boolean;
 }
@@ -11,9 +14,12 @@ export interface BadgeHandleProps {
 export const BadgeHandle = ({
   id,
   name,
+  profileUser,
   loading,
   link = false,
 }: BadgeHandleProps) => {
+  const label = profileUser?.name ? `User (${profileUser.name})` : name;
+
   return (
     <OptionalLink
       href={link ? `/badges/${id}` : undefined}
@@ -42,15 +48,21 @@ export const BadgeHandle = ({
               }}
             />
 
-            <Typography
-              component="span"
-              variant="body2"
-              sx={{
-                color: "text.primary",
-              }}
-            >
-              {name}
-            </Typography>
+            <Tooltip title={label} arrow>
+              <Typography
+                component="span"
+                variant="body2"
+                sx={{
+                  color: "text.primary",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  maxWidth: 150,
+                }}
+              >
+                {label}
+              </Typography>
+            </Tooltip>
           </>
         )}
       </Box>

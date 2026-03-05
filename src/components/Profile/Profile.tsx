@@ -43,6 +43,11 @@ export const Profile = () => {
       <ContentGuard
         requireNetwork={!profile.profileData.data}
         requireAccount={!accountSetupOpen}
+        sx={{
+          paddingX: { xs: 3, md: 6 },
+          paddingY: { xs: 5, md: 7 },
+          overflow: "hidden",
+        }}
       >
         {profile.profileData.data ? (
           <AccountDetails />

@@ -31,6 +31,9 @@ query Badge($id: ID!) {
     minters {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
         name
@@ -41,6 +44,9 @@ query Badge($id: ID!) {
     burners {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
         name
@@ -51,6 +57,9 @@ query Badge($id: ID!) {
     transferers {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
         name

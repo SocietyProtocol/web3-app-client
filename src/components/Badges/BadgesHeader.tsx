@@ -10,7 +10,7 @@ export const BadgesHeader = () => {
   };
 
   return (
-    <Box py={3} px={5}>
+    <Box>
       <Typography
         sx={{
           fontSize: "1.125rem",
@@ -20,12 +20,27 @@ export const BadgesHeader = () => {
       >
         Create Badges and share value
       </Typography>
-      <Box display="flex" flexDirection="row" gap={3} mt={1}>
+      <Box
+        display="flex"
+        flexDirection="row"
+        gap={{
+          xs: 3,
+          sm: 6,
+        }}
+        mt={1}
+        justifyContent="space-between"
+        width="100%"
+        flexWrap="wrap"
+      >
         <Typography
           variant="body1"
           color="text.primary"
           sx={{
-            flexShrink: 1,
+            flexBasis: {
+              xs: "100%",
+              sm: "60%",
+              md: "70%",
+            },
           }}
         >
           Create your own community with user badges, automated trust, and
@@ -36,8 +51,10 @@ export const BadgesHeader = () => {
         <Button
           variant="contained"
           sx={{
-            maxWidth: "unset !important",
+            maxWidth: { xs: "100% !important", sm: "200px !important" },
             whiteSpace: "nowrap",
+            minWidth: "154px !important",
+            flex: 1,
           }}
           onClick={handleCreateBadge}
         >

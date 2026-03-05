@@ -174,6 +174,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
       {/* Badge Name */}
       <Typography
+        component="h1"
         variant="h4"
         sx={{
           fontSize: { xs: "1.5rem", sm: "2rem" },
@@ -182,6 +183,16 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           textAlign: "center",
           px: 2,
           wordBreak: "break-word",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+
+          maxWidth: {
+            xs: "100%",
+            sm: "80%",
+            md: 600,
+            lg: 800,
+            xl: 1000,
+          },
         }}
       >
         {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
@@ -211,6 +222,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         direction={{ xs: "column", sm: "row" }}
         spacing={{ xs: 2, sm: 5 }}
         alignItems="center"
+        justifyContent="center"
       >
         {data?.badge?.creatorAddress && (
           <UserTag
@@ -294,13 +306,10 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
         users={data?.badge?.holders || []}
         loading={isLoading}
-        highlightYou
         link
         noUsersFoundText="No holders found"
         viewAllButtonText="View All Holders"
-        andMoreText={(remainingCount) =>
-          `And ${remainingCount} more holders...`
-        }
+        andMoreText="And {count} more holders..."
       />
 
       {/* Actions */}

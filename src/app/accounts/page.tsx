@@ -6,6 +6,11 @@ import { getQueryClient } from "@/lib/tanstack-query";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Accounts",
+  description: "Explore and manage user accounts on Society Protocol.",
+};
+
 export default async function AccountsPage() {
   const queryClient = getQueryClient();
 

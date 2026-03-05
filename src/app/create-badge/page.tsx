@@ -4,6 +4,11 @@ import { BadgeCreationWizard } from "@/components/Badges/BadgeCreation/BadgeCrea
 import { ContentGuard } from "@/components/Bubbles/ContentGuard";
 import { Page } from "@/components/Page/Page";
 
+export const metadata = {
+  title: "Create Badge",
+  description: "Create a new badge on Society Protocol.",
+};
+
 export default function CreateBadgePage() {
   return (
     <Page wideMargin>

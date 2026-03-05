@@ -8,6 +8,11 @@ import { Box } from "@mui/material";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Badges",
+  description: "Explore and manage badges on Society Protocol.",
+};
+
 export default async function BadgesPage() {
   const queryClient = getQueryClient();
 

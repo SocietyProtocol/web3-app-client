@@ -7,7 +7,13 @@ interface BadgePermissionsProps {
   label: string;
   tooltip: string;
   isLoading?: boolean;
-  permissionBadges?: Array<Pick<Badge, "id" | "name">>;
+  permissionBadges?: Array<
+    Pick<Badge, "id" | "name"> & {
+      profileUser?: {
+        name?: string | null;
+      } | null;
+    }
+  >;
 }
 
 export const BadgePermissions = ({
@@ -64,8 +70,14 @@ export const BadgePermissions = ({
               {isLoading ? (
                 <Skeleton width={100} height={20} />
               ) : (
-                permissionBadges?.map(({ id, name }) => (
-                  <BadgeHandle key={id} id={id} name={name} link />
+                permissionBadges?.map(({ id, name, profileUser }) => (
+                  <BadgeHandle
+                    key={id}
+                    id={id}
+                    name={name}
+                    profileUser={profileUser}
+                    link
+                  />
                 ))
               )}
             </Box>

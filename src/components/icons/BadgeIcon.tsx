@@ -1,13 +1,14 @@
 import { SvgIcon, SvgIconProps, useTheme } from "@mui/material";
-import { useId } from "react";
 
 interface BadgeIconProps extends SvgIconProps {
   isOfficial?: boolean;
 }
 
+const GRADIENT_ID = "badge-icon-official-gradient";
+
 export const BadgeIcon = ({ isOfficial, ...props }: BadgeIconProps) => {
   const theme = useTheme();
-  const gradientId = useId();
+  const gradientId = GRADIENT_ID;
 
   return (
     <SvgIcon {...props} viewBox="0 0 12 12">

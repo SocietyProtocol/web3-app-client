@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Gallery } from "../Gallery/Gallery";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Hex } from "viem";
 import { truncateAddress } from "@/utils/string";
 import { UserCard } from "./UserCard";
@@ -18,7 +18,7 @@ import { UserData } from "@/data/users/types";
 interface UsersModalProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title: ReactNode;
   users: Pick<UserData, "id" | "name" | "bio" | "imageUrl">[];
   noUsersFoundText?: string;
   highlightYou?: boolean;

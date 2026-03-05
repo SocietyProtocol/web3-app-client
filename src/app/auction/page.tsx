@@ -7,6 +7,11 @@ import { env } from "@/lib/env";
 import { getQueryClient } from "@/lib/tanstack-query";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "SPEC Token Auction",
+  description: "Participate in the Society Protocol IOC Auction.",
+};
+
 export default async function AuctionPage() {
   const queryClient = getQueryClient();
 

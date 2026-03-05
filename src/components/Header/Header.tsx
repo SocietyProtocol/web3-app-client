@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ConnectButton } from "@/components/Wallet/ConnectButton";
 import { Box, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import Link from "next/link";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -39,21 +40,23 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           <MenuIcon sx={{ fontSize: { xs: 24, sm: 28 } }} />
         </IconButton>
 
-        <Box
-          sx={{
-            width: { xs: 150, sm: 200, md: 233 },
-            height: { xs: 20, sm: 26, md: 32 },
-            position: "relative",
-          }}
-        >
-          <Image
-            src="/logo/logo-dark.svg"
-            alt="Society Protocol Logo"
-            fill
-            priority
-            style={{ objectFit: "contain" }}
-          />
-        </Box>
+        <Link href="/" aria-label="Society Protocol Home">
+          <Box
+            sx={{
+              width: { xs: 150, sm: 200, md: 233 },
+              height: { xs: 20, sm: 26, md: 32 },
+              position: "relative",
+            }}
+          >
+            <Image
+              src="/logo/logo-dark.svg"
+              alt="Society Protocol Logo"
+              fill
+              priority
+              style={{ objectFit: "contain" }}
+            />
+          </Box>
+        </Link>
       </Box>
       <ConnectButton />
     </Box>

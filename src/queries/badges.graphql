@@ -43,6 +43,9 @@ query Badges(
     minters {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
         name
@@ -53,6 +56,9 @@ query Badges(
     burners {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
         name
@@ -63,6 +69,9 @@ query Badges(
     transferers {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
         name

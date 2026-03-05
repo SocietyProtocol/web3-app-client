@@ -9,7 +9,7 @@ interface BadgeAutocompleteProps {
   label: string;
   value: string[];
   onChange: AutocompleteProps<
-    { id: string; name: string },
+    { id: string; name: string; profileUser?: { name: string } },
     true,
     false,
     true
@@ -24,7 +24,7 @@ export const BadgeAutocomplete = ({
   tooltip,
 }: BadgeAutocompleteProps) => {
   const [selectedBadgeMap, setSelectedBadgeMap] = useState<
-    Map<string, { id: string; name: string }>
+    Map<string, { id: string; name: string; profileUser?: { name: string } }>
   >(new Map());
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,7 +77,13 @@ export const BadgeAutocomplete = ({
           ? option
           : `${option.name} (ID: ${option.id})`
       }
-      renderItem={(item) => <BadgeHandle id={item.id} name={item.name} />}
+      renderItem={(item) => (
+        <BadgeHandle
+          id={item.id}
+          name={item.name}
+          profileUser={item.profileUser}
+        />
+      )}
       inputValue={searchQuery}
       onInputChange={(_, value, reason) => {
         if (reason !== "reset") {

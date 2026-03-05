@@ -6,7 +6,7 @@ import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { checksumAddress, isAddress } from "viem";
-import { use } from "react";
+import { use, useEffect } from "react";
 import { notFound, redirect } from "next/navigation";
 import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive } from "@/utils/string";
@@ -25,6 +25,10 @@ export default function UserProfilePage({
     : undefined;
 
   const profile = useProfile(_checksumAddress);
+
+  useEffect(() => {
+    document.title = `User ${profile.username ? `@${profile.username}` : _checksumAddress} | Society Protocol`;
+  }, [_checksumAddress, profile.username]);
 
   if (!_checksumAddress) {
     return notFound();

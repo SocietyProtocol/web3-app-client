@@ -7,7 +7,7 @@ import { UserList } from "../User/UserList";
 import { env } from "@/lib/env";
 
 export const Governance = () => {
-  const governers: Pick<User, "id" | "name">[] = [];
+  const governors: Pick<User, "id" | "name" | "imageUrl" | "bio">[] = [];
 
   return (
     <Box>
@@ -133,8 +133,8 @@ export const Governance = () => {
 
       <UserList
         title="Governors"
-        users={governers}
-        noUsersFoundText="No governers found"
+        users={governors}
+        noUsersFoundText="No governors found"
         sx={{
           marginTop: 10,
         }}

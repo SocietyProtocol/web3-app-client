@@ -12,7 +12,6 @@ import { CardRow } from "../Cards/CardRow";
 export interface UserListProps {
   users: Array<Pick<User, "id" | "name" | "imageUrl" | "bio">>;
   loading?: boolean;
-  link?: boolean;
   title: ReactNode;
   modalTitle?: ReactNode;
   noUsersFoundText?: string;
@@ -24,7 +23,6 @@ export interface UserListProps {
 export const UserList = ({
   users,
   loading = false,
-  link = true,
   title = "Users",
   modalTitle = title,
   noUsersFoundText = "No users found",
@@ -55,13 +53,13 @@ export const UserList = ({
         loading={loading}
         items={users}
         minItemWidth={140}
-        renderItem={(holder) => (
+        renderItem={({ loading, ...user }) => (
           <UserCard
-            id={holder.id as Hex}
-            name={holder.name ?? truncateAddress(holder.id as Hex)}
-            bio={holder.bio}
-            imageUrl={holder.imageUrl}
-            loading={holder.loading}
+            id={user.id as Hex}
+            name={user.name ?? truncateAddress(user.id as Hex)}
+            bio={user.bio}
+            imageUrl={user.imageUrl}
+            loading={loading}
             size="small"
             highlightYou
             link
@@ -80,7 +78,7 @@ export const UserList = ({
         users={users}
         noUsersFoundText={noUsersFoundText}
         highlightYou
-        link={link}
+        link
       />
     </>
   );

@@ -306,22 +306,9 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
         users={data?.badge?.holders || []}
         loading={isLoading}
-        link
         noUsersFoundText="No holders found"
         viewAllButtonText="View All Holders"
         andMoreText="And {count} more holders..."
-      />
-
-      {/* Actions */}
-      <Stack
-        direction={{
-          xs: "column",
-          sm: "row",
-        }}
-        spacing={2}
-        sx={{
-          width: "100%",
-        }}
       />
     </Stack>
   );

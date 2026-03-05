@@ -88,7 +88,7 @@ export const Accounts = () => {
 
   return (
     <>
-      <Stack spacing={3} width="100%" marginTop={3}>
+      <Stack spacing={3} width="100%">
         {/* Controls */}
         <Box
           sx={{

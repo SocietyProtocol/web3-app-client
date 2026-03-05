@@ -158,10 +158,7 @@ export const ActiveAuction = () => {
         </Stack>
       </Stack>
 
-      <ContentGuard
-        connectWalletMessage="Connect your wallet to view your bids"
-        hideBubbles
-      >
+      <ContentGuard hideBubbles>
         <YourBids />
       </ContentGuard>
     </Box>

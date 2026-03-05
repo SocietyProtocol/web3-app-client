@@ -12,18 +12,24 @@ import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-export interface ContentGuardProps {
+export type ContentGuardProps = {
   requireNetwork?: boolean;
   requireAccount?: boolean;
   loading?: boolean;
   children?: ReactNode;
   fallback?: ReactNode;
-  connectWalletMessage?: string;
-  switchNetworkMessage?: string;
-  hideBubbles?: boolean;
-  showBackButton?: boolean;
   sx?: SxProps;
-}
+} & (
+  | {
+      hideBubbles?: false;
+      connectWalletMessage?: string;
+      switchNetworkMessage?: string;
+      showBackButton?: boolean;
+    }
+  | {
+      hideBubbles: true;
+    }
+);
 
 export const ContentGuard = ({
   requireNetwork,
@@ -31,11 +37,9 @@ export const ContentGuard = ({
   loading = false,
   children,
   fallback,
-  connectWalletMessage,
-  switchNetworkMessage,
   hideBubbles = false,
-  showBackButton = false,
   sx,
+  ...props
 }: ContentGuardProps) => {
   const router = useRouter();
 
@@ -59,6 +63,13 @@ export const ContentGuard = ({
   if (hideBubbles) {
     return null;
   }
+
+  const { showBackButton, connectWalletMessage, switchNetworkMessage } =
+    props as {
+      connectWalletMessage?: string;
+      switchNetworkMessage?: string;
+      showBackButton?: boolean;
+    };
 
   return (
     <Box>

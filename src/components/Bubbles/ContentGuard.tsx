@@ -31,16 +31,15 @@ export type ContentGuardProps = {
     }
 );
 
-export const ContentGuard = ({
-  requireNetwork,
-  requireAccount,
-  loading = false,
-  children,
-  fallback,
-  hideBubbles = false,
-  sx,
-  ...props
-}: ContentGuardProps) => {
+export const ContentGuard = (props: ContentGuardProps) => {
+  const {
+    requireNetwork,
+    requireAccount,
+    loading = false,
+    children,
+    fallback,
+    sx,
+  } = props;
   const router = useRouter();
 
   const wagmiReady = useWagmiReady();
@@ -60,16 +59,11 @@ export const ContentGuard = ({
     return children;
   }
 
-  if (hideBubbles) {
+  if (props.hideBubbles) {
     return null;
   }
 
-  const { showBackButton, connectWalletMessage, switchNetworkMessage } =
-    props as {
-      connectWalletMessage?: string;
-      switchNetworkMessage?: string;
-      showBackButton?: boolean;
-    };
+  const { showBackButton, connectWalletMessage, switchNetworkMessage } = props;
 
   return (
     <Box>

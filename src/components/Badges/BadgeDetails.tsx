@@ -19,7 +19,6 @@ import { useMemo } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { UserTag } from "../User/UserTag";
-import { useProfile } from "../AccountSetup/useProfile";
 import { BadgePermissions } from "./BadgePermissions";
 import { BadgeManagers } from "./BadgeManagers";
 import { getBadgePermissions } from "../../data/badges/utils";
@@ -30,6 +29,7 @@ import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { UserList } from "../User/UserList";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export interface BadgeDetailsProps {
   id: string;
@@ -61,7 +61,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
     ? (data?.badge?.creatorAddress as Hex)
     : undefined;
 
-  const creator = useProfile(creatorAddress);
+  const creator = useUserQuery(creatorAddress);
 
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
@@ -227,13 +227,13 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         {data?.badge?.creatorAddress && (
           <UserTag
             id={creatorAddress}
-            loading={isLoading || creator.subgraphData.isLoading}
+            loading={isLoading || creator.isLoading}
             name={
-              creator.subgraphData.data?.name ??
+              creator.data?.name ??
               (creatorAddress ? truncateAddress(creatorAddress) : "")
             }
-            imageUrl={creator.subgraphData.data?.imageUrl}
-            bio={creator.subgraphData.data?.bio}
+            imageUrl={creator.data?.imageUrl}
+            bio={creator.data?.bio}
             link
           />
         )}

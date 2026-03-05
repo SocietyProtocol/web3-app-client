@@ -316,6 +316,8 @@ export const useTransaction = ({
     status,
     isLoading:
       status === "executing" || isPending || (waitForSync && isWaiting),
+    isSigning: status === "executing" && !txHash,
+    isConfirming: status === "executing" && txHash && txReceipt.isLoading,
     isExecuting: status === "executing",
     isSuccess: status === "success",
     isError: status === "error",

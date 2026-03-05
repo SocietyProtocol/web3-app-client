@@ -3,13 +3,13 @@
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
 import { useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
-import { useProfile } from "@/components/AccountSetup/useProfile";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { ContentGuard } from "../Bubbles/ContentGuard";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export const Profile = () => {
   const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
@@ -19,7 +19,7 @@ export const Profile = () => {
 
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
-  const profile = useProfile(address);
+  const user = useUserQuery(address);
   const isInitialMount = useRef(true);
 
   // reset accountSetupOpen when user connects/disconnects or address changes
@@ -34,14 +34,14 @@ export const Profile = () => {
     setAccountSetupOpen(false);
   }, [isConnected, address, setAccountSetupOpen]);
 
-  if (!wagmiReady || profile.isInitialLoading) {
+  if (!wagmiReady || user.isLoading) {
     return <AccountSkeleton />;
   }
 
   return (
     <ErrorBoundary>
       <ContentGuard
-        requireNetwork={!profile.subgraphData.data}
+        requireNetwork={!user.data}
         requireAccount={!accountSetupOpen}
         sx={{
           paddingX: { xs: 3, md: 6 },
@@ -49,7 +49,7 @@ export const Profile = () => {
           overflow: "hidden",
         }}
       >
-        {profile.subgraphData.data ? (
+        {user.data ? (
           <AccountDetails />
         ) : (
           accountSetupOpen && (

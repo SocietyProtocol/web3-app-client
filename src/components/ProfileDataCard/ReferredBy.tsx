@@ -2,7 +2,9 @@ import { DataItem } from "./DataItem";
 import { UserHandle } from "../User/UserHandle";
 import { Hex, zeroAddress } from "viem";
 import { AcceptInvitation } from "./AcceptInvitation";
-import { useProfile } from "../AccountSetup/useProfile";
+import { useUserQuery } from "@/data/users/useUserQuery";
+import { useMemo } from "react";
+import { truncateAddress } from "@/utils/string";
 
 interface ReferredByProps {
   readonly?: boolean;
@@ -15,25 +17,31 @@ export const ReferredBy = ({
   address,
   loading,
 }: ReferredByProps) => {
-  const profile = useProfile(
+  const user = useUserQuery(
     address && address !== zeroAddress ? address : undefined,
+  );
+
+  const username = useMemo(
+    () =>
+      user.data?.name || (address ? `${truncateAddress(address)}` : "Unknown"),
+    [user.data?.name, address],
   );
 
   return !readonly && address === zeroAddress && !loading ? (
     <AcceptInvitation />
   ) : (
     <DataItem
-      loading={loading}
+      loading={loading || user.isLoading}
       label="Referred by"
       tooltip="The user who referred this account."
     >
-      {loading || (address && address !== zeroAddress) ? (
+      {loading || (address && address !== zeroAddress) || user.isLoading ? (
         <UserHandle
-          loading={loading}
+          loading={loading || user.isLoading}
           id={address}
-          name={profile.username}
-          bio={profile.subgraphData.data?.bio}
-          imageUrl={profile.subgraphData.data?.imageUrl}
+          name={username}
+          bio={user.data?.bio}
+          imageUrl={user.data?.imageUrl}
           showPreview
           highlightYou
           link

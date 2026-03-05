@@ -2,15 +2,15 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
-import { useProfile } from "./useProfile";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
   const queryClient = useQueryClient();
@@ -19,7 +19,16 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   const userAddress = overrideAddress || address;
   const { generateAuthPayload } = useAuth();
 
-  const profile = useProfile(userAddress);
+  const user = useUserQuery(userAddress);
+
+  const username = useMemo(
+    () =>
+      user.data?.name ||
+      (userAddress
+        ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`
+        : "Unknown User"),
+    [user.data?.name, userAddress],
+  );
 
   const uploadIpfsResult = useMutation<ProfileResponse, Error, AccountData>({
     mutationFn: async (data) => {
@@ -50,7 +59,9 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   const transaction = useTransaction({
     onSuccess: () => {
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["user", userAddress] }),
+        queryClient.invalidateQueries({
+          queryKey: ["user", userAddress?.toLowerCase()],
+        }),
         queryClient.invalidateQueries({ queryKey: ["users"] }),
       ]);
     },
@@ -58,15 +69,11 @@ export const useProfileMutation = (overrideAddress?: Address) => {
 
   const mutate = useCallback(
     async (data: AccountData) => {
-      if (
-        !profile.profileId.isFetched ||
-        (profile.profileId.data !== BigInt(0) && !profile.uri.isFetched)
-      ) {
+      if (user.isLoading) {
         throw new Error("Profile data is still loading. Please try again.");
       }
 
-      const profileExists =
-        Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
+      const profileExists = Boolean(user.data?.profile);
 
       const ipfsData = await uploadIpfsResult.mutateAsync({
         ...data,
@@ -77,11 +84,11 @@ export const useProfileMutation = (overrideAddress?: Address) => {
         abi: SocietyProtocolBadgesABI,
         functionName: profileExists ? "updateProfileURI" : "createProfile",
         args: profileExists
-          ? [profile.profileId.data!, ipfsData.uri]
+          ? [user.data?.profile?.id, ipfsData.uri]
           : [ipfsData.uri],
       });
     },
-    [contractAddress, profile, uploadIpfsResult, transaction],
+    [user, uploadIpfsResult, transaction, contractAddress],
   );
 
   const reset = useCallback(() => {
@@ -92,27 +99,13 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   const error =
     uploadIpfsResult.error ||
     (transaction.isError ? new Error("Transaction failed") : null);
-  const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {
-    username: profile.username,
-    profileId: profile.profileId,
-    profileUri: profile.uri,
-    profileData: profile.subgraphData,
-    isLoading:
-      profile.profileId.isLoading ||
-      profile.uri.isLoading ||
-      profile.subgraphData.isLoading,
-    isMutating,
+    username,
+    user,
+    transaction,
     isUploadingToIpfs: uploadIpfsResult.isPending,
-    isWritingContract: transaction.isExecuting,
     error,
-    ipfsData: uploadIpfsResult.data,
-    transactionReceipt: transaction.txReceipt.data,
-    transactionHash: transaction.txHash,
-    isTransactionPending: transaction.isLoading,
-    isTransactionConfirmed: transaction.isSuccess,
-    refetch: profile.refetch,
     mutate,
     reset,
   };

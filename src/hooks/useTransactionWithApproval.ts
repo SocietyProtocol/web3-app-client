@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 import { erc20Abi, Hex } from "viem";
 import { useAllowance } from "@/hooks/erc20/useAllowance";
 import { useTransaction } from "@/hooks/useTransaction";
+import { InvalidateQueryFilters } from "@tanstack/react-query";
 
 interface UseTransactionWithApprovalParams {
   tokenAddress?: Hex;
@@ -15,6 +16,9 @@ interface UseTransactionWithApprovalParams {
   functionName?: string;
   args?: unknown[];
   enabled?: boolean;
+  queryKeysToInvalidateOnSuccess?: InvalidateQueryFilters<
+    readonly unknown[]
+  >["queryKey"][];
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
@@ -28,6 +32,7 @@ export const useTransactionWithApproval = ({
   functionName,
   args,
   enabled = true,
+  queryKeysToInvalidateOnSuccess = [],
   onSuccess,
   onError,
 }: UseTransactionWithApprovalParams) => {
@@ -57,9 +62,7 @@ export const useTransactionWithApproval = ({
         : undefined,
     enabled,
     waitForSync: false,
-    onSuccess: () => {
-      allowance.refetch();
-    },
+    queryKeysToInvalidateOnSuccess: [allowance.queryKey],
     onError,
     submittedMessage: "Approval transaction submitted",
     successMessage: "Approval successful",
@@ -78,10 +81,11 @@ export const useTransactionWithApproval = ({
     // Only simulate when allowance is known and sufficient — avoids false
     // ERC20InsufficientAllowance errors while approval is pending or loading.
     simulate: enabled && allowance.data !== undefined && !approveRequired,
-    onSuccess: () => {
-      allowance.refetch();
-      onSuccess?.();
-    },
+    queryKeysToInvalidateOnSuccess: [
+      ...queryKeysToInvalidateOnSuccess,
+      allowance.queryKey,
+    ],
+    onSuccess,
     onError,
   });
 

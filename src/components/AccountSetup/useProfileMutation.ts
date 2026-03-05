@@ -1,7 +1,7 @@
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { AccountData } from "@/validation/account";
@@ -13,7 +13,6 @@ import { contracts } from "@/consts/contracts";
 import { useUserQuery } from "@/data/users/useUserQuery";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
-  const queryClient = useQueryClient();
   const contractAddress = useChainVar(contracts.badges);
   const { address } = useAccount();
   const userAddress = overrideAddress || address;
@@ -57,14 +56,10 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   });
 
   const transaction = useTransaction({
-    onSuccess: () => {
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["user", userAddress?.toLowerCase()],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["users"] }),
-      ]);
-    },
+    queryKeysToInvalidateOnSuccess: [
+      ["user", userAddress?.toLowerCase()],
+      ["users"],
+    ],
   });
 
   const mutate = useCallback(
@@ -73,7 +68,7 @@ export const useProfileMutation = (overrideAddress?: Address) => {
         throw new Error("Profile data is still loading. Please try again.");
       }
 
-      const profileExists = Boolean(user.data?.profile);
+      const profileExists = user.data?.profile?.id !== undefined;
 
       const ipfsData = await uploadIpfsResult.mutateAsync({
         ...data,
@@ -83,9 +78,10 @@ export const useProfileMutation = (overrideAddress?: Address) => {
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
         functionName: profileExists ? "updateProfileURI" : "createProfile",
-        args: profileExists
-          ? [user.data?.profile?.id, ipfsData.uri]
-          : [ipfsData.uri],
+        args:
+          user.data?.profile?.id !== undefined
+            ? [BigInt(user.data?.profile?.id), ipfsData.uri]
+            : [ipfsData.uri],
       });
     },
     [user, uploadIpfsResult, transaction, contractAddress],

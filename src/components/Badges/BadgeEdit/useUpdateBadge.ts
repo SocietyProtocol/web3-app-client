@@ -16,7 +16,7 @@ interface UseUpdateBadgeProps {
 
 export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
-  const { data: badgeData, refetch } = useBadge(badgeId);
+  const { data: badgeData } = useBadge(badgeId);
 
   const { generateAuthPayload } = useAuth();
 
@@ -49,6 +49,7 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
 
   const transaction = useTransaction({
     waitForSync: true,
+    queryKeysToInvalidateOnSuccess: [["badge", badgeId], ["badges"]],
   });
 
   const mutate = useCallback(
@@ -108,7 +109,6 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
     transactionHash: transaction.txHash,
     isTransactionPending: transaction.isLoading,
     isTransactionConfirmed: transaction.isSuccess,
-    refetch,
     mutate,
     reset,
   };

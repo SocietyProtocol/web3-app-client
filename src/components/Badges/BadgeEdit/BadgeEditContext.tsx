@@ -29,7 +29,6 @@ interface BadgeEditContextType {
       BadgeEditTransformedData
     >["handleSubmit"]
   >;
-  refetch: () => Promise<unknown>;
   isMutating: boolean;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
@@ -110,7 +109,6 @@ export const BadgeEditProvider = ({
     isTransactionConfirmed,
     transactionHash,
     error: serverError,
-    refetch,
     reset,
   } = useUpdateBadge({
     badgeId,
@@ -133,7 +131,6 @@ export const BadgeEditProvider = ({
     () => ({
       form,
       onSubmit,
-      refetch,
       isMutating,
       isUploadingToIpfs,
       isWritingContract,
@@ -148,7 +145,6 @@ export const BadgeEditProvider = ({
     [
       form,
       onSubmit,
-      refetch,
       isMutating,
       isUploadingToIpfs,
       isWritingContract,

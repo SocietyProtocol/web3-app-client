@@ -45,7 +45,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
   const { address: userAddress } = useAccount();
 
-  const { data, isLoading, refetch } = useBadge(id);
+  const { data, isLoading } = useBadge(id);
 
   const isManager = useMemo(() => {
     if (!data?.badge?.managers || !userAddress) return false;
@@ -76,8 +76,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
   };
 
   const handleSaveEdit = async () => {
-    // Refetch badge data after successful update
-    await refetch();
     toggleEditing();
   };
 

@@ -16,10 +16,8 @@ export interface AuctionContextValue {
   minBid?: bigint;
   totalAuctioned?: bigint;
   isLoading: boolean;
-  refetch: () => void;
   orders?: OrdersQuery["orders"];
   isOrdersLoading: boolean;
-  refetchOrders: () => void;
   priceVolumeHistogram?: { label: number; value: number }[];
   isCancellationPastDeadline: boolean;
 }
@@ -38,7 +36,7 @@ export const AuctionProvider = ({
   children,
 }: AuctionProviderProps) => {
   const { address } = useAccount();
-  const { data: auctionData, isLoading, refetch } = useAuction(auctionId);
+  const { data: auctionData, isLoading } = useAuction(auctionId);
 
   const now = useNow({
     updateAt: auctionData?.auctionDetail?.orderCancellationEndDate
@@ -46,11 +44,10 @@ export const AuctionProvider = ({
       : undefined,
   });
 
-  const {
-    data: ordersData,
-    isLoading: isOrdersLoading,
-    refetch: refetchOrders,
-  } = useOrders(auctionId, address);
+  const { data: ordersData, isLoading: isOrdersLoading } = useOrders(
+    auctionId,
+    address,
+  );
 
   const {
     minimumBiddingAmountPerOrder,
@@ -146,10 +143,8 @@ export const AuctionProvider = ({
       minPrice,
       totalAuctioned,
       isLoading,
-      refetch,
       orders: ordersData?.orders,
       isOrdersLoading,
-      refetchOrders,
       priceVolumeHistogram,
       isCancellationPastDeadline,
     }),
@@ -160,10 +155,8 @@ export const AuctionProvider = ({
       minPrice,
       totalAuctioned,
       isLoading,
-      refetch,
       ordersData?.orders,
       isOrdersLoading,
-      refetchOrders,
       priceVolumeHistogram,
       isCancellationPastDeadline,
     ],

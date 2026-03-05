@@ -141,10 +141,12 @@ export const BidControl = () => {
   return (
     <ContentGuard
       requireNetwork
+      connectWalletMessage="Connect your wallet to place a bid."
       switchNetworkMessage="Please switch to the correct network to place a bid."
       sx={{
         maxWidth: { xs: "100%", lg: 400 },
         width: { xs: "100%", lg: "auto" },
+        height: "100%",
       }}
     >
       <Paper

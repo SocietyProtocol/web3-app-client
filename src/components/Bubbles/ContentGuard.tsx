@@ -20,6 +20,7 @@ export interface ContentGuardProps {
   fallback?: ReactNode;
   connectWalletMessage?: string;
   switchNetworkMessage?: string;
+  hideBubbles?: boolean;
   showBackButton?: boolean;
   sx?: SxProps;
 }
@@ -32,6 +33,7 @@ export const ContentGuard = ({
   fallback,
   connectWalletMessage,
   switchNetworkMessage,
+  hideBubbles = false,
   showBackButton = false,
   sx,
 }: ContentGuardProps) => {
@@ -52,6 +54,10 @@ export const ContentGuard = ({
     (!requireAccount || profile.profileData.data)
   ) {
     return children;
+  }
+
+  if (hideBubbles) {
+    return null;
   }
 
   return (

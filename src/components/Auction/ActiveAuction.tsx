@@ -9,6 +9,7 @@ import { useChain } from "@/hooks/useChain";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { useAuctionContext } from "./AuctionContext";
 import { useMemo } from "react";
+import { ContentGuard } from "../Bubbles/ContentGuard";
 
 export const ActiveAuction = () => {
   const {
@@ -157,7 +158,12 @@ export const ActiveAuction = () => {
         </Stack>
       </Stack>
 
-      <YourBids />
+      <ContentGuard
+        connectWalletMessage="Connect your wallet to view your bids"
+        hideBubbles
+      >
+        <YourBids />
+      </ContentGuard>
     </Box>
   );
 };

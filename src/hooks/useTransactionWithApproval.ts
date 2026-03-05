@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import { erc20Abi, Hex } from "viem";
 import { useAllowance } from "@/hooks/erc20/useAllowance";
 import { useTransaction } from "@/hooks/useTransaction";
-import { InvalidateQueryFilters } from "@tanstack/react-query";
+import { QueryKey } from "@tanstack/react-query";
 
 interface UseTransactionWithApprovalParams {
   tokenAddress?: Hex;
@@ -16,9 +16,7 @@ interface UseTransactionWithApprovalParams {
   functionName?: string;
   args?: unknown[];
   enabled?: boolean;
-  queryKeysToInvalidateOnSuccess?: InvalidateQueryFilters<
-    readonly unknown[]
-  >["queryKey"][];
+  queryKeysToInvalidateOnSuccess?: QueryKey[];
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }

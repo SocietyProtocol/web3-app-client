@@ -15,7 +15,7 @@ import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { IconButton, Link, Tooltip } from "@mui/material";
-import { InvalidateQueryFilters, useQueryClient } from "@tanstack/react-query";
+import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { useStableArray } from "./useStableArray";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
@@ -35,9 +35,7 @@ interface UseTransactionParams {
   enabled?: boolean;
   waitForSync?: boolean;
 
-  queryKeysToInvalidateOnSuccess?: InvalidateQueryFilters<
-    readonly unknown[]
-  >["queryKey"][]; // Array of query keys to invalidate on success
+  queryKeysToInvalidateOnSuccess?: QueryKey[]; // Array of query keys to invalidate on success
 
   // Callbacks
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -285,11 +283,15 @@ export const useTransaction = ({
         });
       } else if (txReceipt.status === "success" && shouldWait) {
         queueMicrotask(async () => {
-          await Promise.all(
-            invalidateOnSuccessStable.map((queryKey) =>
-              queryClient.invalidateQueries({ queryKey }),
-            ),
-          );
+          try {
+            await Promise.all(
+              invalidateOnSuccessStable.map((queryKey) =>
+                queryClient.invalidateQueries({ queryKey }),
+              ),
+            );
+          } catch (error) {
+            console.error("Error invalidating queries:", error);
+          }
 
           setStatus("success");
 

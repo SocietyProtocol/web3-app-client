@@ -92,7 +92,6 @@ export const BidControl = () => {
   } = useBidMutation({
     ...values,
     onSuccess: () => {
-      userBiddingTokenBalance.refetch();
       form.reset();
     },
     enabled: form.formState.isValid,

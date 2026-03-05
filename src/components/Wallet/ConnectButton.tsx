@@ -9,7 +9,8 @@ import { ConnectButton as RainbowConnectButton } from "@rainbow-me/rainbowkit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ErrorIcon from "@mui/icons-material/Error";
 import { Avatar } from "../Avatar/Avatar";
-import { useProfile } from "../AccountSetup/useProfile";
+import { useUserQuery } from "@/data/users/useUserQuery";
+import { useAccount } from "wagmi";
 
 interface ConnectButtonProps {
   sx?: SxProps;
@@ -25,12 +26,7 @@ export const ConnectButton = ({
   fullWidth,
   variant,
 }: ConnectButtonProps) => {
-  const {
-    profileId: { isLoading: profileIdLoading },
-    uri: { isLoading: uriLoading },
-    profileData: { data: profileData, isLoading: profileDataLoading },
-    isInitialLoading,
-  } = useProfile();
+  const { data, isLoading } = useUserQuery(useAccount().address);
 
   return (
     <RainbowConnectButton.Custom>
@@ -42,7 +38,7 @@ export const ConnectButton = ({
         mounted: wagmiReady,
         openConnectModal,
       }) => {
-        if (!wagmiReady || isInitialLoading) {
+        if (!wagmiReady || isLoading) {
           return <ConnectButtonSkeleton fullWidth={fullWidth} sx={sx} />;
         }
 
@@ -97,9 +93,9 @@ export const ConnectButton = ({
               >
                 <Avatar
                   address={account.address}
-                  ensImage={profileData?.imageUrl}
+                  ensImage={data?.imageUrl}
                   size={24}
-                  loading={profileIdLoading || uriLoading || profileDataLoading}
+                  loading={isLoading}
                 />
                 <Typography
                   component="span"
@@ -107,7 +103,7 @@ export const ConnectButton = ({
                   flexGrow={1}
                   textAlign="left"
                 >
-                  {profileData?.name || account.displayName}
+                  {data?.name || account.displayName}
                 </Typography>
                 {chain?.unsupported ? (
                   <ErrorIcon

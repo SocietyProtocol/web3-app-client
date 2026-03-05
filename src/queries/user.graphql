@@ -4,6 +4,9 @@ query User($id: ID!) {
     name
     bio
     imageUrl
+    profile {
+      id
+    }
     badges(where: { isProfile: false }) {
       id
       name

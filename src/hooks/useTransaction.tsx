@@ -15,6 +15,8 @@ import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { IconButton, Link, Tooltip } from "@mui/material";
+import { QueryKey, useQueryClient } from "@tanstack/react-query";
+import { useStableArray } from "./useStableArray";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -32,6 +34,8 @@ interface UseTransactionParams {
   // Execution options
   enabled?: boolean;
   waitForSync?: boolean;
+
+  queryKeysToInvalidateOnSuccess?: QueryKey[]; // Array of query keys to invalidate on success
 
   // Callbacks
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -62,6 +66,7 @@ const TransactionNotificationActions = ({
   id?: string;
 }) => {
   const { closeSnackbar } = useSnackbar();
+
   const buildExplorerLink = useExplorerLinkBuilder();
   const explorerLink = useMemo(
     () => buildExplorerLink({ tx: txHash }),
@@ -116,6 +121,8 @@ export const useTransaction = ({
   enabled = true,
   waitForSync = true,
 
+  queryKeysToInvalidateOnSuccess = [],
+
   // Callbacks
   onSuccess,
   onError,
@@ -131,11 +138,18 @@ export const useTransaction = ({
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
 
+  const invalidateOnSuccessStable = useStableArray(
+    queryKeysToInvalidateOnSuccess,
+  );
+
   const uniqueId = useId();
 
   const snackbarKeyPrefixFinal = snackbarKeyPrefix ?? `transaction-${uniqueId}`;
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const queryClient = useQueryClient();
+
   const { writeContractAsync, isPending } = useWriteContract();
 
   // Simulate the transaction
@@ -257,7 +271,7 @@ export const useTransaction = ({
       const shouldWait = waitForSync ? isSynced : true;
 
       if (txReceipt.status === "error") {
-        queueMicrotask(() => {
+        queueMicrotask(async () => {
           setStatus("error");
           if (!suppressErrorSnackbar) {
             enqueueSnackbar(parseErrorMessage(txReceipt.error, errorMessage), {
@@ -268,7 +282,17 @@ export const useTransaction = ({
           onError?.(txReceipt.error);
         });
       } else if (txReceipt.status === "success" && shouldWait) {
-        queueMicrotask(() => {
+        queueMicrotask(async () => {
+          try {
+            await Promise.all(
+              invalidateOnSuccessStable.map((queryKey) =>
+                queryClient.invalidateQueries({ queryKey }),
+              ),
+            );
+          } catch (error) {
+            console.error("Error invalidating queries:", error);
+          }
+
           setStatus("success");
 
           enqueueSnackbar(successMessage, {
@@ -281,6 +305,7 @@ export const useTransaction = ({
               />
             ) : undefined,
           });
+
           onSuccess?.(txReceipt.data);
         });
       }
@@ -294,14 +319,16 @@ export const useTransaction = ({
     isSynced,
     waitForSync,
     enqueueSnackbar,
-    onSuccess,
-    onError,
     successMessage,
     txHash,
     suppressErrorSnackbar,
     snackbarKeyPrefixFinal,
     txReceipt,
     errorMessage,
+    queryClient,
+    onError,
+    invalidateOnSuccessStable,
+    onSuccess,
   ]);
 
   useEffect(() => {
@@ -316,6 +343,8 @@ export const useTransaction = ({
     status,
     isLoading:
       status === "executing" || isPending || (waitForSync && isWaiting),
+    isSigning: status === "executing" && !txHash,
+    isConfirming: status === "executing" && txHash && txReceipt.isLoading,
     isExecuting: status === "executing",
     isSuccess: status === "success",
     isError: status === "error",

@@ -23,17 +23,11 @@ const AccountSetupWizardContent = ({
   const [activeStep, setActiveStep] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
   const hasCompletedRef = useRef(false);
-  const {
-    form,
-    onSubmit,
-    isMutatingProfile,
-    isUploadingToIpfs,
-    isWritingContract,
-    isTransactionPending,
-    isTransactionConfirmed,
-    refetch,
-    reset,
-  } = useAccountSetup();
+  const { transaction, form, onSubmit, isUploadingToIpfs, reset } =
+    useAccountSetup();
+
+  const { isSigning, isConfirming, isLoading, isSyncing, isSuccess } =
+    transaction;
 
   const { address } = useAccount();
 
@@ -41,27 +35,14 @@ const AccountSetupWizardContent = ({
 
   // Watch for transaction confirmation and refetch profile
   useEffect(() => {
-    if (isTransactionConfirmed && !hasCompletedRef.current) {
+    if (isSuccess && !hasCompletedRef.current) {
       hasCompletedRef.current = true;
-      // Transaction confirmed, refetch profile data
-      refetch().then(() => {
-        enqueueSnackbar("Profile setup completed successfully!", {
-          variant: "success",
-          key: "account-setup-success",
-        });
-        form.reset();
-        reset();
-        onComplete?.();
-      });
+
+      form.reset();
+      reset();
+      onComplete?.();
     }
-  }, [
-    isTransactionConfirmed,
-    refetch,
-    onComplete,
-    form,
-    enqueueSnackbar,
-    reset,
-  ]);
+  }, [isSuccess, onComplete, form, enqueueSnackbar, reset]);
 
   const handleNext = async () => {
     // Validate account info step before moving forward
@@ -128,12 +109,19 @@ const AccountSetupWizardContent = ({
     if (isUploadingToIpfs) {
       return "Uploading to IPFS...";
     }
-    if (isWritingContract) {
+
+    if (isSigning) {
       return "Confirm transaction...";
     }
-    if (isTransactionPending) {
+
+    if (isConfirming) {
       return "Confirming...";
     }
+
+    if (isSyncing) {
+      return "Syncing...";
+    }
+
     return "Saving...";
   };
 
@@ -151,10 +139,10 @@ const AccountSetupWizardContent = ({
         onNext={handleNext}
         onBack={handleBack}
         onFinish={handleFinish}
-        nextDisabled={!form.formState.isValid || isMutatingProfile}
+        nextDisabled={!form.formState.isValid || isUploadingToIpfs || isLoading}
         showReset={false}
         minHeight={{ xs: 400, sm: 554 }}
-        isLoading={isMutatingProfile}
+        isLoading={isUploadingToIpfs || isLoading}
         loadingText={getLoadingText()}
         showActions={!isWrongNetwork}
       >

@@ -9,6 +9,8 @@ import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
+import { useAccount } from "wagmi";
+import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
 
 const PREV_SELL_ORDER =
   "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex;
@@ -28,13 +30,20 @@ export const useBidMutation = ({
   onError,
   enabled = true,
 }: UseBidMutationValues) => {
+  const { address } = useAccount();
+
   const { enqueueSnackbar } = useSnackbar();
-  const { auctionDetail, refetch, refetchOrders } = useAuctionContext();
+  const { auctionDetail } = useAuctionContext();
 
   const contractAddress = useChainVar(contracts.auction);
 
   const { auctionId, addressBiddingToken, decimalsAuctioningToken } =
     auctionDetail ?? {};
+
+  const userBiddingTokenBalance = useBalanceOf({
+    address,
+    tokenAddress: addressBiddingToken,
+  });
 
   // Calculate buyAmount (Auctioning Token i.e. SPEC) based on sellAmount and price
   const buyAmount = useMemo(() => {
@@ -76,11 +85,12 @@ export const useBidMutation = ({
             "0x" as Hex,
           ]
         : undefined,
-    onSuccess: () => {
-      refetch();
-      refetchOrders();
-      onSuccess?.();
-    },
+    queryKeysToInvalidateOnSuccess: [
+      ["auction"],
+      ["orders"],
+      userBiddingTokenBalance.queryKey,
+    ],
+    onSuccess,
     onError,
     enabled,
   });

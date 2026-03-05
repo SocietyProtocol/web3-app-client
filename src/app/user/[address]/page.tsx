@@ -1,15 +1,15 @@
 "use client";
 
-import { useProfile } from "@/components/AccountSetup/useProfile";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
-import { checksumAddress, isAddress } from "viem";
-import { use, useEffect } from "react";
+import { isAddress } from "viem";
+import { use, useMemo, useEffect } from "react";
 import { notFound, redirect } from "next/navigation";
 import { useAccount } from "wagmi";
-import { isEqualCaseInsensitive } from "@/utils/string";
+import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export default function UserProfilePage({
   params,
@@ -18,19 +18,21 @@ export default function UserProfilePage({
 }) {
   const { address: connectedAddress } = useAccount();
   const { address } = use(params);
+
   const wagmiReady = useWagmiReady();
 
-  const _checksumAddress = isAddress(address)
-    ? checksumAddress(address)
-    : undefined;
+  const concreteAddress = useMemo(
+    () => (isAddress(address) ? address : undefined),
+    [address],
+  );
 
-  const profile = useProfile(_checksumAddress);
+  const user = useUserQuery(concreteAddress);
 
   useEffect(() => {
-    document.title = `User ${profile.username ? `@${profile.username}` : _checksumAddress} | Society Protocol`;
-  }, [_checksumAddress, profile.username]);
+    document.title = `User ${user.data?.name ? `@${user.data.name}` : concreteAddress ? truncateAddress(concreteAddress) : ""} | Society Protocol`;
+  }, [concreteAddress, user.data?.name]);
 
-  if (!_checksumAddress) {
+  if (concreteAddress === undefined) {
     return notFound();
   }
 
@@ -38,13 +40,13 @@ export default function UserProfilePage({
     return redirect("/profile");
   }
 
-  if (!wagmiReady || profile.isInitialLoading) {
+  if (!wagmiReady || user.isLoading) {
     return <AccountSkeleton />;
   }
 
   return (
     <ErrorBoundary>
-      <AccountDetails address={_checksumAddress} readonly />
+      <AccountDetails address={concreteAddress} readonly />
     </ErrorBoundary>
   );
 }

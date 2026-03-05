@@ -19,11 +19,12 @@ import { UserTag } from "../User/UserTag";
 import { truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { useRouter } from "next/navigation";
-import { useProfile } from "../AccountSetup/useProfile";
+import { useUserQuery } from "@/data/users/useUserQuery";
+import { useAccount } from "wagmi";
 
 export const Accounts = () => {
   const router = useRouter();
-  const profile = useProfile();
+  const user = useUserQuery(useAccount().address);
 
   const {
     data,
@@ -139,7 +140,7 @@ export const Accounts = () => {
             />
           </Box>
 
-          {!profile.profileData.isLoading && !profile.profileData.data && (
+          {!user.isLoading && !user.data && (
             <Button variant="contained" onClick={handleSetupAccountClick}>
               Setup Account
             </Button>

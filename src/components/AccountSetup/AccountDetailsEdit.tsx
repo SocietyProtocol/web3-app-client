@@ -25,36 +25,28 @@ export const AccountDetailsEdit = ({
   const hasCompletedRef = useRef(false);
   const {
     form,
-    refetch,
-    isLoading,
+    user,
+    transaction,
     onSubmit,
     reset,
-    isMutatingProfile,
     isUploadingToIpfs,
-    isWritingContract,
-    isTransactionConfirmed,
-    isTransactionPending,
     getServerFieldError,
   } = useAccountSetup();
+
+  const { isSigning, isConfirming, isLoading, isSyncing, isSuccess } =
+    transaction;
 
   const { name, bio } = useWatch({ control: form.control }); // Watch name and bio fields for changes
 
   // Watch for transaction confirmation
   useEffect(() => {
-    if (isTransactionConfirmed && !hasCompletedRef.current) {
+    if (isSuccess && !hasCompletedRef.current) {
       hasCompletedRef.current = true;
-      // Transaction confirmed, refetch profile data
-      refetch().then(() => {
-        enqueueSnackbar("Profile updated successfully!", {
-          variant: "success",
-          key: "account-update-success",
-        });
-        onSave();
-        form.reset();
-        reset();
-      });
+      onSave();
+      form.reset();
+      reset();
     }
-  }, [isTransactionConfirmed, refetch, onSave, form, enqueueSnackbar, reset]);
+  }, [onSave, form, enqueueSnackbar, reset, user, isSuccess]);
 
   const handleCancelClick = () => {
     form.reset();
@@ -78,11 +70,11 @@ export const AccountDetailsEdit = ({
   };
 
   const disabled =
-    isLoading ||
+    user.isLoading ||
     form.formState.isSubmitting ||
-    isMutatingProfile ||
-    isTransactionPending ||
-    isTransactionConfirmed;
+    isUploadingToIpfs ||
+    isLoading ||
+    isSuccess;
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -199,17 +191,17 @@ export const AccountDetailsEdit = ({
           onClick={handleSaveClick}
           variant="contained"
           disabled={disabled || !form.formState.isDirty}
-          loading={
-            isUploadingToIpfs || isWritingContract || isTransactionPending
-          }
+          loading={isUploadingToIpfs || isLoading}
           loadingText={
             isUploadingToIpfs
               ? "Uploading to IPFS..."
-              : isWritingContract
+              : isSigning
                 ? "Confirm transaction..."
-                : isTransactionPending
+                : isConfirming
                   ? "Confirming..."
-                  : undefined
+                  : isSyncing
+                    ? "Syncing..."
+                    : undefined
           }
           sx={{
             textTransform: "none",

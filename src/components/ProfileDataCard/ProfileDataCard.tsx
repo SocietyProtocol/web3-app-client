@@ -9,7 +9,7 @@ import { useReferredBy } from "./useReferredBy";
 
 interface ProfileDataCardProps {
   address: Address;
-  profileId: number;
+  profileId?: string;
   readonly?: boolean;
 }
 
@@ -73,8 +73,8 @@ export const ProfileDataCard = ({
                 gap: 1,
               }}
             >
-              {profileId === 0 ? "N/A" : `#${profileId}`}
-              {profileId !== 0 && (
+              {!profileId || profileId === "0" ? "N/A" : `#${profileId}`}
+              {profileId && profileId !== "0" && (
                 <CopyButton
                   textToCopy={`#${profileId}`}
                   tooltipText="Copy profile ID"

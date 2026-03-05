@@ -71,6 +71,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
   const transaction = useTransaction({
     waitForSync: true,
     successMessage: "Badge created successfully",
+    queryKeysToInvalidateOnSuccess: [["badges"], ["badge"]],
     onSuccess,
     onError,
   });

@@ -1,5 +1,4 @@
 import { Stack, Button, Grid, Skeleton } from "@mui/material";
-import { useProfile } from "./useProfile";
 import { useAccount } from "wagmi";
 import { useMemo, useState } from "react";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
@@ -12,7 +11,6 @@ import { ProfileDataCardSkeleton } from "../ProfileDataCard/ProfileDataCardSkele
 import { Address } from "viem";
 import { BadgeCard } from "../Badges/BadgeCard";
 import { BadgesModal } from "../Badges/BadgesModal";
-import { truncateAddress } from "@/utils/string";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { useChainVar } from "@/hooks/useChainVar";
@@ -21,6 +19,8 @@ import { useFullBalanceOf } from "@/hooks/erc20/useFullBalance";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { CardRow } from "../Cards/CardRow";
 import { Page } from "../Page/Page";
+import { useUserQuery } from "@/data/users/useUserQuery";
+import { truncateAddress } from "@/utils/string";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -31,17 +31,14 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   const { address: accountAddress } = useAccount();
   const overrideAddress = address || accountAddress;
 
-  const {
-    profileId,
-    profileData,
-    subgraphData,
+  const { data, isLoading } = useUserQuery(overrideAddress);
 
-    username = overrideAddress
-      ? truncateAddress(overrideAddress)
-      : "Unknown User",
-  } = useProfile(overrideAddress);
-
-  const { data: profile, isLoading } = profileData;
+  const username = useMemo(
+    () =>
+      data?.name ??
+      (overrideAddress ? truncateAddress(overrideAddress) : "Unknown user"),
+    [data?.name, overrideAddress],
+  );
 
   const tokenAddress = useChainVar(tokens.spec);
 
@@ -55,14 +52,11 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
     tokenAddress,
   });
 
-  const badgesCount = useMemo(
-    () => subgraphData.data?.badges?.length,
-    [subgraphData.data],
-  );
+  const badgesCount = data?.badges?.length;
 
   const communityCount = useMemo(
-    () => subgraphData.data?.badges.filter((b) => b.isCommunity).length,
-    [subgraphData.data],
+    () => data?.badges.filter((b) => b.isCommunity).length,
+    [data],
   );
 
   const [isEditing, setIsEditing] = useQueryState(
@@ -90,7 +84,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
     return null;
   }
 
-  if (!profile && isLoading) {
+  if (isLoading) {
     return <AccountSkeleton />;
   }
 
@@ -143,7 +137,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   compact
                 />
               }
-              loading={subgraphData.isLoading}
+              loading={isLoading}
               tooltip="Number of communities you are a member of."
             />
 
@@ -157,7 +151,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                   compact
                 />
               }
-              loading={subgraphData.isLoading}
+              loading={isLoading}
               tooltip="Number of badges you have earned."
             />
           </Grid>
@@ -175,8 +169,8 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             overflow="hidden"
           >
             <UserCard
-              imageUrl={profile?.imageUrl}
-              bio={profile?.bio}
+              imageUrl={data?.imageUrl}
+              bio={data?.bio}
               name={username}
               id={overrideAddress}
             >
@@ -192,12 +186,12 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               )}
             </UserCard>
 
-            {profileId.isLoading ? (
+            {isLoading ? (
               <ProfileDataCardSkeleton />
             ) : (
               <ProfileDataCard
                 address={overrideAddress}
-                profileId={profileId.data == null ? 0 : Number(profileId.data)}
+                profileId={data?.profile?.id}
                 readonly={readonly}
               />
             )}
@@ -207,7 +201,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             title={
               <>
                 Badges held by {username} (
-                {subgraphData.isLoading ? (
+                {isLoading ? (
                   <Skeleton
                     variant="text"
                     width={20}
@@ -219,8 +213,8 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 )
               </>
             }
-            loading={subgraphData.isLoading}
-            items={subgraphData.data?.badges}
+            loading={isLoading}
+            items={data?.badges}
             renderItem={(badge) => (
               <BadgeCard
                 id={badge.id}
@@ -243,7 +237,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             open={isBadgesModalOpen}
             onClose={handleCloseBadgesModal}
             username={username}
-            badges={subgraphData.data?.badges || []}
+            badges={data?.badges || []}
           />
         </Stack>
       )}

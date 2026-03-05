@@ -3,7 +3,6 @@
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useAccount } from "wagmi";
-import { useProfile } from "../AccountSetup/useProfile";
 import { Box, Button, Stack, SxProps } from "@mui/material";
 import { ConnectWalletBubble } from "./ConnectWalletBubble";
 import { WrongNetworkBubble } from "./WrongNetworkBubble";
@@ -11,6 +10,7 @@ import { AccountSetupBubble } from "./AccountSetupBubble";
 import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export type ContentGuardProps = {
   requireNetwork?: boolean;
@@ -45,16 +45,16 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
-  const profile = useProfile(requireAccount ? address : undefined);
+  const profile = useUserQuery(requireAccount ? address : undefined);
 
-  if (loading || !wagmiReady || (requireAccount && profile.isInitialLoading)) {
+  if (loading || !wagmiReady || (requireAccount && profile.isLoading)) {
     return fallback;
   }
 
   if (
     isConnected &&
     (!requireNetwork || !isWrongNetwork) &&
-    (!requireAccount || profile.profileData.data)
+    (!requireAccount || profile.data)
   ) {
     return children;
   }
@@ -113,7 +113,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
           <WrongNetworkBubble message={switchNetworkMessage} />
         ) : (
           requireAccount &&
-          !profile.profileData.data && (
+          !profile.data && (
             <AccountSetupBubble
               onActionClick={() => router.push("/profile?setupOpen=true")}
             />

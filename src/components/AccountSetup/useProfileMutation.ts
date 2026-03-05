@@ -2,15 +2,15 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
-import { useProfile } from "./useProfile";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
   const contractAddress = useChainVar(contracts.badges);
@@ -18,7 +18,16 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   const userAddress = overrideAddress || address;
   const { generateAuthPayload } = useAuth();
 
-  const profile = useProfile(userAddress);
+  const user = useUserQuery(userAddress);
+
+  const username = useMemo(
+    () =>
+      user.data?.name ||
+      (userAddress
+        ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`
+        : "Unknown User"),
+    [user.data?.name, userAddress],
+  );
 
   const uploadIpfsResult = useMutation<ProfileResponse, Error, AccountData>({
     mutationFn: async (data) => {
@@ -47,20 +56,19 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   });
 
   const transaction = useTransaction({
-    waitForSync: false,
+    queryKeysToInvalidateOnSuccess: [
+      ["user", userAddress?.toLowerCase()],
+      ["users"],
+    ],
   });
 
   const mutate = useCallback(
     async (data: AccountData) => {
-      if (
-        !profile.profileId.isFetched ||
-        (profile.profileId.data !== BigInt(0) && !profile.uri.isFetched)
-      ) {
+      if (user.isLoading) {
         throw new Error("Profile data is still loading. Please try again.");
       }
 
-      const profileExists =
-        Boolean(profile.profileId.data) && profile.profileId.data !== BigInt(0);
+      const profileExists = user.data?.profile?.id !== undefined;
 
       const ipfsData = await uploadIpfsResult.mutateAsync({
         ...data,
@@ -70,12 +78,13 @@ export const useProfileMutation = (overrideAddress?: Address) => {
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
         functionName: profileExists ? "updateProfileURI" : "createProfile",
-        args: profileExists
-          ? [profile.profileId.data!, ipfsData.uri]
-          : [ipfsData.uri],
+        args:
+          user.data?.profile?.id !== undefined
+            ? [BigInt(user.data?.profile?.id), ipfsData.uri]
+            : [ipfsData.uri],
       });
     },
-    [contractAddress, profile, uploadIpfsResult, transaction],
+    [user, uploadIpfsResult, transaction, contractAddress],
   );
 
   const reset = useCallback(() => {
@@ -86,27 +95,13 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   const error =
     uploadIpfsResult.error ||
     (transaction.isError ? new Error("Transaction failed") : null);
-  const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {
-    username: profile.username,
-    profileId: profile.profileId,
-    profileUri: profile.uri,
-    profileData: profile.profileData,
-    isLoading:
-      profile.profileId.isLoading ||
-      profile.uri.isLoading ||
-      profile.profileData.isLoading,
-    isMutating,
+    username,
+    user,
+    transaction,
     isUploadingToIpfs: uploadIpfsResult.isPending,
-    isWritingContract: transaction.isExecuting,
     error,
-    ipfsData: uploadIpfsResult.data,
-    transactionReceipt: transaction.txReceipt.data,
-    transactionHash: transaction.txHash,
-    isTransactionPending: transaction.isLoading,
-    isTransactionConfirmed: transaction.isSuccess,
-    refetch: profile.refetch,
     mutate,
     reset,
   };

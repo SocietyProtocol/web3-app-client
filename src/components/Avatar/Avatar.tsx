@@ -1,7 +1,8 @@
 import { SxProps } from "@mui/material";
-import { useProfile } from "../AccountSetup/useProfile";
 import { isAddress } from "viem";
 import { UserAvatar } from "./UserAvatar";
+import { useUserQuery } from "@/data/users/useUserQuery";
+import { useMemo } from "react";
 
 export interface AvatarProps {
   address?: string;
@@ -18,11 +19,14 @@ export const Avatar = ({
   sx,
   loading,
 }: AvatarProps) => {
-  const {
-    profileData: { data: profileData },
-  } = useProfile(address && isAddress(address) ? address : undefined);
+  const { data: user } = useUserQuery(
+    useMemo(
+      () => (address && isAddress(address) ? address : undefined),
+      [address],
+    ),
+  );
 
-  const image = profileData?.imageUrl || ensImage;
+  const image = user?.imageUrl || ensImage;
 
   return (
     <UserAvatar

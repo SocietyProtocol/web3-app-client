@@ -1,11 +1,9 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchBadges, mergeOptions } from "./utils";
 import { BadgeQueryOptions } from "./types";
 
 export const useBadgesQuery = (options?: BadgeQueryOptions) => {
   const mergedOptions = mergeOptions(options);
-
-  const queryClient = useQueryClient();
 
   return useInfiniteQuery({
     queryKey: ["badges", mergedOptions],
@@ -14,10 +12,6 @@ export const useBadgesQuery = (options?: BadgeQueryOptions) => {
       const result = await fetchBadges({
         ...mergedOptions,
         skip: pageParam * mergedOptions.pageSize,
-      });
-
-      result.badges.forEach((badge) => {
-        queryClient.setQueryData(["badge", badge.id], badge);
       });
 
       return result;

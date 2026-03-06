@@ -27,6 +27,7 @@ export interface BadgeQueryOptions {
   creatorAddress?: string | null;
   managerAddress?: string | null;
   holderAddress?: string | null;
+  includeProfile?: boolean;
   orderBy?: Badge_orderBy;
   orderDirection?: OrderDirection;
   pageSize?: number;
@@ -45,7 +46,7 @@ export type BadgeData = Pick<
   | "creatorAddress"
   | "createdAt"
 > & {
-  createdBy: Pick<User, "id" | "name" | "bio" | "imageUrl">;
+  createdBy?: Pick<User, "id" | "name" | "bio" | "imageUrl"> | null;
   holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
   managers: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
 };
@@ -53,17 +54,17 @@ export type BadgeData = Pick<
 export type FullBadgeData = BadgeData & {
   minters: Array<
     Pick<Badge, "id" | "name"> & {
-      holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+      holders: Array<Pick<User, "id">>;
     }
   >;
   burners: Array<
     Pick<Badge, "id" | "name"> & {
-      holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+      holders: Array<Pick<User, "id">>;
     }
   >;
   transferers: Array<
     Pick<Badge, "id" | "name"> & {
-      holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+      holders: Array<Pick<User, "id">>;
     }
   >;
 };

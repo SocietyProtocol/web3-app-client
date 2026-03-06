@@ -18,7 +18,11 @@ export const BadgeHandle = ({
   loading,
   link = false,
 }: BadgeHandleProps) => {
-  const label = profileUser?.name ? `User (${profileUser.name})` : name;
+  const label = profileUser
+    ? profileUser.name
+      ? `User (${profileUser.name})`
+      : "User (no name)"
+    : name;
 
   return (
     <OptionalLink

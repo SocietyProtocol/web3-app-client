@@ -21,6 +21,7 @@ export const defaultOptions: BadgeQueryOptions & {
   creatorAddress: undefined,
   managerAddress: undefined,
   holderAddress: undefined,
+  includeProfile: false,
   orderBy: "id",
   orderDirection: "desc",
   pageSize: 1000,

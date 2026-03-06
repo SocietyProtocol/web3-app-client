@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
@@ -68,10 +68,15 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
     },
   });
 
+  const queryKeysToInvalidateOnSuccess = useMemo(
+    () => [["badges"], ["badge"]],
+    [],
+  );
+
   const transaction = useTransaction({
     waitForSync: true,
     successMessage: "Badge created successfully",
-    queryKeysToInvalidateOnSuccess: [["badges"], ["badge"]],
+    queryKeysToInvalidateOnSuccess,
     onSuccess,
     onError,
   });

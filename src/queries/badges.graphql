@@ -17,67 +17,16 @@ query Badges(
     isOfficial
     isCommunity
     uri
-    hookAddress
     imageUrl
     creatorAddress
-    createdAt
-    holdersCount
+    profileUser {
+      name
+    }
     createdBy {
       id
       name
       bio
       imageUrl
-    }
-    holders {
-      id
-      name
-      bio
-      imageUrl
-    }
-    managers {
-      id
-      name
-      bio
-      imageUrl
-    }
-    minters {
-      id
-      name
-      profileUser {
-        name
-      }
-      holders {
-        id
-        name
-        bio
-        imageUrl
-      }
-    }
-    burners {
-      id
-      name
-      profileUser {
-        name
-      }
-      holders {
-        id
-        name
-        bio
-        imageUrl
-      }
-    }
-    transferers {
-      id
-      name
-      profileUser {
-        name
-      }
-      holders {
-        id
-        name
-        bio
-        imageUrl
-      }
     }
   }
 }

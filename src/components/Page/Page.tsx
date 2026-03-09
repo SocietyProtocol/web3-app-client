@@ -10,6 +10,7 @@ export interface PageProps {
   title?: string;
   children: ReactNode;
   wideMargin?: boolean;
+  rightAction?: ReactNode;
 }
 
 export const Page = ({
@@ -18,6 +19,7 @@ export const Page = ({
   title,
   children,
   wideMargin,
+  rightAction,
 }: PageProps) => {
   const router = useRouter();
 
@@ -40,52 +42,62 @@ export const Page = ({
       <Box
         sx={{
           display: "flex",
-          alignItems: "flex-start",
-          gap: 2,
+          flexDirection: "row",
+          justifyContent: "space-between",
           marginBottom: 4,
-          position: "relative",
         }}
       >
-        {backButton && (
-          <Button
-            variant="text"
-            onClick={handleBack}
-            startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
-            sx={{
-              color: "primary.main",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-              textTransform: "none",
-              fontWeight: 600,
-              minWidth: { xs: "auto", sm: "64px" },
-              px: { xs: 1, sm: 2 },
-              position: "relative",
-              transform: {
-                xs: "none",
-                md: `translateX(-40px)`,
-              },
-            }}
-            aria-label="Go back"
-          >
-            <Box
-              component="span"
-              sx={{ display: { xs: "none", sm: "inline" } }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 2,
+            position: "relative",
+          }}
+        >
+          {backButton && (
+            <Button
+              variant="text"
+              onClick={handleBack}
+              startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
+              sx={{
+                color: "primary.main",
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+                textTransform: "none",
+                fontWeight: 600,
+                minWidth: { xs: "auto", sm: "64px" },
+                px: { xs: 1, sm: 2 },
+                position: "relative",
+                transform: {
+                  xs: "none",
+                  md: `translateX(-40px)`,
+                },
+              }}
+              aria-label="Go back"
             >
-              Back
-            </Box>
-          </Button>
-        )}
-        {title && (
-          <Typography
-            variant="h4"
-            component="h1"
-            color="primary.main"
-            sx={{
-              mb: 6,
-            }}
-          >
-            {title}
-          </Typography>
-        )}
+              <Box
+                component="span"
+                sx={{ display: { xs: "none", sm: "inline" } }}
+              >
+                Back
+              </Box>
+            </Button>
+          )}
+          {title && (
+            <Typography
+              variant="h4"
+              component="h1"
+              color="primary.main"
+              sx={{
+                mb: 6,
+              }}
+            >
+              {title}
+            </Typography>
+          )}
+        </Box>
+
+        {rightAction}
       </Box>
 
       {children}

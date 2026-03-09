@@ -4,6 +4,7 @@ import {
   CardContent,
   CardHeader,
   Stack,
+  SxProps,
 } from "@mui/material";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
@@ -16,6 +17,7 @@ export interface BubbleBaseProps {
   show?: boolean;
   showIcon?: boolean;
   variant?: "info" | "warning" | "none";
+  sx?: SxProps;
 }
 
 export const BubbleBase = ({
@@ -25,6 +27,7 @@ export const BubbleBase = ({
   show = true,
   showIcon = true,
   variant = "none",
+  sx,
 }: BubbleBaseProps) => {
   if (!show) {
     return null;
@@ -33,7 +36,10 @@ export const BubbleBase = ({
   return (
     <Card
       variant="bubble"
-      sx={variant === "warning" ? { borderColor: "warning.light" } : undefined}
+      sx={[
+        ...(variant === "warning" ? [{ borderColor: "warning.light" }] : []),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <CardHeader
         title={

@@ -26,10 +26,15 @@ const tokenomicsItems = [
 export default function SpecTokenPage() {
   return (
     <Page
-      title="Spec Token"
+      title="SPEC Token"
       wideMargin
       rightAction={
-        <Button variant="contained" href="#">
+        <Button
+          variant="contained"
+          onClick={() => {
+            // TODO: Replace with staking navigation when route is available
+          }}
+        >
           Stake SPEC →
         </Button>
       }
@@ -40,7 +45,6 @@ export default function SpecTokenPage() {
           maxWidth: 760,
           justifyContent: "space-between",
           alignItems: "flex-start",
-          gap: 6,
           paddingX: { xs: 2, md: 8 },
         }}
       >
@@ -135,7 +139,12 @@ export default function SpecTokenPage() {
             minWidth: 300,
           }}
           actions={
-            <Button variant="outlined" href="#">
+            <Button
+              variant="outlined"
+              onClick={() => {
+                // TODO: Navigate to the Tokenomics page when available.
+              }}
+            >
               Tokenomics →
             </Button>
           }

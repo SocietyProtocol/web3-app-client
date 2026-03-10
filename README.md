@@ -21,6 +21,7 @@ Then configure the following required variables:
 | `PINATA_JWT`                     | Pinata JWT token for IPFS uploads (server-side)         | Yes      | [Pinata Dashboard](https://pinata.cloud/)                                               |
 | `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata gateway URL for IPFS content retrieval           | Yes      | [Pinata Dashboard](https://pinata.cloud/) (e.g., `https://your-gateway.mypinata.cloud`) |
 | `NEXT_PUBLIC_AUCTION_ID`         | The ID of the auction to interact with                  | Yes      | Your auction ID from the smart contract deployment                                      |
+| `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot space URL for governance voting                | Yes      | [Snapshot](https://snapshot.box/) (e.g., `https://snapshot.box/#/s:your-space.eth`)     |
 
 **Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Server-only variables (like `PINATA_JWT`) are only accessible on the server side.
 

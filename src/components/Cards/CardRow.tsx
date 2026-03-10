@@ -76,7 +76,7 @@ export const CardRow = <T extends { id: string }>({
                   } as T & { loading: boolean })}
                 </Box>
               ))
-            : items?.slice(0, 6).map((item) => (
+            : items?.slice(0, minCountForViewAll).map((item) => (
                 <Box
                   key={item.id}
                   sx={{
@@ -90,7 +90,7 @@ export const CardRow = <T extends { id: string }>({
                 </Box>
               ))}
 
-          {items && items.length > 6 && (
+          {items && items.length > minCountForViewAll && (
             <Box
               sx={{
                 minWidth: {
@@ -107,7 +107,10 @@ export const CardRow = <T extends { id: string }>({
                 color="text.primary"
                 sx={{ textAlign: "center" }}
               >
-                {andMoreText.replace("{count}", String(items.length - 6))}
+                {andMoreText.replace(
+                  "{count}",
+                  String(items.length - minCountForViewAll),
+                )}
               </Typography>
             </Box>
           )}

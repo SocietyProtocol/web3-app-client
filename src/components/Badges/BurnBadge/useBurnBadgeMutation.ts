@@ -26,7 +26,7 @@ export const useBurnBadgeMutation = ({
     functionName: "burn",
     args: args ? [args.holder, args.id, BigInt(1)] : undefined,
     successMessage: "Badge burned successfully",
-    queryKeysToInvalidateOnSuccess: [["badge", args?.id], ["user"]],
+    queryKeysToInvalidateOnSuccess: [["badge", args?.id.toString()], ["user"]],
     onSuccess,
     onError,
   });

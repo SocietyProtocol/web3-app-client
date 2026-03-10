@@ -9,11 +9,15 @@ export const useAuctionStatus = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["auctionStatus", env.auctionId],
     queryFn: () => {
+      if (env.auctionId === undefined) {
+        return undefined;
+      }
       return fetchAuctionStatus(env.auctionId);
     },
     staleTime: Infinity,
     gcTime: Infinity,
     placeholderData: (prev) => prev,
+    enabled: env.auctionId !== undefined,
   });
 
   const { endTimeTimestamp } = data?.auctionDetail || {};

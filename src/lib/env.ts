@@ -3,7 +3,7 @@ interface ClientEnv {
   pinataGateway: string;
   wcProjectId: string;
   alchemyApiKey: string;
-  auctionId: number;
+  auctionId?: number;
   snapshotUrl: string;
 }
 
@@ -36,10 +36,6 @@ if (!process.env.NEXT_PUBLIC_ALCHEMY_API_KEY) {
   );
 }
 
-if (!process.env.NEXT_PUBLIC_AUCTION_ID) {
-  throw new Error("NEXT_PUBLIC_AUCTION_ID environment variable is not set");
-}
-
 if (!process.env.NEXT_PUBLIC_SNAPSHOT_URL) {
   throw new Error("NEXT_PUBLIC_SNAPSHOT_URL environment variable is not set");
 }
@@ -54,7 +50,9 @@ export const env: Env = {
   pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL,
   wcProjectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
   alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-  auctionId: parseInt(process.env.NEXT_PUBLIC_AUCTION_ID, 10),
+  auctionId: process.env.NEXT_PUBLIC_AUCTION_ID
+    ? parseInt(process.env.NEXT_PUBLIC_AUCTION_ID, 10)
+    : undefined,
   snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
 };

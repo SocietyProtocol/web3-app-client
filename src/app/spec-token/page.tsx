@@ -1,5 +1,6 @@
 import { Page } from "@/components/Page/Page";
-import { Typography } from "@mui/material";
+import { StakeSpecButton } from "@/components/SpecToken/SpecTokenActions";
+import { SpecTokenContent } from "@/components/SpecToken/SpecTokenContent";
 
 export const metadata = {
   title: "SPEC Token",
@@ -8,11 +9,8 @@ export const metadata = {
 
 export default function SpecTokenPage() {
   return (
-    <Page title="Spec Token">
-      <Typography variant="body1">
-        This is the information page. Find important details and documentation
-        here.
-      </Typography>
+    <Page title="SPEC Token" wideMargin rightAction={<StakeSpecButton />}>
+      <SpecTokenContent />
     </Page>
   );
 }

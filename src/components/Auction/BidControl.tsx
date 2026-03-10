@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Button, Paper, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
+import { TransactionButton } from "../Transaction/TransactionButton";
 import { AmountInput } from "../AmountInput/AmountInput";
 import { useMemo } from "react";
 import { scaleUp } from "@/utils/bigint";
@@ -18,6 +19,8 @@ import { useAuctionContext } from "./AuctionContext";
 import { TransactionFeedback } from "../Transaction/TransactionFeedback";
 import { useBidMutation } from "./useBidMutation";
 import { ContentGuard } from "../Bubbles/ContentGuard";
+import { GasEstimation } from "../Transaction/GasEstimation";
+import { SimulationError } from "../Transaction/SimulationError";
 
 export const BidControl = () => {
   const { address } = useAccount();
@@ -82,12 +85,16 @@ export const BidControl = () => {
     isSuccess,
     approveReceipt,
     bidReceipt,
+    simulation,
+    gas,
+    gasLoading,
+    gasError,
   } = useBidMutation({
     ...values,
     onSuccess: () => {
-      userBiddingTokenBalance.refetch();
       form.reset();
     },
+    enabled: form.formState.isValid,
   });
 
   const isActionDisabled = useMemo(() => {
@@ -99,7 +106,9 @@ export const BidControl = () => {
       isLoading ||
       isApproving ||
       isBidding ||
-      isSyncing
+      isSyncing ||
+      simulation.isLoading ||
+      simulation.isError
     );
   }, [
     form.formState.isValid,
@@ -110,6 +119,8 @@ export const BidControl = () => {
     isApproving,
     isBidding,
     isSyncing,
+    simulation.isLoading,
+    simulation.isError,
   ]);
 
   const amountSpecBigInt = useMemo(() => {
@@ -129,10 +140,12 @@ export const BidControl = () => {
   return (
     <ContentGuard
       requireNetwork
+      connectWalletMessage="Connect your wallet to place a bid."
       switchNetworkMessage="Please switch to the correct network to place a bid."
       sx={{
         maxWidth: { xs: "100%", lg: 400 },
         width: { xs: "100%", lg: "auto" },
+        height: "100%",
       }}
     >
       <Paper
@@ -162,7 +175,7 @@ export const BidControl = () => {
                 scaleDownDecimals={biddingTokenDecimals}
                 maxDecimals={4}
                 minThreshold={0.0001}
-                symbol={symbolBiddingToken}
+                suffix={symbolBiddingToken}
                 variant="body2"
                 color="textPrimary"
                 component="span"
@@ -180,7 +193,7 @@ export const BidControl = () => {
                 scaleDownDecimals={biddingTokenDecimals}
                 maxDecimals={4}
                 minThreshold={0.0001}
-                symbol={symbolBiddingToken}
+                suffix={symbolBiddingToken}
                 variant="body2"
                 color="textPrimary"
                 component="span"
@@ -238,7 +251,7 @@ export const BidControl = () => {
               scaleDownDecimals={decimalsAuctioningToken}
               maxDecimals={4}
               minThreshold={0.0001}
-              symbol="SPEC"
+              suffix="SPEC"
               variant="body2"
               color="textPrimary"
               fontWeight={700}
@@ -247,29 +260,44 @@ export const BidControl = () => {
           </Typography>
         )}
 
-        <Button
+        {!isActionDisabled && (
+          <GasEstimation
+            value={gas}
+            isLoading={gasLoading}
+            isError={gasError}
+          />
+        )}
+
+        <TransactionButton
           variant="contained"
           color="primary"
           fullWidth
           disabled={isActionDisabled}
           onClick={mutate}
+          simulating={simulation.isLoading}
+          loading={isLoading || isApproving || isBidding || isSyncing}
+          loadingText={
+            isSyncing
+              ? "Syncing with subgraph..."
+              : bidReceipt.isFetching
+                ? "Confirming bid..."
+                : approveReceipt.isFetching
+                  ? "Confirming approval..."
+                  : isApproving
+                    ? "Approving..."
+                    : isBidding
+                      ? "Placing bid..."
+                      : undefined
+          }
         >
-          {isSyncing
-            ? "Syncing with subgraph..."
-            : bidReceipt.isFetching
-              ? "Confirming bid..."
-              : approveReceipt.isFetching
-                ? "Confirming approval..."
-                : isApproving
-                  ? "Approving..."
-                  : isBidding
-                    ? "Placing bid..."
-                    : isSuccess
-                      ? "Bid Placed!"
-                      : approveRequired
-                        ? "Approve"
-                        : "Place Bid"}
-        </Button>
+          {isSuccess
+            ? "Bid Placed!"
+            : approveRequired
+              ? "Approve"
+              : "Place Bid"}
+        </TransactionButton>
+
+        <SimulationError error={simulation.error} />
 
         {approveReceipt.data && !bidReceipt.data && (
           <TransactionFeedback

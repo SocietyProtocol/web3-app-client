@@ -4,16 +4,13 @@ import { useBadgesQuery } from "../../../data/badges/useBadgesQuery";
 import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
 import { AutocompleteProps } from "@mui/material";
+import { renderBadgeOption } from "./renderBadgeOption";
+import { BadgeOption } from "./types";
 
 interface BadgeAutocompleteProps {
   label: string;
   value: string[];
-  onChange: AutocompleteProps<
-    { id: string; name: string },
-    true,
-    false,
-    true
-  >["onChange"];
+  onChange: AutocompleteProps<BadgeOption, true, false, true>["onChange"];
   tooltip?: string;
 }
 
@@ -24,7 +21,7 @@ export const BadgeAutocomplete = ({
   tooltip,
 }: BadgeAutocompleteProps) => {
   const [selectedBadgeMap, setSelectedBadgeMap] = useState<
-    Map<string, { id: string; name: string }>
+    Map<string, BadgeOption>
   >(new Map());
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +29,7 @@ export const BadgeAutocomplete = ({
 
   const { data, isLoading, isFetching } = useBadgesQuery({
     searchText: debouncedSearchQuery,
+    includeProfile: true,
     pageSize: 50,
   });
 
@@ -42,14 +40,16 @@ export const BadgeAutocomplete = ({
 
   // Update selectedBadgeMap when badges are found
   useEffect(() => {
-    badges.forEach((badge) => {
-      if (value.includes(badge.id)) {
-        setSelectedBadgeMap((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(badge.id, badge);
-          return newMap;
+    queueMicrotask(() => {
+      setSelectedBadgeMap((prev) => {
+        const newMap = new Map(prev);
+        badges.forEach((badge) => {
+          if (value.includes(badge.id)) {
+            newMap.set(badge.id, badge);
+          }
         });
-      }
+        return newMap;
+      });
     });
   }, [badges, value]);
 
@@ -57,7 +57,7 @@ export const BadgeAutocomplete = ({
     () =>
       value
         .map((id) => selectedBadgeMap.get(id))
-        .filter((badge): badge is { id: string; name: string } => !!badge),
+        .filter((badge): badge is BadgeOption => !!badge),
     [value, selectedBadgeMap],
   );
 
@@ -71,13 +71,21 @@ export const BadgeAutocomplete = ({
       options={badges}
       value={selectedBadges}
       loading={isLoading || isFetching}
+      filterOptions={(options) => options}
       valueKey="id"
       getOptionLabel={(option) =>
         typeof option === "string"
           ? option
           : `${option.name} (ID: ${option.id})`
       }
-      renderItem={(item) => <BadgeHandle id={item.id} name={item.name} />}
+      renderOption={renderBadgeOption}
+      renderItem={(item) => (
+        <BadgeHandle
+          id={item.id}
+          name={item.name}
+          profileUser={item.profileUser}
+        />
+      )}
       inputValue={searchQuery}
       onInputChange={(_, value, reason) => {
         if (reason !== "reset") {

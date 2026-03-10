@@ -29,12 +29,12 @@ export const UserAvatar = ({
       {...(imageUrl && { src: imageUrl })}
       ariaLabel={address ? `Avatar for ${address}` : "User Avatar"}
       size={size}
-      sx={{
-        ...sx,
-        ...(!imageUrl && {
+      sx={[
+        ...(Array.isArray(sx) ? sx : [sx]),
+        !imageUrl && {
           background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
-        }),
-      }}
+        },
+      ]}
     />
   );
 };

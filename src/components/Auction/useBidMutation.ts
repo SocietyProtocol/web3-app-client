@@ -5,10 +5,12 @@ import { scaleUp } from "@/utils/bigint";
 import { Hex } from "viem";
 import { EasyAuctionAbi } from "@/abis/EasyAuction";
 import { useAuctionContext } from "./AuctionContext";
-import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
+import { useAccount } from "wagmi";
+import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
 
 const PREV_SELL_ORDER =
   "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex;
@@ -18,6 +20,7 @@ interface UseBidMutationValues {
   price?: bigint;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
+  enabled?: boolean;
 }
 
 export const useBidMutation = ({
@@ -25,14 +28,22 @@ export const useBidMutation = ({
   price,
   onSuccess,
   onError,
+  enabled = true,
 }: UseBidMutationValues) => {
+  const { address } = useAccount();
+
   const { enqueueSnackbar } = useSnackbar();
-  const { auctionDetail, refetch, refetchOrders } = useAuctionContext();
+  const { auctionDetail } = useAuctionContext();
 
   const contractAddress = useChainVar(contracts.auction);
 
   const { auctionId, addressBiddingToken, decimalsAuctioningToken } =
     auctionDetail ?? {};
+
+  const userBiddingTokenBalance = useBalanceOf({
+    address,
+    tokenAddress: addressBiddingToken,
+  });
 
   // Calculate buyAmount (Auctioning Token i.e. SPEC) based on sellAmount and price
   const buyAmount = useMemo(() => {
@@ -59,12 +70,29 @@ export const useBidMutation = ({
     tokenAddress: addressBiddingToken,
     spenderAddress: contractAddress,
     amount: sellAmount,
-    onSuccess: () => {
-      refetch();
-      refetchOrders();
-      onSuccess?.();
-    },
+    address: contractAddress,
+    abi: EasyAuctionAbi,
+    functionName: "placeSellOrders",
+    args:
+      auctionId !== undefined &&
+      buyAmount !== undefined &&
+      sellAmount !== undefined
+        ? [
+            BigInt(auctionId),
+            [buyAmount],
+            [sellAmount],
+            [PREV_SELL_ORDER],
+            "0x" as Hex,
+          ]
+        : undefined,
+    queryKeysToInvalidateOnSuccess: [
+      ["auction"],
+      ["orders"],
+      userBiddingTokenBalance.queryKey,
+    ],
+    onSuccess,
     onError,
+    enabled,
   });
 
   const placeBid = useCallback(async () => {
@@ -85,26 +113,8 @@ export const useBidMutation = ({
       return;
     }
 
-    await transaction.execute({
-      address: contractAddress,
-      abi: EasyAuctionAbi,
-      functionName: "placeSellOrders",
-      args: [
-        BigInt(auctionId),
-        [buyAmount],
-        [sellAmount],
-        [PREV_SELL_ORDER],
-        "0x" as Hex,
-      ],
-    });
-  }, [
-    auctionId,
-    buyAmount,
-    sellAmount,
-    contractAddress,
-    transaction,
-    enqueueSnackbar,
-  ]);
+    await transaction.execute();
+  }, [auctionId, buyAmount, sellAmount, transaction, enqueueSnackbar]);
 
   // Auto-execute transaction after approval
   useEffect(() => {
@@ -143,5 +153,17 @@ export const useBidMutation = ({
     approveRequired: transaction.approveRequired,
     bidReceipt: transaction.txReceipt,
     approveReceipt: transaction.approveReceipt,
+    simulation: transaction.approveRequired
+      ? transaction.approvalTransaction.simulation
+      : transaction.mainTransaction.simulation,
+    gas: transaction.approveRequired
+      ? transaction.approvalTransaction.gas
+      : transaction.mainTransaction.gas,
+    gasLoading: transaction.approveRequired
+      ? transaction.approvalTransaction.gasLoading
+      : transaction.mainTransaction.gasLoading,
+    gasError: transaction.approveRequired
+      ? transaction.approvalTransaction.gasError
+      : transaction.mainTransaction.gasError,
   };
 };

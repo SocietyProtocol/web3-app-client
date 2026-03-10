@@ -3,7 +3,6 @@
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useAccount } from "wagmi";
-import { useProfile } from "../AccountSetup/useProfile";
 import { Box, Button, Stack, SxProps } from "@mui/material";
 import { ConnectWalletBubble } from "./ConnectWalletBubble";
 import { WrongNetworkBubble } from "./WrongNetworkBubble";
@@ -11,48 +10,60 @@ import { AccountSetupBubble } from "./AccountSetupBubble";
 import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
-export interface ContentGuardProps {
+export type ContentGuardProps = {
   requireNetwork?: boolean;
   requireAccount?: boolean;
   loading?: boolean;
   children?: ReactNode;
   fallback?: ReactNode;
-  connectWalletMessage?: string;
-  switchNetworkMessage?: string;
-  showBackButton?: boolean;
   sx?: SxProps;
-}
+} & (
+  | {
+      hideBubbles?: false;
+      connectWalletMessage?: string;
+      switchNetworkMessage?: string;
+      showBackButton?: boolean;
+    }
+  | {
+      hideBubbles: true;
+    }
+);
 
-export const ContentGuard = ({
-  requireNetwork,
-  requireAccount,
-  loading = false,
-  children,
-  fallback,
-  connectWalletMessage,
-  switchNetworkMessage,
-  showBackButton = false,
-  sx,
-}: ContentGuardProps) => {
+export const ContentGuard = (props: ContentGuardProps) => {
+  const {
+    requireNetwork,
+    requireAccount,
+    loading = false,
+    children,
+    fallback,
+    sx,
+  } = props;
   const router = useRouter();
 
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
-  const profile = useProfile(requireAccount ? address : undefined);
+  const profile = useUserQuery(requireAccount ? address : undefined);
 
-  if (loading || !wagmiReady || (requireAccount && profile.isInitialLoading)) {
+  if (loading || !wagmiReady || (requireAccount && profile.isLoading)) {
     return fallback;
   }
 
   if (
     isConnected &&
     (!requireNetwork || !isWrongNetwork) &&
-    (!requireAccount || profile.profileData.data)
+    (!requireAccount || profile.data)
   ) {
     return children;
   }
+
+  if (props.hideBubbles) {
+    return null;
+  }
+
+  const { showBackButton, connectWalletMessage, switchNetworkMessage } = props;
 
   return (
     <Box>
@@ -88,11 +99,13 @@ export const ContentGuard = ({
       <Stack
         alignItems="center"
         justifyContent="center"
-        sx={{
-          maxWidth: 600,
-          marginX: "auto",
-          ...sx,
-        }}
+        sx={[
+          {
+            maxWidth: 600,
+            marginX: "auto",
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
       >
         {!isConnected ? (
           <ConnectWalletBubble message={connectWalletMessage} />
@@ -100,7 +113,7 @@ export const ContentGuard = ({
           <WrongNetworkBubble message={switchNetworkMessage} />
         ) : (
           requireAccount &&
-          !profile.profileData.data && (
+          !profile.data && (
             <AccountSetupBubble
               onActionClick={() => router.push("/profile?setupOpen=true")}
             />

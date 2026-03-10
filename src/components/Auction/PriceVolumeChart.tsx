@@ -123,8 +123,8 @@ export const PriceVolumeChart = ({
                 }}
                 labelStyle={{ color: theme.palette.primary.main }}
                 labelFormatter={(label) => [`Price: ${formatAuto(label)} USDC`]}
-                formatter={(value: number | undefined) => [
-                  `${formatAuto(value ?? 0)} SPEC`,
+                formatter={(value) => [
+                  `${formatAuto((value as number | string) ?? 0)} SPEC`,
                   "Volume",
                 ]}
               />

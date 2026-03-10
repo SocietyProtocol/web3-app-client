@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import {
   Box,
-  CircularProgress,
   Stack,
   Stepper,
   Step,
@@ -10,6 +9,7 @@ import {
 } from "@mui/material";
 import { ArrowConnector, CustomStepIcon, WizardButton } from "./styles";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { TransactionButton } from "../Transaction/TransactionButton";
 
 export interface WizardStep {
   label: string;
@@ -73,6 +73,7 @@ export const Wizard = ({
           sx={{
             mb: { xs: 3, sm: 5 },
             px: { xs: 1, sm: 2 },
+            color: "primary.main",
           }}
         >
           {title}
@@ -173,19 +174,17 @@ export const Wizard = ({
                   </WizardButton>
                 )}
                 {activeStep === steps.length - 1 ? (
-                  <WizardButton
+                  <TransactionButton
                     variant="contained"
                     onClick={onFinish || onReset}
-                    disabled={isLoading || finishDisabled}
-                    startIcon={
-                      isLoading ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : undefined
-                    }
+                    disabled={finishDisabled}
+                    loading={isLoading}
+                    loadingText={loadingText}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
+                    component={WizardButton}
                   >
-                    {isLoading ? loadingText : "Finish"}
-                  </WizardButton>
+                    Finish
+                  </TransactionButton>
                 ) : (
                   <WizardButton
                     variant="contained"

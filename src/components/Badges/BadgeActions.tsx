@@ -2,6 +2,9 @@ import { Stack, Tabs, Tab, Box, Skeleton } from "@mui/material";
 import { useMemo, useState } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
+import { TransferTab } from "./TransferTab/TransferTab";
+import { BurnTab } from "./BurnBadge/BurnTab";
+import { ContentGuard } from "../Bubbles/ContentGuard";
 
 interface BadgeActionsProps {
   id: string;
@@ -93,62 +96,68 @@ export const BadgeActions = ({
       >
         Actions
       </WithTooltip>
-      <Stack
-        marginTop={2}
-        spacing={2}
+      <ContentGuard
+        requireNetwork
+        connectWalletMessage="Connect your wallet to perform badge actions"
+        switchNetworkMessage="Switch to the correct network to perform badge actions"
         sx={{
-          width: "100%",
+          marginTop: 2,
         }}
       >
-        <Tabs
-          value={validTab}
-          onChange={(_, v) => setTab(v)}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          aria-label="badge actions"
+        <Stack
+          marginTop={2}
+          spacing={2}
           sx={{
-            minHeight: 40,
-            borderBottom: (theme) => `1px solid ${theme.palette.primary.main}`,
-            "& .MuiTabs-flexContainer": {
-              justifyContent: "stretch",
-
-              "& .MuiTab-root": {
-                flex: 1,
-              },
-            },
+            width: "100%",
           }}
         >
-          {available.map((a) => (
-            <Tab
-              key={a.key}
-              value={a.key}
-              label={a.label}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                width: {
-                  xs: "100%",
-                  sm: 160,
-                },
-                color: a.color ? `${a.color}.light` : "text.primary",
+          <Tabs
+            value={validTab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            aria-label="badge actions"
+            sx={{
+              minHeight: 40,
+              borderBottom: (theme) =>
+                `1px solid ${theme.palette.primary.main}`,
+              "& .MuiTabs-flexContainer": {
+                justifyContent: "stretch",
 
-                "&.Mui-selected": {
-                  color: a.color ? `${a.color}.main` : "primary.main",
+                "& .MuiTab-root": {
+                  flex: 1,
                 },
-              }}
-            />
-          ))}
-        </Tabs>
-      </Stack>
+              },
+            }}
+          >
+            {available.map((a) => (
+              <Tab
+                key={a.key}
+                value={a.key}
+                label={a.label}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 600,
+                  width: {
+                    xs: "100%",
+                    sm: 160,
+                  },
+                  color: a.color ? `${a.color}.light` : "text.primary",
 
-      {validTab === TabKey.MINT && <MintTab id={id} />}
-      {validTab === TabKey.TRANSFER && (
-        <Box marginTop={2}>Transfer functionality is not available yet.</Box>
-      )}
-      {validTab === TabKey.BURN && (
-        <Box marginTop={2}>Burn functionality is not available yet.</Box>
-      )}
+                  "&.Mui-selected": {
+                    color: a.color ? `${a.color}.main` : "primary.main",
+                  },
+                }}
+              />
+            ))}
+          </Tabs>
+        </Stack>
+
+        {validTab === TabKey.MINT && <MintTab id={id} />}
+        {validTab === TabKey.TRANSFER && <TransferTab id={id} />}
+        {validTab === TabKey.BURN && <BurnTab id={id} />}
+      </ContentGuard>
     </Box>
   );
 };

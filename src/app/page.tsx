@@ -3,7 +3,6 @@
 import React, { useCallback, useState } from "react";
 import {
   Box,
-  Container,
   Typography,
   Accordion,
   AccordionSummary,
@@ -12,11 +11,12 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useAccount } from "wagmi";
-import { useProfile } from "@/components/AccountSetup/useProfile";
 import { faqData } from "@/data/faq";
 import HomeSkeleton from "@/components/Skeletons/HomeSkeleton";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { ContentGuard } from "@/components/Bubbles/ContentGuard";
+import { Page } from "@/components/Page/Page";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export default function Home() {
   // allow multiple panels to be expanded
@@ -34,21 +34,14 @@ export default function Home() {
   );
   const wagmiReady = useWagmiReady();
 
-  const { address } = useAccount();
-  const profile = useProfile(address);
+  const user = useUserQuery(useAccount().address);
 
-  if (!wagmiReady || profile.isInitialLoading) {
+  if (!wagmiReady || user.isLoading) {
     return <HomeSkeleton />;
   }
 
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        marginBottom: 6,
-        px: { xs: 2, sm: 0 },
-      }}
-    >
+    <Page>
       <ContentGuard
         requireNetwork
         requireAccount
@@ -136,6 +129,6 @@ export default function Home() {
           </Accordion>
         ))}
       </Box>
-    </Container>
+    </Page>
   );
 }

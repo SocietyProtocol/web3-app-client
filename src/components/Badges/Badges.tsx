@@ -125,10 +125,16 @@ export const Badges = () => {
             flexDirection: { xs: "column", md: "row" },
             gap: 2,
             justifyContent: "space-between",
-            alignItems: { xs: "stretch", md: "flex-start" },
+            alignItems: { xs: "stretch", md: "center" },
           }}
         >
-          <Stack direction="row" spacing={2}>
+          <Stack
+            direction={{
+              xs: "column",
+              md: "row",
+            }}
+            spacing={2}
+          >
             {/* Sort */}
             <FilterSelect
               label="Sort by"
@@ -152,8 +158,6 @@ export const Badges = () => {
               customInputValue={createdByAddress ?? undefined}
               onCustomInputChange={onCreatedByAddressChange}
               customInputPlaceholder="0x..."
-              customInputValidate={isAddress}
-              customInputErrorText="Invalid address"
             />
           </Stack>
 
@@ -187,13 +191,8 @@ export const Badges = () => {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(1, 1fr)",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
-              lg: "repeat(4, 1fr)",
-              xl: "repeat(6, 1fr)",
-            },
+            gridTemplateColumns:
+              "repeat(auto-fill, minmax(min(100%, 240px), 1fr))",
             gap: 2,
             width: "100%",
           }}

@@ -41,8 +41,10 @@ export const UserTag = ({
       href={url}
       style={{
         textDecoration: "none",
-        width: "fit-content",
         flex: 0,
+        display: "block",
+        minWidth: 214,
+        maxWidth: 280,
       }}
     >
       <UserCardPaper
@@ -50,12 +52,22 @@ export const UserTag = ({
         elevation={1}
         size="small"
         sx={{
-          px: 1,
+          px: 2,
           py: 1,
-          width: 214,
+          width: "100%",
+          minHeight: 74,
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          sx={{
+            overflow: "hidden",
+          }}
+        >
           {/* Avatar and Name Section */}
 
           <Avatar
@@ -65,7 +77,12 @@ export const UserTag = ({
             loading={loading}
           />
 
-          <Stack spacing={0.5}>
+          <Stack
+            spacing={0.5}
+            sx={{
+              overflow: "hidden",
+            }}
+          >
             {/* Name */}
             {loading ? (
               <Skeleton width={100} />
@@ -89,7 +106,7 @@ export const UserTag = ({
             <Typography
               variant="body2"
               sx={{
-                whiteSpace: "pre-wrap",
+                whiteSpace: "nowrap",
                 color: "text.primary",
                 opacity: 0.6,
                 overflow: "hidden",

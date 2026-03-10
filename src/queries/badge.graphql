@@ -10,11 +10,8 @@ query Badge($id: ID!) {
     creatorAddress
     createdAt
     holdersCount
-    createdBy {
-      id
+    profileUser {
       name
-      bio
-      imageUrl
     }
     holders {
       id
@@ -31,31 +28,31 @@ query Badge($id: ID!) {
     minters {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
-        name
-        bio
-        imageUrl
       }
     }
     burners {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
-        name
-        bio
-        imageUrl
       }
     }
     transferers {
       id
       name
+      profileUser {
+        name
+      }
       holders {
         id
-        name
-        bio
-        imageUrl
       }
     }
   }

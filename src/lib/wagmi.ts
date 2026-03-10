@@ -11,23 +11,31 @@ import { env } from "@/lib/env";
 
 export const isProd = env.environment === "production";
 
-export const SUPPORTED_CHAINS = [mainnet, sepolia] as const;
-
 export const expectedNetwork = isProd ? mainnet : sepolia;
+
+export const SUPPORTED_CHAINS = [expectedNetwork] as const;
+
+export const transports = {
+  [mainnet.id]: http(
+    `https://eth-mainnet.g.alchemy.com/v2/${env.alchemyApiKey}`,
+  ),
+  [sepolia.id]: http(
+    `https://eth-sepolia.g.alchemy.com/v2/${env.alchemyApiKey}`,
+  ),
+};
 
 export const wagmiConfig = getDefaultConfig({
   appName: "Society Protocol",
   projectId: env.wcProjectId,
   chains: SUPPORTED_CHAINS,
   ssr: true,
-  transports: {
-    [mainnet.id]: http(
-      `https://eth-mainnet.g.alchemy.com/v2/${env.alchemyApiKey}`,
-    ),
-    [sepolia.id]: http(
-      `https://eth-sepolia.g.alchemy.com/v2/${env.alchemyApiKey}`,
-    ),
-  },
+  transports: SUPPORTED_CHAINS.reduce(
+    (acc, chain) => {
+      acc[chain.id] = transports[chain.id];
+      return acc;
+    },
+    {} as Record<number, ReturnType<typeof http>>,
+  ),
 });
 
 let unwatchAccount: (() => void) | null = null;

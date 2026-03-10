@@ -19,15 +19,17 @@ export const UserCardPaper = styled(Paper, {
 
   ...(highlight && {
     border: `1px solid ${theme.palette.success.contrastText}`,
-    "&::before": {
-      content: '"YOU"',
-      position: "absolute",
-      top: 0,
-      left: 0,
-      color: theme.palette.success.contrastText,
-      padding: theme.spacing(1),
-      fontSize: theme.typography.pxToRem(10),
-      fontWeight: 700,
-    },
+    ...(size !== "small" && {
+      "&::before": {
+        content: '"YOU"',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        color: theme.palette.success.contrastText,
+        padding: theme.spacing(1),
+        fontSize: theme.typography.pxToRem(10),
+        fontWeight: 700,
+      },
+    }),
   }),
 }));

@@ -48,8 +48,15 @@ export const buildWhereClause = (options: {
   creatorAddress?: string | null;
   managerAddress?: string | null;
   holderAddress?: string | null;
+  includeProfile?: boolean;
 }) => {
-  const { searchText, creatorAddress, managerAddress, holderAddress } = options;
+  const {
+    searchText,
+    creatorAddress,
+    managerAddress,
+    holderAddress,
+    includeProfile,
+  } = options;
 
   const whereClauses: InputMaybe<InputMaybe<Badge_filter>[]> = [];
 
@@ -82,12 +89,15 @@ export const buildWhereClause = (options: {
         { name_contains_nocase: trimmedSearch },
         { creatorAddress_contains_nocase: trimmedSearch },
         { id: trimmedSearch },
+        ...(includeProfile
+          ? [{ profileUser_: { name_contains_nocase: trimmedSearch } }]
+          : []),
       ],
     });
   }
 
-  if (whereClauses.length === 0) {
-    return undefined;
+  if (!includeProfile) {
+    whereClauses.push({ isProfile: false });
   }
 
   return { and: whereClauses };
@@ -121,6 +131,7 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
     creatorAddress: mergedOptions.creatorAddress,
     managerAddress: mergedOptions.managerAddress,
     holderAddress: mergedOptions.holderAddress,
+    includeProfile: mergedOptions.includeProfile,
   });
 
   const res = await execute(BadgesDocument, {

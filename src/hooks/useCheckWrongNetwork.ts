@@ -1,9 +1,9 @@
 import { expectedNetwork } from "@/lib/wagmi";
 import { useMemo } from "react";
-import { useChainId, useSwitchChain } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 
 export const useCheckWrongNetwork = () => {
-  const chainId = useChainId();
+  const { chainId } = useAccount();
   const isWrongNetwork = useMemo(
     () => chainId !== expectedNetwork.id,
     [chainId],

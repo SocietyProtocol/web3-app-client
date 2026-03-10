@@ -4,6 +4,7 @@ import {
   CardContent,
   CardHeader,
   Stack,
+  SxProps,
 } from "@mui/material";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
@@ -15,7 +16,8 @@ export interface BubbleBaseProps {
   title?: React.ReactNode;
   show?: boolean;
   showIcon?: boolean;
-  variant?: "default" | "warning";
+  variant?: "info" | "warning" | "none";
+  sx?: SxProps;
 }
 
 export const BubbleBase = ({
@@ -24,7 +26,8 @@ export const BubbleBase = ({
   title,
   show = true,
   showIcon = true,
-  variant = "default",
+  variant = "none",
+  sx,
 }: BubbleBaseProps) => {
   if (!show) {
     return null;
@@ -33,7 +36,10 @@ export const BubbleBase = ({
   return (
     <Card
       variant="bubble"
-      sx={variant === "warning" ? { borderColor: "warning.light" } : undefined}
+      sx={[
+        ...(variant === "warning" ? [{ borderColor: "warning.light" }] : []),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <CardHeader
         title={
@@ -52,14 +58,14 @@ export const BubbleBase = ({
               sx={{ flex: 1 }}
             >
               {showIcon &&
-                (variant === "default" ? (
+                (variant === "info" ? (
                   <ChatBubbleOutlineOutlinedIcon fontSize="large" />
-                ) : (
+                ) : variant === "warning" ? (
                   <WarningAmberOutlinedIcon
                     fontSize="large"
                     sx={{ color: "warning.light" }}
                   />
-                ))}
+                ) : null)}
 
               {title ?? ""}
             </Stack>

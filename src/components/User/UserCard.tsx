@@ -1,4 +1,4 @@
-import { Skeleton, Stack, Typography } from "@mui/material";
+import { Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import { AddressDisplay as AddressDisplay } from "../AddressDisplay/AddressDisplay";
 import { UserCardProps } from "./types";
 import { UserCardPaper } from "./components";
@@ -53,8 +53,22 @@ export const UserCard = ({
         elevation={1}
         size={size}
         highlight={highlightYou && isConnectedUser}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          px: size === "large" ? 2 : 1,
+          py: size === "large" ? 2 : 1,
+          overflow: "hidden",
+        }}
       >
-        <Stack spacing={size === "large" ? 2 : 1} alignItems="center">
+        <Stack
+          spacing={size === "large" ? 2 : 1}
+          alignItems="center"
+          sx={{
+            width: "100%",
+          }}
+        >
           {/* Avatar and Name Section */}
 
           <UserAvatar
@@ -68,20 +82,22 @@ export const UserCard = ({
           {loading ? (
             <Skeleton width={100} />
           ) : (
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 700,
-                color: "text.primary",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                maxWidth: "100%",
-              }}
-              title={name ?? undefined}
-            >
-              {name}
-            </Typography>
+            <Tooltip title={name ?? undefined} arrow>
+              <Typography
+                component="span"
+                variant="body2"
+                sx={{
+                  fontWeight: 700,
+                  color: "text.primary",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "100%",
+                }}
+              >
+                {name}
+              </Typography>
+            </Tooltip>
           )}
 
           {/* Address */}

@@ -1,15 +1,16 @@
-import { Box, Typography } from "@mui/material";
+import { Page } from "@/components/Page/Page";
+import { StakeSpecButton } from "@/components/SpecToken/SpecTokenActions";
+import { SpecTokenContent } from "@/components/SpecToken/SpecTokenContent";
+
+export const metadata = {
+  title: "SPEC Token",
+  description: "Learn about the SPEC token and its role in Society Protocol.",
+};
 
 export default function SpecTokenPage() {
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Spec Token
-      </Typography>
-      <Typography variant="body1">
-        This is the information page. Find important details and documentation
-        here.
-      </Typography>
-    </Box>
+    <Page title="SPEC Token" wideMargin rightAction={<StakeSpecButton />}>
+      <SpecTokenContent />
+    </Page>
   );
 }

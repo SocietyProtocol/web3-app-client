@@ -5,6 +5,7 @@ import { useDebounceValue } from "../../hooks/useDebounceValue";
 import { CreatedByOption, SortOption, TabOption } from "@/data/badges/types";
 import { mergeOptions } from "./utils";
 import { useBadgesQuery } from "./useBadgesQuery";
+import { useMemo } from "react";
 
 export const useBadges = () => {
   const { address: userAddress } = useAccount();
@@ -47,19 +48,32 @@ export const useBadges = () => {
 
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
 
-  const options = mergeOptions({
-    searchText: debouncedSearchQuery,
-    creatorAddress:
-      createdBy === CreatedByOption.Address
-        ? createdByAddress
-        : createdBy === CreatedByOption.Me
-          ? userAddress
-          : undefined,
-    managerAddress: activeTab === TabOption.Managed ? userAddress : undefined,
-    holderAddress: activeTab === TabOption.MyBadges ? userAddress : undefined,
-    orderBy: orderBy,
-    orderDirection: orderBy === SortOption.Name ? "asc" : "desc",
-  });
+  const options = useMemo(
+    () =>
+      mergeOptions({
+        searchText: debouncedSearchQuery,
+        creatorAddress:
+          createdBy === CreatedByOption.Address
+            ? createdByAddress
+            : createdBy === CreatedByOption.Me
+              ? userAddress
+              : undefined,
+        managerAddress:
+          activeTab === TabOption.Managed ? userAddress : undefined,
+        holderAddress:
+          activeTab === TabOption.MyBadges ? userAddress : undefined,
+        orderBy: orderBy,
+        orderDirection: orderBy === SortOption.Name ? "asc" : "desc",
+      }),
+    [
+      debouncedSearchQuery,
+      createdBy,
+      createdByAddress,
+      userAddress,
+      activeTab,
+      orderBy,
+    ],
+  );
 
   const query = useBadgesQuery(options);
 

@@ -4,6 +4,7 @@ interface ClientEnv {
   wcProjectId: string;
   alchemyApiKey: string;
   auctionId: number;
+  snapshotUrl: string;
 }
 
 interface ServerEnv {
@@ -39,6 +40,10 @@ if (!process.env.NEXT_PUBLIC_AUCTION_ID) {
   throw new Error("NEXT_PUBLIC_AUCTION_ID environment variable is not set");
 }
 
+if (!process.env.NEXT_PUBLIC_SNAPSHOT_URL) {
+  throw new Error("NEXT_PUBLIC_SNAPSHOT_URL environment variable is not set");
+}
+
 // server-side only
 if (isServer && !process.env.PINATA_JWT) {
   throw new Error("PINATA_JWT environment variable is not set");
@@ -50,5 +55,6 @@ export const env: Env = {
   wcProjectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
   alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
   auctionId: parseInt(process.env.NEXT_PUBLIC_AUCTION_ID, 10),
+  snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
 };

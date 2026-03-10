@@ -12,21 +12,23 @@ export const ConnectButtonSkeleton = ({
     direction="row"
     alignItems="center"
     spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
-    sx={{
-      width: fullWidth ? "100%" : 180,
-      height: {
-        xs: 32,
-        sm: 40,
-        md: 48,
+    sx={[
+      {
+        width: fullWidth ? "100%" : 180,
+        height: {
+          xs: 32,
+          sm: 40,
+          md: 48,
+        },
+        minWidth: {
+          sm: "100px",
+        },
+        borderRadius: 50,
+        bgcolor: "action.disabledBackground",
+        px: 2,
       },
-      minWidth: {
-        sm: "100px",
-      },
-      borderRadius: 50,
-      bgcolor: "action.disabledBackground",
-      px: 2,
-      ...sx,
-    }}
+      ...(Array.isArray(sx) ? sx : [sx]),
+    ]}
   >
     <Skeleton variant="circular" width={24} height={24} />
     <Skeleton

@@ -8,44 +8,44 @@ import {
   Typography,
   Button,
   Skeleton,
-  Grid,
+  Link,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { UserTag } from "../User/UserTag";
-import { useProfile } from "../AccountSetup/useProfile";
 import { BadgePermissions } from "./BadgePermissions";
 import { BadgeManagers } from "./BadgeManagers";
-import { HoldersModal } from "./HoldersModal";
 import { getBadgePermissions } from "../../data/badges/utils";
-import { UserCard } from "../User/UserCard";
 import { BadgeActions } from "./BadgeActions";
+import { parseAsBoolean, useQueryState } from "nuqs";
+import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
+import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
+import { ContentGuard } from "../Bubbles/ContentGuard";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { UserList } from "../User/UserList";
+import { useUserQuery } from "@/data/users/useUserQuery";
 
 export interface BadgeDetailsProps {
   id: string;
 }
 
 export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
-  const router = useRouter();
-  const [isHoldersModalOpen, setIsHoldersModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useQueryState(
+    "edit",
+    parseAsBoolean.withDefault(false).withOptions({
+      history: "replace",
+    }),
+  );
 
   const { address: userAddress } = useAccount();
 
   const { data, isLoading } = useBadge(id);
-
-  const creatorAddress = data?.badge?.creatorAddress
-    ? (data?.badge?.creatorAddress as Hex)
-    : undefined;
-
-  const creator = useProfile(creatorAddress);
 
   const isManager = useMemo(() => {
     if (!data?.badge?.managers || !userAddress) return false;
@@ -57,6 +57,12 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
     );
   }, [data?.badge?.managers, userAddress]);
 
+  const creatorAddress = data?.badge?.creatorAddress
+    ? (data?.badge?.creatorAddress as Hex)
+    : undefined;
+
+  const creator = useUserQuery(creatorAddress);
+
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
       data?.badge && userAddress
@@ -65,15 +71,34 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
     [data?.badge, userAddress],
   );
 
-  const holdersCount = data?.badge?.holders?.length ?? 0;
-
-  const handleOpenHoldersModal = () => {
-    setIsHoldersModalOpen(true);
+  const toggleEditing = () => {
+    setIsEditing((prev) => !prev);
   };
 
-  const handleCloseHoldersModal = () => {
-    setIsHoldersModalOpen(false);
+  const handleSaveEdit = async () => {
+    toggleEditing();
   };
+
+  if (isEditing && isManager) {
+    return (
+      <Box
+        sx={{
+          p: { xs: 2, sm: 3 },
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <ContentGuard requireNetwork showBackButton>
+          <BadgeEditProvider badgeId={id}>
+            <BadgeDetailsEdit
+              onCancel={toggleEditing}
+              onSave={handleSaveEdit}
+            />
+          </BadgeEditProvider>
+        </ContentGuard>
+      </Box>
+    );
+  }
 
   return (
     <Stack
@@ -86,32 +111,6 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         position: "relative",
       }}
     >
-      {/* Back Button */}
-      <Box
-        sx={{
-          alignSelf: "flex-start",
-        }}
-      >
-        <Button
-          variant="text"
-          onClick={() => router.back()}
-          startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
-          sx={{
-            color: "primary.main",
-            fontSize: { xs: "0.875rem", sm: "1rem" },
-            textTransform: "none",
-            fontWeight: 600,
-            minWidth: { xs: "auto", sm: "64px" },
-            px: { xs: 1, sm: 2 },
-          }}
-          aria-label="Go back"
-        >
-          <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
-            Back
-          </Box>
-        </Button>
-      </Box>
-
       {/* Badge Image */}
       <Box sx={{ mt: { xs: 2, md: 5 } }}>
         {isLoading ? (
@@ -173,6 +172,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
 
       {/* Badge Name */}
       <Typography
+        component="h1"
         variant="h4"
         sx={{
           fontSize: { xs: "1.5rem", sm: "2rem" },
@@ -181,27 +181,57 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           textAlign: "center",
           px: 2,
           wordBreak: "break-word",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+
+          maxWidth: {
+            xs: "100%",
+            sm: "80%",
+            md: 600,
+            lg: 800,
+            xl: 1000,
+          },
         }}
       >
         {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
       </Typography>
+
+      {/* IPFS Metadata Link */}
+      {data?.badge?.uri && (
+        <Link
+          href={data.badge.uri}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="body2"
+          color="text.primary"
+          sx={{
+            mt: -1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          View Metadata <OpenInNewIcon sx={{ fontSize: 16 }} />
+        </Link>
+      )}
 
       {/* Creator Handle and Manage Button */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={{ xs: 2, sm: 5 }}
         alignItems="center"
+        justifyContent="center"
       >
         {data?.badge?.creatorAddress && (
           <UserTag
             id={creatorAddress}
-            loading={isLoading || creator.profileData.isLoading}
+            loading={isLoading || creator.isLoading}
             name={
-              creator.profileData.data?.name ??
+              creator.data?.name ??
               (creatorAddress ? truncateAddress(creatorAddress) : "")
             }
-            imageUrl={creator.profileData.data?.imageUrl}
-            bio={creator.profileData.data?.bio}
+            imageUrl={creator.data?.imageUrl}
+            bio={creator.data?.bio}
             link
           />
         )}
@@ -210,6 +240,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             variant="outlined"
             color="primary"
             size="small"
+            onClick={() => setIsEditing(true)}
             sx={{
               textTransform: "none",
               fontWeight: 600,
@@ -268,106 +299,14 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
       </Stack>
 
       {/* Holders Section */}
-      <Box
-        sx={{
-          width: "100%",
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" mb={2}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Holders (
-            {isLoading ? <Skeleton variant="text" width={20} /> : holdersCount})
-          </Typography>
-          {holdersCount > 6 && (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleOpenHoldersModal}
-            >
-              View All Holders
-            </Button>
-          )}
-        </Stack>
-        {holdersCount === 0 ? (
-          <Stack justifyContent="center" alignItems="center" minHeight={100}>
-            <Typography variant="body1" color="text.secondary">
-              No holders found
-            </Typography>
-          </Stack>
-        ) : (
-          <Grid
-            container
-            columns={{
-              xs: 1,
-              sm: 2,
-              md: 3,
-            }}
-            spacing={{
-              xs: 2,
-              sm: 3,
-            }}
-          >
-            {isLoading
-              ? Array.from({ length: 6 }).map((_, index) => (
-                  <Grid
-                    key={`skeleton-${index}`}
-                    size={1}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <UserCard loading />
-                  </Grid>
-                ))
-              : data?.badge?.holders?.slice(0, 6).map((holder) => (
-                  <Grid
-                    key={holder.id}
-                    size={1}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <UserCard
-                      id={holder.id as Hex}
-                      name={holder.name ?? truncateAddress(holder.id as Hex)}
-                      bio={holder.bio}
-                      imageUrl={holder.imageUrl}
-                      size="small"
-                      highlightYou
-                      link
-                    />
-                  </Grid>
-                ))}
-
-            {holdersCount > 6 && (
-              <Grid
-                size={1}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ textAlign: "center" }}
-                >
-                  And {holdersCount - 6} more holders...
-                </Typography>
-              </Grid>
-            )}
-          </Grid>
-        )}
-      </Box>
-
-      <HoldersModal
-        open={isHoldersModalOpen}
-        onClose={handleCloseHoldersModal}
-        badgeName={data?.badge?.name ?? "Badge"}
-        holders={data?.badge?.holders || []}
+      <UserList
+        title="Holders"
+        modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
+        users={data?.badge?.holders || []}
+        loading={isLoading}
+        noUsersFoundText="No holders found"
+        viewAllButtonText="View All Holders"
+        andMoreText="And {count} more holders..."
       />
     </Stack>
   );

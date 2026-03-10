@@ -5,35 +5,39 @@ import { useAccount } from "wagmi";
 import { erc20Abi, Hex } from "viem";
 import { useAllowance } from "@/hooks/erc20/useAllowance";
 import { useTransaction } from "@/hooks/useTransaction";
+import { QueryKey } from "@tanstack/react-query";
 
 interface UseTransactionWithApprovalParams {
   tokenAddress?: Hex;
   spenderAddress?: Hex;
   amount?: bigint;
+  address?: Hex;
+  abi?: readonly unknown[];
+  functionName?: string;
+  args?: unknown[];
   enabled?: boolean;
+  queryKeysToInvalidateOnSuccess?: QueryKey[];
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
-}
-
-interface ExecuteTransactionParams {
-  address: Hex;
-  abi: readonly unknown[];
-  functionName: string;
-  args?: unknown[];
 }
 
 export const useTransactionWithApproval = ({
   tokenAddress,
   spenderAddress,
   amount,
+  address,
+  abi,
+  functionName,
+  args,
   enabled = true,
+  queryKeysToInvalidateOnSuccess = [],
   onSuccess,
   onError,
 }: UseTransactionWithApprovalParams) => {
-  const { address } = useAccount();
+  const { address: account } = useAccount();
 
   const allowance = useAllowance({
-    ownerAddress: address,
+    ownerAddress: account,
     spenderAddress,
     tokenAddress,
   });
@@ -47,83 +51,76 @@ export const useTransactionWithApproval = ({
 
   // Approval transaction
   const approvalTransaction = useTransaction({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "approve",
+    args:
+      spenderAddress && amount !== undefined
+        ? [spenderAddress, amount]
+        : undefined,
     enabled,
     waitForSync: false,
-    onSuccess: () => {
-      allowance.refetch();
-    },
+    queryKeysToInvalidateOnSuccess: [allowance.queryKey],
     onError,
     submittedMessage: "Approval transaction submitted",
     successMessage: "Approval successful",
+    simulate: true,
   });
 
-  const { execute: executeApproval, reset: resetApproval } =
-    approvalTransaction;
+  const { execute: approve, reset: resetApproval } = approvalTransaction;
 
   // Main transaction
-  const transaction = useTransaction({
+  const mainTransaction = useTransaction({
+    address,
+    abi,
+    functionName,
+    args,
     enabled,
-    onSuccess: () => {
-      allowance.refetch();
-      onSuccess?.();
-    },
+    // Only simulate when allowance is known and sufficient — avoids false
+    // ERC20InsufficientAllowance errors while approval is pending or loading.
+    simulate: enabled && allowance.data !== undefined && !approveRequired,
+    queryKeysToInvalidateOnSuccess: [
+      ...queryKeysToInvalidateOnSuccess,
+      allowance.queryKey,
+    ],
+    onSuccess,
     onError,
   });
 
-  const { execute: executeTransaction, reset: resetTransaction } = transaction;
+  const { execute: executeTransaction, reset: resetTransaction } =
+    mainTransaction;
 
-  const approve = useCallback(async () => {
+  const execute = useCallback(async () => {
+    if (!enabled) return;
+
+    // Reset previous state when starting a new transaction
     if (
-      !enabled ||
-      !tokenAddress ||
-      !spenderAddress ||
-      !amount ||
-      allowance.data === undefined
+      mainTransaction.status === "success" ||
+      mainTransaction.status === "error"
     ) {
+      resetApproval();
+      resetTransaction();
+    }
+
+    if (allowance.data === undefined) {
       return;
     }
 
-    await executeApproval({
-      address: tokenAddress,
-      abi: erc20Abi,
-      functionName: "approve",
-      args: [spenderAddress, amount],
-    });
+    if (approveRequired) {
+      await approve();
+    } else {
+      await executeTransaction();
+    }
   }, [
     enabled,
-    tokenAddress,
-    spenderAddress,
-    amount,
+    mainTransaction.status,
     allowance.data,
-    executeApproval,
+    approveRequired,
+    resetApproval,
+    resetTransaction,
+    approve,
+    executeTransaction,
   ]);
-
-  const execute = useCallback(
-    async (params: ExecuteTransactionParams) => {
-      if (!enabled) return;
-
-      // Reset previous state when starting a new transaction
-      if (transaction.status === "success" || transaction.status === "error") {
-        resetApproval();
-        resetTransaction();
-      }
-
-      if (approveRequired) {
-        await approve();
-      } else {
-        await executeTransaction(params);
-      }
-    },
-    [
-      enabled,
-      transaction.status,
-      approveRequired,
-      resetApproval,
-      resetTransaction,
-      approve,
-      executeTransaction,
-    ],
-  );
 
   const reset = useCallback(() => {
     resetApproval();
@@ -133,7 +130,7 @@ export const useTransactionWithApproval = ({
   // Handle approval success
   // No longer needed - useTransaction handles everything
 
-  const isLoading = approvalTransaction.isLoading || transaction.isLoading;
+  const isLoading = approvalTransaction.isLoading || mainTransaction.isLoading;
 
   return {
     execute,
@@ -143,15 +140,17 @@ export const useTransactionWithApproval = ({
       ? "approving"
       : approvalTransaction.isError
         ? "error"
-        : transaction.status,
+        : mainTransaction.status,
     isLoading,
     isApproving: approvalTransaction.isExecuting,
-    isExecuting: transaction.isExecuting,
-    isSuccess: transaction.isSuccess,
-    isError: approvalTransaction.isError || transaction.isError,
-    isSyncing: transaction.isSyncing,
+    isExecuting: mainTransaction.isExecuting,
+    isSuccess: mainTransaction.isSuccess,
+    isError: approvalTransaction.isError || mainTransaction.isError,
+    isSyncing: mainTransaction.isSyncing,
     approveRequired,
     approveReceipt: approvalTransaction.txReceipt,
-    txReceipt: transaction.txReceipt,
+    txReceipt: mainTransaction.txReceipt,
+    approvalTransaction,
+    mainTransaction,
   };
 };

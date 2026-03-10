@@ -1,7 +1,7 @@
 import { SyntheticEvent, useCallback } from "react";
 import { useWatch } from "react-hook-form";
 import { useBadgeCreation } from "./BadgeCreationContext";
-import { BadgeAutocomplete } from "./BadgeAutocomplete";
+import { BadgeAutocomplete } from "../BadgeAutocomplete/BadgeAutocomplete";
 
 interface BadgePermissionsFieldProps {
   field: "minters" | "burners" | "transferers";

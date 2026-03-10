@@ -1,4 +1,5 @@
 import { Stack, Typography, Button, TextField } from "@mui/material";
+import { TransactionButton } from "../Transaction/TransactionButton";
 import { useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { Controller, useWatch } from "react-hook-form";
@@ -24,36 +25,28 @@ export const AccountDetailsEdit = ({
   const hasCompletedRef = useRef(false);
   const {
     form,
-    refetch,
-    isLoading,
+    user,
+    transaction,
     onSubmit,
     reset,
-    isMutatingProfile,
     isUploadingToIpfs,
-    isWritingContract,
-    isTransactionConfirmed,
-    isTransactionPending,
     getServerFieldError,
   } = useAccountSetup();
+
+  const { isSigning, isConfirming, isLoading, isSyncing, isSuccess } =
+    transaction;
 
   const { name, bio } = useWatch({ control: form.control }); // Watch name and bio fields for changes
 
   // Watch for transaction confirmation
   useEffect(() => {
-    if (isTransactionConfirmed && !hasCompletedRef.current) {
+    if (isSuccess && !hasCompletedRef.current) {
       hasCompletedRef.current = true;
-      // Transaction confirmed, refetch profile data
-      refetch().then(() => {
-        enqueueSnackbar("Profile updated successfully!", {
-          variant: "success",
-          key: "account-update-success",
-        });
-        onSave();
-        form.reset();
-        reset();
-      });
+      onSave();
+      form.reset();
+      reset();
     }
-  }, [isTransactionConfirmed, refetch, onSave, form, enqueueSnackbar, reset]);
+  }, [onSave, form, enqueueSnackbar, reset, user, isSuccess]);
 
   const handleCancelClick = () => {
     form.reset();
@@ -77,25 +70,11 @@ export const AccountDetailsEdit = ({
   };
 
   const disabled =
-    isLoading ||
+    user.isLoading ||
     form.formState.isSubmitting ||
-    isMutatingProfile ||
-    isTransactionPending ||
-    isTransactionConfirmed;
-
-  // Determine button text based on state
-  const getButtonText = () => {
-    if (isUploadingToIpfs) {
-      return "Uploading to IPFS...";
-    }
-    if (isWritingContract) {
-      return "Confirm transaction...";
-    }
-    if (isTransactionPending) {
-      return "Confirming...";
-    }
-    return "Save";
-  };
+    isUploadingToIpfs ||
+    isLoading ||
+    isSuccess;
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>
@@ -110,29 +89,6 @@ export const AccountDetailsEdit = ({
         <Typography variant="h6">
           Account details {address && truncateAddress(address)}
         </Typography>
-
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button
-            startIcon={<SaveIcon />}
-            onClick={handleSaveClick}
-            variant="contained"
-            size="small"
-            disabled={disabled || !form.formState.isDirty}
-            sx={{ width: { xs: "100%", sm: "auto" } }}
-          >
-            {getButtonText()}
-          </Button>
-          <Button
-            startIcon={<CancelIcon />}
-            onClick={handleCancelClick}
-            variant="outlined"
-            size="small"
-            disabled={disabled}
-            sx={{ width: { xs: "100%", sm: "auto" } }}
-          >
-            Cancel
-          </Button>
-        </Stack>
       </Stack>
 
       {/* Avatar and Name Section */}
@@ -212,6 +168,50 @@ export const AccountDetailsEdit = ({
           );
         }}
       />
+
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        justifyContent="flex-end"
+      >
+        <Button
+          startIcon={<CancelIcon />}
+          onClick={handleCancelClick}
+          variant="outlined"
+          disabled={disabled}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
+          Cancel
+        </Button>
+        <TransactionButton
+          startIcon={<SaveIcon />}
+          onClick={handleSaveClick}
+          variant="contained"
+          disabled={disabled || !form.formState.isDirty}
+          loading={isUploadingToIpfs || isLoading}
+          loadingText={
+            isUploadingToIpfs
+              ? "Uploading to IPFS..."
+              : isSigning
+                ? "Confirm transaction..."
+                : isConfirming
+                  ? "Confirming..."
+                  : isSyncing
+                    ? "Syncing..."
+                    : undefined
+          }
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            minWidth: 140,
+          }}
+        >
+          Update Profile
+        </TransactionButton>
+      </Stack>
     </Stack>
   );
 };

@@ -14,17 +14,18 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import {
   UserAutocomplete,
   UserOption,
-} from "../BadgeCreation/UserAutocomplete";
+} from "../../User/UserAutocomplete/UserAutocomplete";
 import DropArea from "../../DropArea/DropArea";
 import { WithTooltip } from "../../WithTooltip/WithTooltip";
-import { isAddress } from "viem";
+import { isAddress, Hex } from "viem";
 import { uniq } from "@/utils/collection";
-import { useMintBadgeMutation } from "./useMintBadgeMutation";
 import { mintBadgeValidationSchema } from "./validation";
-import { useQueryClient } from "@tanstack/react-query";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { useBadge } from "@/data/badges/useBadge";
 import { prop, toLowerCase } from "@/utils/curry";
 import { useSnackbar } from "notistack";
+import { useMintBadgeMutation } from "./useMintBadgeMutation";
+import { SimulationError } from "@/components/Transaction/SimulationError";
 
 enum MintMode {
   SINGLE = "single",
@@ -38,13 +39,23 @@ interface MintTabProps {
 export const MintTab = ({ id }: MintTabProps) => {
   const [mintMode, setMintMode] = useState<MintMode>(MintMode.SINGLE);
   const { enqueueSnackbar } = useSnackbar();
-  const queryClient = useQueryClient();
 
   const { data } = useBadge(id);
 
   const holders = useMemo(
     () => data?.badge?.holders.map(toLowerCase(prop("id"))) || [],
     [data],
+  );
+
+  const filterOptions = useCallback(
+    (options: UserOption[]) => {
+      const filtered = options.filter(
+        (option) => !holders.includes(option.id.toLowerCase()),
+      );
+
+      return filtered;
+    },
+    [holders],
   );
 
   const form = useForm({
@@ -206,36 +217,20 @@ export const MintTab = ({ id }: MintTabProps) => {
     return invalids;
   }, [fileContent, mintMode, holders]);
 
-  const { mutate, transaction } = useMintBadgeMutation({
-    onSuccess: () => {
-      form.reset();
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["badge", id],
-        }),
-
-        queryClient.invalidateQueries({
-          queryKey: ["user"],
-        }),
-      ]);
-    },
+  const transaction = useMintBadgeMutation({
+    args:
+      recipients.length > 0 &&
+      form.formState.isValid &&
+      recipients.every((r) => isAddress(r, { strict: false }))
+        ? { id: BigInt(id), recipients: recipients as Hex[] }
+        : undefined,
+    onSuccess: () => form.reset(),
   });
 
-  const handleSubmit = form.handleSubmit((data) => {
-    mutate({
-      id: BigInt(id),
-      recipients: data.recipients,
-    });
-  });
+  const handleSubmit = form.handleSubmit(() => transaction.execute());
 
   return (
-    <Stack
-      marginTop={3}
-      spacing={3}
-      sx={{
-        minHeight: 400,
-      }}
-    >
+    <Stack marginTop={3} spacing={3} sx={{ minHeight: 200 }}>
       <Tabs value={mintMode} onChange={handleToggleMintMode} className="pill">
         <Tab
           value={MintMode.SINGLE}
@@ -300,6 +295,7 @@ export const MintTab = ({ id }: MintTabProps) => {
           )}
 
           <UserAutocomplete
+            freeSolo
             multiple={mintMode === MintMode.BATCH}
             value={mintMode === "batch" ? recipients : recipients[0]}
             onChange={
@@ -313,7 +309,7 @@ export const MintTab = ({ id }: MintTabProps) => {
               >["onChange"]
             }
             disabled={transaction.isLoading}
-            excludeIds={holders}
+            filterOptions={filterOptions}
           />
           {mintMode === "batch" &&
             file &&
@@ -375,22 +371,30 @@ export const MintTab = ({ id }: MintTabProps) => {
             )}
         </Stack>
       </Box>
+
+      <SimulationError error={transaction.simulation.error} />
+
       <Box>
-        <Button
+        <TransactionButton
           variant="outlined"
           disabled={
             !form.formState.isValid ||
             recipients.length === 0 ||
-            transaction.isLoading
+            transaction.simulation.isFetching ||
+            transaction.simulation.isError
           }
           size="small"
-          sx={{
-            minWidth: 160,
-          }}
+          sx={{ minWidth: 160 }}
           onClick={handleSubmit}
+          simulating={transaction.simulation.isFetching}
+          loading={transaction.isLoading}
+          loadingText="Minting..."
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
         >
           Mint Badge
-        </Button>
+        </TransactionButton>
       </Box>
     </Stack>
   );

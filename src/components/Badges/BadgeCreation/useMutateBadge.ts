@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
@@ -26,7 +26,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
   const uploadIpfsResult = useMutation<
     UploadMetadataResponse,
     Error,
-    BadgeTransformedData
+    Record<string, unknown>
   >({
     mutationFn: async (data) => {
       // Generate authentication payload
@@ -68,21 +68,33 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
     },
   });
 
+  const queryKeysToInvalidateOnSuccess = useMemo(
+    () => [["badges"], ["badge"]],
+    [],
+  );
+
   const transaction = useTransaction({
     waitForSync: true,
     successMessage: "Badge created successfully",
+    queryKeysToInvalidateOnSuccess,
     onSuccess,
     onError,
   });
 
   const mutate = useCallback(
     async (data: BadgeTransformedData) => {
-      const metadata = {
-        imageUrl: data.imageUrl,
-        ...(data.metadata ? JSON.parse(data.metadata) : {}),
-      };
+      const hasMetadata = !!data.imageUrl || !!data.metadata;
 
-      const res = await uploadIpfsResult.mutateAsync(metadata);
+      let uri = "";
+      if (hasMetadata) {
+        const metadata = {
+          imageUrl: data.imageUrl,
+          ...(data.metadata ? JSON.parse(data.metadata) : {}),
+        } as Record<string, unknown>;
+
+        const res = await uploadIpfsResult.mutateAsync(metadata);
+        uri = res.uri;
+      }
 
       // Call the contract
       await transaction.execute({
@@ -94,7 +106,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
           data.isOfficial,
           data.isCommunity,
           zeroAddress,
-          res.uri,
+          uri,
           data.minters,
           data.transferers,
           data.burners,

@@ -3,7 +3,6 @@ import {
   Select,
   MenuItem,
   TextField,
-  FormHelperText,
   IconButton,
   InputAdornment,
   type SelectChangeEvent,
@@ -27,7 +26,6 @@ interface FilterSelectProps<T extends string> {
   onCustomInputChange?: (value: string) => void;
   customInputPlaceholder?: string;
   customInputValidate?: (value: string) => boolean;
-  customInputErrorText?: string;
 }
 
 export function FilterSelect<T extends string>({
@@ -41,7 +39,6 @@ export function FilterSelect<T extends string>({
   onCustomInputChange,
   customInputPlaceholder,
   customInputValidate,
-  customInputErrorText,
 }: FilterSelectProps<T>) {
   const handleChange = (event: SelectChangeEvent) => {
     onChange(event.target.value as T);
@@ -59,10 +56,16 @@ export function FilterSelect<T extends string>({
         display: "flex",
         flexDirection: "column",
         gap: 0.5,
-        paddingTop: 1.25,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexDirection: { xs: "column", md: "row" },
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -123,17 +126,6 @@ export function FilterSelect<T extends string>({
           />
         )}
       </Box>
-
-      <FormHelperText
-        error
-        sx={{
-          mx: 0,
-          height: "1.5rem",
-          visibility: hasError ? "visible" : "hidden",
-        }}
-      >
-        {showCustomInput && (hasError ? customInputErrorText : " ")}
-      </FormHelperText>
     </Box>
   );
 }

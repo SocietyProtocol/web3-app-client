@@ -47,11 +47,17 @@ export default async function RootLayout({
 }>) {
   const queryClient = getQueryClient();
 
-  // Prefetch auction data on the server
-  await queryClient.prefetchQuery({
-    queryKey: ["auctionStatus", env.auctionId],
-    queryFn: () => fetchAuctionStatus(env.auctionId),
-  });
+  if (env.auctionId !== undefined) {
+    await queryClient.prefetchQuery({
+      queryKey: ["auction", env.auctionId],
+      queryFn: () =>
+        env.auctionId
+          ? fetchAuctionStatus(env.auctionId)
+          : Promise.resolve(undefined),
+    });
+  } else {
+    console.warn("Auction ID is not set. Skipping auction data prefetch.");
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>

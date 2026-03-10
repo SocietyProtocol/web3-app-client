@@ -16,10 +16,17 @@ export default async function AuctionPage() {
   const queryClient = getQueryClient();
 
   try {
-    await queryClient.prefetchQuery({
-      queryKey: ["auction", env.auctionId],
-      queryFn: () => fetchAuction(env.auctionId),
-    });
+    if (env.auctionId !== undefined) {
+      await queryClient.prefetchQuery({
+        queryKey: ["auction", env.auctionId],
+        queryFn: () =>
+          env.auctionId
+            ? fetchAuction(env.auctionId)
+            : Promise.resolve(undefined),
+      });
+    } else {
+      console.warn("Auction ID is not set. Skipping auction data prefetch.");
+    }
   } catch (error) {
     console.error("Error prefetching auction:", error);
   }

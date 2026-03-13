@@ -6,7 +6,7 @@ import { Page } from "@/components/Page/Page";
 import { fetchAuction } from "@/data/auction/utils";
 import { env } from "@/lib/env";
 import { getQueryClient } from "@/lib/tanstack-query";
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Suspense } from "react";
 
 export const metadata = {

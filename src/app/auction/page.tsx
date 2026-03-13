@@ -1,10 +1,12 @@
 import { AuctionProvider } from "@/components/Auction/AuctionContext";
 import { AuctionDetails } from "@/components/Auction/AuctionDetails";
 import { AuctionDetailsSkeleton } from "@/components/Auction/AuctionDetailsSkeleton";
+import { BubbleBase } from "@/components/Bubbles/BubbleBase";
 import { Page } from "@/components/Page/Page";
 import { fetchAuction } from "@/data/auction/utils";
 import { env } from "@/lib/env";
 import { getQueryClient } from "@/lib/tanstack-query";
+import { Box, Typography } from "@mui/material";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -35,7 +37,22 @@ export default async function AuctionPage() {
     <Suspense fallback={<AuctionDetailsSkeleton />}>
       <AuctionProvider auctionId={env.auctionId}>
         <Page>
-          <AuctionDetails />
+          {env.auctionId !== undefined ? (
+            <AuctionDetails />
+          ) : (
+            <BubbleBase
+              sx={{ maxWidth: 400, margin: "40px auto" }}
+              actions={
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Stay tuned for updates!
+                </Typography>
+              }
+            >
+              <Typography variant="h4" component="p">
+                Coming soon
+              </Typography>
+            </BubbleBase>
+          )}
         </Page>
       </AuctionProvider>
     </Suspense>

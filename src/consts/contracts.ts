@@ -1,4 +1,4 @@
-import { Address, zeroAddress } from "viem";
+import { Address } from "viem";
 import { ChainVariable } from "./types";
 
 interface ContractAddresses {
@@ -10,7 +10,7 @@ interface ContractAddresses {
 export const contracts: ContractAddresses = {
   badges: {
     sepolia: "0x76Aa1B43a651acc4320a4610af896ddfe38B428a",
-    mainnet: zeroAddress, // Placeholder, replace with actual address when available
+    mainnet: "0xa3af0da9733061da88b91ea28740780a887c8ce3",
   },
   auction: {
     sepolia: "0x96aa924EF625bd8eF4A2C4d369408d1491453Ec5",

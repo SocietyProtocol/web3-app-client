@@ -305,7 +305,7 @@ The active network is determined **solely** by the `NEXT_PUBLIC_ENVIRONMENT` var
 
 | Contract       | Sepolia                                      | Mainnet                                      |
 | -------------- | -------------------------------------------- | -------------------------------------------- |
-| Badges         | `0x76Aa1B43a651acc4320a4610af896ddfe38B428a` | _(pending deployment)_                       |
+| Badges         | `0x76Aa1B43a651acc4320a4610af896ddfe38B428a` | `0xa3af0da9733061da88b91ea28740780a887c8ce3` |
 | Auction        | `0x96aa924EF625bd8eF4A2C4d369408d1491453Ec5` | `0x0b7fFc1f4AD541A4Ed16b40D8c37f0929158D101` |
 | Chainlink Feed | `0x694AA1769357215DE4FAC081bf1f309aDC325306` | `0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419` |
 

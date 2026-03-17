@@ -44,13 +44,13 @@ cp .env.example .env.local
 ### Required Variables
 
 | Variable                         | Description                                                                                                           | Example                                     |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | --- |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | `NEXT_PUBLIC_ENVIRONMENT`        | Runtime environment — controls which chain is used (`development` → Sepolia, `production` → Mainnet)                  | `production`                                |
 | `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection                                                                        | `abc123...`                                 |
 | `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API key for Ethereum JSON-RPC                                                                                 | `abc123...`                                 |
 | `NEXT_PUBLIC_GRAPH_URL`          | Subgraph URL for the **active** network (Sepolia in development/staging, Mainnet in production); used by code-gen too | `https://api.studio.thegraph.com/query/...` |
 | `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata IPFS gateway URL                                                                                               | `https://your-gateway.mypinata.cloud`       |
-| `PINATA_JWT`                     | Pinata JWT for **server-side** IPFS uploads (never exposed to the browser)                                            | `eyJhb...`                                  |     |
+| `PINATA_JWT`                     | Pinata JWT for **server-side** IPFS uploads (never exposed to the browser)                                            | `eyJhb...`                                  |
 | `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot governance space URL                                                                                         | `https://snapshot.box/#/s:your-space.eth`   |
 
 ### Optional Variables

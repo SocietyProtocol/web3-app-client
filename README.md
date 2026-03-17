@@ -1,61 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Society Protocol Client
+
+A web client for [Society Protocol](https://society.finance) — a framework for creating Synchronized Network States. Built with Next.js 16, TypeScript, MUI v7, wagmi/viem, RainbowKit, and Jotai.
+
+## Stack
+
+| Layer     | Technology                                |
+| --------- | ----------------------------------------- |
+| Framework | Next.js 16 (App Router)                   |
+| Language  | TypeScript (strict)                       |
+| UI        | MUI v7 + Emotion                          |
+| Web3      | wagmi v2 · viem v2 · RainbowKit v2        |
+| State     | Jotai v2 · TanStack Query v5              |
+| GraphQL   | `@graphprotocol/client-cli` (graphclient) |
+| IPFS      | Pinata SDK v2                             |
+| Forms     | React Hook Form v7 · Zod v4               |
+
+---
 
 ## Getting Started
 
-### Environment Variables
+### 1. Prerequisites
 
-Before running the application, you need to set up your environment variables. Copy the `.env.example` file to `.env.local`:
+- Node.js **18.x** or later
+- npm / yarn / pnpm / bun
+
+### 2. Environment Variables
+
+Copy the example file and fill in the required values:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Then configure the following required variables:
+| Variable                         | Required  | Description                                                                          | Where to get                                                |
+| -------------------------------- | --------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `NEXT_PUBLIC_ENVIRONMENT`        | ✅        | `development` → Sepolia · `production` → Mainnet                                     | —                                                           |
+| `NEXT_PUBLIC_WC_PROJECT_ID`      | ✅        | WalletConnect project ID                                                             | [cloud.walletconnect.com](https://cloud.walletconnect.com/) |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | ✅        | Alchemy API key for Ethereum RPC                                                     | [alchemy.com](https://www.alchemy.com/)                     |
+| `NEXT_PUBLIC_GRAPH_URL`          | ✅        | Unified testnet (Sepolia) subgraph URL — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
+| `NEXT_PUBLIC_GRAPH_URL_MAINNET`  | ✅ (prod) | Unified mainnet subgraph URL — falls back to `NEXT_PUBLIC_GRAPH_URL` if omitted      | Your Graph Studio deployment                                |
+| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | ✅        | Pinata IPFS gateway URL                                                              | [pinata.cloud](https://pinata.cloud/)                       |
+| `PINATA_JWT`                     | ✅        | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser           | [pinata.cloud](https://pinata.cloud/)                       |
+| `NEXT_PUBLIC_SNAPSHOT_URL`       | ✅        | Snapshot governance space URL                                                        | [snapshot.box](https://snapshot.box/)                       |
+| `NEXT_PUBLIC_AUCTION_ID`         | —         | ID of the auction to interact with                                                   | Smart contract deployment                                   |
 
-| Variable                         | Description                                             | Required | Where to Get                                                                            |
-| -------------------------------- | ------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_ENVIRONMENT`        | Application environment (e.g., development, production) | Yes      | Set to `development` for local development or `production` for live deployment          |
-| `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection          | Yes      | [WalletConnect Cloud](https://cloud.walletconnect.com/)                                 |
-| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API Key for Ethereum RPC                        | Yes      | [Alchemy Dashboard](https://www.alchemy.com/)                                           |
-| `NEXT_PUBLIC_GRAPH_URL`          | The Graph subgraph endpoint URL                         | Yes      | Your deployed subgraph                                                                  |
-| `PINATA_JWT`                     | Pinata JWT token for IPFS uploads (server-side)         | Yes      | [Pinata Dashboard](https://pinata.cloud/)                                               |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata gateway URL for IPFS content retrieval           | Yes      | [Pinata Dashboard](https://pinata.cloud/) (e.g., `https://your-gateway.mypinata.cloud`) |
-| `NEXT_PUBLIC_AUCTION_ID`         | The ID of the auction to interact with                  | No       | Your auction ID from the smart contract deployment                                      |
-| `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot space URL for governance voting                | Yes      | [Snapshot](https://snapshot.box/) (e.g., `https://snapshot.box/#/s:your-space.eth`)     |
+> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT`) in a `NEXT_PUBLIC_` variable.
 
-**Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Server-only variables (like `PINATA_JWT`) are only accessible on the server side.
-
-### Development Server
-
-First, run the development server:
+### 3. Install & Run
 
 ```bash
+# Install dependencies (also runs graphclient code-gen via postinstall)
+npm install
+
+# Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script               | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `npm run dev`        | GraphQL code-gen + Next.js dev server with hot reload |
+| `npm run build`      | GraphQL code-gen + production build                   |
+| `npm start`          | Start the production server                           |
+| `npm run codegen`    | Regenerate the GraphQL client from subgraph schema    |
+| `npm run type-check` | TypeScript type check without emitting                |
+| `npm run lint`       | ESLint                                                |
+| `npm test`           | Vitest unit tests                                     |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── abis/          # Contract ABIs
+├── app/           # Next.js App Router pages & layouts
+├── atoms/         # Jotai global atoms
+├── components/    # React components
+├── consts/        # App-wide constants (contracts, URLs, tokens…)
+├── data/          # Data-fetching hooks & utilities (per domain)
+├── errors/        # Custom error classes
+├── hooks/         # Shared custom hooks
+├── lib/           # Library setup (wagmi, env, pinata, tanstack-query…)
+├── queries/       # GraphQL query documents
+├── theme/         # MUI theme configuration
+├── types/         # Shared TypeScript types
+├── utils/         # Pure utility functions
+└── validation/    # Zod schemas
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Networks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The active network is determined solely by `NEXT_PUBLIC_ENVIRONMENT`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Value                   | Chain            | Chain ID |
+| ----------------------- | ---------------- | -------- |
+| `development` (default) | Ethereum Sepolia | 11155111 |
+| `production`            | Ethereum Mainnet | 1        |
+
+---
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for full deployment instructions covering Vercel, self-hosted Node.js, Docker, Nginx, CI/CD, and troubleshooting.

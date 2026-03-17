@@ -5,6 +5,8 @@ interface ClientEnv {
   alchemyApiKey: string;
   auctionId?: number;
   snapshotUrl: string;
+  graphUrl: string;
+  graphUrlMainnet?: string;
 }
 
 interface ServerEnv {
@@ -40,6 +42,10 @@ if (!process.env.NEXT_PUBLIC_SNAPSHOT_URL) {
   throw new Error("NEXT_PUBLIC_SNAPSHOT_URL environment variable is not set");
 }
 
+if (!process.env.NEXT_PUBLIC_GRAPH_URL) {
+  throw new Error("NEXT_PUBLIC_GRAPH_URL environment variable is not set");
+}
+
 // server-side only
 if (isServer && !process.env.PINATA_JWT) {
   throw new Error("PINATA_JWT environment variable is not set");
@@ -54,5 +60,7 @@ export const env: Env = {
     ? parseInt(process.env.NEXT_PUBLIC_AUCTION_ID, 10)
     : undefined,
   snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
+  graphUrl: process.env.NEXT_PUBLIC_GRAPH_URL,
+  graphUrlMainnet: process.env.NEXT_PUBLIC_GRAPH_URL_MAINNET,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
 };

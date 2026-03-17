@@ -6,7 +6,6 @@ interface ClientEnv {
   auctionId?: number;
   snapshotUrl: string;
   graphUrl: string;
-  graphUrlMainnet?: string;
 }
 
 interface ServerEnv {
@@ -61,6 +60,5 @@ export const env: Env = {
     : undefined,
   snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
   graphUrl: process.env.NEXT_PUBLIC_GRAPH_URL,
-  graphUrlMainnet: process.env.NEXT_PUBLIC_GRAPH_URL_MAINNET,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
 };

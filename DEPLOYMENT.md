@@ -43,16 +43,15 @@ cp .env.example .env.local
 
 ### Required Variables
 
-| Variable                         | Description                                                                                                                        | Example                                     |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_ENVIRONMENT`        | Runtime environment — controls which chain is used (`development` → Sepolia, `production` → Mainnet)                               | `production`                                |
-| `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection                                                                                     | `abc123...`                                 |
-| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API key for Ethereum JSON-RPC                                                                                              | `abc123...`                                 |
-| `NEXT_PUBLIC_GRAPH_URL`          | **Unified** testnet (Sepolia) subgraph URL — also used by GraphQL code-gen at build time                                           | `https://api.studio.thegraph.com/query/...` |
-| `NEXT_PUBLIC_GRAPH_URL_MAINNET`  | **Unified** mainnet subgraph URL — required in production; falls back to `NEXT_PUBLIC_GRAPH_URL` if omitted (single-bundle builds) | `https://api.studio.thegraph.com/query/...` |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata IPFS gateway URL                                                                                                            | `https://your-gateway.mypinata.cloud`       |
-| `PINATA_JWT`                     | Pinata JWT for **server-side** IPFS uploads (never exposed to the browser)                                                         | `eyJhb...`                                  |
-| `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot governance space URL                                                                                                      | `https://snapshot.box/#/s:your-space.eth`   |
+| Variable                         | Description                                                                                             | Example                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `NEXT_PUBLIC_ENVIRONMENT`        | Runtime environment — controls which chain is used (`development` → Sepolia, `production` → Mainnet)    | `production`                                |
+| `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection                                                          | `abc123...`                                 |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API key for Ethereum JSON-RPC                                                                   | `abc123...`                                 |
+| `NEXT_PUBLIC_GRAPH_URL`          | **Unified** subgraph URL used by both Sepolia and Mainnet — also used by GraphQL code-gen at build time | `https://api.studio.thegraph.com/query/...` |
+| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata IPFS gateway URL                                                                                 | `https://your-gateway.mypinata.cloud`       |
+| `PINATA_JWT`                     | Pinata JWT for **server-side** IPFS uploads (never exposed to the browser)                              | `eyJhb...`                                  |
+| `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot governance space URL                                                                           | `https://snapshot.box/#/s:your-space.eth`   |
 
 ### Optional Variables
 
@@ -86,16 +85,15 @@ cp .env.example .env.local
 
 ### 3.4 The Graph — Subgraph Endpoints
 
-The application uses a **single unified subgraph per network** (badges and auction data are indexed together):
+The application uses a **single unified subgraph endpoint** (badges and auction data are indexed together):
 
-| Network              | Env var                         | Example subgraph name |
-| -------------------- | ------------------------------- | --------------------- |
-| Sepolia (staging)    | `NEXT_PUBLIC_GRAPH_URL`         | `society-testnet`     |
-| Mainnet (production) | `NEXT_PUBLIC_GRAPH_URL_MAINNET` | `society-mainnet`     |
+| Network              | Env var                 | Example subgraph name |
+| -------------------- | ----------------------- | --------------------- |
+| Sepolia (staging)    | `NEXT_PUBLIC_GRAPH_URL` | `society-testnet`     |
+| Mainnet (production) | `NEXT_PUBLIC_GRAPH_URL` | `society-mainnet`     |
 
 - Deploy your unified subgraph to [The Graph Studio](https://thegraph.com/studio/) and copy the query URL.
-- `NEXT_PUBLIC_GRAPH_URL` is also consumed by the GraphQL code-gen (`graphclient build`) at build time, so it **must point to the testnet subgraph during local development and CI builds**.
-- In production, set `NEXT_PUBLIC_GRAPH_URL_MAINNET` to the mainnet query URL; the runtime client will use it automatically when `NEXT_PUBLIC_ENVIRONMENT=production`.
+- `NEXT_PUBLIC_GRAPH_URL` is consumed by GraphQL code-gen (`graphclient build`) at build time and by the runtime client on both networks.
 
 ### 3.5 Snapshot (Governance)
 

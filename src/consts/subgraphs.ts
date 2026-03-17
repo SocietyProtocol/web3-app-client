@@ -3,11 +3,9 @@ import { env } from "@/lib/env";
 
 /**
  * Unified subgraph endpoint per network.
- * Testnet (Sepolia) uses NEXT_PUBLIC_GRAPH_URL.
- * Mainnet uses NEXT_PUBLIC_GRAPH_URL_MAINNET when set, otherwise falls back to
- * NEXT_PUBLIC_GRAPH_URL (useful when building a dedicated mainnet bundle).
+ * Uses NEXT_PUBLIC_GRAPH_URL for both testnet (Sepolia) and mainnet.
  */
 export const subgraphs: ChainVariable<string> = {
   sepolia: env.graphUrl,
-  mainnet: env.graphUrlMainnet ?? env.graphUrl,
+  mainnet: env.graphUrl,
 };

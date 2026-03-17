@@ -32,17 +32,16 @@ Copy the example file and fill in the required values:
 cp .env.example .env.local
 ```
 
-| Variable                         | Required  | Description                                                                          | Where to get                                                |
-| -------------------------------- | --------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `NEXT_PUBLIC_ENVIRONMENT`        | ✅        | `development` → Sepolia · `production` → Mainnet                                     | —                                                           |
-| `NEXT_PUBLIC_WC_PROJECT_ID`      | ✅        | WalletConnect project ID                                                             | [cloud.walletconnect.com](https://cloud.walletconnect.com/) |
-| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | ✅        | Alchemy API key for Ethereum RPC                                                     | [alchemy.com](https://www.alchemy.com/)                     |
-| `NEXT_PUBLIC_GRAPH_URL`          | ✅        | Unified testnet (Sepolia) subgraph URL — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
-| `NEXT_PUBLIC_GRAPH_URL_MAINNET`  | ✅ (prod) | Unified mainnet subgraph URL — falls back to `NEXT_PUBLIC_GRAPH_URL` if omitted      | Your Graph Studio deployment                                |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | ✅        | Pinata IPFS gateway URL                                                              | [pinata.cloud](https://pinata.cloud/)                       |
-| `PINATA_JWT`                     | ✅        | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser           | [pinata.cloud](https://pinata.cloud/)                       |
-| `NEXT_PUBLIC_SNAPSHOT_URL`       | ✅        | Snapshot governance space URL                                                        | [snapshot.box](https://snapshot.box/)                       |
-| `NEXT_PUBLIC_AUCTION_ID`         | —         | ID of the auction to interact with                                                   | Smart contract deployment                                   |
+| Variable                         | Required | Description                                                                                                                                                | Where to get                                                |
+| -------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `NEXT_PUBLIC_ENVIRONMENT`        | ✅       | `development` → Sepolia · `production` → Mainnet                                                                                                           | —                                                           |
+| `NEXT_PUBLIC_WC_PROJECT_ID`      | ✅       | WalletConnect project ID                                                                                                                                   | [cloud.walletconnect.com](https://cloud.walletconnect.com/) |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | ✅       | Alchemy API key for Ethereum RPC                                                                                                                           | [alchemy.com](https://www.alchemy.com/)                     |
+| `NEXT_PUBLIC_GRAPH_URL`          | ✅       | Unified subgraph URL used for this deployment (mainnet for production and testnet for development & staging) — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
+| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | ✅       | Pinata IPFS gateway URL                                                                                                                                    | [pinata.cloud](https://pinata.cloud/)                       |
+| `PINATA_JWT`                     | ✅       | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser                                                                                 | [pinata.cloud](https://pinata.cloud/)                       |
+| `NEXT_PUBLIC_SNAPSHOT_URL`       | ✅       | Snapshot governance space URL                                                                                                                              | [snapshot.box](https://snapshot.box/)                       |
+| `NEXT_PUBLIC_AUCTION_ID`         | —        | ID of the auction to interact with                                                                                                                         | Smart contract deployment                                   |
 
 > **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT`) in a `NEXT_PUBLIC_` variable.
 

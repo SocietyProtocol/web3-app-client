@@ -9,20 +9,4 @@ export const URLS = {
 
   // IPFS gateways
   IPFS_GATEWAY: `https://ipfs.io/ipfs`,
-
-  // The Graph subgraphs
-  SUBGRAPH: {
-    SEPOLIA: {
-      BADGES:
-        "https://api.studio.thegraph.com/query/46833/society-badges-testnet/version/latest",
-      AUCTION:
-        "https://api.studio.thegraph.com/query/46833/society-auction-testnet/version/latest",
-    },
-    MAINNET: {
-      BADGES:
-        "https://api.studio.thegraph.com/query/46833/society-badges-mainnet/version/latest",
-      AUCTION:
-        "https://api.studio.thegraph.com/query/46833/society-auction-mainnet/version/latest",
-    },
-  },
 } as const;

@@ -15,6 +15,7 @@ declare module "@mui/material/styles" {
     default: string;
     page: string;
     paper: string;
+    paperDark: string;
     subtle: string;
     bubble: string;
     input: string;
@@ -52,7 +53,6 @@ declare module "@mui/material/styles" {
       stroke: string;
       fill: string;
     };
-    selectedToggle: string;
   }
 
   interface PaletteOptions {
@@ -78,8 +78,6 @@ declare module "@mui/material/styles" {
       stroke?: string;
       fill?: string;
     };
-
-    selectedToggle?: string;
   }
 
   interface TypeAction {

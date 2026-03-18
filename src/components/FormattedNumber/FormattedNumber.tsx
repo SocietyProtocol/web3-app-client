@@ -16,6 +16,7 @@ export interface FormattedNumberProps extends Omit<
   prefix?: string;
   suffix?: string;
   compact?: boolean;
+  hideTooltip?: boolean;
 }
 
 export const FormattedNumber: React.FC<FormattedNumberProps> = ({
@@ -28,6 +29,7 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
   compact,
   prefix,
   suffix,
+  hideTooltip,
   ...typographyProps
 }) => {
   const num = useMemo(() => {
@@ -69,6 +71,7 @@ export const FormattedNumber: React.FC<FormattedNumberProps> = ({
       <Tooltip
         title={(prefix ? `${prefix}` : "") + num + (suffix ? ` ${suffix}` : "")}
         arrow
+        disableHoverListener={hideTooltip}
       >
         <Typography {...typographyProps}>
           {formatted} {suffix}

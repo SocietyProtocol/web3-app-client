@@ -13,6 +13,29 @@ export const MuiTabs: Components<
         maxWidth: "fit-content",
         minHeight: "40px",
 
+        "&.fullwidth": {
+          width: "100%",
+          maxWidth: "none",
+
+          "& .MuiTab-root": {
+            flex: 1,
+            maxWidth: "none",
+          },
+        },
+
+        "&.highcontrast": {
+          "& .MuiTabs-indicator": {
+            height: "100%",
+            borderRadius: 24,
+            backgroundColor: "#000000",
+            zIndex: 0,
+          },
+
+          "& .MuiTab-root": {
+            color: "#000000",
+          },
+        },
+
         "& .MuiTabs-scroller": {
           width: "auto",
         },
@@ -20,7 +43,7 @@ export const MuiTabs: Components<
         "& .MuiTabs-indicator": {
           height: "100%",
           borderRadius: 24,
-          backgroundColor: theme.palette.selectedToggle,
+          backgroundColor: theme.palette.background.paperDark,
           zIndex: 0,
         },
 

@@ -18,6 +18,7 @@ export const dark: PaletteOptions = {
     bubble: colors.BACKGROUND_BUBBLE,
     toggleButton: colors.BACKGROUND_TOGGLE_BUTTON,
     toggleButtonHover: colors.BACKGROUND_TOGGLE_BUTTON_HOVER,
+    highContrast: colors.BACKGROUND_HIGH_CONTRAST,
   },
   text: {
     primary: colors.TEXT_PRIMARY,

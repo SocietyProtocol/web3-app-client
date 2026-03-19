@@ -27,12 +27,12 @@ export const MuiTabs: Components<
           "& .MuiTabs-indicator": {
             height: "100%",
             borderRadius: 24,
-            backgroundColor: "#000000",
+            backgroundColor: theme.palette.background.highContrast,
             zIndex: 0,
           },
 
           "& .MuiTab-root": {
-            color: "#000000",
+            color: theme.palette.text.primary,
           },
         },
 

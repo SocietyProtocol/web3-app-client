@@ -151,7 +151,12 @@ export const LockSpec = () => {
       </TransactionButton>
 
       {/* Summary */}
-      <LockSummary tier={selectedTier} duration={selectedDuration} />
+      <LockSummary
+        tier={selectedTier}
+        duration={selectedDuration}
+        amount={tierAmounts[selectedTierId].data}
+        isLoading={lockMutation.isLoading || isLoading}
+      />
     </Stack>
   );
 };

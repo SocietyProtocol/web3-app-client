@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { SPEC_DECIMALS, getLockDurationLabel, getUnlockDate } from "./consts";
 import { LockDuration, TierConfig } from "./types";
 import { ReactNode } from "react";
@@ -36,9 +36,16 @@ const SummaryRow = ({ label, value }: SummaryRowProps) => (
 interface LockSummaryProps {
   tier: TierConfig;
   duration: LockDuration;
+  amount?: bigint;
+  isLoading?: boolean;
 }
 
-export const LockSummary = ({ tier, duration }: LockSummaryProps) => {
+export const LockSummary = ({
+  tier,
+  duration,
+  amount,
+  isLoading,
+}: LockSummaryProps) => {
   return (
     <Stack spacing={1}>
       <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
@@ -50,15 +57,19 @@ export const LockSummary = ({ tier, duration }: LockSummaryProps) => {
         <SummaryRow
           label="Amount:"
           value={
-            <FormattedNumber
-              value={tier.requiredSpec}
-              suffix=" SPEC"
-              scaleDownDecimals={SPEC_DECIMALS}
-              variant="body2"
-              color="text.primary"
-              sx={{ flexShrink: 0 }}
-              compact
-            />
+            isLoading ? (
+              <Skeleton variant="text" width={80} height={24} />
+            ) : (
+              <FormattedNumber
+                value={amount}
+                suffix=" SPEC"
+                scaleDownDecimals={SPEC_DECIMALS}
+                variant="body2"
+                color="text.primary"
+                sx={{ flexShrink: 0 }}
+                compact
+              />
+            )
           }
         />
         <SummaryRow

@@ -19,7 +19,6 @@ export enum LockSpecTab {
 export interface TierConfig {
   id: TierId;
   name: string;
-  requiredSpec: bigint;
   benefits: string[];
   color: string;
   iconSrc: string;

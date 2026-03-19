@@ -57,12 +57,6 @@ export const LockSpec = () => {
       ? balance >= tierAmounts[selectedTierId].data
       : undefined;
 
-  console.log({
-    canAfford,
-    balance,
-    tierAmounts,
-  });
-
   const disabled =
     !canAfford ||
     lockMutation.isLoading ||

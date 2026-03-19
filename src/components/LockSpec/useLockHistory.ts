@@ -31,7 +31,7 @@ export const useLockHistory = (address?: Address) => {
             "event TokensLocked(address indexed user, uint256 amount, uint256 unlockTime)",
           ),
           args: { user: address },
-          fromBlock: 0n,
+          fromBlock: BigInt(0),
           toBlock: "latest",
         }),
         publicClient.getLogs({
@@ -40,7 +40,7 @@ export const useLockHistory = (address?: Address) => {
             "event TokensUnlocked(address indexed user, uint256 amount)",
           ),
           args: { user: address },
-          fromBlock: 0n,
+          fromBlock: BigInt(0),
           toBlock: "latest",
         }),
       ]);
@@ -54,7 +54,9 @@ export const useLockHistory = (address?: Address) => {
           publicClient.getBlock({ blockNumber: bn }),
         ),
       );
-      const blockTimestamps = new Map(blocks.map((b) => [b.number, b.timestamp]));
+      const blockTimestamps = new Map(
+        blocks.map((b) => [b.number, b.timestamp]),
+      );
 
       // Walk the timeline (sorted by block) to match each lock with its unlock
       const allEvents = [
@@ -74,7 +76,7 @@ export const useLockHistory = (address?: Address) => {
               txHash: pendingLock.transactionHash,
               amount: pendingLock.args.amount!,
               lockTimestamp:
-                blockTimestamps.get(pendingLock.blockNumber) ?? 0n,
+                blockTimestamps.get(pendingLock.blockNumber) ?? BigInt(0),
               unlockTime: pendingLock.args.unlockTime!,
               claimed: false,
             });
@@ -85,7 +87,8 @@ export const useLockHistory = (address?: Address) => {
             id: pendingLock.transactionHash,
             txHash: pendingLock.transactionHash,
             amount: pendingLock.args.amount!,
-            lockTimestamp: blockTimestamps.get(pendingLock.blockNumber) ?? 0n,
+            lockTimestamp:
+              blockTimestamps.get(pendingLock.blockNumber) ?? BigInt(0),
             unlockTime: pendingLock.args.unlockTime!,
             claimed: true,
           });
@@ -98,7 +101,8 @@ export const useLockHistory = (address?: Address) => {
           id: pendingLock.transactionHash,
           txHash: pendingLock.transactionHash,
           amount: pendingLock.args.amount!,
-          lockTimestamp: blockTimestamps.get(pendingLock.blockNumber) ?? 0n,
+          lockTimestamp:
+            blockTimestamps.get(pendingLock.blockNumber) ?? BigInt(0),
           unlockTime: pendingLock.args.unlockTime!,
           claimed: false,
         });

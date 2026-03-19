@@ -32,7 +32,7 @@ export const MuiTabs: Components<
           },
 
           "& .MuiTab-root": {
-            color: theme.palette.text.primary,
+            color: theme.palette.background.highContrast,
           },
         },
 
@@ -58,6 +58,7 @@ export const MuiTabs: Components<
 
           "&.Mui-selected": {
             color: theme.palette.text.primary,
+            zIndex: 1,
 
             "&.Mui-disabled": {
               backgroundColor: theme.palette.action.disabledBackground,

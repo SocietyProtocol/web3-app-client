@@ -2,6 +2,7 @@
 
 import { LockSpec } from "./LockSpec";
 import { ClaimSpec } from "./ClaimSpec";
+import { LockHistory } from "./LockHistory";
 import { ContentGuard } from "@/components/Bubbles/ContentGuard";
 import { Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { parseAsStringEnum, useQueryState } from "nuqs";
@@ -61,6 +62,8 @@ export const LockSpecContent = () => {
             {tab === LockSpecTab.LOCK && <LockSpec />}
 
             {tab === LockSpecTab.CLAIM && <ClaimSpec />}
+
+            {tab === LockSpecTab.HISTORY && <LockHistory />}
           </Paper>
         </ContentGuard>
       </Stack>

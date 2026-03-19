@@ -1,11 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
-import {
-  SPEC_DECIMALS,
-  TierConfig,
-  getLockDurationLabel,
-  getUnlockDate,
-} from "./consts";
-import { LockDuration } from "./types";
+import { SPEC_DECIMALS, getLockDurationLabel, getUnlockDate } from "./consts";
+import { LockDuration, TierConfig } from "./types";
 import { ReactNode } from "react";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 

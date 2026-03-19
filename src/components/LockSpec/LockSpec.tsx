@@ -26,7 +26,7 @@ export const LockSpec = () => {
     LockDuration.THREE_YEARS,
   );
 
-  const { tierAmounts } = useLockParameters();
+  const { tierAmounts, isLoading } = useLockParameters();
 
   const { address } = useAccount();
   const tokenAddress = useChainVar(tokens.spec);
@@ -57,9 +57,18 @@ export const LockSpec = () => {
       ? balance >= tierAmounts[selectedTierId].data
       : undefined;
 
-  const buttonLabel = lockMutation.approveRequired
-    ? "APPROVE SPEC"
-    : `LOCK ${selectedTier.requiredSpecLabel}`;
+  console.log({
+    canAfford,
+    balance,
+    tierAmounts,
+  });
+
+  const disabled =
+    !canAfford ||
+    lockMutation.isLoading ||
+    lockMutation.isMutating ||
+    lockMutation.simulation.isFetching ||
+    lockMutation.simulation.isError;
 
   return (
     <Stack spacing={3}>
@@ -102,17 +111,19 @@ export const LockSpec = () => {
         }
       />
 
-      <DataRow
-        label="Est. Gas"
-        content={
-          <GasEstimation
-            value={lockMutation.gas}
-            isLoading={lockMutation.gasLoading}
-            isError={lockMutation.gasError}
-            sx={{ color: "primary.100" }}
-          />
-        }
-      />
+      {!disabled && (
+        <DataRow
+          label="Est. Gas"
+          content={
+            <GasEstimation
+              value={lockMutation.gas}
+              isLoading={lockMutation.gasLoading}
+              isError={lockMutation.gasError}
+              sx={{ color: "primary.100" }}
+            />
+          }
+        />
+      )}
 
       <SimulationError error={lockMutation.simulation.error} />
 
@@ -121,19 +132,28 @@ export const LockSpec = () => {
         variant="contained"
         size="large"
         fullWidth
-        disabled={
-          !canAfford ||
-          lockMutation.isLoading ||
-          lockMutation.isMutating ||
-          lockMutation.simulation.isFetching ||
-          lockMutation.simulation.isError
-        }
+        disabled={disabled}
         onClick={lockMutation.mutate}
-        loading={lockMutation.isLoading}
+        loading={lockMutation.isLoading || isLoading}
+        loadingText={lockMutation.isLoading ? "Locking..." : "Loading..."}
         simulating={lockMutation.simulation.isFetching}
         sx={{ py: 1.5, fontWeight: 700, letterSpacing: 1 }}
       >
-        {!canAfford ? "Insufficient Balance" : buttonLabel}
+        {!canAfford ? (
+          "Insufficient Balance"
+        ) : lockMutation.approveRequired ? (
+          "Approve Required"
+        ) : (
+          <FormattedNumber
+            value={tierAmounts[selectedTierId].data}
+            scaleDownDecimals={SPEC_DECIMALS}
+            prefix="Lock "
+            suffix=" SPEC"
+            variant="h6"
+            sx={{ fontWeight: 700 }}
+            compact
+          />
+        )}
       </TransactionButton>
 
       {/* Summary */}

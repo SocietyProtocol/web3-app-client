@@ -15,3 +15,12 @@ export enum LockSpecTab {
   CLAIM = "claim",
   HISTORY = "history",
 }
+
+export interface TierConfig {
+  id: TierId;
+  name: string;
+  requiredSpec: bigint;
+  benefits: string[];
+  color: string;
+  iconSrc: string;
+}

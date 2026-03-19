@@ -1,17 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { alpha, Box, Card, Stack, Typography } from "@mui/material";
-import { TierConfig } from "./consts";
+import { alpha, Box, Card, Skeleton, Stack, Typography } from "@mui/material";
+import { TierConfig } from "./types";
+import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
+import { SPEC_DECIMALS } from "./consts";
 
 interface TierCardProps {
   tier: TierConfig;
+  amount: bigint | undefined;
+  loading?: boolean;
   selected: boolean;
   onSelect: () => void;
 }
 
-export const TierCard = ({ tier, selected, onSelect }: TierCardProps) => {
-  const { iconSrc, name, color, requiredSpecLabel, benefits } = tier;
+export const TierCard = ({
+  tier,
+  selected,
+  onSelect,
+  amount,
+  loading,
+}: TierCardProps) => {
+  const { iconSrc, name, color, benefits } = tier;
 
   return (
     <Card
@@ -57,13 +67,19 @@ export const TierCard = ({ tier, selected, onSelect }: TierCardProps) => {
           </Typography>
         </Stack>
 
-        <Typography
-          variant="h6"
-          color="primary.main"
-          sx={{ fontWeight: 700, textAlign: "center" }}
-        >
-          {requiredSpecLabel}
-        </Typography>
+        {loading ? (
+          <Skeleton width={100} height={32} />
+        ) : (
+          <FormattedNumber
+            variant="h6"
+            color="primary.main"
+            sx={{ fontWeight: 700, textAlign: "center" }}
+            value={amount}
+            scaleDownDecimals={SPEC_DECIMALS}
+            suffix=" SPEC"
+            hideTooltip
+          />
+        )}
 
         <Stack spacing={0.5} sx={{ width: "100%" }}>
           {benefits.map((benefit) => (

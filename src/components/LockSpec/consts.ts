@@ -1,15 +1,5 @@
 import { parseUnits } from "viem";
-import { LockDuration, TierId } from "./types";
-
-export interface TierConfig {
-  id: TierId;
-  name: string;
-  requiredSpec: bigint;
-  requiredSpecLabel: string;
-  benefits: string[];
-  color: string;
-  iconSrc: string;
-}
+import { LockDuration, TierConfig, TierId } from "./types";
 
 export const SPEC_DECIMALS = 18;
 
@@ -18,7 +8,6 @@ export const TIERS: TierConfig[] = [
     id: TierId.BRONZE,
     name: "Bronze",
     requiredSpec: parseUnits("400000", SPEC_DECIMALS),
-    requiredSpecLabel: "400k SPEC",
     benefits: [
       "Basic governance participation",
       "Community membership",
@@ -32,7 +21,6 @@ export const TIERS: TierConfig[] = [
     id: TierId.SILVER,
     name: "Silver",
     requiredSpec: parseUnits("2000000", SPEC_DECIMALS),
-    requiredSpecLabel: "2M SPEC",
     benefits: [
       "Increased governance voting power",
       "Access to community initiatives",
@@ -46,7 +34,6 @@ export const TIERS: TierConfig[] = [
     id: TierId.GOLD,
     name: "Gold",
     requiredSpec: parseUnits("10000000", SPEC_DECIMALS),
-    requiredSpecLabel: "10M SPEC",
     benefits: [
       "Maximum governance influence",
       "Priority access to protocol initiatives",

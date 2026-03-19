@@ -12,6 +12,9 @@ import { formatAuto } from "@/utils/format";
 import { SPEC_DECIMALS } from "./consts";
 import { useCurrentLock } from "./useCurrentLock";
 import { useClaimMutation } from "./useClaimMutation";
+import { SimulationError } from "../Transaction/SimulationError";
+import { DataRow } from "./DataRow";
+import { GasEstimation } from "../Transaction/GasEstimation";
 
 interface ClaimDataColumnProps {
   label: string;
@@ -68,7 +71,7 @@ export const ClaimSpec = () => {
   const {
     mutate: onClaim,
     isLoading: loading,
-    simulation: { isFetching: simulating, isError },
+    simulation: { isFetching: simulating, isError, error: simulationError },
     gas,
     gasError,
     gasLoading,
@@ -80,6 +83,9 @@ export const ClaimSpec = () => {
       ? "Wait until lock period is over"
       : formatClaimLabel(amount)
     : "CLAIM SPEC";
+
+  const disabled =
+    !canClaim || isLocked || isLoadingLock || loading || simulating || isError;
 
   return (
     <Stack spacing={3}>
@@ -138,25 +144,32 @@ export const ClaimSpec = () => {
         />
       </Stack>
 
+      {!disabled && (
+        <DataRow
+          label="Est. Gas"
+          content={
+            <GasEstimation
+              value={gas}
+              isLoading={gasLoading}
+              isError={gasError}
+              sx={{ color: "primary.100" }}
+            />
+          }
+        />
+      )}
+
+      <SimulationError error={simulationError} />
+
       {/* Claim button */}
       <TransactionButton
         variant="contained"
         size="large"
         fullWidth
-        disabled={
-          !canClaim ||
-          isLocked ||
-          isLoadingLock ||
-          loading ||
-          simulating ||
-          isError
-        }
+        disabled={disabled}
         onClick={onClaim}
-        loading={loading}
+        loading={loading || isLoadingLock}
+        loadingText={isLoadingLock ? "Loading..." : "Claiming..."}
         simulating={simulating}
-        gas={gas}
-        gasError={gasError}
-        gasLoading={gasLoading}
         sx={{ py: 1.5, fontWeight: 700, letterSpacing: 1 }}
       >
         {buttonLabel}

@@ -54,5 +54,10 @@ export const useLockParameters = () => {
       [TierId.SILVER]: silverAmount,
       [TierId.GOLD]: goldAmount,
     },
+    isLoading:
+      minLockDuration.isLoading ||
+      bronzeAmount.isLoading ||
+      silverAmount.isLoading ||
+      goldAmount.isLoading,
   };
 };

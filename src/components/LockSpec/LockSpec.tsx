@@ -76,7 +76,7 @@ export const LockSpec = () => {
           value={balance}
           scaleDownDecimals={SPEC_DECIMALS}
           minThreshold={1000}
-          suffix=" SPEC"
+          suffix="SPEC"
           variant="h5"
           color="primary.main"
           sx={{ fontWeight: 700 }}
@@ -143,7 +143,7 @@ export const LockSpec = () => {
             value={tierAmounts[selectedTierId].data}
             scaleDownDecimals={SPEC_DECIMALS}
             prefix="Lock "
-            suffix=" SPEC"
+            suffix="SPEC"
             variant="h6"
             compact
           />

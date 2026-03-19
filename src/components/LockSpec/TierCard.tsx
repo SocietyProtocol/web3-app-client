@@ -76,7 +76,7 @@ export const TierCard = ({
             sx={{ fontWeight: 700, textAlign: "center" }}
             value={amount}
             scaleDownDecimals={SPEC_DECIMALS}
-            suffix=" SPEC"
+            suffix="SPEC"
             hideTooltip
           />
         )}

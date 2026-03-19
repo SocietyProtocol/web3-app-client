@@ -62,7 +62,7 @@ export const LockSummary = ({
             ) : (
               <FormattedNumber
                 value={amount}
-                suffix=" SPEC"
+                suffix="SPEC"
                 scaleDownDecimals={SPEC_DECIMALS}
                 variant="body2"
                 color="text.primary"

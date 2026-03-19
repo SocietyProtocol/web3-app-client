@@ -110,7 +110,7 @@ const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
         <FormattedNumber
           value={item.amount}
           scaleDownDecimals={SPEC_DECIMALS}
-          suffix=" SPEC"
+          suffix="SPEC"
           variant="body2"
           fontWeight={700}
           color="primary.main"

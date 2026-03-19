@@ -101,7 +101,7 @@ export const ClaimSpec = () => {
               <FormattedNumber
                 value={amount}
                 scaleDownDecimals={SPEC_DECIMALS}
-                suffix=" SPEC"
+                suffix="SPEC"
                 variant="h6"
                 color="primary.main"
                 sx={{ fontWeight: 700 }}

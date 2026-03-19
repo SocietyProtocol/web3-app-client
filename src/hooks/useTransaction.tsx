@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   useSimulateContract,
   useWaitForTransactionReceipt,
@@ -137,6 +137,7 @@ export const useTransaction = ({
 }: UseTransactionParams = {}) => {
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
+  const handledTxHashRef = useRef<Hex | undefined>(undefined);
 
   const invalidateOnSuccessStable = useStableArray(
     queryKeysToInvalidateOnSuccess,
@@ -271,6 +272,8 @@ export const useTransaction = ({
       const shouldWait = waitForSync ? isSynced : true;
 
       if (txReceipt.status === "error") {
+        if (handledTxHashRef.current === txHash) return;
+        handledTxHashRef.current = txHash;
         queueMicrotask(async () => {
           setStatus("error");
           if (!suppressErrorSnackbar) {
@@ -282,6 +285,8 @@ export const useTransaction = ({
           onError?.(txReceipt.error);
         });
       } else if (txReceipt.status === "success" && shouldWait) {
+        if (handledTxHashRef.current === txHash) return;
+        handledTxHashRef.current = txHash;
         queueMicrotask(async () => {
           try {
             await Promise.all(
@@ -294,7 +299,6 @@ export const useTransaction = ({
           }
 
           setStatus("success");
-
           enqueueSnackbar(successMessage, {
             key: `${snackbarKeyPrefixFinal}-success`,
             variant: "success",
@@ -323,7 +327,6 @@ export const useTransaction = ({
     txHash,
     suppressErrorSnackbar,
     snackbarKeyPrefixFinal,
-    txReceipt,
     errorMessage,
     queryClient,
     onError,

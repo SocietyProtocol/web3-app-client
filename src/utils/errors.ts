@@ -55,6 +55,16 @@ const CONTRACT_ERROR_MESSAGES: Record<string, string> = {
   ERC20InsufficientAllowance: "Insufficient token allowance",
   ERC20InvalidApprover: "Invalid approver address",
   ERC20InvalidSpender: "Invalid spender address",
+
+  // SocietyVIPManager specific errors
+  InsufficientAmount: "Insufficient amount provided",
+  InvalidBadgeId: "Invalid badge ID",
+  OwnableInvalidOwner: "Invalid owner address",
+  OwnableUnauthorizedAccount: "Unauthorized account",
+  SafeERC20FailedOperation: "ERC20 operation failed",
+  LockDurationTooShort: "Lock duration is too short",
+  LockStillActive: "Lock is still active",
+  NoTokensLocked: "No tokens are currently locked",
 };
 
 /**

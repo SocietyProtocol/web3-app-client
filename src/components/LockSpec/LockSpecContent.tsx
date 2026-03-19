@@ -1,23 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount } from "wagmi";
-import { useChainVar } from "@/hooks/useChainVar";
-import { tokens } from "@/consts/tokens";
-import { useFullBalanceOf } from "@/hooks/erc20/useFullBalance";
 import { LockSpec } from "./LockSpec";
+import { ClaimSpec } from "./ClaimSpec";
 import { ContentGuard } from "@/components/Bubbles/ContentGuard";
-import { Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { parseAsStringEnum, useQueryState } from "nuqs";
-import { LockDuration, LockSpecTab, TierId } from "./types";
-import { TIERS } from "./consts";
-import { useLockMutation } from "./useLockMutation";
-import { SECONDS_PER_YEAR_BN } from "@/consts/time";
+import { LockSpecTab } from "./types";
 
 export const LockSpecContent = () => {
-  const { address } = useAccount();
-  const tokenAddress = useChainVar(tokens.spec);
-
   const [tab, setTab] = useQueryState(
     "tab",
     parseAsStringEnum([
@@ -26,24 +16,6 @@ export const LockSpecContent = () => {
       LockSpecTab.HISTORY,
     ]).withDefault(LockSpecTab.LOCK),
   );
-
-  const [selectedTierId, setSelectedTierId] = useState<TierId>(TierId.SILVER);
-  const [selectedDuration, setSelectedDuration] = useState<LockDuration>(
-    LockDuration.THREE_YEARS,
-  );
-
-  const { rawBalance: specRawBalance } = useFullBalanceOf({
-    address,
-    tokenAddress,
-  });
-
-  const selectedTier = TIERS.find((t) => t.id === selectedTierId)!;
-  const durationInSeconds = BigInt(selectedDuration) * SECONDS_PER_YEAR_BN;
-
-  const lockMutation = useLockMutation({
-    amount: selectedTier.requiredSpec,
-    durationInSeconds,
-  });
 
   return (
     <Stack
@@ -54,12 +26,13 @@ export const LockSpecContent = () => {
         width: "100%",
         alignItems: "center",
         position: "relative",
+        minHeight: "800px",
       }}
     >
       <Typography variant="h4" component="h1" color="primary.main">
         Lock SPEC
       </Typography>
-      <Stack spacing={4} sx={{ maxWidth: 1000 }}>
+      <Stack spacing={4} sx={{ maxWidth: 1000, width: "100%" }}>
         <ContentGuard requireNetwork requireAccount>
           <Tabs
             className="pill fullwidth highcontrast"
@@ -70,20 +43,25 @@ export const LockSpecContent = () => {
             <Tab label="Claim" value={LockSpecTab.CLAIM} disableRipple />
             <Tab label="History" value={LockSpecTab.HISTORY} disableRipple />
           </Tabs>
-          <LockSpec
-            balance={specRawBalance.data}
-            selectedTierId={selectedTierId}
-            onTierChange={setSelectedTierId}
-            selectedDuration={selectedDuration}
-            onDurationChange={setSelectedDuration}
-            onLock={lockMutation.mutate}
-            loading={lockMutation.isLoading}
-            simulating={lockMutation.simulation.isFetching}
-            approveRequired={lockMutation.approveRequired}
-            gas={lockMutation.gas}
-            gasLoading={lockMutation.gasLoading}
-            gasError={lockMutation.gasError}
-          />
+
+          <Paper
+            elevation={0}
+            sx={{
+              padding: { xs: 2, sm: 3 },
+              maxWidth: { xs: "100%", lg: 1200 },
+              width: { xs: "100%", lg: "auto" },
+              minWidth: { xs: "100%", sm: 800 },
+              borderRadius: "12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 3,
+              bgcolor: "background.paper",
+            }}
+          >
+            {tab === LockSpecTab.LOCK && <LockSpec />}
+
+            {tab === LockSpecTab.CLAIM && <ClaimSpec />}
+          </Paper>
         </ContentGuard>
       </Stack>
     </Stack>

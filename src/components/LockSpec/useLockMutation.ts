@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAccount } from "wagmi";
 import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
@@ -51,6 +51,7 @@ export const useLockMutation = ({
     onSuccess,
     onError,
     enabled: isEnabled,
+    autoExecute: true,
   });
 
   const lock = useCallback(async () => {
@@ -69,21 +70,6 @@ export const useLockMutation = ({
 
     await transaction.execute();
   }, [amount, durationInSeconds, transaction, enqueueSnackbar]);
-
-  // Auto-execute main transaction after approval
-  useEffect(() => {
-    if (
-      transaction.status === "approving" &&
-      transaction.approveReceipt?.status === "success" &&
-      amount !== undefined &&
-      durationInSeconds !== undefined
-    ) {
-      enqueueSnackbar("Approval confirmed, locking SPEC...", {
-        variant: "success",
-      });
-      lock();
-    }
-  }, [transaction, amount, durationInSeconds, enqueueSnackbar, lock]);
 
   return {
     mutate: lock,

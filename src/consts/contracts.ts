@@ -5,7 +5,7 @@ interface ContractAddresses {
   badges: ChainVariable<Address>;
   auction: ChainVariable<Address>;
   chainlinkFeed: ChainVariable<Address>;
-  vipManager?: ChainVariable<Address>;
+  vipManager: ChainVariable<Address>;
 }
 
 export const contracts: ContractAddresses = {

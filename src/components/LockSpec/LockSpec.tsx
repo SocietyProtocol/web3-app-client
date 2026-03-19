@@ -19,6 +19,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { tokens } from "@/consts/tokens";
 import { SimulationError } from "../Transaction/SimulationError";
 import { useLockParameters } from "./useLockParameters";
+import { SECONDS_PER_YEAR_BN } from "@/consts/time";
 
 export const LockSpec = () => {
   const [selectedTierId, setSelectedTierId] = useState<TierId>(TierId.SILVER);
@@ -43,7 +44,7 @@ export const LockSpec = () => {
   );
 
   const durationInSeconds = useMemo(
-    () => BigInt(selectedDuration) * BigInt(1000000),
+    () => BigInt(selectedDuration) * SECONDS_PER_YEAR_BN,
     [selectedDuration],
   );
 
@@ -144,7 +145,6 @@ export const LockSpec = () => {
             prefix="Lock "
             suffix=" SPEC"
             variant="h6"
-            sx={{ fontWeight: 700 }}
             compact
           />
         )}

@@ -57,12 +57,29 @@ export const ClaimSpec = () => {
   const currentLock = useCurrentLock({ address });
   const claimMutation = useClaimMutation();
 
-  const { amount, unlockTime, isLocked, canClaim, isLoading: isLoadingLock } = currentLock;
-  const { mutate: onClaim, isLoading: loading, simulation: { isFetching: simulating } } = claimMutation;
+  const {
+    amount,
+    unlockTime,
+    isLocked,
+    canClaim,
+    isLoading: isLoadingLock,
+  } = currentLock;
+
+  const {
+    mutate: onClaim,
+    isLoading: loading,
+    simulation: { isFetching: simulating, isError },
+    gas,
+    gasError,
+    gasLoading,
+  } = claimMutation;
 
   const hasLock = amount !== undefined && amount > BigInt(0);
-  const buttonLabel =
-    hasLock && amount !== undefined ? formatClaimLabel(amount) : "CLAIM SPEC";
+  const buttonLabel = hasLock
+    ? isLocked
+      ? "Wait until lock period is over"
+      : formatClaimLabel(amount)
+    : "CLAIM SPEC";
 
   return (
     <Stack spacing={3}>
@@ -126,10 +143,20 @@ export const ClaimSpec = () => {
         variant="contained"
         size="large"
         fullWidth
-        disabled={!canClaim || isLocked}
+        disabled={
+          !canClaim ||
+          isLocked ||
+          isLoadingLock ||
+          loading ||
+          simulating ||
+          isError
+        }
         onClick={onClaim}
         loading={loading}
         simulating={simulating}
+        gas={gas}
+        gasError={gasError}
+        gasLoading={gasLoading}
         sx={{ py: 1.5, fontWeight: 700, letterSpacing: 1 }}
       >
         {buttonLabel}

@@ -2,7 +2,7 @@
 
 import { LockSpec } from "./LockSpec";
 import { ClaimSpec } from "./ClaimSpec";
-import { LockHistory } from "./LockHistory";
+import { LockHistory } from "./LockHistory/LockHistory";
 import { ContentGuard } from "@/components/Bubbles/ContentGuard";
 import { Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { parseAsStringEnum, useQueryState } from "nuqs";

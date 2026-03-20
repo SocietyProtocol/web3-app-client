@@ -15,6 +15,7 @@ import { useClaimMutation } from "./useClaimMutation";
 import { SimulationError } from "../Transaction/SimulationError";
 import { DataRow } from "./DataRow";
 import { GasEstimation } from "../Transaction/GasEstimation";
+import { formatDate } from "@/utils/date";
 
 interface ClaimDataColumnProps {
   label: string;
@@ -39,14 +40,6 @@ const ClaimDataColumn = ({
     {loading ? <Skeleton width={80} height={28} /> : value}
   </Stack>
 );
-
-function formatUnlockDate(unlockTime: bigint): string {
-  return new Date(Number(unlockTime) * 1000).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 function formatClaimLabel(amount: bigint): string {
   const compact = formatAuto(Number(formatUnits(amount, SPEC_DECIMALS)), {
@@ -121,7 +114,7 @@ export const ClaimSpec = () => {
               color="primary.main"
               sx={{ fontWeight: 700 }}
             >
-              {unlockTime !== undefined ? formatUnlockDate(unlockTime) : "—"}
+              {unlockTime !== undefined ? formatDate(unlockTime) : "—"}
             </Typography>
           }
         />

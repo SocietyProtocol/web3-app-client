@@ -1,4 +1,5 @@
 import { Stack, Button, Grid, Skeleton } from "@mui/material";
+import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useMemo, useState } from "react";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
@@ -89,7 +90,20 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   }
 
   return (
-    <Page title={`${username}'s Profile`}>
+    <Page
+      title={`${username}'s Profile`}
+      rightAction={
+        !readonly && !isEditing ? (
+          <Button
+            variant="contained"
+            component={Link}
+            href="/profile/lock-spec"
+          >
+            Lock SPEC →
+          </Button>
+        ) : undefined
+      }
+    >
       {isEditing ? (
         <ContentGuard requireNetwork showBackButton>
           <AccountSetupProvider>

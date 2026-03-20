@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
-import { erc20Abi, Hex } from "viem";
+import { erc20Abi, Hex, TransactionReceipt } from "viem";
 import { useAllowance } from "@/hooks/erc20/useAllowance";
 import { useTransaction } from "@/hooks/useTransaction";
 import { QueryKey } from "@tanstack/react-query";
@@ -17,8 +17,9 @@ interface UseTransactionWithApprovalParams {
   args?: unknown[];
   enabled?: boolean;
   queryKeysToInvalidateOnSuccess?: QueryKey[];
-  onSuccess?: () => void;
+  onSuccess?: ((transactionReceipt: TransactionReceipt) => void) | undefined;
   onError?: (error: unknown) => void;
+  autoExecute?: boolean;
 }
 
 export const useTransactionWithApproval = ({
@@ -33,6 +34,7 @@ export const useTransactionWithApproval = ({
   queryKeysToInvalidateOnSuccess = [],
   onSuccess,
   onError,
+  autoExecute = false,
 }: UseTransactionWithApprovalParams) => {
   const { address: account } = useAccount();
 
@@ -48,26 +50,6 @@ export const useTransactionWithApproval = ({
     }
     return allowance.data < amount;
   }, [enabled, amount, allowance.data]);
-
-  // Approval transaction
-  const approvalTransaction = useTransaction({
-    address: tokenAddress,
-    abi: erc20Abi,
-    functionName: "approve",
-    args:
-      spenderAddress && amount !== undefined
-        ? [spenderAddress, amount]
-        : undefined,
-    enabled,
-    waitForSync: false,
-    queryKeysToInvalidateOnSuccess: [allowance.queryKey],
-    onError,
-    submittedMessage: "Approval transaction submitted",
-    successMessage: "Approval successful",
-    simulate: true,
-  });
-
-  const { execute: approve, reset: resetApproval } = approvalTransaction;
 
   // Main transaction
   const mainTransaction = useTransaction({
@@ -89,6 +71,31 @@ export const useTransactionWithApproval = ({
 
   const { execute: executeTransaction, reset: resetTransaction } =
     mainTransaction;
+
+  // Approval transaction
+  const approvalTransaction = useTransaction({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "approve",
+    args:
+      spenderAddress && amount !== undefined
+        ? [spenderAddress, amount]
+        : undefined,
+    enabled,
+    waitForSync: false,
+    queryKeysToInvalidateOnSuccess: [allowance.queryKey],
+    onSuccess: () => {
+      if (autoExecute) {
+        executeTransaction();
+      }
+    },
+    onError,
+    submittedMessage: "Approval transaction submitted",
+    successMessage: "Approval successful",
+    simulate: true,
+  });
+
+  const { execute: approve, reset: resetApproval } = approvalTransaction;
 
   const execute = useCallback(async () => {
     if (!enabled) return;

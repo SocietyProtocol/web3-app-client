@@ -1,0 +1,13 @@
+query LockTransactions($user: Bytes!) {
+  lockTransactions(
+    where: { userAddress: $user }
+    orderBy: lockDate
+    orderDirection: desc
+  ) {
+    id
+    amount
+    lockDate
+    unlockDate
+    type
+  }
+}

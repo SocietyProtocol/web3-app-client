@@ -5,6 +5,7 @@ interface ContractAddresses {
   badges: ChainVariable<Address>;
   auction: ChainVariable<Address>;
   chainlinkFeed: ChainVariable<Address>;
+  vipManager: ChainVariable<Address>;
 }
 
 export const contracts: ContractAddresses = {
@@ -19,5 +20,9 @@ export const contracts: ContractAddresses = {
   chainlinkFeed: {
     sepolia: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
     mainnet: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+  },
+  vipManager: {
+    sepolia: "0x51B7481dDe7Fd0b793dbF0CAabcCd6B78D9790DF",
+    mainnet: "0x91715d95004Bd57eDC1E0FD718688CEd475E130A",
   },
 };

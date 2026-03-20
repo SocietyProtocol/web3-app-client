@@ -84,9 +84,9 @@ export const useTransactionWithApproval = ({
     enabled,
     waitForSync: false,
     queryKeysToInvalidateOnSuccess: [allowance.queryKey],
-    onSuccess: async () => {
+    onSuccess: () => {
       if (autoExecute) {
-        await executeTransaction();
+        executeTransaction();
       }
     },
     onError,

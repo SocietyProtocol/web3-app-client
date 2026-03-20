@@ -4,7 +4,7 @@ export const HistoryRowSkeleton = () => (
   <Box
     sx={{
       display: "grid",
-      gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
+      gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr) 0.2fr" },
       gap: { xs: 2, sm: 0 },
       px: 2,
       py: 2,

@@ -10,27 +10,18 @@ import {
   Typography,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { LockOperationType } from "./types";
+import { LockHistoryItem, LockOperationType } from "./types";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 import { FormattedNumber } from "@/components/FormattedNumber/FormattedNumber";
 import { SPEC_DECIMALS } from "../consts";
 import { formatDate } from "@/utils/date";
-import { LockTransaction } from "../../../../.graphclient";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import Link from "next/link";
 
-export const HistoryRow = ({
-  item,
-}: {
-  item: Pick<
-    LockTransaction,
-    "id" | "type" | "amount" | "lockDate" | "unlockDate"
-  >;
-}) => {
+export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
   const buildExplorerLink = useExplorerLinkBuilder();
-  // Subgraph IDs are typically `txHash` or `txHash-logIndex`
-  const txHash = item.id.split("-")[0] as `0x${string}`;
-  const explorerHref = buildExplorerLink({ tx: txHash });
+
+  const explorerHref = buildExplorerLink({ tx: item.id });
 
   const amountBn = BigInt(item.amount);
 
@@ -69,14 +60,14 @@ export const HistoryRow = ({
       {/* Lock Date */}
       <Stack direction="row" alignItems="center" justifyContent="center">
         <Typography variant="body2" color="text.primary">
-          {formatDate(item.lockDate)}
+          {item.lockDate != null ? formatDate(item.lockDate) : "—"}
         </Typography>
       </Stack>
 
       {/* Unlock Date */}
       <Stack direction="row" alignItems="center" justifyContent="center">
         <Typography variant="body2" color="text.primary">
-          {item.unlockDate != null ? formatDate(item.unlockDate) : "—"}
+          {formatDate(item.unlockDate)}
         </Typography>
       </Stack>
 

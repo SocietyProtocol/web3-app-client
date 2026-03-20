@@ -51,7 +51,12 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
       {/* Amount */}
       <Stack>
         <Typography sx={mobileLabelSx}>Amount</Typography>
-        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }} spacing={1}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent={{ xs: "flex-start", sm: "center" }}
+          spacing={1}
+        >
           <TokenIcon symbol="spec" size={24} />
           <FormattedNumber
             value={amountBn}
@@ -68,7 +73,11 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
       {/* Lock Date */}
       <Stack>
         <Typography sx={mobileLabelSx}>Lock Date</Typography>
-        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent={{ xs: "flex-start", sm: "center" }}
+        >
           <Typography variant="body2" color="text.primary">
             {item.lockDate != null ? formatDate(item.lockDate) : "—"}
           </Typography>
@@ -78,7 +87,11 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
       {/* Unlock Date */}
       <Stack>
         <Typography sx={mobileLabelSx}>Unlock Date</Typography>
-        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent={{ xs: "flex-start", sm: "center" }}
+        >
           <Typography variant="body2" color="text.primary">
             {item.unlockDate != null ? formatDate(item.unlockDate) : "—"}
           </Typography>
@@ -88,10 +101,17 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
       {/* Operation — includes inline explorer link on xs */}
       <Stack>
         <Typography sx={mobileLabelSx}>Operation</Typography>
-        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }} spacing={1}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent={{ xs: "flex-start", sm: "center" }}
+          spacing={1}
+        >
           <Chip
             label={capitalize(item.type)}
-            color={item.type === LockOperationType.Lock ? "secondary" : "success"}
+            color={
+              item.type === LockOperationType.Lock ? "secondary" : "success"
+            }
             size="small"
             sx={{ fontWeight: 600, fontSize: "0.75rem", userSelect: "none" }}
           />
@@ -102,7 +122,11 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
               href={explorerHref}
               target="_blank"
               rel="noopener noreferrer"
-              sx={{ display: { xs: "inline-flex", sm: "none" }, p: 0.25, color: "text.secondary" }}
+              sx={{
+                display: { xs: "inline-flex", sm: "none" },
+                p: 0.25,
+                color: "text.secondary",
+              }}
             >
               <OpenInNewIcon sx={{ fontSize: 14 }} />
             </IconButton>
@@ -118,7 +142,12 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
           href={explorerHref}
           target="_blank"
           rel="noopener noreferrer"
-          sx={{ display: { xs: "none", sm: "inline-flex" }, p: 0.5, color: "text.primary" }}
+          sx={{
+            display: { xs: "none", sm: "inline-flex" },
+            p: 0.5,
+            color: "text.primary",
+            width: "fit-content",
+          }}
         >
           <OpenInNewIcon sx={{ fontSize: 16 }} />
         </IconButton>

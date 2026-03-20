@@ -6,6 +6,7 @@ import { useLockHistory } from "./useLockHistory";
 import { HistoryHeader } from "./HistoryHeader";
 import { HistoryRowSkeleton } from "./HistoryRowSkeleton";
 import { HistoryRow } from "./HistoryRow";
+import { LockHistoryItem } from "./types";
 
 export const LockHistory = () => {
   const { address } = useAccount();
@@ -31,7 +32,7 @@ export const LockHistory = () => {
         </Typography>
       ) : (
         history.lockTransactions.map((item) => (
-          <HistoryRow key={item.id} item={item} />
+          <HistoryRow key={item.id} item={item as LockHistoryItem} />
         ))
       )}
     </Stack>

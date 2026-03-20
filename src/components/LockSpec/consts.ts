@@ -13,7 +13,7 @@ export const TIERS: TierConfig[] = [
       "Access to selected protocol features",
       "More benefits coming soon",
     ],
-    color: "#C97744",
+    color: "warning.light",
     iconSrc: "/icons/tier-bronze.svg",
   },
   {
@@ -25,7 +25,7 @@ export const TIERS: TierConfig[] = [
       "Eligibility for protocol programs",
       "Additional benefits coming soon",
     ],
-    color: "#CACACA",
+    color: "text.primary",
     iconSrc: "/icons/tier-silver.svg",
   },
   {
@@ -37,7 +37,7 @@ export const TIERS: TierConfig[] = [
       "Early access to new features",
       "Exclusive benefits coming soon",
     ],
-    color: "#F7A600",
+    color: "gold.light",
     iconSrc: "/icons/tier-gold.svg",
   },
 ];

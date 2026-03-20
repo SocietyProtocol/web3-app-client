@@ -42,9 +42,10 @@ const ClaimDataColumn = ({
 );
 
 function formatClaimLabel(amount: bigint): string {
-  const compact = formatAuto(Number(formatUnits(amount, SPEC_DECIMALS)), {
+  const compact = formatAuto(formatUnits(amount, SPEC_DECIMALS), {
     compact: true,
   });
+
   return `CLAIM ${compact} SPEC`;
 }
 

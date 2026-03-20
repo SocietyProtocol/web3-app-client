@@ -45,6 +45,7 @@ export const Page = ({
           flexDirection: "row",
           justifyContent: "space-between",
           marginBottom: title ? 4 : -8,
+          position: "relative",
         }}
       >
         <Box
@@ -72,6 +73,7 @@ export const Page = ({
                   xs: "none",
                   md: `translateX(-40px)`,
                 },
+                zIndex: 1,
               }}
               aria-label="Go back"
             >

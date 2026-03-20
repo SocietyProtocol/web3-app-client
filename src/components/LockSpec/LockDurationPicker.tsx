@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Stack } from "@mui/material";
+import { ButtonBase, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { LOCK_DURATIONS } from "./consts";
 import { LockDuration } from "./types";
@@ -18,9 +18,10 @@ export const LockDurationPicker = ({
     {LOCK_DURATIONS.map((duration) => {
       const isSelected = selected === duration;
       return (
-        <Box
+        <ButtonBase
           key={duration}
           onClick={() => onSelect(duration)}
+          aria-pressed={isSelected}
           sx={{
             cursor: "pointer",
             px: 0.5,
@@ -44,7 +45,7 @@ export const LockDurationPicker = ({
           }}
         >
           {duration}Y
-        </Box>
+        </ButtonBase>
       );
     })}
   </Stack>

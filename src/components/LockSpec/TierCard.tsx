@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { alpha, Box, Card, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  alpha,
+  Box,
+  Card,
+  CardActionArea,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { TierConfig } from "./types";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { SPEC_DECIMALS } from "./consts";
@@ -25,11 +33,9 @@ export const TierCard = ({
 
   return (
     <Card
-      onClick={onSelect}
       elevation={0}
       sx={{
         flex: 1,
-        cursor: "pointer",
         bgcolor: (theme) =>
           selected
             ? theme.palette.background.paperDark
@@ -40,68 +46,70 @@ export const TierCard = ({
             ? theme.palette.success.light
             : alpha(theme.palette.primary.main, 0.1),
         borderRadius: 3,
-        px: 1.5,
-        py: 1.5,
         transition: "border-color, background-color 0.2s",
-        "&:hover": {
-          ...(!selected && {
-            backgroundColor: (theme) =>
-              alpha(theme.palette.background.paperDark, 0.25),
-            borderColor: (theme) => alpha(theme.palette.success.light, 0.25),
-          }),
-        },
       }}
     >
-      <Stack spacing={1.5} alignItems="center">
-        <Stack alignItems="center" spacing={0.75}>
-          <Image src={iconSrc} alt={name} width={36} height={36} />
-          <Typography
-            sx={{
-              color,
-              fontWeight: 600,
-              fontSize: "1.25rem",
-              lineHeight: 1,
-            }}
-          >
-            {name}
-          </Typography>
-        </Stack>
+      <CardActionArea
+        onClick={onSelect}
+        aria-pressed={selected}
+        sx={{
+          px: 1.5,
+          py: 1.5,
+          height: "100%",
+          borderRadius: 3,
+        }}
+      >
+        <Stack spacing={1.5} alignItems="center">
+          <Stack alignItems="center" spacing={0.75}>
+            <Image src={iconSrc} alt={name} width={36} height={36} />
+            <Typography
+              sx={{
+                color,
+                fontWeight: 600,
+                fontSize: "1.25rem",
+                lineHeight: 1,
+              }}
+            >
+              {name}
+            </Typography>
+          </Stack>
 
-        {loading ? (
-          <Skeleton width={100} height={32} />
-        ) : (
-          <FormattedNumber
-            variant="h6"
-            color="primary.main"
-            sx={{ fontWeight: 700, textAlign: "center" }}
-            value={amount}
-            scaleDownDecimals={SPEC_DECIMALS}
-            suffix="SPEC"
-            hideTooltip
-          />
-        )}
+          {loading ? (
+            <Skeleton width={100} height={32} />
+          ) : (
+            <FormattedNumber
+              variant="h6"
+              color="primary.main"
+              sx={{ fontWeight: 700, textAlign: "center" }}
+              value={amount}
+              scaleDownDecimals={SPEC_DECIMALS}
+              suffix="SPEC"
+              hideTooltip
+            />
+          )}
 
-        <Stack spacing={0.5} sx={{ width: "100%" }}>
-          {benefits.map((benefit) => (
-            <Box key={benefit} sx={{ display: "flex", gap: 0.75 }}>
-              <Typography
-                variant="caption"
-                color="primary.main"
-                sx={{ lineHeight: 1.25, flexShrink: 0, fontSize: "11px" }}
-              >
-                •
-              </Typography>
-              <Typography
-                variant="caption"
-                color="primary.main"
-                sx={{ lineHeight: 1.25, fontSize: "11px" }}
-              >
-                {benefit}
-              </Typography>
-            </Box>
-          ))}
+          <Stack spacing={0.5} sx={{ width: "100%" }}>
+            {benefits.map((benefit) => (
+              <Box key={benefit} sx={{ display: "flex", gap: 0.75 }}>
+                <Typography
+                  variant="caption"
+                  color="primary.main"
+                  sx={{ lineHeight: 1.25, flexShrink: 0, fontSize: "11px" }}
+                >
+                  •
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="primary.main"
+                  sx={{ lineHeight: 1.25, fontSize: "11px" }}
+                >
+                  {benefit}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
         </Stack>
-      </Stack>
+      </CardActionArea>
     </Card>
   );
 };

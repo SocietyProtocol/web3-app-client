@@ -1,3 +1,4 @@
+import { SECONDS_PER_YEAR_BN } from "@/consts/time";
 import { LockDuration, TierConfig, TierId } from "./types";
 
 export const SPEC_DECIMALS = 18;
@@ -49,8 +50,9 @@ export const LOCK_DURATIONS: LockDuration[] = [
 ];
 
 export function getUnlockDate(years: number): string {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + years);
+  const unlockTimestampMs =
+    Date.now() + years * Number(SECONDS_PER_YEAR_BN) * 1000;
+  const date = new Date(unlockTimestampMs);
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 

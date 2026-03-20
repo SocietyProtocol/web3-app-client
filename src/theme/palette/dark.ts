@@ -12,11 +12,13 @@ export const dark: PaletteOptions = {
     default: colors.BACKGROUND_DEFAULT,
     page: colors.BACKGROUND_PAGE,
     paper: colors.BACKGROUND_PAPER,
+    paperDark: colors.BACKGROUND_PAPER_DARK,
     subtle: alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1),
     input: colors.BACKGROUND_INPUT,
     bubble: colors.BACKGROUND_BUBBLE,
     toggleButton: colors.BACKGROUND_TOGGLE_BUTTON,
     toggleButtonHover: colors.BACKGROUND_TOGGLE_BUTTON_HOVER,
+    highContrast: colors.BACKGROUND_HIGH_CONTRAST,
   },
   text: {
     primary: colors.TEXT_PRIMARY,
@@ -85,6 +87,4 @@ export const dark: PaletteOptions = {
     stroke: colors.CHART_STROKE,
     fill: colors.CHART_FILL,
   },
-  // expose selected toggle color to palette consumer
-  selectedToggle: colors.SELECTED_TOGGLE,
 };

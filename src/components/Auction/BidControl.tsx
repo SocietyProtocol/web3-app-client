@@ -274,7 +274,7 @@ export const BidControl = () => {
           fullWidth
           disabled={isActionDisabled}
           onClick={mutate}
-          simulating={simulation.isLoading}
+          simulating={simulation.isFetching}
           loading={isLoading || isApproving || isBidding || isSyncing}
           loadingText={
             isSyncing

@@ -30,7 +30,12 @@ export const LockSpecContent = () => {
         minHeight: "800px",
       }}
     >
-      <Typography variant="h4" component="h1" color="primary.main">
+      <Typography
+        variant="h4"
+        component="h1"
+        color="primary.main"
+        sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}
+      >
         Lock SPEC
       </Typography>
       <Stack spacing={4} sx={{ maxWidth: 1000, width: "100%" }}>
@@ -49,9 +54,7 @@ export const LockSpecContent = () => {
             elevation={0}
             sx={{
               padding: { xs: 2, sm: 3 },
-              maxWidth: { xs: "100%", lg: 1200 },
-              width: { xs: "100%", lg: "auto" },
-              minWidth: { xs: "100%", sm: 800 },
+              width: "100%",
               borderRadius: "12px",
               display: "flex",
               flexDirection: "column",

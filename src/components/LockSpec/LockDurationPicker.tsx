@@ -25,7 +25,7 @@ export const LockDurationPicker = ({
             cursor: "pointer",
             px: 0.5,
             py: 0.125,
-            fontSize: "1.125rem",
+            fontSize: { xs: "1rem", sm: "1.125rem" },
             fontWeight: isSelected ? 600 : 400,
             userSelect: "none",
             borderRadius: 1,

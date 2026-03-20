@@ -97,7 +97,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           <Button
             variant="contained"
             component={Link}
-            href="/lock-spec"
+            href="/profile/lock-spec"
           >
             Lock SPEC →
           </Button>

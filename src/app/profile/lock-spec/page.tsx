@@ -11,7 +11,7 @@ export const metadata = {
 export default function LockSpecPage() {
   return (
     <Suspense>
-      <Page>
+      <Page backButton defaultBackPath="/profile">
         <LockSpecContent />
       </Page>
     </Suspense>

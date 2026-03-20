@@ -72,7 +72,8 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 
 export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
   const pathname = usePathname();
-  const isActive = !item.isExternal && pathname === item.url;
+  const isActive =
+    !item.isExternal && pathname.split("/")[1] === item.url.split("/")[1];
 
   const content = (
     <StyledListItemButton

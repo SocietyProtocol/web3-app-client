@@ -44,7 +44,7 @@ export const Page = ({
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
-          marginBottom: 4,
+          marginBottom: title ? 4 : -8,
         }}
       >
         <Box

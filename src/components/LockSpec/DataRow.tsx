@@ -9,17 +9,17 @@ interface DataRowProps {
 }
 
 export const DataRow = ({ label, content }: DataRowProps) => (
-  <Stack spacing={1.5}>
-    <Stack direction="row" alignItems="center" justifyContent="space-between">
-      <Stack direction="row" alignItems="center" spacing={1}>
-        <Typography variant="body2" color="primary.main">
-          {label}
-        </Typography>
-      </Stack>
-
-      <Stack direction="row" alignItems="center" spacing={1}>
-        {content}
-      </Stack>
+  <Stack
+    direction={{ xs: "column", sm: "row" }}
+    alignItems={{ xs: "flex-start", sm: "center" }}
+    justifyContent="space-between"
+    spacing={{ xs: 0.75, sm: 1 }}
+  >
+    <Typography variant="body2" color="primary.main">
+      {label}
+    </Typography>
+    <Stack direction="row" alignItems="center" spacing={1}>
+      {content}
     </Stack>
   </Stack>
 );

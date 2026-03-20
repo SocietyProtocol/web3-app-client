@@ -6,6 +6,8 @@ import {
   Chip,
   IconButton,
   Stack,
+  SxProps,
+  Theme,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -18,11 +20,19 @@ import { formatDate } from "@/utils/date";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import Link from "next/link";
 
+const mobileLabelSx: SxProps<Theme> = {
+  display: { xs: "block", sm: "none" },
+  fontSize: "0.65rem",
+  fontWeight: 600,
+  color: "text.secondary",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  mb: 0.25,
+};
+
 export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
   const buildExplorerLink = useExplorerLinkBuilder();
-
   const explorerHref = buildExplorerLink({ tx: item.id });
-
   const amountBn = BigInt(item.amount);
 
   return (
@@ -39,52 +49,68 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
       }}
     >
       {/* Amount */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        spacing={1}
-      >
-        <TokenIcon symbol="spec" size={24} />
-        <FormattedNumber
-          value={amountBn}
-          scaleDownDecimals={SPEC_DECIMALS}
-          suffix=" SPEC"
-          variant="body2"
-          fontWeight={700}
-          color="primary.main"
-          compact
-        />
+      <Stack>
+        <Typography sx={mobileLabelSx}>Amount</Typography>
+        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }} spacing={1}>
+          <TokenIcon symbol="spec" size={24} />
+          <FormattedNumber
+            value={amountBn}
+            scaleDownDecimals={SPEC_DECIMALS}
+            suffix=" SPEC"
+            variant="body2"
+            fontWeight={700}
+            color="primary.main"
+            compact
+          />
+        </Stack>
       </Stack>
 
       {/* Lock Date */}
-      <Stack direction="row" alignItems="center" justifyContent="center">
-        <Typography variant="body2" color="text.primary">
-          {item.lockDate != null ? formatDate(item.lockDate) : "—"}
-        </Typography>
+      <Stack>
+        <Typography sx={mobileLabelSx}>Lock Date</Typography>
+        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }}>
+          <Typography variant="body2" color="text.primary">
+            {item.lockDate != null ? formatDate(item.lockDate) : "—"}
+          </Typography>
+        </Stack>
       </Stack>
 
       {/* Unlock Date */}
-      <Stack direction="row" alignItems="center" justifyContent="center">
-        <Typography variant="body2" color="text.primary">
-          {formatDate(item.unlockDate)}
-        </Typography>
+      <Stack>
+        <Typography sx={mobileLabelSx}>Unlock Date</Typography>
+        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }}>
+          <Typography variant="body2" color="text.primary">
+            {item.unlockDate != null ? formatDate(item.unlockDate) : "—"}
+          </Typography>
+        </Stack>
       </Stack>
 
-      {/* Operation */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        spacing={1}
-      >
-        <Chip
-          label={capitalize(item.type)}
-          color={item.type === LockOperationType.Lock ? "secondary" : "success"}
-          size="small"
-          sx={{ fontWeight: 600, fontSize: "0.75rem", userSelect: "none" }}
-        />
+      {/* Operation — includes inline explorer link on xs */}
+      <Stack>
+        <Typography sx={mobileLabelSx}>Operation</Typography>
+        <Stack direction="row" alignItems="center" justifyContent={{ xs: "flex-start", sm: "center" }} spacing={1}>
+          <Chip
+            label={capitalize(item.type)}
+            color={item.type === LockOperationType.Lock ? "secondary" : "success"}
+            size="small"
+            sx={{ fontWeight: 600, fontSize: "0.75rem", userSelect: "none" }}
+          />
+          <Tooltip title="View on explorer">
+            <IconButton
+              size="small"
+              component={Link}
+              href={explorerHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ display: { xs: "inline-flex", sm: "none" }, p: 0.25, color: "text.secondary" }}
+            >
+              <OpenInNewIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Stack>
+
+      {/* Explorer link column — sm+ only */}
       <Tooltip title="View on explorer">
         <IconButton
           size="small"
@@ -92,11 +118,7 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
           href={explorerHref}
           target="_blank"
           rel="noopener noreferrer"
-          sx={{
-            p: 0.5,
-            color: "text.primary",
-            width: "fit-content",
-          }}
+          sx={{ display: { xs: "none", sm: "inline-flex" }, p: 0.5, color: "text.primary" }}
         >
           <OpenInNewIcon sx={{ fontSize: 16 }} />
         </IconButton>

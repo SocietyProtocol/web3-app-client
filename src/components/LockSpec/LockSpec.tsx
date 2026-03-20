@@ -137,7 +137,7 @@ export const LockSpec = () => {
         {!canAfford ? (
           "Insufficient Balance"
         ) : lockMutation.approveRequired ? (
-          "Approve Required"
+          "Approve and Lock"
         ) : (
           <FormattedNumber
             value={tierAmounts[selectedTierId].data}

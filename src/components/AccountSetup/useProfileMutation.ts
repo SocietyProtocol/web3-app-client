@@ -2,7 +2,7 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useAccount } from "wagmi";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
@@ -11,12 +11,17 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
   const contractAddress = useChainVar(contracts.badges);
   const { address } = useAccount();
   const userAddress = overrideAddress || address;
   const { generateAuthPayload } = useAuth();
+  const pendingProfileEventRef = useRef<{
+    data: AccountData;
+    profileExists: boolean;
+  } | null>(null);
 
   const user = useUserQuery(userAddress);
 
@@ -60,6 +65,29 @@ export const useProfileMutation = (overrideAddress?: Address) => {
       ["user", userAddress?.toLowerCase()],
       ["users"],
     ],
+    onSuccess: (transactionReceipt) => {
+      const pendingProfileEvent = pendingProfileEventRef.current;
+
+      if (!pendingProfileEvent) {
+        return;
+      }
+
+      try {
+        if (!userAddress) {
+          return;
+        }
+        capturePostHogEvent("profile_saved", {
+          wallet_address: userAddress.toLowerCase(),
+          is_create: !pendingProfileEvent.profileExists,
+          has_avatar: Boolean(pendingProfileEvent.data.imageUrl),
+          has_bio: Boolean(pendingProfileEvent.data.bio?.trim()),
+          has_handle: Boolean(pendingProfileEvent.data.name?.trim()),
+          tx_hash: transactionReceipt.transactionHash,
+        });
+      } finally {
+        pendingProfileEventRef.current = null;
+      }
+    },
   });
 
   const mutate = useCallback(
@@ -69,6 +97,10 @@ export const useProfileMutation = (overrideAddress?: Address) => {
       }
 
       const profileExists = user.data?.profile?.id !== undefined;
+      pendingProfileEventRef.current = {
+        data,
+        profileExists,
+      };
 
       const ipfsData = await uploadIpfsResult.mutateAsync({
         ...data,

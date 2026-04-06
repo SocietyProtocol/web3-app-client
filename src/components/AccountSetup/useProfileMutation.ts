@@ -68,20 +68,25 @@ export const useProfileMutation = (overrideAddress?: Address) => {
     onSuccess: (transactionReceipt) => {
       const pendingProfileEvent = pendingProfileEventRef.current;
 
-      if (!pendingProfileEvent || !userAddress) {
+      if (!pendingProfileEvent) {
         return;
       }
 
-      capturePostHogEvent("profile_saved", {
-        wallet_address: userAddress.toLowerCase(),
-        is_create: !pendingProfileEvent.profileExists,
-        has_avatar: Boolean(pendingProfileEvent.data.imageUrl),
-        has_bio: Boolean(pendingProfileEvent.data.bio?.trim()),
-        has_handle: Boolean(pendingProfileEvent.data.name?.trim()),
-        tx_hash: transactionReceipt.transactionHash,
-      });
-
-      pendingProfileEventRef.current = null;
+      try {
+        if (!userAddress) {
+          return;
+        }
+        capturePostHogEvent("profile_saved", {
+          wallet_address: userAddress.toLowerCase(),
+          is_create: !pendingProfileEvent.profileExists,
+          has_avatar: Boolean(pendingProfileEvent.data.imageUrl),
+          has_bio: Boolean(pendingProfileEvent.data.bio?.trim()),
+          has_handle: Boolean(pendingProfileEvent.data.name?.trim()),
+          tx_hash: transactionReceipt.transactionHash,
+        });
+      } finally {
+        pendingProfileEventRef.current = null;
+      }
     },
   });
 

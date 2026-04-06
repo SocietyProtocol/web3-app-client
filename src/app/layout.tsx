@@ -70,7 +70,9 @@ export default async function RootLayout({
               <TopLoader />
             </Suspense>
             <LayoutContent>{children}</LayoutContent>
-            <PostHogPageView />
+            <Suspense fallback={null}>
+              <PostHogPageView />
+            </Suspense>
           </HydrationBoundary>
         </Providers>
       </body>

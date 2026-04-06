@@ -6,6 +6,7 @@ import posthog from "posthog-js";
 import { useAccount } from "wagmi";
 import { expectedNetwork } from "@/lib/wagmi";
 import { capturePostHogEvent, isPostHogEnabled } from "@/lib/posthog";
+import { isEqualCaseInsensitive } from "@/utils/string";
 
 export default function PostHogPageView() {
   const pathname = usePathname();
@@ -32,7 +33,11 @@ export default function PostHogPageView() {
       return;
     }
 
-    if (address && previousAddressRef.current !== address) {
+    if (
+      address &&
+      previousAddressRef.current &&
+      !isEqualCaseInsensitive(previousAddressRef.current, address)
+    ) {
       capturePostHogEvent("wallet_connected", {
         wallet_address: address.toLowerCase(),
         chain_id: chainId,

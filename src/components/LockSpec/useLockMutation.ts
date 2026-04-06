@@ -9,6 +9,7 @@ import { tokens } from "@/consts/tokens";
 import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
 import { SocietyVipManagerABI } from "@/abis/SocietyVipManager";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseLockMutationParams {
   amount?: bigint;
@@ -48,7 +49,17 @@ export const useLockMutation = ({
         ? [amount, durationInSeconds]
         : undefined,
     queryKeysToInvalidateOnSuccess: [specBalance.queryKey],
-    onSuccess,
+    onSuccess: (transactionReceipt) => {
+      capturePostHogEvent("spec_locked", {
+        wallet_address: address?.toLowerCase(),
+        amount,
+        duration_seconds: durationInSeconds,
+        token_address: tokenAddress,
+        tx_hash: transactionReceipt.transactionHash,
+      });
+
+      onSuccess?.();
+    },
     onError,
     enabled: isEnabled,
     autoExecute: true,

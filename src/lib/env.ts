@@ -6,6 +6,8 @@ interface ClientEnv {
   auctionId?: number;
   snapshotUrl: string;
   graphUrl: string;
+  posthogProjectToken?: string;
+  posthogHost?: string;
 }
 
 interface ServerEnv {
@@ -61,4 +63,6 @@ export const env: Env = {
   snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
   graphUrl: process.env.NEXT_PUBLIC_GRAPH_URL,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
+  posthogProjectToken: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
+  posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
 };

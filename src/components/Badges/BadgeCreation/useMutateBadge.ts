@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutation } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { TransactionReceipt, zeroAddress } from "viem";
 import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -18,6 +19,7 @@ interface UseMutateBadgeProps {
 
 export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
+  const pendingBadgeEventRef = useRef<BadgeTransformedData | null>(null);
 
   const { generateAuthPayload } = useAuth();
 
@@ -77,12 +79,30 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
     waitForSync: true,
     successMessage: "Badge created successfully",
     queryKeysToInvalidateOnSuccess,
-    onSuccess,
+    onSuccess: (transactionReceipt) => {
+      const pendingBadgeEvent = pendingBadgeEventRef.current;
+
+      if (pendingBadgeEvent) {
+        capturePostHogEvent("badge_created", {
+          badge_name: pendingBadgeEvent.name,
+          has_image: Boolean(pendingBadgeEvent.imageUrl),
+          has_metadata: Boolean(pendingBadgeEvent.metadata),
+          is_official: pendingBadgeEvent.isOfficial,
+          is_community: pendingBadgeEvent.isCommunity,
+          editor_count: pendingBadgeEvent.editors.length,
+          tx_hash: transactionReceipt.transactionHash,
+        });
+      }
+
+      pendingBadgeEventRef.current = null;
+      onSuccess?.(transactionReceipt);
+    },
     onError,
   });
 
   const mutate = useCallback(
     async (data: BadgeTransformedData) => {
+      pendingBadgeEventRef.current = data;
       const hasMetadata = !!data.imageUrl || !!data.metadata;
 
       let uri = "";

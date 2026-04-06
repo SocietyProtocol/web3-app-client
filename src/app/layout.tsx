@@ -11,6 +11,7 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/tanstack-query";
 import { fetchAuctionStatus } from "@/data/auction/utils";
 import { env } from "@/lib/env";
+import PostHogPageView from "@/components/PostHogPageView";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -69,6 +70,7 @@ export default async function RootLayout({
               <TopLoader />
             </Suspense>
             <LayoutContent>{children}</LayoutContent>
+            <PostHogPageView />
           </HydrationBoundary>
         </Providers>
       </body>

@@ -35,8 +35,8 @@ export default function PostHogPageView() {
 
     if (
       address &&
-      previousAddressRef.current &&
-      !isEqualCaseInsensitive(previousAddressRef.current, address)
+      (!previousAddressRef.current ||
+        !isEqualCaseInsensitive(previousAddressRef.current, address))
     ) {
       capturePostHogEvent("wallet_connected", {
         wallet_address: address.toLowerCase(),

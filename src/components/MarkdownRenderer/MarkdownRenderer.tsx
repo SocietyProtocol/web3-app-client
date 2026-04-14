@@ -52,6 +52,7 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
           "& p, & li": {
             color: (theme) => theme.palette.primary.main,
             lineHeight: 1.7,
+            fontSize: "1.125rem",
           },
           "& ul, & ol": {
             paddingLeft: 3,
@@ -70,6 +71,19 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
+          a({ href, ...props }) {
+            const isExternalLink =
+              typeof href === "string" && /^(https?:)?\/\//.test(href);
+
+            return (
+              <a
+                {...props}
+                href={href}
+                rel={isExternalLink ? "noopener noreferrer" : props.rel}
+                target={isExternalLink ? "_blank" : props.target}
+              />
+            );
+          },
           details({ node, children, ...props }) {
             console.log({
               node,

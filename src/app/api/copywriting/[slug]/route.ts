@@ -29,6 +29,11 @@ const SLUG_MAP: Record<
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },
+  ico: {
+    file: "src/copywriting/ICO.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
   "general-info-image": {
     file: "src/copywriting/general-information.png",
     contentType: "image/png",

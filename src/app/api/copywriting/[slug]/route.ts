@@ -1,0 +1,39 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
+const SLUG_MAP: Record<
+  string,
+  { file: string; contentType: string; encoding?: BufferEncoding }
+> = {
+  "general-info": {
+    file: "src/copywriting/General Information.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
+  "general-info-image": {
+    file: "src/copywriting/general-information.png",
+    contentType: "image/png",
+  },
+};
+
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
+  const entry = SLUG_MAP[slug];
+
+  if (!entry) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const filePath = join(process.cwd(), entry.file);
+  const data = await readFile(filePath, entry.encoding);
+
+  const headers: Record<string, string> = { "content-type": entry.contentType };
+  if (!entry.encoding) {
+    headers["cache-control"] = "public, max-age=3600";
+  }
+
+  return new Response(data as string, { headers });
+}

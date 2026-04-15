@@ -1,10 +1,12 @@
+"use client";
+
 import { Accordion, AccordionSummary, Box, Typography } from "@mui/material";
 import { ReactNode, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 
 export interface ExpandableProps {
-  summary: string;
+  summary: ReactNode;
   content: ReactNode;
 }
 

@@ -8,7 +8,7 @@ export const TIERS: TierConfig[] = [
     id: TierId.BRONZE,
     name: "Bronze",
     description:
-      "(Serious community chat) Exclusive access to support from the core team. - Get away from the spam of a noisy unbarred community full of newbies into a more aligned an intimate space of people committed to make the Synchronized Network State movement happen.",
+      "(Serious community chat) Exclusive access to support from the core team. - Get away from the spam of a noisy unbarred community full of newbies into a more aligned and intimate space of people committed to make the Synchronized Network State movement happen.",
     color: "warning.light",
     iconSrc: "/icons/tier-bronze.svg",
   },

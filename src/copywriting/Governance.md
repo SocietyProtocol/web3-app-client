@@ -4,7 +4,7 @@ The governors consist of members of the core team, advisors, partner communities
 
 Making official decisions as a movement via governor badges, rather than the SPEC tokens goes along with our ideology of meritocracy. It allows us to compress the expertise of all our highly experienced and knowledgeable Governors into excellent decision-making for the Society Protocol movement.
 
-We believe that the Governor badges, held by an known and respected individuals and groups in our community, who are experts in all the relevant fields will enable the most superior form of decision-making we can attain (with the tools at hand) and give our movement the best chance of success in the creation of Synchronized States (where decision-making abilities will improve).
+We believe that the Governor badges, held by known and respected individuals and groups in our community, who are experts in all the relevant fields will enable the most superior form of decision-making we can attain (with the tools at hand) and give our movement the best chance of success in the creation of Synchronized States (where decision-making abilities will improve).
 
 The SPEC token is not involved with official Society Protocol movement governance, it is a representation of contribution. This is because token-voting in Web3 plainly doesn't work due to a lack of sybil-resistance. (You can read [Fake Everything](<https://societyprotocol.io/Published/Articles/Fake+Everything+(Prelude)>) for more information.)
 

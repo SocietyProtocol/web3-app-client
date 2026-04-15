@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useEffect, useState, ReactElement } from "react";
+import { Children, useEffect, useState, ReactElement, ReactNode } from "react";
 import { Box, type SxProps, type Theme } from "@mui/material";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
@@ -112,13 +112,7 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
               />
             );
           },
-          details({ node, children, ...props }) {
-            console.log({
-              node,
-              props,
-              children,
-            });
-
+          details({ children }) {
             const summary = (
               Children.toArray(children).find((child) => {
                 return (
@@ -127,7 +121,7 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
                 );
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
               }) as any
-            )?.props.children;
+            )?.props.children as ReactNode;
 
             const content = Children.toArray(children).filter((child) => {
               return !(

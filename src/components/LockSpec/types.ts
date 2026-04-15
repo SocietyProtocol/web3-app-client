@@ -22,7 +22,7 @@ export type TierColorPath = "warning.light" | "text.primary" | "gold.light";
 export interface TierConfig {
   id: TierId;
   name: string;
-  benefits: string[];
+  description: string;
   color: TierColorPath;
   iconSrc: string;
 }

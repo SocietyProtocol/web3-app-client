@@ -7,36 +7,23 @@ export const TIERS: TierConfig[] = [
   {
     id: TierId.BRONZE,
     name: "Bronze",
-    benefits: [
-      "Basic governance participation",
-      "Community membership",
-      "Access to selected protocol features",
-      "More benefits coming soon",
-    ],
+    description:
+      "(Serious community chat) Exclusive access to support from the core team. - Get away from the spam of a noisy unbarred community full of newbies into a more aligned an intimate space of people committed to make the Synchronized Network State movement happen.",
     color: "warning.light",
     iconSrc: "/icons/tier-bronze.svg",
   },
   {
     id: TierId.SILVER,
     name: "Silver",
-    benefits: [
-      "Increased governance voting power",
-      "Access to community initiatives",
-      "Eligibility for protocol programs",
-      "Additional benefits coming soon",
-    ],
+    description:
+      "(Partner community hub) - Exclusive access to representatives of our partner communities - Opportunities to network, form real-life hub connections, and access an aligned community of Network States and Web3 experts––all traveling the same path.",
     color: "text.primary",
     iconSrc: "/icons/tier-silver.svg",
   },
   {
     id: TierId.GOLD,
     name: "Gold",
-    benefits: [
-      "Maximum governance influence",
-      "Priority access to protocol initiatives",
-      "Early access to new features",
-      "Exclusive benefits coming soon",
-    ],
+    description: "(Elite tier) - Exclusive access to founders & advisors",
     color: "gold.light",
     iconSrc: "/icons/tier-gold.svg",
   },

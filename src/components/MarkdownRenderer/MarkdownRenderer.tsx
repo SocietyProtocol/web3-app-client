@@ -2,6 +2,7 @@
 
 import { Children, useEffect, useState, ReactElement } from "react";
 import { Box, type SxProps, type Theme } from "@mui/material";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
@@ -71,6 +72,33 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
+          img({ src, alt }) {
+            if (!src || typeof src !== "string") return null;
+
+            return (
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  height: "auto",
+                  my: 2,
+                }}
+              >
+                <Image
+                  src={src}
+                  alt={alt || "Image"}
+                  width={980}
+                  height={550}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 980px"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                  }}
+                  priority={false}
+                />
+              </Box>
+            );
+          },
           a({ href, ...props }) {
             const isExternalLink =
               typeof href === "string" && /^(https?:)?\/\//.test(href);

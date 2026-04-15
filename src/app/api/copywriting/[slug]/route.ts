@@ -34,8 +34,17 @@ const SLUG_MAP: Record<
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },
-  "general-info-image": {
+  "spec-token": {
+    file: "src/copywriting/SPEC Token.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
+  "general-info-image.png": {
     file: "src/copywriting/general-information.png",
+    contentType: "image/png",
+  },
+  "spec-token-distribution.png": {
+    file: "src/copywriting/spec-token-distribution.png",
     contentType: "image/png",
   },
 };

@@ -38,7 +38,7 @@ Participants can create as many accounts as they desire, but we suggest only one
 
 Badges are NFTs attached to accounts, they are flexible by design—serving either as functional credentials that unlock specific permissions, or as permanent attributions that create a verifiable record of an account's <u>contributions</u> and <u>characteristics</u>. Badges are what differentiates accounts over time.
 
-<img src="/api/copywriting/general-info-image" alt="General information" style="margin: 12px 0px;"/>
+<img src="/api/copywriting/general-info-image.png" alt="General information" style="margin: 12px 0px;"/>
 
 Anyone is able and welcome to create badges. When the Society Protocol DAO creates a badge, it is considered an "official" badge. When a community creates a badge, it is considered a badge of that community. Each badge is differentiated by: who created it, what it signifies, and what it controls.
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import LanguageIcon from "@mui/icons-material/Language";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 
@@ -53,18 +53,6 @@ export const AuctionHeader = ({
           )}
         </Stack>
       </Stack>
-
-      {active && (
-        <Button
-          variant="outlined"
-          sx={{
-            width: { xs: "100%", md: "auto" },
-            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-          }}
-        >
-          SPEC TOKENOMICS (PDF)
-        </Button>
-      )}
     </Stack>
   );
 };

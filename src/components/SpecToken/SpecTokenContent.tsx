@@ -1,6 +1,4 @@
-import { BubbleBase } from "@/components/Bubbles/BubbleBase";
 import { Box, List, ListItem, Stack, Typography } from "@mui/material";
-import { TokenomicsButton } from "@/components/SpecToken/SpecTokenActions";
 
 const tokenomicsItems = [
   {
@@ -110,11 +108,5 @@ export const SpecTokenContent = () => (
         ))}
       </List>
     </Box>
-
-    <BubbleBase sx={{ minWidth: 300 }} actions={<TokenomicsButton />}>
-      <Typography variant="h3" color="primary.main">
-        SPEC
-      </Typography>
-    </BubbleBase>
   </Stack>
 );

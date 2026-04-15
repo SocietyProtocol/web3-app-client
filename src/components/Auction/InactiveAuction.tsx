@@ -2,9 +2,7 @@
 
 import {
   Box,
-  Button,
   Card,
-  CardContent,
   CardHeader,
   Stack,
   styled,
@@ -169,25 +167,6 @@ export const InactiveAuction = () => {
                 </Stack>
               }
             />
-            <CardContent>
-              <Typography
-                variant="h5"
-                color="primary.main"
-                mb={{ xs: 3, sm: 6 }}
-                sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
-              >
-                Tokenomics
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                }}
-              >
-                SPEC Tokenomics (.PDF)
-              </Button>
-            </CardContent>
           </Card>
         </Box>
       </Stack>

@@ -29,7 +29,7 @@ export const TierCard = ({
   amount,
   loading,
 }: TierCardProps) => {
-  const { iconSrc, name, color, benefits } = tier;
+  const { iconSrc, name, color, description } = tier;
 
   return (
     <Card
@@ -89,24 +89,20 @@ export const TierCard = ({
           )}
 
           <Stack spacing={0.5} sx={{ width: "100%" }}>
-            {benefits.map((benefit) => (
-              <Box key={benefit} sx={{ display: "flex", gap: 0.75 }}>
-                <Typography
-                  variant="caption"
-                  color="primary.main"
-                  sx={{ lineHeight: 1.25, flexShrink: 0, fontSize: "11px" }}
-                >
-                  •
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="primary.main"
-                  sx={{ lineHeight: 1.25, fontSize: "11px" }}
-                >
-                  {benefit}
-                </Typography>
-              </Box>
-            ))}
+            <Box sx={{ display: "flex", gap: 0.75, overflow: "hidden" }}>
+              <Typography
+                variant="caption"
+                color="primary.main"
+                sx={{
+                  lineHeight: 1.25,
+                  flexShrink: 0,
+                  fontSize: "11px",
+                  maxWidth: "100%",
+                }}
+              >
+                {description}
+              </Typography>
+            </Box>
           </Stack>
         </Stack>
       </CardActionArea>

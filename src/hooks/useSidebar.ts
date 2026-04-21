@@ -3,7 +3,7 @@ import { usePathname } from "next/navigation";
 import { useIsMobile } from "./useIsMobile";
 
 export const useSidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const isMobile = useIsMobile();
   const pathname = usePathname();
 

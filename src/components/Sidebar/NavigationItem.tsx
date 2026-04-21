@@ -78,7 +78,6 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
 
   const content = (
     <StyledListItemButton
-      title={item.text}
       selected={isActive}
       sx={{
         justifyContent: isExpanded ? "initial" : "center",

@@ -40,13 +40,13 @@ export const SidebarContent = ({
           }}
         >
           <Tooltip
-            title={!isExpanded ? "Expand sidebar" : ""}
+            title={isExpanded ? undefined : "Expand sidebar"}
             placement="right"
             arrow
           >
             <IconButton
               onClick={onToggle}
-              aria-label={!isExpanded ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
               size="small"
               sx={{
                 flexShrink: 0,
@@ -65,24 +65,21 @@ export const SidebarContent = ({
               />
             </IconButton>
           </Tooltip>
-          <Typography
-            variant="caption"
-            color="text.primary"
-            sx={{
-              userSelect: "none",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              opacity: isExpanded ? 0.7 : 0,
-              maxWidth: isExpanded ? 120 : 0,
-              ml: isExpanded ? 0.5 : 0,
-              transition: (theme) =>
-                theme.transitions.create(["opacity", "max-width", "margin"], {
-                  duration: theme.transitions.duration.shorter,
-                }),
-            }}
-          >
-            Collapse
-          </Typography>
+          {isExpanded && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                userSelect: "none",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                maxWidth: 120,
+                ml: 0.5,
+              }}
+            >
+              Collapse
+            </Typography>
+          )}
         </Box>
       )}
     </Box>

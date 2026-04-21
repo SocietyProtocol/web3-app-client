@@ -1,4 +1,4 @@
-import { Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { Avatar } from "../Avatar/Avatar";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useMemo } from "react";
@@ -37,88 +37,97 @@ export const UserTag = ({
   }, [isConnectedUser, id, link]);
 
   return (
-    <OptionalLink
-      href={url}
-      style={{
-        textDecoration: "none",
-        flex: 0,
-        display: "block",
+    <Box
+      sx={{
         minWidth: 214,
-        maxWidth: 280,
+        maxWidth: {
+          xs: "none",
+          sm: 380,
+        },
+        flex: 0,
       }}
     >
-      <UserCardPaper
-        highlight={highlightYou && isConnectedUser}
-        elevation={1}
-        size="small"
-        sx={{
-          px: 2,
-          py: 1,
+      <OptionalLink
+        href={url}
+        style={{
+          textDecoration: "none",
+          display: "block",
           width: "100%",
-          minHeight: 74,
-          display: "flex",
-          alignItems: "center",
         }}
       >
-        <Stack
-          direction="row"
-          spacing={2}
-          alignItems="center"
+        <UserCardPaper
+          highlight={highlightYou && isConnectedUser}
+          elevation={1}
+          size="small"
           sx={{
-            overflow: "hidden",
+            px: 2,
+            py: 1,
+            width: "100%",
+            minHeight: 74,
+            display: "flex",
+            alignItems: "center",
           }}
         >
-          {/* Avatar and Name Section */}
-
-          <Avatar
-            ensImage={imageUrl}
-            address={id}
-            size={42}
-            loading={loading}
-          />
-
           <Stack
-            spacing={0.5}
+            direction="row"
+            spacing={2}
+            alignItems="center"
             sx={{
               overflow: "hidden",
             }}
           >
-            {/* Name */}
-            {loading ? (
-              <Skeleton width={100} />
-            ) : (
+            {/* Avatar and Name Section */}
+
+            <Avatar
+              ensImage={imageUrl}
+              address={id}
+              size={42}
+              loading={loading}
+            />
+
+            <Stack
+              spacing={0.5}
+              sx={{
+                overflow: "hidden",
+              }}
+            >
+              {/* Name */}
+              {loading ? (
+                <Skeleton width={100} />
+              ) : (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 700,
+                    color: "text.primary",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "100%",
+                  }}
+                  title={name ?? undefined}
+                >
+                  {name}
+                </Typography>
+              )}
+
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
+                  whiteSpace: "nowrap",
                   color: "text.primary",
+                  opacity: 0.6,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: "100%",
+                  fontSize: (theme) => theme.typography.pxToRem(12),
                 }}
-                title={name ?? undefined}
               >
-                {name}
+                {loading ? <Skeleton variant="text" width={150} /> : bio}
               </Typography>
-            )}
-
-            <Typography
-              variant="body2"
-              sx={{
-                whiteSpace: "nowrap",
-                color: "text.primary",
-                opacity: 0.6,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                fontSize: (theme) => theme.typography.pxToRem(12),
-              }}
-            >
-              {loading ? <Skeleton variant="text" width={150} /> : bio}
-            </Typography>
+            </Stack>
           </Stack>
-        </Stack>
-      </UserCardPaper>
-    </OptionalLink>
+        </UserCardPaper>
+      </OptionalLink>
+    </Box>
   );
 };

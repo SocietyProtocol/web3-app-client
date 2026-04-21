@@ -1,5 +1,12 @@
-import { Box, IconButton, List } from "@mui/material";
+import { Box, IconButton, List, Tooltip, Typography } from "@mui/material";
 import KeyboardTabIcon from "@mui/icons-material/KeyboardTab";
+import { keyframes } from "@emotion/react";
+
+const attentionPulse = keyframes`
+  0%   { box-shadow: 0 0 0 0px rgba(144, 202, 249, 0.45); }
+  60%  { box-shadow: 0 0 0 7px rgba(144, 202, 249, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(144, 202, 249, 0); }
+`;
 import { navigationItems } from "./navigationItems";
 import { NavigationItem } from "./NavigationItem";
 
@@ -26,23 +33,53 @@ export const SidebarContent = ({
         <Box
           sx={{
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
-            justifyContent: "flex-start",
             p: 1,
             flexShrink: 0,
           }}
         >
-          <IconButton onClick={onToggle}>
-            <KeyboardTabIcon
+          <Tooltip
+            title={isExpanded ? undefined : "Expand sidebar"}
+            placement="right"
+            arrow
+          >
+            <IconButton
+              onClick={onToggle}
+              aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+              size="small"
               sx={{
-                transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: (theme) =>
-                  theme.transitions.create("transform", {
-                    duration: theme.transitions.duration.shorter,
-                  }),
+                flexShrink: 0,
+                borderRadius: "50%",
+                animation: `${attentionPulse} 1.1s ease-out 2s 3`,
               }}
-            />
-          </IconButton>
+            >
+              <KeyboardTabIcon
+                sx={{
+                  transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: (theme) =>
+                    theme.transitions.create("transform", {
+                      duration: theme.transitions.duration.shorter,
+                    }),
+                }}
+              />
+            </IconButton>
+          </Tooltip>
+          {isExpanded && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                userSelect: "none",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                maxWidth: 120,
+                ml: 0.5,
+              }}
+            >
+              Collapse
+            </Typography>
+          )}
         </Box>
       )}
     </Box>

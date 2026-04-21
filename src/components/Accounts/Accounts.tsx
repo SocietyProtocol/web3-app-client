@@ -185,21 +185,15 @@ export const Accounts = () => {
             </Box>
           ) : (
             allAccounts.map((account) => (
-              <Box
+              <UserTag
                 key={account.id}
-                sx={{
-                  position: "relative",
-                }}
-              >
-                <UserTag
-                  id={account.id}
-                  name={account.name ?? truncateAddress(account.id as Hex)}
-                  bio={account.bio}
-                  imageUrl={account.imageUrl}
-                  link
-                  highlightYou
-                />
-              </Box>
+                id={account.id}
+                name={account.name ?? truncateAddress(account.id as Hex)}
+                bio={account.bio}
+                imageUrl={account.imageUrl}
+                link
+                highlightYou
+              />
             ))
           )}
         </Box>

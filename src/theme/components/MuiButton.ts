@@ -25,6 +25,8 @@ export const MuiButton: Components<
   ],
   styleOverrides: {
     root: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       borderRadius: 50,
       border: "1.48px solid currentColor",
     },

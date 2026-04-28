@@ -15,7 +15,7 @@ export const defaultOptions: CommunityQueryOptions & {
   managerAddress: undefined,
   memberAddress: undefined,
   tiers: undefined,
-  orderBy: "tier",
+  orderBy: CommunitySortOption.Tier,
   orderDirection: "desc",
   pageSize: 50,
 };

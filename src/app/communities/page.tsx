@@ -1,6 +1,7 @@
+import { ButtonLink } from "@/components/ButtonLink";
 import { Communities } from "@/components/Communities/Communities";
 import { Page } from "@/components/Page/Page";
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -25,19 +26,18 @@ export default function CommunitiesPage() {
           >
             Learn more about communities
           </Link>
-          <Link href="/create-community">
-            <Button
-              variant="contained"
-              sx={{
-                maxWidth: { xs: "100% !important", sm: "220px !important" },
-                whiteSpace: "nowrap",
-                minWidth: "154px !important",
-                flex: 1,
-              }}
-            >
-              Create Community
-            </Button>
-          </Link>
+          <ButtonLink
+            variant="contained"
+            sx={{
+              maxWidth: { xs: "100% !important", sm: "220px !important" },
+              whiteSpace: "nowrap",
+              minWidth: "154px !important",
+              flex: 1,
+            }}
+            href="/create-community"
+          >
+            Create Community
+          </ButtonLink>
         </Box>
       }
     >

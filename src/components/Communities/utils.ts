@@ -10,6 +10,7 @@ export function getTierColor(theme: Theme, tier: CommunityTier): string {
     case CommunityTier.Bronze:
       return theme.palette.warning.light;
     case CommunityTier.Unaffiliated:
+    default:
       return theme.palette.error.main;
   }
 }

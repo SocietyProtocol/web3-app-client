@@ -27,7 +27,7 @@ export const MuiSwitch: Components<
         height: 20,
         opacity: 1,
         border: "none",
-        backgroundColor: theme.palette.Slider.primaryTrack,
+        backgroundColor: theme.palette.background.input,
       },
 
       ["& .MuiSwitch-thumb"]: {

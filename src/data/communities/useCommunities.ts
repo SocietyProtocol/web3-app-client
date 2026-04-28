@@ -13,7 +13,7 @@ import {
   CommunityTabOption,
   CommunityTier,
 } from "./types";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useCommunitiesQuery } from "./useCommunitiesQuery";
 import { mergeOptions } from "./utils";
@@ -87,13 +87,23 @@ export const useCommunities = () => {
 
   const query = useCommunitiesQuery(options);
 
+  const hadnleSetActiveTab = useCallback(
+    (value: CommunityTabOption) => {
+      if (value === CommunityTabOption.All) {
+        setIsManagedByUser(false);
+      }
+      setActiveTab(value);
+    },
+    [setActiveTab, setIsManagedByUser],
+  );
+
   return {
     ...query,
     options,
     activeTab,
     searchQuery,
     orderBy,
-    setActiveTab,
+    setActiveTab: hadnleSetActiveTab,
     setSortBy,
     setSearchQuery,
     tiers,

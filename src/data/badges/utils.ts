@@ -25,6 +25,7 @@ export const mergeOptions = (
 } => {
   const { searchText, creatorAddress, managerAddress, holderAddress } =
     options || {};
+
   return {
     ...defaultOptions,
     ...options,
@@ -49,6 +50,7 @@ export const buildWhereClause = (options: {
   managerAddress?: string | null;
   holderAddress?: string | null;
   includeProfile?: boolean;
+  isCommunity?: boolean;
 }) => {
   const {
     searchText,
@@ -56,6 +58,7 @@ export const buildWhereClause = (options: {
     managerAddress,
     holderAddress,
     includeProfile,
+    isCommunity,
   } = options;
 
   const whereClauses: InputMaybe<InputMaybe<Badge_filter>[]> = [];
@@ -100,6 +103,10 @@ export const buildWhereClause = (options: {
     whereClauses.push({ isProfile: false });
   }
 
+  if (isCommunity !== undefined) {
+    whereClauses.push({ isCommunity });
+  }
+
   return { and: whereClauses };
 };
 
@@ -132,6 +139,7 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
     managerAddress: mergedOptions.managerAddress,
     holderAddress: mergedOptions.holderAddress,
     includeProfile: mergedOptions.includeProfile,
+    isCommunity: mergedOptions.isCommunity,
   });
 
   const res = await execute(BadgesDocument, {

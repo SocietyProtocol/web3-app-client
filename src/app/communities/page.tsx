@@ -34,6 +34,7 @@ export default function CommunitiesPage() {
               flex: 1,
             }}
             href="/create-community"
+            component={Link}
           >
             Create Community
           </Button>

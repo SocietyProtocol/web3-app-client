@@ -37,9 +37,11 @@ export const useCommunities = () => {
   const [orderBy, setSortBy] = useQueryState<CommunitySortOption>(
     "orderBy",
     parseAsStringEnum([
-      CommunitySortOption.Id,
+      CommunitySortOption.Tier,
+      CommunitySortOption.Alphabetical,
+      CommunitySortOption.Newest,
       CommunitySortOption.MemberCount,
-    ]).withDefault(CommunitySortOption.Id),
+    ]).withDefault(CommunitySortOption.Tier),
   );
 
   const [tiers, setTiers] = useQueryState<CommunityTier[]>(
@@ -72,8 +74,9 @@ export const useCommunities = () => {
     () =>
       mergeOptions({
         searchText: debouncedSearchQuery,
-        orderBy: orderBy,
-        orderDirection: orderBy === CommunitySortOption.Id ? "asc" : "desc",
+        orderBy,
+        orderDirection:
+          orderBy === CommunitySortOption.Alphabetical ? "asc" : "desc",
 
         ...(activeTab === CommunityTabOption.My && isManagedByUser
           ? { managerAddress: userAddress }

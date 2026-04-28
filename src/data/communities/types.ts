@@ -6,7 +6,9 @@ import {
 } from "../../../.graphclient";
 
 export enum CommunitySortOption {
-  Id = "id",
+  Tier = "tierRank",
+  Alphabetical = "name",
+  Newest = "createdAt",
   MemberCount = "memberCount",
 }
 

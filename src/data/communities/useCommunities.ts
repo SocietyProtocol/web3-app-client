@@ -13,7 +13,7 @@ import {
   CommunityTabOption,
   CommunityTier,
 } from "./types";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useCommunitiesQuery } from "./useCommunitiesQuery";
 import { mergeOptions } from "./utils";
@@ -60,6 +60,13 @@ export const useCommunities = () => {
   );
 
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
+
+  useEffect(() => {
+    if (!userAddress && activeTab === CommunityTabOption.My) {
+      setActiveTab(CommunityTabOption.All);
+      setIsManagedByUser(false);
+    }
+  }, [userAddress, activeTab, setActiveTab, setIsManagedByUser]);
 
   const options = useMemo(
     () =>

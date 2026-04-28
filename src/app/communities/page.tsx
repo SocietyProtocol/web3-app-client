@@ -25,19 +25,19 @@ export default function CommunitiesPage() {
           >
             Learn more about communities
           </Link>
-          <Button
-            variant="contained"
-            sx={{
-              maxWidth: { xs: "100% !important", sm: "220px !important" },
-              whiteSpace: "nowrap",
-              minWidth: "154px !important",
-              flex: 1,
-            }}
-            href="/create-community"
-            component={Link}
-          >
-            Create Community
-          </Button>
+          <Link href="/create-community">
+            <Button
+              variant="contained"
+              sx={{
+                maxWidth: { xs: "100% !important", sm: "220px !important" },
+                whiteSpace: "nowrap",
+                minWidth: "154px !important",
+                flex: 1,
+              }}
+            >
+              Create Community
+            </Button>
+          </Link>
         </Box>
       }
     >

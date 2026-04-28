@@ -94,7 +94,7 @@ export const useCommunities = () => {
 
   const query = useCommunitiesQuery(options);
 
-  const hadnleSetActiveTab = useCallback(
+  const handleSetActiveTab = useCallback(
     (value: CommunityTabOption) => {
       if (value === CommunityTabOption.All) {
         setIsManagedByUser(false);
@@ -110,7 +110,7 @@ export const useCommunities = () => {
     activeTab,
     searchQuery,
     orderBy,
-    setActiveTab: hadnleSetActiveTab,
+    setActiveTab: handleSetActiveTab,
     setSortBy,
     setSearchQuery,
     tiers,

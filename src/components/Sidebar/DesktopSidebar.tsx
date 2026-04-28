@@ -2,7 +2,7 @@ import { Drawer } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { SidebarContent } from "./SidebarContent";
 
-const EXPANDED_WIDTH = 312;
+const EXPANDED_WIDTH = 264;
 const COLLAPSED_WIDTH = 86;
 
 interface DesktopSidebarProps {
@@ -65,7 +65,7 @@ const StyledDrawer = styled(Drawer, {
     top: 0,
     display: "flex",
     flexDirection: "column",
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
     backgroundColor: "transparent",
     border: "none",
   },

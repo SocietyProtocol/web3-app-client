@@ -48,22 +48,40 @@ const baseTheme = createTheme({
     MuiTabs,
   },
   typography: {
-    fontFamily: "var(--font-space-grotesk), sans-serif",
+    fontFamily: "var(--font-inter), var(--font-space-grotesk), sans-serif",
     allVariants: {
       letterSpacing: "0.89px",
     },
 
+    h1: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+    },
+    h2: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+    },
+    h3: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+    },
     h4: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       fontWeight: 400,
       fontSize: "2.375rem",
       lineHeight: "100%",
     },
     h5: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       fontWeight: 400,
       fontSize: "2rem",
       lineHeight: "120%",
     },
     h6: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       fontWeight: 500,
       fontSize: "1.25rem",
       lineHeight: 1.6,

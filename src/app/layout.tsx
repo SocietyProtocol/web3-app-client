@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
+import { inter, pptelegraf, spaceGrotesk } from "@/theme/fonts";
 import { Suspense } from "react";
 import { Providers } from "./providers";
 import "@rainbow-me/rainbowkit/styles.css";
@@ -12,11 +12,6 @@ import { getQueryClient } from "@/lib/tanstack-query";
 import { fetchAuctionStatus } from "@/data/auction/utils";
 import { env } from "@/lib/env";
 import PostHogPageView from "@/components/PostHogPageView";
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -62,7 +57,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${spaceGrotesk.variable}`} suppressHydrationWarning>
+      <body
+        className={`${pptelegraf.variable} ${inter.variable} ${spaceGrotesk.variable}`}
+        suppressHydrationWarning
+      >
         <InitColorSchemeScript attribute="class" />
         <Providers>
           <HydrationBoundary state={dehydrate(queryClient)}>

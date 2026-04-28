@@ -84,8 +84,12 @@ export const CommunityCard = ({
             src={imageUrl ?? undefined}
             alt={name}
             sx={{ width: 68, height: 68 }}
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = "/badge.svg";
+            slotProps={{
+              img: {
+                onError: (e) => {
+                  e.currentTarget.src = "/badge.svg";
+                },
+              },
             }}
           >
             {!imageUrl && name ? name.charAt(0).toUpperCase() : undefined}

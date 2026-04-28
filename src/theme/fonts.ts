@@ -1,15 +1,40 @@
 import localFont from "next/font/local";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 
 export const pptelegraf = localFont({
-  src: "../../public/fonts/pptelegraf-regular.otf",
+  src: [
+    {
+      path: "../../public/fonts/pptelegraf-ultralight.otf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/pptelegraf-regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/pptelegraf-ultrabold.otf",
+      weight: "800",
+      style: "normal",
+    },
+  ],
   variable: "--font-pptelegraf",
   display: "swap",
 });
 
-export const inter = Inter({
+export const inter = localFont({
+  src: [
+    {
+      path: "../../public/fonts/Inter-VariableFont_opsz,wght.ttf",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Inter-Italic-VariableFont_opsz,wght.ttf",
+      style: "italic",
+    },
+  ],
   variable: "--font-inter",
-  subsets: ["latin"],
   display: "swap",
 });
 

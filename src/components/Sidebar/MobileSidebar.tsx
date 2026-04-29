@@ -1,7 +1,6 @@
 import { Drawer } from "@mui/material";
 import { SidebarContent } from "./SidebarContent";
-
-const EXPANDED_WIDTH = 312;
+import { EXPANDED_WIDTH } from "./consts";
 
 interface MobileSidebarProps {
   open: boolean;

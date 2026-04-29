@@ -36,6 +36,7 @@ export const navigationItems: NavigationItem[] = [
     icon: <Image src="/icons/badges.svg" alt="Badges" width={24} height={24} />,
     url: "/badges",
   },
+
   {
     text: "SPEC Token",
     icon: (
@@ -54,6 +55,18 @@ export const navigationItems: NavigationItem[] = [
       />
     ),
     url: "/governance",
+  },
+  {
+    text: "Communities",
+    icon: (
+      <Image
+        src="/icons/community.svg"
+        alt="Communities"
+        width={24}
+        height={24}
+      />
+    ),
+    url: "/communities",
   },
   {
     text: "Auction",

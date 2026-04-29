@@ -16,6 +16,7 @@ import { MuiTabs } from "./components/MuiTabs";
 import { MuiAccordion } from "./components/MuiAccordion";
 import { MuiAccordionSummary } from "./components/MuiAccordionSummary";
 import { MuiAccordionDetails } from "./components/MuiAccordionDetails";
+import { MuiSwitch } from "./components/MuiSwitch";
 
 const baseTheme = createTheme({
   cssVariables: {
@@ -46,6 +47,7 @@ const baseTheme = createTheme({
     MuiPaginationItem,
     MuiChip,
     MuiTabs,
+    MuiSwitch,
   },
   typography: {
     fontFamily: "var(--font-inter), var(--font-space-grotesk), sans-serif",

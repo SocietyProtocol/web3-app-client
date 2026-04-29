@@ -1,9 +1,7 @@
 import { Drawer } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { SidebarContent } from "./SidebarContent";
-
-const EXPANDED_WIDTH = 312;
-const COLLAPSED_WIDTH = 86;
+import { COLLAPSED_WIDTH, EXPANDED_WIDTH } from "./consts";
 
 interface DesktopSidebarProps {
   headerHeight: number;

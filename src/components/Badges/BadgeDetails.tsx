@@ -196,6 +196,22 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
       </Typography>
 
+      {/* Badge Description */}
+      {(isLoading || data?.badge?.description) && (
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{
+            textAlign: "center",
+            px: 2,
+            maxWidth: { xs: "100%", sm: "80%", md: 600 },
+            wordBreak: "break-word",
+          }}
+        >
+          {isLoading ? <Skeleton width={280} /> : data?.badge?.description}
+        </Typography>
+      )}
+
       {/* IPFS Metadata Link */}
       {data?.badge?.uri && (
         <Link

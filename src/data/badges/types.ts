@@ -39,6 +39,7 @@ export type BadgeData = Pick<
   Badge,
   | "id"
   | "name"
+  | "description"
   | "isOfficial"
   | "isCommunity"
   | "uri"

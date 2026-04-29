@@ -2,6 +2,7 @@ query Badge($id: ID!) {
   badge(id: $id) {
     id
     name
+    description
     isOfficial
     isCommunity
     uri

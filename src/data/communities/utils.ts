@@ -75,7 +75,7 @@ export const buildWhereClause = (options: {
     tiers.length < Object.keys(CommunityTier).length
   ) {
     whereClauses.push({
-      tier_in: tiers,
+      tierName_in: tiers,
     });
   }
 

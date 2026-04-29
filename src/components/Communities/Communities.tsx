@@ -207,7 +207,7 @@ export const Communities = () => {
               <CommunityCard
                 key={community.id}
                 {...community}
-                tier={community.tier as CommunityTier}
+                tierName={community.tierName as CommunityTier}
               />
             ))
           )}

@@ -6,7 +6,7 @@ import {
 } from "../../../.graphclient";
 
 export enum CommunitySortOption {
-  Tier = "tierRank",
+  Tier = "tierId",
   Alphabetical = "name",
   Newest = "createdAt",
   MemberCount = "memberCount",
@@ -35,8 +35,12 @@ export interface CommunityQueryOptions {
   skip?: number;
 }
 
-export interface CommunityData extends Omit<Community, "tier" | "manager"> {
-  tier?: CommunityTier;
+export interface CommunityData extends Omit<
+  Community,
+  "tier" | "tierExpiresAt" | "manager"
+> {
+  tierName: CommunityTier;
+  tierExpiresAt: string;
   memberCount: number;
   manager: Pick<User, "id" | "name" | "imageUrl" | "bio">;
 }

@@ -1,11 +1,32 @@
-import type { Theme } from "@mui/material/styles";
+import { alpha, type Theme } from "@mui/material/styles";
 
 export const createCustomMixins = (theme: Theme) => ({
+  backgroundGradient: (
+    angle: string = "45deg",
+    color: "gold" | "silver" | "bronze" | "primary",
+    startOpacity: number = 0.1,
+    endOpacity: number = 0,
+  ) => {
+    return {
+      background: `linear-gradient(${angle}, ${alpha(theme.palette[color].light, startOpacity)} 0%, ${alpha(theme.palette[color].light, endOpacity)} 100%)`,
+    };
+  },
+
   borderGradient: (
     borderRadius: string | number = "10px",
-    gradient: keyof Theme["palette"]["gradients"] = "primary"
+    color: "gold" | "silver" | "bronze" | "primary" = "primary",
+    angle: string = "180deg",
   ) => {
-    const backgroundGradient = `${theme.palette.gradients[gradient]} border-box`;
+    const startColor =
+      color === "primary"
+        ? theme.palette.primary.main
+        : theme.palette[color].light;
+    const endColor =
+      color === "primary"
+        ? theme.palette.primary.main
+        : theme.palette[color].main;
+
+    const backgroundGradient = `linear-gradient(${angle}, ${startColor} 0%, ${endColor} 100%) border-box`;
 
     return {
       "&::before": {

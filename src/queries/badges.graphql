@@ -14,6 +14,7 @@ query Badges(
   ) {
     id
     name
+    description
     isOfficial
     isCommunity
     uri

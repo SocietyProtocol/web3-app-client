@@ -10,6 +10,7 @@ query User($id: ID!) {
     badges(where: { isProfile: false }) {
       id
       name
+      description
       isOfficial
       isCommunity
       uri
@@ -61,6 +62,7 @@ query User($id: ID!) {
     managedBadges(where: { isProfile: false }) {
       id
       name
+      description
       isOfficial
       isCommunity
       uri

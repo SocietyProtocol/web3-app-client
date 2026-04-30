@@ -46,6 +46,7 @@ export function CommunityDetail({ id }: CommunityDetailProps) {
         isLoading={isLoading}
         tierName={tierName}
         tierColor={tierColor}
+        tierExpiresAt={community?.tierExpiresAt}
         badgeCount={badgeCount}
         memberCount={memberCount}
       />

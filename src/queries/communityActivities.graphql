@@ -1,9 +1,10 @@
-query CommunityActivities($communityId: String!, $first: Int!) {
+query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
   communityActivityEvents(
     where: { community: $communityId }
     orderBy: timestamp
     orderDirection: desc
     first: $first
+    skip: $skip
   ) {
     __typename
     id

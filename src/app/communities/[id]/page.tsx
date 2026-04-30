@@ -4,6 +4,7 @@ import { CommunityDetail } from "@/components/Communities/Detail/CommunityDetail
 import { fetchCommunity } from "@/data/communities/utils";
 import { Page } from "@/components/Page/Page";
 import { Metadata } from "next";
+import { Box } from "@mui/material";
 
 export async function generateMetadata({
   params,
@@ -41,8 +42,14 @@ export default async function CommunityPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Page defaultBackPath="/communities">
-        <CommunityDetail id={id} />
+      <Page backButton defaultBackPath="/communities">
+        <Box
+          sx={{
+            py: 3,
+          }}
+        >
+          <CommunityDetail id={id} />
+        </Box>
       </Page>
     </HydrationBoundary>
   );

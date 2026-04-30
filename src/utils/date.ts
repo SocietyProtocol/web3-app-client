@@ -44,12 +44,17 @@ export function formatRelativeTime(
   const nowMs = now ?? Date.now();
 
   if (tsMs > nowMs) return formatDate(timestamp);
+
   const diffMs = nowMs - tsMs;
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
+  const diffMin = Math.floor(diffMs / 60_000);
 
   if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}min ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
+
+  const diffHours = Math.floor(diffMs / 3_600_000);
+
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+
+  if (diffMin < 60) return rtf.format(-diffMin, "minute");
+  if (diffHours < 24) return rtf.format(-diffHours, "hour");
   return formatDate(timestamp);
 }

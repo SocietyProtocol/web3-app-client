@@ -1,12 +1,12 @@
 "use client";
 
-import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { CommunityActivitiesQuery } from "../../../../.graphclient";
 import { CommunityActivityDescription } from "./CommunityActivityDescription";
-import { formatDateTime, formatRelativeTime } from "@/utils/date";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import { Hex } from "viem";
+import { LiveRelativeTime } from "@/components/Common/LiveRelativeTime";
 
 type ActivityEvent =
   CommunityActivitiesQuery["communityActivityEvents"][number];
@@ -22,16 +22,13 @@ export function CommunityActivityRow({ event }: CommunityActivityRowProps) {
   return (
     <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1.5 }}>
       <Box sx={{ minWidth: 100 }}>
-        <Tooltip title={formatDateTime(event.timestamp)} placement="top">
-          <Typography
-            variant="body2"
-            color="text.primary"
-            noWrap
-            sx={{ cursor: "default", fontSize: 12 }}
-          >
-            {formatRelativeTime(event.timestamp)}
-          </Typography>
-        </Tooltip>
+        <LiveRelativeTime
+          timestamp={event.timestamp}
+          variant="body2"
+          color="text.primary"
+          noWrap
+          sx={{ cursor: "default", fontSize: 12 }}
+        />
       </Box>
       <Stack direction="row" spacing={0.5} alignItems="center">
         <CommunityActivityDescription event={event} />

@@ -118,16 +118,16 @@ export const CommunityCard = ({
       {loading ? (
         <Skeleton
           variant="circular"
-          width={90}
-          height={90}
+          width={52}
+          height={52}
           sx={{ flexShrink: 0 }}
         />
       ) : (
         <OptionalLink href={`/communities/${id}`}>
           <Avatar
-            src={imageUrl ?? undefined}
+            src={imageUrl ?? "/images/community.png"}
             alt={name}
-            sx={{ width: 68, height: 68 }}
+            sx={{ width: 52, height: 52 }}
             slotProps={{
               img: {
                 onError: (e) => {
@@ -159,7 +159,7 @@ export const CommunityCard = ({
             component="span"
             sx={{
               fontWeight: 700,
-              fontSize: (theme) => theme.typography.pxToRem(16),
+              fontSize: (theme) => theme.typography.pxToRem(14),
               color: "inherit",
               textAlign: "center",
             }}
@@ -176,9 +176,10 @@ export const CommunityCard = ({
       ) : (
         <Typography
           sx={{
-            fontSize: (theme) => theme.typography.pxToRem(13),
+            fontSize: (theme) => theme.typography.pxToRem(12),
             color: "text.primary",
             fontWeight: 400,
+            userSelect: "none",
           }}
         >
           {memberCount ?? 0} Members

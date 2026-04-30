@@ -3,6 +3,7 @@ import { capitalize, Stack, Typography } from "@mui/material";
 import { TierIcon } from "./TierIcon";
 import { getTierColor } from "./utils";
 import { useNow } from "@/hooks/useNow";
+import { useMemo } from "react";
 
 export interface CommunityTierChipProps {
   tier: CommunityTier;
@@ -15,21 +16,11 @@ export const CommunityTierChip = ({
 }: CommunityTierChipProps) => {
   const now = useNow({ updateAt: Number(expiresAt) });
 
-  if (expiresAt && Number(expiresAt) < now) {
-    return (
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <Typography
-          sx={{
-            fontSize: (theme) => theme.typography.pxToRem(12),
-            fontWeight: 600,
-            color: (theme) => getTierColor(theme, CommunityTier.Unaffiliated),
-          }}
-        >
-          {capitalize(CommunityTier.Unaffiliated)}
-        </Typography>
-      </Stack>
-    );
-  }
+  const realTier = useMemo(
+    () =>
+      expiresAt && Number(expiresAt) < now ? CommunityTier.Unaffiliated : tier,
+    [expiresAt, tier, now],
+  );
 
   return (
     <Stack direction="row" spacing={0.5} alignItems="center">
@@ -37,12 +28,13 @@ export const CommunityTierChip = ({
 
       <Typography
         sx={{
-          fontSize: (theme) => theme.typography.pxToRem(12),
+          fontSize: (theme) => theme.typography.pxToRem(10),
           fontWeight: 600,
-          color: (theme) => getTierColor(theme, tier),
+          color: (theme) => getTierColor(theme, realTier),
+          userSelect: "none",
         }}
       >
-        {capitalize(tier)}
+        {capitalize(realTier)}
       </Typography>
     </Stack>
   );

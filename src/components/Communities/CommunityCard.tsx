@@ -10,7 +10,7 @@ import {
 import { CommunityData, CommunityTier } from "../../data/communities/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { CommunityChip } from "../Badges/CommunityChip";
-import { CommunityTierChip } from "./CommunityTierChip";
+import { CommunityTierChip } from "./Tier/CommunityTierChip";
 import { useMemo } from "react";
 import { useNow } from "@/hooks/useNow";
 

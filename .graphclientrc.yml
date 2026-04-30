@@ -14,3 +14,5 @@ documents:
   - ./src/queries/auctionStatus.graphql
   - ./src/queries/lockTransactions.graphql
   - ./src/queries/communities.graphql
+  - ./src/queries/community.graphql
+  - ./src/queries/communityActivities.graphql

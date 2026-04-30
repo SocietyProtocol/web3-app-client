@@ -26,6 +26,10 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   overflow: "hidden",
   isolation: "isolate",
 
+  "& .MuiListItemText-primary": {
+    fontFamily: theme.typography.subtitle1.fontFamily,
+  },
+
   "&.Mui-selected": {
     background: "transparent",
 

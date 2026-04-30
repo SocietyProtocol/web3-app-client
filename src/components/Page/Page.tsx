@@ -44,7 +44,7 @@ export const Page = ({
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
-          marginBottom: title ? 4 : -8,
+          marginBottom: title ? 4 : wideMargin ? -8 : 0,
           position: "relative",
         }}
       >

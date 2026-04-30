@@ -88,6 +88,13 @@ const baseTheme = createTheme({
       fontSize: "1.25rem",
       lineHeight: 1.6,
     },
+    subtitle1: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+      fontWeight: 500,
+      fontSize: "1rem",
+      lineHeight: 1.6,
+    },
   },
 });
 

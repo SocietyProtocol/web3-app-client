@@ -25,7 +25,7 @@ import { useCommunities } from "@/data/communities/useCommunities";
 import { communitySortOptions } from "../../data/communities/consts";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 import { useAccount } from "wagmi";
-import { CommunityTierFilter } from "./CommunityTierFilter";
+import { CommunityTierFilter } from "./Tier/CommunityTierFilter";
 
 export const Communities = () => {
   const { address: userAddress } = useAccount();

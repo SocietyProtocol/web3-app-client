@@ -1,4 +1,4 @@
-import { CommunityTier } from "../../data/communities/types";
+import { CommunityTier } from "@/data/communities/types";
 
 export const TIER_ORDER: CommunityTier[] = [
   CommunityTier.Gold,

@@ -1,6 +1,8 @@
 import {
   CommunitiesDocument,
   CommunitiesQuery,
+  CommunityDocument,
+  CommunityQuery,
   Community_filter,
   execute,
   InputMaybe,
@@ -107,4 +109,15 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
   });
 
   return res.data as CommunitiesQuery;
+};
+
+/**
+ * Fetches a single community by ID.
+ *
+ * @param id Community ID
+ * @returns Community data or null
+ */
+export const fetchCommunity = async (id: string): Promise<CommunityQuery> => {
+  const res = await execute(CommunityDocument, { id });
+  return res.data as CommunityQuery;
 };

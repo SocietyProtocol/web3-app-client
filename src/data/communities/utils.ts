@@ -19,11 +19,18 @@ export const getTierExpirationDates = (communities: CommunityItem[]) => {
     .filter((t) => t > 0);
 };
 
+/**
+ * Sorts communities by their tier, placing non-expired tiers first and then sorting by tier ID in descending order.
+ *
+ * @param communities The list of communities to sort
+ * @param now The current timestamp in seconds used to determine if a tier has expired
+ * @returns The sorted list of communities
+ */
 export const sortCommunitiesByTier = (
   communities: CommunityItem[],
-  nowMs: number,
+  now: number,
 ): CommunityItem[] => {
-  const nowTimestamp = Math.floor(nowMs);
+  const nowTimestamp = Math.floor(now);
 
   return [...communities].sort((a, b) => {
     const aExpired = Number(a.tierExpiresAt ?? 0) < nowTimestamp;
@@ -116,8 +123,6 @@ export const buildWhereClause = (options: {
 export const fetchCommunities = async (options?: CommunityQueryOptions) => {
   const mergedOptions = mergeOptions(options);
 
-  console.log({ mergedOptions });
-
   const where = buildWhereClause({
     searchText: mergedOptions.searchText,
     managerAddress: mergedOptions.managerAddress,
@@ -137,10 +142,10 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
 };
 
 /**
- * Fetches a single community by ID.
+ * Fetches a single community by its ID.
  *
  * @param id Community ID
- * @returns Community data or null
+ * @returns Community data or null if not found
  */
 export const fetchCommunity = async (id: string): Promise<CommunityQuery> => {
   const res = await execute(CommunityDocument, { id });

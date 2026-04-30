@@ -1,14 +1,15 @@
 "use client";
 
-import { Avatar, capitalize, Skeleton, Stack, Typography } from "@mui/material";
-import { TierIcon } from "@/components/Communities/Tier/TierIcon";
+import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
 import { CommunityTier } from "@/data/communities/types";
+import { TierStatusDisplay } from "./TierStatusDisplay";
 
 interface CommunityDetailHeaderProps {
   community?: { imageUrl?: string | null; name?: string | null } | null;
   isLoading: boolean;
   tierName: CommunityTier;
   tierColor: string;
+  tierExpiresAt?: string | null;
   badgeCount: number;
   memberCount: number;
 }
@@ -18,6 +19,7 @@ export function CommunityDetailHeader({
   isLoading,
   tierName,
   tierColor,
+  tierExpiresAt,
   badgeCount,
   memberCount,
 }: CommunityDetailHeaderProps) {
@@ -84,25 +86,13 @@ export function CommunityDetailHeader({
 
       {/* Tier */}
       {isLoading ? (
-        <Skeleton width={100} height={22} sx={{ pl: 1.5 }} />
+        <Skeleton width={100} height={22} sx={{ pl: 2 }} />
       ) : (
-        <Stack
-          direction="row"
-          spacing={0.5}
-          alignItems="center"
-          sx={{ pl: 1.5 }}
-        >
-          <TierIcon tier={tierName} size={20} />
-          <Typography
-            sx={{
-              fontSize: (t) => t.typography.pxToRem(13),
-              fontWeight: 600,
-              color: tierColor,
-            }}
-          >
-            {capitalize(tierName)} Community
-          </Typography>
-        </Stack>
+        <TierStatusDisplay
+          tierName={tierName}
+          tierColor={tierColor}
+          tierExpiresAt={tierExpiresAt}
+        />
       )}
     </Stack>
   );

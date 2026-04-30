@@ -54,6 +54,18 @@ export const GOLD_LIGHT = "#F7A600";
 export const GOLD_MAIN = "#916100";
 export const GOLD_CONTRAST = "#FFE2A7";
 
+// Silver colors
+export const SILVER_DARK = "#5A5A5A";
+export const SILVER_LIGHT = "#D4D4D4";
+export const SILVER_MAIN = "#A0A0A0";
+export const SILVER_CONTRAST = "#F0F0F0";
+
+// Bronze colors
+export const BRONZE_DARK = "#6B3A1F";
+export const BRONZE_LIGHT = "#CD7F32";
+export const BRONZE_MAIN = "#8C5A2A";
+export const BRONZE_CONTRAST = "#F5DEB3";
+
 // Neutral colors
 export const NEUTRAL_MAIN = "#454545";
 

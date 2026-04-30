@@ -1,7 +1,5 @@
 import {
   Avatar,
-  Box,
-  capitalize,
   Chip,
   Paper,
   Skeleton,
@@ -9,17 +7,22 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { CommunityData } from "../../data/communities/types";
+import { CommunityData, CommunityTier } from "../../data/communities/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { CommunityChip } from "../Badges/CommunityChip";
-import { TierIcon } from "./TierIcon";
-import { getTierColor } from "./utils";
+import { CommunityTierChip } from "./CommunityTierChip";
+import { useMemo } from "react";
+import { useNow } from "@/hooks/useNow";
 
 export interface CommunityCardProps extends Partial<CommunityData> {
   loading?: boolean;
 }
 
-const StyledCommunityCard = styled(Paper)(({ theme }) => ({
+const StyledCommunityCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== "tierName",
+})<{
+  tierName?: CommunityTier;
+}>(({ theme, tierName }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -31,6 +34,27 @@ const StyledCommunityCard = styled(Paper)(({ theme }) => ({
   width: "100%",
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
+
+  ...(tierName === CommunityTier.Gold && {
+    border: "none",
+    ...theme.mixins.borderGradient("8px", "gold"),
+    ...theme.mixins.backgroundGradient("135deg", "gold"),
+    color: theme.palette.gold.light,
+  }),
+
+  ...(tierName === CommunityTier.Silver && {
+    border: "none",
+    ...theme.mixins.borderGradient("8px", "silver"),
+    ...theme.mixins.backgroundGradient("135deg", "silver"),
+    color: theme.palette.silver.light,
+  }),
+
+  ...(tierName === CommunityTier.Bronze && {
+    border: "none",
+    ...theme.mixins.borderGradient("8px", "bronze"),
+    ...theme.mixins.backgroundGradient("135deg", "bronze"),
+    color: theme.palette.bronze.light,
+  }),
 }));
 
 export const CommunityCard = ({
@@ -38,11 +62,24 @@ export const CommunityCard = ({
   name,
   imageUrl,
   memberCount,
-  tier,
+  tierName,
+  tierExpiresAt,
   loading = false,
 }: CommunityCardProps) => {
+  const now = useNow({
+    updateAt: tierExpiresAt ? Number(tierExpiresAt) : undefined,
+  });
+
+  const realTierName = useMemo(() => {
+    if (tierName && tierExpiresAt && Number(tierExpiresAt) >= now) {
+      return tierName;
+    }
+
+    return CommunityTier.Unaffiliated;
+  }, [tierName, tierExpiresAt, now]);
+
   return (
-    <StyledCommunityCard>
+    <StyledCommunityCard tierName={realTierName}>
       {/* Top row: ID chip + COMMUNITY chip */}
       <Stack
         width="100%"
@@ -50,12 +87,19 @@ export const CommunityCard = ({
         direction="row"
         alignItems="center"
         justifyContent="space-between"
+        sx={{
+          color: "text.primary",
+        }}
       >
         {loading ? (
           <Skeleton width={50} />
         ) : (
           <Chip
-            color="default"
+            color={
+              realTierName === CommunityTier.Unaffiliated
+                ? "default"
+                : realTierName
+            }
             label={`ID: #${id}`}
             size="small"
             sx={{
@@ -74,16 +118,16 @@ export const CommunityCard = ({
       {loading ? (
         <Skeleton
           variant="circular"
-          width={90}
-          height={90}
+          width={52}
+          height={52}
           sx={{ flexShrink: 0 }}
         />
       ) : (
         <OptionalLink href={`/communities/${id}`}>
           <Avatar
-            src={imageUrl ?? undefined}
+            src={imageUrl ?? "/images/community.png"}
             alt={name}
-            sx={{ width: 68, height: 68 }}
+            sx={{ width: 52, height: 52 }}
             slotProps={{
               img: {
                 onError: (e) => {
@@ -115,8 +159,8 @@ export const CommunityCard = ({
             component="span"
             sx={{
               fontWeight: 700,
-              fontSize: (theme) => theme.typography.pxToRem(16),
-              color: "text.primary",
+              fontSize: (theme) => theme.typography.pxToRem(14),
+              color: "inherit",
               textAlign: "center",
             }}
             title={name}
@@ -132,9 +176,10 @@ export const CommunityCard = ({
       ) : (
         <Typography
           sx={{
-            fontSize: (theme) => theme.typography.pxToRem(13),
+            fontSize: (theme) => theme.typography.pxToRem(12),
             color: "text.primary",
             fontWeight: 400,
+            userSelect: "none",
           }}
         >
           {memberCount ?? 0} Members
@@ -149,27 +194,13 @@ export const CommunityCard = ({
         mt="auto"
         direction="row"
         alignItems="center"
-        justifyContent="flex-end"
+        justifyContent="center"
       >
         {loading ? (
           <Skeleton width={50} />
-        ) : tier ? (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <TierIcon tier={tier} size={20} />
-
-            <Typography
-              sx={{
-                fontSize: (theme) => theme.typography.pxToRem(12),
-                fontWeight: 600,
-                color: (theme) => getTierColor(theme, tier),
-              }}
-            >
-              {capitalize(tier)}
-            </Typography>
-          </Stack>
-        ) : (
-          <Box />
-        )}
+        ) : tierName && tierExpiresAt ? (
+          <CommunityTierChip tier={tierName} expiresAt={tierExpiresAt} />
+        ) : null}
       </Stack>
     </StyledCommunityCard>
   );

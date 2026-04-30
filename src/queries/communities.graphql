@@ -17,7 +17,9 @@ query Communities(
     description
     imageUrl
     createdAt
-    tier
+    tierId
+    tierName
+    tierExpiresAt
     managerAddress
     manager {
       id

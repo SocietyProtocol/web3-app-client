@@ -46,5 +46,19 @@ export const MuiChip: Components<
         color: theme.palette.gold.contrastText,
       }),
     },
+    {
+      props: { variant: "filled", color: "silver" },
+      style: ({ theme }) => ({
+        backgroundColor: theme.palette.silver.dark,
+        color: theme.palette.silver.contrastText,
+      }),
+    },
+    {
+      props: { variant: "filled", color: "bronze" },
+      style: ({ theme }) => ({
+        backgroundColor: theme.palette.bronze.dark,
+        color: theme.palette.bronze.contrastText,
+      }),
+    },
   ],
 };

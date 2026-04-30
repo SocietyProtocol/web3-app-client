@@ -18,14 +18,20 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
 import {
+  CommunitySortOption,
   CommunityTabOption,
   CommunityTier,
 } from "../../data/communities/types";
 import { useCommunities } from "@/data/communities/useCommunities";
 import { communitySortOptions } from "../../data/communities/consts";
+import {
+  getTierExpirationDates,
+  sortCommunitiesByTier,
+} from "../../data/communities/utils";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 import { useAccount } from "wagmi";
 import { CommunityTierFilter } from "./Tier/CommunityTierFilter";
+import { useNow } from "@/hooks/useNow";
 
 export const Communities = () => {
   const { address: userAddress } = useAccount();
@@ -51,10 +57,24 @@ export const Communities = () => {
     setIsManagedByUser,
   } = useCommunities();
 
-  const allCommunities = useMemo(
+  const flatData = useMemo(
     () => data?.pages.flatMap((page) => page.communities) || [],
     [data],
   );
+
+  const expirationDates = useMemo(
+    () => getTierExpirationDates(flatData),
+    [flatData],
+  );
+
+  const now = useNow({
+    updateAt: expirationDates,
+  });
+
+  const allCommunities = useMemo(() => {
+    if (orderBy !== CommunitySortOption.Tier) return flatData;
+    return sortCommunitiesByTier(flatData, now);
+  }, [flatData, now, orderBy]);
 
   const { start, complete } = useLoadingBar();
 

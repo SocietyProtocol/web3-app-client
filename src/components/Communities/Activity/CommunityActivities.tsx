@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid, Skeleton, Stack, Typography } from "@mui/material";
+import { Grid, Link, Skeleton, Stack, Typography } from "@mui/material";
 import { useCommunityActivities } from "@/data/communities/useCommunityActivities";
 import { CommunityActivityRow } from "./CommunityActivityRow";
 
@@ -9,7 +9,8 @@ interface CommunityActivitiesProps {
 }
 
 export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
-  const { data, isLoading } = useCommunityActivities(communityId);
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useCommunityActivities(communityId);
 
   if (isLoading) {
     return (
@@ -28,7 +29,8 @@ export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
     );
   }
 
-  const events = data?.communityActivityEvents ?? [];
+  const events =
+    data?.pages.flatMap((p) => p.communityActivityEvents ?? []) ?? [];
 
   if (events.length === 0) {
     return (
@@ -39,10 +41,26 @@ export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
   }
 
   return (
-    <Stack>
+    <Stack alignItems="flex-start">
       {events.map((event) => (
         <CommunityActivityRow key={event.id} event={event} />
       ))}
+      {hasNextPage && (
+        <Link
+          component="button"
+          variant="body2"
+          onClick={() => fetchNextPage()}
+          aria-disabled={isFetchingNextPage}
+          sx={{
+            mt: 1,
+            opacity: isFetchingNextPage ? 0.5 : 1,
+            pointerEvents: isFetchingNextPage ? "none" : "auto",
+            textDecoration: "none",
+          }}
+        >
+          {isFetchingNextPage ? "Loading…" : "Load more activities"}
+        </Link>
+      )}
     </Stack>
   );
 }

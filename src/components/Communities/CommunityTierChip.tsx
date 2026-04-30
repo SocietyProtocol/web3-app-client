@@ -24,7 +24,7 @@ export const CommunityTierChip = ({
 
   return (
     <Stack direction="row" spacing={0.5} alignItems="center">
-      <TierIcon tier={tier} size={20} />
+      <TierIcon tier={realTier} size={20} />
 
       <Typography
         sx={{

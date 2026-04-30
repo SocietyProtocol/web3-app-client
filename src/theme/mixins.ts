@@ -7,8 +7,13 @@ export const createCustomMixins = (theme: Theme) => ({
     startOpacity: number = 0.1,
     endOpacity: number = 0,
   ) => {
+    const gradientColor =
+      color === "primary"
+        ? theme.palette.primary.main
+        : theme.palette[color].light;
+
     return {
-      background: `linear-gradient(${angle}, ${alpha(theme.palette[color].light, startOpacity)} 0%, ${alpha(theme.palette[color].light, endOpacity)} 100%)`,
+      background: `linear-gradient(${angle}, ${alpha(gradientColor, startOpacity)} 0%, ${alpha(gradientColor, endOpacity)} 100%)`,
     };
   },
 

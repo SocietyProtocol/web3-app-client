@@ -1,6 +1,7 @@
 import { SxProps } from "@mui/material";
 import { useMemo } from "react";
 import { generateColorsFromAddress } from "@/lib/color";
+import { mergeSx } from "@/utils/sx";
 import { ImageDisplay } from "./ImageDisplay";
 
 export interface UserAvatarProps {
@@ -29,12 +30,12 @@ export const UserAvatar = ({
       {...(imageUrl && { src: imageUrl })}
       ariaLabel={address ? `Avatar for ${address}` : "User Avatar"}
       size={size}
-      sx={[
-        ...(Array.isArray(sx) ? sx : [sx]),
+      sx={mergeSx(
+        sx,
         !imageUrl && {
           background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
         },
-      ]}
+      )}
     />
   );
 };

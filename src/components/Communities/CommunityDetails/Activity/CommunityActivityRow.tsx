@@ -27,7 +27,6 @@ export function CommunityActivityRow({ event }: CommunityActivityRowProps) {
           variant="body2"
           color="text.primary"
           noWrap
-          sx={{ cursor: "default", fontSize: 12 }}
         />
       </Box>
       <Stack direction="row" spacing={0.5} alignItems="center">

@@ -38,7 +38,7 @@ export function CommunityMemberRow({
             timestamp={joinedAt}
             sx={{
               color: "text.primary",
-              fontSize: (theme) => theme.typography.pxToRem(14),
+              fontSize: (theme) => theme.typography.pxToRem(12),
               fontWeight: 500,
             }}
           />
@@ -55,8 +55,26 @@ export function CommunityMemberRow({
       </Box>
 
       {isManager && (
-        <Stack role="cell" alignItems="center">
-          <Button variant="text" color="error" size="small">
+        <Stack role="cell" alignItems="flex-end">
+          <Button
+            variant="text"
+            color="error"
+            size="small"
+            disableRipple
+            sx={{
+              minWidth: 0,
+              "&&": {
+                px: 0,
+                py: 0,
+              },
+              justifyContent: "flex-end",
+              textTransform: "none",
+              "&:hover": {
+                backgroundColor: "transparent",
+                textDecoration: "underline",
+              },
+            }}
+          >
             Revoke
           </Button>
         </Stack>

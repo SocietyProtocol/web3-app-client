@@ -10,6 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ErrorIcon from "@mui/icons-material/Error";
 import { Avatar } from "../Avatar/Avatar";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { mergeSx } from "@/utils/sx";
 import { useAccount } from "wagmi";
 
 interface ConnectButtonProps {
@@ -77,12 +78,12 @@ export const ConnectButton = ({
             <Button
               variant={variant || "wallet"}
               onClick={chain?.unsupported ? openChainModal : openAccountModal}
-              sx={[
-                ...(Array.isArray(sx) ? sx : [sx]),
+              sx={mergeSx(
+                sx,
                 chain?.unsupported && {
                   border: (theme) => `1px solid ${theme.palette.error.dark}`,
                 },
-              ]}
+              )}
               fullWidth={fullWidth}
             >
               <Stack

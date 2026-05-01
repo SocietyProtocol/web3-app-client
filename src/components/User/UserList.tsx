@@ -7,6 +7,7 @@ import { UserCard } from "../User/UserCard";
 import { UsersModal } from "./UsersModal";
 import { ReactNode, useState } from "react";
 import { User } from "../../../.graphclient";
+import { mergeSx } from "@/utils/sx";
 import { CardRow } from "../Cards/CardRow";
 
 export interface UserListProps {
@@ -43,12 +44,12 @@ export const UserList = ({
   return (
     <>
       <CardRow
-        sx={[
+        sx={mergeSx(
           {
             width: "100%",
           },
-          ...(Array.isArray(sx) ? sx : [sx]),
-        ]}
+          sx,
+        )}
         title={title}
         loading={loading}
         items={users}

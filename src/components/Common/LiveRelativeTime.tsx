@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Tooltip, Typography, TypographyProps } from "@mui/material";
 import { formatDateTime, formatRelativeTime } from "@/utils/date";
 import { useIsMounted } from "@/hooks/useIsMounted";
+import { mergeSx } from "@/utils/sx";
 
 interface LiveRelativeTimeProps extends TypographyProps {
   /** UNIX timestamp in seconds */
@@ -52,6 +53,7 @@ function getNextUpdateAt(
 
 export function LiveRelativeTime({
   timestamp,
+  sx,
   ...typographyProps
 }: LiveRelativeTimeProps) {
   const timestampSec = Number(timestamp);
@@ -73,7 +75,16 @@ export function LiveRelativeTime({
   if (!mounted) {
     return (
       <Tooltip title={formatDateTime(timestampSec)} placement="top">
-        <Typography component="span" {...typographyProps}>
+        <Typography
+          component="span"
+          {...typographyProps}
+          sx={mergeSx(
+            {
+              cursor: "default",
+            },
+            sx,
+          )}
+        >
           {formatDateTime(timestampSec)}
         </Typography>
       </Tooltip>
@@ -82,7 +93,16 @@ export function LiveRelativeTime({
 
   return (
     <Tooltip title={formatDateTime(timestampSec)} placement="top">
-      <Typography component="span" {...typographyProps}>
+      <Typography
+        component="span"
+        {...typographyProps}
+        sx={mergeSx(
+          {
+            cursor: "default",
+          },
+          sx,
+        )}
+      >
         {formatRelativeTime(timestampSec, now * 1000)}
       </Typography>
     </Tooltip>

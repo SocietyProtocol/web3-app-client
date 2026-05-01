@@ -9,6 +9,7 @@ import {
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { truncateAddress } from "@/utils/string";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
+import { mergeSx } from "@/utils/sx";
 import { useMemo } from "react";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
@@ -51,7 +52,7 @@ export const AddressDisplay = ({
     >
       <Typography
         variant="body2"
-        sx={[
+        sx={mergeSx(
           {
             fontFamily: "monospace",
             color: "text.primary",
@@ -60,8 +61,8 @@ export const AddressDisplay = ({
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
           },
-          ...(Array.isArray(sx) ? sx : [sx]),
-        ]}
+          sx,
+        )}
         title={address}
       >
         {displayAddress}

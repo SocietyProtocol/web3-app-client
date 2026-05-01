@@ -29,7 +29,7 @@ export function CommunityMembersHeader({
       {isManager && (
         <Box
           role="columnheader"
-          textAlign="center"
+          textAlign="right"
           sx={{
             fontSize: (theme) => theme.typography.pxToRem(12),
           }}

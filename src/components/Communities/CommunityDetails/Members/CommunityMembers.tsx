@@ -1,21 +1,13 @@
 "use client";
 
-import KeyboardArrowLeftRoundedIcon from "@mui/icons-material/KeyboardArrowLeftRounded";
-import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
-import {
-  Box,
-  Button,
-  Pagination,
-  Skeleton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { CommunityMemberRow } from "./CommunityMemberRow";
 import type { CommunityMember, MemberJoinedActivity } from "../MembersTab";
 import { CommunityMembersHeader } from "./CommunityMembersHeader";
+import { CommunityMembersPagination } from "./CommunityMembersPagination";
 import { Tr } from "./Tr";
 
 interface CommunityMembersProps {
@@ -25,7 +17,7 @@ interface CommunityMembersProps {
   isLoading?: boolean;
 }
 
-const ROWS_PER_PAGE = 9;
+const ROWS_PER_PAGE = 10;
 
 export function CommunityMembers({
   members,
@@ -130,44 +122,11 @@ export function CommunityMembers({
       </Box>
 
       {totalPages > 1 && !isLoading && (
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          spacing={1}
-        >
-          <Button
-            variant="text"
-            color="inherit"
-            startIcon={<KeyboardArrowLeftRoundedIcon />}
-            disabled={currentPage === 1}
-            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            sx={{ color: "text.primary" }}
-          >
-            Previous
-          </Button>
-
-          <Pagination
-            page={currentPage}
-            count={totalPages}
-            onChange={(_, nextPage) => setPage(nextPage)}
-            shape="rounded"
-            siblingCount={1}
-            boundaryCount={1}
-            size="small"
-          />
-
-          <Button
-            variant="text"
-            color="inherit"
-            endIcon={<KeyboardArrowRightRoundedIcon />}
-            disabled={currentPage === totalPages}
-            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-            sx={{ color: "text.primary" }}
-          >
-            Next
-          </Button>
-        </Stack>
+        <CommunityMembersPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       )}
     </Stack>
   );

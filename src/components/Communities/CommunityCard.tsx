@@ -11,6 +11,7 @@ import { CommunityData, CommunityTier } from "../../data/communities/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { CommunityChip } from "../Badges/CommunityChip";
 import { CommunityTierChip } from "./Tier/CommunityTierChip";
+import { resolveTierName } from "./utils";
 import { useMemo } from "react";
 import { useNow } from "@/hooks/useNow";
 
@@ -71,11 +72,7 @@ export const CommunityCard = ({
   });
 
   const realTierName = useMemo(() => {
-    if (tierName && tierExpiresAt && Number(tierExpiresAt) >= now) {
-      return tierName;
-    }
-
-    return CommunityTier.Unaffiliated;
+    return resolveTierName(tierName, tierExpiresAt, now);
   }, [tierName, tierExpiresAt, now]);
 
   return (

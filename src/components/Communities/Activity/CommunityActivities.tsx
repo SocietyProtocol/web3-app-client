@@ -1,16 +1,38 @@
 "use client";
 
-import { Grid, Link, Skeleton, Stack, Typography } from "@mui/material";
+import { Button, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import { useCommunityActivities } from "@/data/communities/useCommunityActivities";
 import { CommunityActivityRow } from "./CommunityActivityRow";
+import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
 
 interface CommunityActivitiesProps {
   communityId: string;
 }
 
 export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useCommunityActivities(communityId);
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCommunityActivities(communityId);
+
+  if (isError) {
+    return (
+      <ErrorDisplay
+        error={error}
+        action={
+          <Button onClick={() => refetch()} variant="contained">
+            Retry
+          </Button>
+        }
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -46,20 +68,20 @@ export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
         <CommunityActivityRow key={event.id} event={event} />
       ))}
       {hasNextPage && (
-        <Link
-          component="button"
-          variant="body2"
+        <Button
+          variant="text"
+          size="small"
           onClick={() => fetchNextPage()}
-          aria-disabled={isFetchingNextPage}
+          disabled={isFetchingNextPage}
           sx={{
             mt: 1,
-            opacity: isFetchingNextPage ? 0.5 : 1,
-            pointerEvents: isFetchingNextPage ? "none" : "auto",
-            textDecoration: "none",
+            p: 0,
+            textDecoration: "underline",
+            "&:hover:not(:disabled)": { textDecoration: "underline" },
           }}
         >
           {isFetchingNextPage ? "Loading…" : "Load more activities"}
-        </Link>
+        </Button>
       )}
     </Stack>
   );

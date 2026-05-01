@@ -2,7 +2,6 @@
 
 import { Box, Chip, Skeleton, Stack, Tab, Tabs } from "@mui/material";
 import { parseAsStringEnum, useQueryState } from "nuqs";
-import { notFound } from "next/navigation";
 import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
 import { OverviewTab } from "./OverviewTab";
 import { CommunityDetailHeader } from "./CommunityDetailHeader";
@@ -38,10 +37,6 @@ export function CommunityDetail({ id }: CommunityDetailProps) {
 
   if (isError) {
     return <ErrorDisplay error={error} />;
-  }
-
-  if (!isLoading && !community) {
-    notFound();
   }
 
   return (

@@ -5,6 +5,7 @@ import { fetchCommunity } from "@/data/communities/utils";
 import { Page } from "@/components/Page/Page";
 import { Metadata } from "next";
 import { Box } from "@mui/material";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({
   params,
@@ -28,16 +29,22 @@ export default async function CommunityPage({
 
   const queryClient = getQueryClient();
 
+  let communityExists = false;
   try {
-    await queryClient.prefetchQuery({
+    const data = await queryClient.fetchQuery({
       queryKey: ["community", id],
       queryFn: () => fetchCommunity(id),
     });
+    communityExists = !!data?.community;
   } catch (error) {
-    console.error("Error prefetching community", {
+    console.error("Error fetching community", {
       communityId: id,
       error,
     });
+  }
+
+  if (!communityExists) {
+    notFound();
   }
 
   return (

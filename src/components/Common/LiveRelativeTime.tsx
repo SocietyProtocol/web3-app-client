@@ -38,8 +38,15 @@ function getNextUpdateAt(
     return timestampSec + (Math.floor(diff / 600) + 1) * 600;
   }
 
-  // After 1 hour, this component stops live updates because the relative label
-  // changes infrequently enough that automatic refresh is not worth the cost.
+  if (diff < 86_400) {
+    // Between 1 hour and 24 hours old, the formatter still shows hour-based
+    // relative labels ("1 hour ago", "2 hours ago", ...). Refresh on the next
+    // hour boundary so the displayed label continues advancing correctly.
+    return timestampSec + (Math.floor(diff / 3_600) + 1) * 3_600;
+  }
+  // After 24 hours, the formatter switches away from hour-based relative
+  // labels, so no further live updates are needed.
+
   return undefined;
 }
 
@@ -67,7 +74,7 @@ export function LiveRelativeTime({
     return (
       <Tooltip title={formatDateTime(timestampSec)} placement="top">
         <Typography component="span" {...typographyProps}>
-          {formatRelativeTime(timestampSec)}
+          {formatDateTime(timestampSec)}
         </Typography>
       </Tooltip>
     );

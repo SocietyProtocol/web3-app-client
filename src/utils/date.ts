@@ -1,3 +1,7 @@
+const rtf = new Intl.RelativeTimeFormat(undefined, {
+  numeric: "auto",
+});
+
 /**
  * Formats a UNIX timestamp (in seconds) to a human-readable date + time string.
  *
@@ -51,8 +55,6 @@ export function formatRelativeTime(
   if (diffMin < 1) return "Just now";
 
   const diffHours = Math.floor(diffMs / 3_600_000);
-
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 
   if (diffMin < 60) return rtf.format(-diffMin, "minute");
   if (diffHours < 24) return rtf.format(-diffHours, "hour");

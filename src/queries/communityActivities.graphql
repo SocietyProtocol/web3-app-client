@@ -1,0 +1,89 @@
+query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
+  communityActivityEvents(
+    where: { community: $communityId }
+    orderBy: timestamp
+    orderDirection: desc
+    first: $first
+    skip: $skip
+  ) {
+    __typename
+    id
+    timestamp
+    txHash
+    ... on MemberJoinedActivity {
+      user {
+        id
+        name
+        imageUrl
+      }
+    }
+    ... on MemberLeftActivity {
+      user {
+        id
+        name
+        imageUrl
+      }
+    }
+    ... on BadgeMintedActivity {
+      badge {
+        id
+        name
+      }
+      user {
+        id
+        name
+        imageUrl
+      }
+    }
+    ... on MemberTransferredActivity {
+      fromUser {
+        id
+        name
+        imageUrl
+      }
+      toUser {
+        id
+        name
+        imageUrl
+      }
+    }
+    ... on ManagerChangedActivity {
+      fromManager {
+        id
+        name
+        imageUrl
+      }
+      toManager {
+        id
+        name
+        imageUrl
+      }
+    }
+    ... on CommunityBadgeLinkedActivity {
+      badge {
+        id
+        name
+      }
+    }
+    ... on BadgeBurnedActivity {
+      badge {
+        id
+        name
+      }
+      user {
+        id
+        name
+        imageUrl
+      }
+    }
+    ... on CommunityTierGrantedActivity {
+      tierId
+      tierName
+      tierExpiresAt
+    }
+    ... on CommunityTierRevokedActivity {
+      previousTierId
+      previousTierName
+    }
+  }
+}

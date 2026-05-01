@@ -1,12 +1,37 @@
+import { uniq } from "@/utils/collection";
 import {
   CommunitiesDocument,
   CommunitiesQuery,
+  CommunityDocument,
+  CommunityQuery,
   Community_filter,
   execute,
   InputMaybe,
 } from "../../../.graphclient";
 import { defaultOptions } from "./consts";
 import { CommunityQueryOptions, CommunityTier } from "./types";
+
+export type CommunityItem = CommunitiesQuery["communities"][number];
+
+export const getTierExpirationDates = (communities: CommunityItem[]) => {
+  return uniq(communities.map((community) => community.tierExpiresAt))
+    .map((date) => Number(date))
+    .filter((t) => t > 0);
+};
+
+export const sortCommunitiesByTier = (
+  communities: CommunityItem[],
+  nowMs: number,
+): CommunityItem[] => {
+  const nowTimestamp = Math.floor(nowMs);
+
+  return [...communities].sort((a, b) => {
+    const aExpired = Number(a.tierExpiresAt ?? 0) < nowTimestamp;
+    const bExpired = Number(b.tierExpiresAt ?? 0) < nowTimestamp;
+    if (aExpired !== bExpired) return aExpired ? 1 : -1;
+    return Number(b.tierId ?? 0) - Number(a.tierId ?? 0);
+  });
+};
 
 /**
  * Merges the provided options with the default options.
@@ -91,6 +116,8 @@ export const buildWhereClause = (options: {
 export const fetchCommunities = async (options?: CommunityQueryOptions) => {
   const mergedOptions = mergeOptions(options);
 
+  console.log({ mergedOptions });
+
   const where = buildWhereClause({
     searchText: mergedOptions.searchText,
     managerAddress: mergedOptions.managerAddress,
@@ -107,4 +134,15 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
   });
 
   return res.data as CommunitiesQuery;
+};
+
+/**
+ * Fetches a single community by ID.
+ *
+ * @param id Community ID
+ * @returns Community data or null
+ */
+export const fetchCommunity = async (id: string): Promise<CommunityQuery> => {
+  const res = await execute(CommunityDocument, { id });
+  return res.data as CommunityQuery;
 };

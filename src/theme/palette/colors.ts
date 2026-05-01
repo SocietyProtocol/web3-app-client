@@ -49,22 +49,22 @@ export const INFO_LIGHT = "#60C7FF";
 export const INFO_CONTRAST = "#EBF8FF";
 
 // Gold colors
-export const GOLD_DARK = "#705216";
-export const GOLD_LIGHT = "#F7A600";
-export const GOLD_MAIN = "#916100";
-export const GOLD_CONTRAST = "#FFE2A7";
+export const GOLD_DARK = "#755310";
+export const GOLD_LIGHT = "#e6b947";
+export const GOLD_MAIN = "#7e5f11";
+export const GOLD_CONTRAST = "#f5e2b3";
 
 // Silver colors
-export const SILVER_DARK = "#5A5A5A";
-export const SILVER_LIGHT = "#D4D4D4";
-export const SILVER_MAIN = "#A0A0A0";
-export const SILVER_CONTRAST = "#F0F0F0";
+export const SILVER_DARK = "#3e5a74";
+export const SILVER_LIGHT = "#a2b8cd";
+export const SILVER_MAIN = "#84a2bd";
+export const SILVER_CONTRAST = "#ebf0f4";
 
 // Bronze colors
-export const BRONZE_DARK = "#6B3A1F";
-export const BRONZE_LIGHT = "#CD7F32";
-export const BRONZE_MAIN = "#8C5A2A";
-export const BRONZE_CONTRAST = "#F5DEB3";
+export const BRONZE_DARK = "#654225";
+export const BRONZE_LIGHT = "#c08454";
+export const BRONZE_MAIN = "#865832";
+export const BRONZE_CONTRAST = "#e8d2c0";
 
 // Neutral colors
 export const NEUTRAL_MAIN = "#454545";

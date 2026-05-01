@@ -6,11 +6,11 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { CommunityTier } from "../../data/communities/types";
+import { CommunityTier } from "@/data/communities/types";
 import { TIER_ORDER } from "./CommunityTierFilter.consts";
 import { TierIcon } from "./TierIcon";
 import { TierToggleButton } from "./TierToggleButton";
-import { getTierColor } from "./utils";
+import { getTierColor } from "@/components/Communities/utils";
 
 export interface CommunityTierFilterProps {
   value: CommunityTier[] | null;
@@ -41,8 +41,11 @@ export const CommunityTierFilter = ({
             value={tier}
             tierColor={color}
             aria-label={`${capitalize(tier)} tier`}
+            sx={{
+              textTransform: "none",
+            }}
           >
-            <TierIcon tier={tier} />
+            <TierIcon tier={tier} size={20} />
             <Typography
               variant="body2"
               sx={{

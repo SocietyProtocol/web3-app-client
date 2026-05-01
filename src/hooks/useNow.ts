@@ -6,10 +6,10 @@ const defaultTime = Math.floor(Date.now() / 1000);
 
 interface UseNowParams {
   /**
-   * Optional timestamp (in seconds) to update the state when reached.
-   * The hook will schedule an update when this time arrives.
+   * Optional timestamp (in seconds) or array of timestamps to update the state when reached.
+   * The hook will schedule an update for each future timestamp.
    */
-  updateAt?: number;
+  updateAt?: number | number[];
 }
 
 export const useNow = (params?: UseNowParams) => {
@@ -21,20 +21,27 @@ export const useNow = (params?: UseNowParams) => {
       setNow(currentTime);
     });
 
-    if (params?.updateAt) {
-      const currentTime = Math.floor(Date.now() / 1000);
+    const timestamps = params?.updateAt
+      ? Array.isArray(params.updateAt)
+        ? params.updateAt
+        : [params.updateAt]
+      : [];
 
-      if (params.updateAt > currentTime) {
-        // Schedule update when the target time is reached
-        const delay = (params.updateAt - currentTime) * 1000;
-        const timeoutId = setTimeout(() => {
-          setNow(Math.floor(Date.now() / 1000));
-        }, delay);
+    const currentTime = Math.floor(Date.now() / 1000);
+    const timeoutIds = timestamps
+      .filter((t) => t > currentTime)
+      .map((t) =>
+        setTimeout(
+          () => setNow(Math.floor(Date.now() / 1000)),
+          (t - currentTime) * 1000,
+        ),
+      );
 
-        return () => clearTimeout(timeoutId);
-      }
+    if (timeoutIds.length > 0) {
+      return () => timeoutIds.forEach(clearTimeout);
     }
-  }, [params?.updateAt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(params?.updateAt)]);
 
   return now;
 };

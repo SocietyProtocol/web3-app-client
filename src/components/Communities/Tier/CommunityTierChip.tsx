@@ -1,7 +1,7 @@
 import { CommunityTier } from "@/data/communities/types";
 import { capitalize, Stack, Typography } from "@mui/material";
 import { TierIcon } from "./TierIcon";
-import { getTierColor } from "./utils";
+import { getTierColor } from "@/components/Communities/utils";
 import { useNow } from "@/hooks/useNow";
 import { useMemo } from "react";
 

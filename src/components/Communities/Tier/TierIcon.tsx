@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CommunityTier } from "../../data/communities/types";
+import { CommunityTier } from "@/data/communities/types";
 import { TIER_ICON_SRC } from "./CommunityTierFilter.consts";
 
 interface TierIconProps {

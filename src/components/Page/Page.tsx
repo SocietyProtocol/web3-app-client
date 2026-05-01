@@ -1,5 +1,5 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Link, Typography } from "@mui/material";
 import { ReactNode, useCallback } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,7 @@ export const Page = ({
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
-          marginBottom: title ? 4 : -8,
+          marginBottom: title ? 4 : wideMargin ? -8 : 0,
           position: "relative",
         }}
       >
@@ -57,33 +57,31 @@ export const Page = ({
           }}
         >
           {backButton && (
-            <Button
-              variant="text"
+            <Link
+              component="button"
               onClick={handleBack}
-              startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
+              aria-label="Go back"
               sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
                 color: "primary.main",
                 fontSize: { xs: "0.875rem", sm: "1rem" },
-                textTransform: "none",
                 fontWeight: 600,
-                minWidth: { xs: "auto", sm: "64px" },
-                px: { xs: 1, sm: 2 },
+                textDecoration: "none",
                 position: "relative",
-                transform: {
-                  xs: "none",
-                  md: `translateX(-40px)`,
-                },
                 zIndex: 1,
+                "&:hover": { textDecoration: "underline" },
               }}
-              aria-label="Go back"
             >
+              <ArrowBackIcon sx={{ fontSize: "14px" }} />
               <Box
                 component="span"
                 sx={{ display: { xs: "none", sm: "inline" } }}
               >
                 Back
               </Box>
-            </Button>
+            </Link>
           )}
           {title && (
             <Typography

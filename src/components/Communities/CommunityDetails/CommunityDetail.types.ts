@@ -1,4 +1,4 @@
-export enum CommunityDetailTab {
+export enum CommunityDetailsTab {
   Overview = "overview",
   Members = "members",
   Badges = "badges",
@@ -6,6 +6,6 @@ export enum CommunityDetailTab {
   Settings = "settings",
 }
 
-export interface CommunityDetailProps {
+export interface CommunityDetailsProps {
   id: string;
 }

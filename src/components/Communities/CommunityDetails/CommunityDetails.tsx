@@ -5,16 +5,18 @@ import { parseAsStringEnum, useQueryState } from "nuqs";
 import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
 import { OverviewTab } from "./OverviewTab";
 import { CommunityDetailHeader } from "./CommunityDetailHeader";
+import { MembersTab } from "./MembersTab";
 import { PlaceholderTab } from "./PlaceholderTab";
 import { useCommunityDetail } from "./useCommunityDetail";
 import {
-  CommunityDetailTab,
-  CommunityDetailProps,
+  CommunityDetailsTab,
+  CommunityDetailsProps,
 } from "./CommunityDetail.types";
 
-export function CommunityDetail({ id }: CommunityDetailProps) {
+export function CommunityDetails({ id }: CommunityDetailsProps) {
   const {
     community,
+    memberJoinedActivities,
     isLoading,
     isError,
     error,
@@ -27,12 +29,12 @@ export function CommunityDetail({ id }: CommunityDetailProps) {
   const [tab, setTab] = useQueryState(
     "tab",
     parseAsStringEnum([
-      CommunityDetailTab.Overview,
-      CommunityDetailTab.Members,
-      CommunityDetailTab.Badges,
-      CommunityDetailTab.Governance,
-      CommunityDetailTab.Settings,
-    ]).withDefault(CommunityDetailTab.Overview),
+      CommunityDetailsTab.Overview,
+      CommunityDetailsTab.Members,
+      CommunityDetailsTab.Badges,
+      CommunityDetailsTab.Governance,
+      CommunityDetailsTab.Settings,
+    ]).withDefault(CommunityDetailsTab.Overview),
   );
 
   if (isError) {
@@ -62,11 +64,15 @@ export function CommunityDetail({ id }: CommunityDetailProps) {
       >
         <Tab
           label="Overview"
-          value={CommunityDetailTab.Overview}
+          value={CommunityDetailsTab.Overview}
           disableRipple
         />
-        <Tab label="Members" value={CommunityDetailTab.Members} disableRipple />
-        <Tab label="Badges" value={CommunityDetailTab.Badges} disableRipple />
+        <Tab
+          label="Members"
+          value={CommunityDetailsTab.Members}
+          disableRipple
+        />
+        <Tab label="Badges" value={CommunityDetailsTab.Badges} disableRipple />
         <Tab
           label={
             <Stack direction="row" spacing={1} alignItems="center">
@@ -83,19 +89,19 @@ export function CommunityDetail({ id }: CommunityDetailProps) {
               />
             </Stack>
           }
-          value={CommunityDetailTab.Governance}
+          value={CommunityDetailsTab.Governance}
           disableRipple
         />
         <Tab
           label="Settings"
-          value={CommunityDetailTab.Settings}
+          value={CommunityDetailsTab.Settings}
           disableRipple
         />
       </Tabs>
 
       <Box>
         {isLoading ? (
-          tab === CommunityDetailTab.Overview ? (
+          tab === CommunityDetailsTab.Overview ? (
             <Stack spacing={2}>
               <Skeleton width={120} height={24} />
               <Skeleton width="100%" height={80} />
@@ -109,23 +115,28 @@ export function CommunityDetail({ id }: CommunityDetailProps) {
           )
         ) : (
           <>
-            {tab === CommunityDetailTab.Overview && community && (
+            {tab === CommunityDetailsTab.Overview && community && (
               <OverviewTab
                 communityId={id}
                 memberCount={memberCount}
                 description={community.description}
               />
             )}
-            {tab === CommunityDetailTab.Members && (
-              <PlaceholderTab label="Members" />
+            {tab === CommunityDetailsTab.Members && (
+              <MembersTab
+                members={community?.members ?? []}
+                memberJoinedActivities={memberJoinedActivities}
+                managerAddress={community?.managerAddress}
+                isLoading={isLoading}
+              />
             )}
-            {tab === CommunityDetailTab.Badges && (
+            {tab === CommunityDetailsTab.Badges && (
               <PlaceholderTab label="Badges" />
             )}
-            {tab === CommunityDetailTab.Governance && (
+            {tab === CommunityDetailsTab.Governance && (
               <PlaceholderTab label="Governance" />
             )}
-            {tab === CommunityDetailTab.Settings && (
+            {tab === CommunityDetailsTab.Settings && (
               <PlaceholderTab label="Settings" />
             )}
           </>

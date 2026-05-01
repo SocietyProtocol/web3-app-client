@@ -1,6 +1,6 @@
 import { getQueryClient } from "@/lib/tanstack-query";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { CommunityDetail } from "@/components/Communities/Detail/CommunityDetail";
+import { CommunityDetails } from "@/components/Communities/CommunityDetails/CommunityDetails";
 import { fetchCommunity } from "@/data/communities/utils";
 import { Page } from "@/components/Page/Page";
 import { Metadata } from "next";
@@ -55,7 +55,7 @@ export default async function CommunityPage({
             py: 3,
           }}
         >
-          <CommunityDetail id={id} />
+          <CommunityDetails id={id} />
         </Box>
       </Page>
     </HydrationBoundary>

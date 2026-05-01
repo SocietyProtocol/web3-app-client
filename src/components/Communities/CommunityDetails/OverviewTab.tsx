@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Grid, Stack, Typography } from "@mui/material";
-import { CommunityActivities } from "@/components/Communities/Activity/CommunityActivities";
+import { CommunityActivities } from "./Activity/CommunityActivities";
 
 interface OverviewTabProps {
   communityId: string;

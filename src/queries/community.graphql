@@ -16,7 +16,26 @@ query Community($id: ID!) {
       imageUrl
     }
     memberCount
+    members(first: 1000, skip: 0) {
+      id
+      name
+      bio
+      imageUrl
+    }
     badges(first: 100) {
+      id
+    }
+  }
+  memberJoinedActivities(
+    first: 1000
+    skip: 0
+    orderBy: timestamp
+    orderDirection: desc
+    where: { community_: { id: $id } }
+  ) {
+    id
+    timestamp
+    user {
       id
     }
   }

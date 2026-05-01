@@ -33,6 +33,7 @@ export function useCommunityDetail(id: string) {
 
   return {
     community: data?.community,
+    memberJoinedActivities: data?.memberJoinedActivities ?? [],
     isLoading,
     isError,
     error,

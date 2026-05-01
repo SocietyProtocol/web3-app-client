@@ -4,6 +4,7 @@ import { BadgeDetails } from "@/components/Badges/BadgeDetails";
 import { fetchBadge } from "@/data/badges/utils";
 import { Page } from "@/components/Page/Page";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({
   params,
@@ -27,13 +28,19 @@ export default async function BadgePage({
 
   const queryClient = getQueryClient();
 
+  let badgeExists = false;
   try {
-    await queryClient.prefetchQuery({
+    const data = await queryClient.fetchQuery({
       queryKey: ["badge", id],
       queryFn: () => fetchBadge(id),
     });
+    badgeExists = !!data?.badge;
   } catch (error) {
     console.error("Error prefetching badge:", error);
+  }
+
+  if (!badgeExists) {
+    notFound();
   }
 
   return (

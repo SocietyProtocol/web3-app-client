@@ -2,25 +2,18 @@
 
 import { Box, Grid, Stack, Typography } from "@mui/material";
 import { CommunityActivities } from "./Activity/CommunityActivities";
+import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
-interface OverviewTabProps {
-  communityId: string;
-  memberCount: number;
-  description?: string | null;
-}
+export function OverviewTab() {
+  const { id, community } = useCommunityDetailsContext();
 
-export function OverviewTab({
-  communityId,
-  memberCount,
-  description,
-}: OverviewTabProps) {
   return (
     <Stack spacing={4}>
       <Grid container spacing={3} alignItems="flex-start">
         <Grid size={{ xs: 12, sm: "auto" }}>
           <Stack>
             <Typography variant="h4" fontWeight={700} color="text.primary">
-              {memberCount}
+              {community?.memberCount}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Members
@@ -28,7 +21,7 @@ export function OverviewTab({
           </Stack>
         </Grid>
 
-        {description && (
+        {community?.description && (
           <Grid size={{ xs: 12, sm: "grow" }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
               About
@@ -38,7 +31,7 @@ export function OverviewTab({
               color="text.primary"
               sx={{ whiteSpace: "pre-wrap" }}
             >
-              {description}
+              {community.description}
             </Typography>
           </Grid>
         )}
@@ -48,7 +41,7 @@ export function OverviewTab({
         <Typography variant="subtitle1" fontWeight={700} gutterBottom>
           Recent Activity
         </Typography>
-        <CommunityActivities communityId={communityId} />
+        <CommunityActivities communityId={id} />
       </Box>
     </Stack>
   );

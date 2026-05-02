@@ -13,6 +13,7 @@ export interface UserQueryOptions {
   pageSize?: number;
   skip?: number;
   onSuccess?: (data: UsersQuery) => void;
+  includeUnregistered?: boolean;
 }
 
 export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {

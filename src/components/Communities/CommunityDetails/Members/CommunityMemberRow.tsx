@@ -4,7 +4,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { Hex } from "viem";
 import { LiveRelativeTime } from "@/components/Common/LiveRelativeTime";
 import { UserHandle } from "@/components/User/UserHandle";
-import type { CommunityMember } from "../MembersTab";
+import type { CommunityMember } from "../CommunityDetails.context";
 import { Tr } from "./Tr";
 
 interface CommunityMemberRowProps {

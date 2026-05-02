@@ -7,4 +7,5 @@ export const defaultOptions: UserQueryOptions & {
   orderBy: "id",
   orderDirection: "desc",
   pageSize: 1000,
+  includeUnregistered: false,
 };

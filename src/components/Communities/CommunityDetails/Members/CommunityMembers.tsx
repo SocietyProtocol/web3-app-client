@@ -2,43 +2,23 @@
 
 import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
-import { useAccount } from "wagmi";
-import { isEqualCaseInsensitive } from "@/utils/string";
 import { CommunityMemberRow } from "./CommunityMemberRow";
-import type { CommunityMember, MemberJoinedActivity } from "../MembersTab";
 import { CommunityMembersHeader } from "./CommunityMembersHeader";
 import { CommunityMembersPagination } from "./CommunityMembersPagination";
 import { Tr } from "./Tr";
-
-interface CommunityMembersProps {
-  members: CommunityMember[];
-  memberJoinedActivities: MemberJoinedActivity[];
-  managerAddress?: string;
-  isLoading?: boolean;
-}
+import { useCommunityDetailsContext } from "../CommunityDetails.context";
 
 const ROWS_PER_PAGE = 10;
 
-export function CommunityMembers({
-  members,
-  memberJoinedActivities,
-  managerAddress,
-  isLoading = false,
-}: CommunityMembersProps) {
-  const { address } = useAccount();
+export function CommunityMembers() {
+  const { community, memberJoinedActivities, isLoading, isManager } =
+    useCommunityDetailsContext();
+
   const [page, setPage] = useState(1);
 
-  const isManager = useMemo(
-    () =>
-      !!address &&
-      !!managerAddress &&
-      isEqualCaseInsensitive(address, managerAddress),
-    [address, managerAddress],
-  );
-
   const joinedAtByUserId = useMemo(() => {
-    return memberJoinedActivities.reduce<Record<string, string>>(
-      (acc, event) => {
+    return (
+      memberJoinedActivities?.reduce<Record<string, string>>((acc, event) => {
         if (!event.user?.id) return acc;
 
         const existing = acc[event.user.id];
@@ -47,19 +27,18 @@ export function CommunityMembers({
         }
 
         return acc;
-      },
-      {},
+      }, {}) ?? {}
     );
   }, [memberJoinedActivities]);
 
   const sortedMembers = useMemo(
     () =>
-      [...members].sort(
+      [...(community?.members ?? [])].sort(
         (a, b) =>
           Number(joinedAtByUserId[b.id] ?? 0) -
           Number(joinedAtByUserId[a.id] ?? 0),
       ),
-    [joinedAtByUserId, members],
+    [joinedAtByUserId, community?.members],
   );
 
   const totalPages = Math.max(

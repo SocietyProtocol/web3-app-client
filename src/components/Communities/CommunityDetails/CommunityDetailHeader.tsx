@@ -1,28 +1,13 @@
 "use client";
 
 import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
-import { CommunityTier } from "@/data/communities/types";
 import { TierStatusDisplay } from "./TierStatusDisplay";
+import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
-interface CommunityDetailHeaderProps {
-  community?: { imageUrl?: string | null; name?: string | null } | null;
-  isLoading: boolean;
-  tierName: CommunityTier;
-  tierColor: string;
-  tierExpiresAt?: string | null;
-  badgeCount: number;
-  memberCount: number;
-}
+export function CommunityDetailHeader() {
+  const { community, isLoading, tierName, tierColor, badgeCount, memberCount } =
+    useCommunityDetailsContext();
 
-export function CommunityDetailHeader({
-  community,
-  isLoading,
-  tierName,
-  tierColor,
-  tierExpiresAt,
-  badgeCount,
-  memberCount,
-}: CommunityDetailHeaderProps) {
   return (
     <Stack direction="row" spacing={1.5} alignItems="center">
       {/* Logo */}
@@ -91,7 +76,7 @@ export function CommunityDetailHeader({
         <TierStatusDisplay
           tierName={tierName}
           tierColor={tierColor}
-          tierExpiresAt={tierExpiresAt}
+          tierExpiresAt={community?.tierExpiresAt}
         />
       )}
     </Stack>

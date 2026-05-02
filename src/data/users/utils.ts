@@ -37,8 +37,11 @@ export const mergeOptions = (
  * @param options Options to build the where clause from
  * @returns Where clause object
  */
-export const buildWhereClause = (options: { searchText?: string | null }) => {
-  const { searchText } = options;
+export const buildWhereClause = (options: {
+  searchText?: string | null;
+  includeUnregistered?: boolean;
+}) => {
+  const { searchText, includeUnregistered } = options;
 
   const whereClauses: InputMaybe<InputMaybe<User_filter>[]> = [];
 
@@ -54,7 +57,9 @@ export const buildWhereClause = (options: { searchText?: string | null }) => {
     });
   }
 
-  whereClauses.push({ profile_not: null });
+  if (!includeUnregistered) {
+    whereClauses.push({ profile_not: null });
+  }
 
   return { and: whereClauses };
 };
@@ -70,6 +75,7 @@ export const fetchUsers = async (options?: UserQueryOptions) => {
 
   const where = buildWhereClause({
     searchText: mergedOptions.searchText,
+    includeUnregistered: mergedOptions.includeUnregistered,
   });
 
   const res = await execute(UsersDocument, {

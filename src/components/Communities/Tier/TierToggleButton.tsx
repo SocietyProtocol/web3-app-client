@@ -1,4 +1,9 @@
-import { alpha, styled, ToggleButton } from "@mui/material";
+import {
+  alpha,
+  styled,
+  ToggleButton,
+  toggleButtonGroupClasses,
+} from "@mui/material";
 
 interface TierToggleButtonProps {
   tierColor: string;
@@ -17,12 +22,15 @@ export const TierToggleButton = styled(ToggleButton, {
     paddingTop: theme.spacing(0.75),
     paddingBottom: theme.spacing(0.75),
     borderRadius: 4,
-    border: "none",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "transparent",
     backgroundColor: "transparent",
     color: tierColor,
     transition: theme.transitions.create(["background-color", "border-color"]),
+
     "&.Mui-selected": {
-      border: `1px solid ${tierColor}`,
+      borderColor: tierColor,
       backgroundColor: alpha(tierColor, 0.1),
     },
     "&:hover": {
@@ -35,5 +43,18 @@ export const TierToggleButton = styled(ToggleButton, {
       outline: `2px solid ${tierColor}`,
       outlineOffset: 2,
     },
+    [`&&.${toggleButtonGroupClasses.firstButton}, &&.${toggleButtonGroupClasses.middleButton}, &&.${toggleButtonGroupClasses.lastButton}`]:
+      {
+        borderRadius: 4,
+      },
+    [`&&.${toggleButtonGroupClasses.middleButton}, &&.${toggleButtonGroupClasses.lastButton}`]:
+      {
+        marginLeft: 0,
+        borderLeftColor: "transparent",
+      },
+    [`&&.${toggleButtonGroupClasses.middleButton}.Mui-selected, &&.${toggleButtonGroupClasses.lastButton}.Mui-selected`]:
+      {
+        borderLeftColor: tierColor,
+      },
   };
 });

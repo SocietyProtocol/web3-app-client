@@ -5,7 +5,3 @@ export enum CommunityDetailsTab {
   Governance = "governance",
   Settings = "settings",
 }
-
-export interface CommunityDetailsProps {
-  id: string;
-}

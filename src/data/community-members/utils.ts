@@ -42,6 +42,7 @@ const buildWhereClause = (
     community_: {
       id: communityId,
     },
+    leftAt: null,
   };
 
   if (searchText) {

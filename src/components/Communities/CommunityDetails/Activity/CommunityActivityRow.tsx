@@ -21,7 +21,7 @@ export function CommunityActivityRow({ event }: CommunityActivityRowProps) {
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1.5 }}>
-      <Box sx={{ minWidth: 100 }}>
+      <Box sx={{ minWidth: 140 }}>
         <LiveRelativeTime
           timestamp={event.timestamp}
           variant="body2"

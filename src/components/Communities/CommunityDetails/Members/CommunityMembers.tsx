@@ -145,6 +145,7 @@ export function CommunityMembers() {
               key={member.id}
               member={member}
               isManager={isManager}
+              memberBadgeId={community?.memberBadge?.id}
             />
           ))}
       </Box>

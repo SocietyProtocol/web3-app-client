@@ -1,4 +1,5 @@
 import {
+  Community,
   MemberJoinedActivity,
   OrderDirection,
   User,
@@ -6,6 +7,7 @@ import {
 
 export type CommunityMember = Pick<MemberJoinedActivity, "id" | "timestamp"> & {
   user: Pick<User, "id" | "name" | "bio" | "imageUrl">;
+  community: Pick<Community, "id">;
 };
 
 export enum CommunityMembersSortOption {

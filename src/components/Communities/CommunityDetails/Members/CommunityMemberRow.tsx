@@ -2,20 +2,53 @@
 
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { Hex } from "viem";
+import { useQueryClient } from "@tanstack/react-query";
 import { LiveRelativeTime } from "@/components/Common/LiveRelativeTime";
 import { UserHandle } from "@/components/User/UserHandle";
+import { useBurnBadgeMutation } from "@/components/Badges/BurnBadge/useBurnBadgeMutation";
 import { Tr } from "./Tr";
 import { CommunityMember } from "@/data/community-members/types";
+import { useMemo } from "react";
 
 interface CommunityMemberRowProps {
   member: CommunityMember;
   isManager: boolean;
+  memberBadgeId?: string;
 }
 
 export function CommunityMemberRow({
   member,
   isManager,
+  memberBadgeId,
 }: CommunityMemberRowProps) {
+  const queryClient = useQueryClient();
+
+  const burnBadge = useBurnBadgeMutation(
+    useMemo(
+      () => ({
+        args: memberBadgeId
+          ? {
+              id: BigInt(memberBadgeId),
+              holder: member.user.id as Hex,
+            }
+          : undefined,
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["communities"] });
+          queryClient.invalidateQueries({
+            queryKey: ["community", member.community.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["communityMembers", member.community.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["communityMembersInfinite", member.community.id],
+          });
+        },
+      }),
+      [memberBadgeId, member.user.id, member.community.id, queryClient],
+    ),
+  );
+
   return (
     <Tr isManager={isManager} role="row">
       <Box role="cell">
@@ -59,6 +92,8 @@ export function CommunityMemberRow({
             color="error"
             size="small"
             disableRipple
+            disabled={!memberBadgeId || burnBadge.isLoading}
+            onClick={() => burnBadge.execute()}
             sx={{
               minWidth: 0,
               "&&": {

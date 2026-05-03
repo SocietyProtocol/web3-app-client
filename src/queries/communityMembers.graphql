@@ -13,7 +13,11 @@ query CommunityMembers(
     where: $where
   ) {
     id
+    community {
+      id
+    }
     timestamp
+    leftAt
     user {
       id
       name

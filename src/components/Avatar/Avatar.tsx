@@ -1,4 +1,4 @@
-import { SxProps } from "@mui/material";
+import { SxProps, Theme } from "@mui/material";
 import { isAddress } from "viem";
 import { UserAvatar } from "./UserAvatar";
 import { useUserQuery } from "@/data/users/useUserQuery";
@@ -8,7 +8,7 @@ export interface AvatarProps {
   address?: string;
   ensImage?: string | null;
   size?: number | { xs?: number; sm?: number; md?: number; lg?: number };
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
   loading?: boolean;
 }
 

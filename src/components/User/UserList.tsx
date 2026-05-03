@@ -1,6 +1,6 @@
 "use client";
 
-import { SxProps } from "@mui/material";
+import { SxProps, Theme } from "@mui/material";
 import { truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { UserCard } from "../User/UserCard";
@@ -18,7 +18,7 @@ export interface UserListProps {
   noUsersFoundText?: string;
   viewAllButtonText?: string;
   andMoreText?: string;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }
 
 export const UserList = ({

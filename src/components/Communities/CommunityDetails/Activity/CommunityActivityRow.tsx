@@ -2,7 +2,7 @@
 
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { CommunityActivityDescription } from "./CommunityActivityDescription";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import { Hex } from "viem";

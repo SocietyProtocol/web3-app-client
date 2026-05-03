@@ -3,6 +3,7 @@ import {
   Link,
   Stack,
   SxProps,
+  Theme,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -20,7 +21,7 @@ interface AddressProps {
   showCopy?: boolean;
   showLink?: boolean;
   size?: "small" | "medium";
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }
 
 export const AddressDisplay = ({

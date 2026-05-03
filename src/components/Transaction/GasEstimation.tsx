@@ -1,4 +1,4 @@
-import { Box, Skeleton, SxProps } from "@mui/material";
+import { Box, Skeleton, SxProps, Theme } from "@mui/material";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { mergeSx } from "@/utils/sx";
@@ -7,7 +7,7 @@ interface GasEstimationProps {
   value?: bigint;
   isLoading?: boolean;
   isError?: boolean;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }
 
 export const GasEstimation = ({

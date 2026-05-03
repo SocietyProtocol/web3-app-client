@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Stack, Tooltip, Typography } from "@mui/material";
+import { Button, Stack, Theme, Tooltip, Typography } from "@mui/material";
 import { ConnectButtonSkeleton } from "./ConnectButtonSkeleton";
 import type { SxProps } from "@mui/system";
 import type { ButtonPropsVariantOverrides } from "@mui/material/Button";
@@ -14,7 +14,7 @@ import { mergeSx } from "@/utils/sx";
 import { useAccount } from "wagmi";
 
 interface ConnectButtonProps {
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
   fullWidth?: boolean;
   variant?: OverridableStringUnion<
     "text" | "outlined" | "contained",

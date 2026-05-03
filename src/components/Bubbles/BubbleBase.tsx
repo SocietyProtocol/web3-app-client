@@ -5,6 +5,7 @@ import {
   CardHeader,
   Stack,
   SxProps,
+  Theme,
 } from "@mui/material";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
@@ -18,7 +19,7 @@ export interface BubbleBaseProps {
   show?: boolean;
   showIcon?: boolean;
   variant?: "info" | "warning" | "none";
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }
 
 export const BubbleBase = ({

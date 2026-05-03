@@ -1,5 +1,5 @@
 import { capitalize, Stack, Typography } from "@mui/material";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { TierIcon } from "@/components/Communities/Tier/TierIcon";
 import { CommunityTier } from "@/data/communities/types";
 import { getTierColor } from "@/components/Communities/utils";

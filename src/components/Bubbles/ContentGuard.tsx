@@ -3,7 +3,7 @@
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useAccount } from "wagmi";
-import { Box, Button, Stack, SxProps } from "@mui/material";
+import { Box, Button, Stack, SxProps, Theme } from "@mui/material";
 import { ConnectWalletBubble } from "./ConnectWalletBubble";
 import { WrongNetworkBubble } from "./WrongNetworkBubble";
 import { AccountSetupBubble } from "./AccountSetupBubble";
@@ -19,7 +19,7 @@ export type ContentGuardProps = {
   loading?: boolean;
   children?: ReactNode;
   fallback?: ReactNode;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 } & (
   | {
       hideBubbles?: false;

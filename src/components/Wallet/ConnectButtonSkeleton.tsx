@@ -1,4 +1,4 @@
-import { Stack, Skeleton } from "@mui/material";
+import { Stack, Skeleton, Theme } from "@mui/material";
 import type { SxProps } from "@mui/system";
 import { mergeSx } from "@/utils/sx";
 
@@ -7,7 +7,7 @@ export const ConnectButtonSkeleton = ({
   sx,
 }: {
   fullWidth?: boolean;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }) => (
   <Stack
     direction="row"

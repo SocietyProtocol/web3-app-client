@@ -1,4 +1,4 @@
-import { SxProps } from "@mui/material";
+import { SxProps, Theme } from "@mui/material";
 import { useMemo } from "react";
 import { generateColorsFromAddress } from "@/lib/color";
 import { mergeSx } from "@/utils/sx";
@@ -8,7 +8,7 @@ export interface UserAvatarProps {
   address?: string;
   imageUrl?: string | null;
   size?: number | { xs?: number; sm?: number; md?: number; lg?: number };
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
   loading?: boolean;
 }
 

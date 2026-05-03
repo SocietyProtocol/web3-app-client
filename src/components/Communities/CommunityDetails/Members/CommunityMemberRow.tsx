@@ -1,14 +1,15 @@
 "use client";
 
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { Hex } from "viem";
-import { useQueryClient } from "@tanstack/react-query";
 import { LiveRelativeTime } from "@/components/Common/LiveRelativeTime";
 import { UserHandle } from "@/components/User/UserHandle";
 import { useBurnBadgeMutation } from "@/components/Badges/BurnBadge/useBurnBadgeMutation";
 import { Tr } from "./Tr";
 import { CommunityMember } from "@/data/community-members/types";
 import { useMemo } from "react";
+import { TransactionButton } from "@/components/Transaction/TransactionButton";
+import { CopyButton } from "@/components/CopyButton/CopyButton";
 
 interface CommunityMemberRowProps {
   member: CommunityMember;
@@ -21,8 +22,6 @@ export function CommunityMemberRow({
   isManager,
   memberBadgeId,
 }: CommunityMemberRowProps) {
-  const queryClient = useQueryClient();
-
   const burnBadge = useBurnBadgeMutation(
     useMemo(
       () => ({
@@ -32,36 +31,32 @@ export function CommunityMemberRow({
               holder: member.user.id as Hex,
             }
           : undefined,
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["communities"] });
-          queryClient.invalidateQueries({
-            queryKey: ["community", member.community.id],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["communityMembers", member.community.id],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["communityMembersInfinite", member.community.id],
-          });
-        },
+        successMessage: `Badge revoked from ${member.user.name ?? member.user.id}`,
       }),
-      [memberBadgeId, member.user.id, member.community.id, queryClient],
+
+      [memberBadgeId, member.user.id, member.user.name],
     ),
   );
 
   return (
     <Tr isManager={isManager} role="row">
-      <Box role="cell">
+      <Stack role="cell" direction="row" alignItems="center" gap={1}>
         <UserHandle
           id={member.user.id as Hex}
           name={member.user.name}
           bio={member.user.bio}
           imageUrl={member.user.imageUrl}
           highlightYou
+          showPreview
           size="medium"
           link
         />
-      </Box>
+
+        <CopyButton
+          textToCopy={member.user.id as Hex}
+          tooltipText="Copy address"
+        />
+      </Stack>
 
       <Box role="cell">
         {member.timestamp ? (
@@ -87,12 +82,14 @@ export function CommunityMemberRow({
 
       {isManager && (
         <Stack role="cell" alignItems="flex-end">
-          <Button
+          <TransactionButton
             variant="text"
             color="error"
             size="small"
             disableRipple
-            disabled={!memberBadgeId || burnBadge.isLoading}
+            disabled={!memberBadgeId}
+            loading={burnBadge.isLoading}
+            loadingText="Revoking..."
             onClick={() => burnBadge.execute()}
             sx={{
               minWidth: 0,
@@ -109,7 +106,7 @@ export function CommunityMemberRow({
             }}
           >
             Revoke
-          </Button>
+          </TransactionButton>
         </Stack>
       )}
     </Tr>

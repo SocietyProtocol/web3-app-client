@@ -4,13 +4,10 @@ import {
   Box,
   Button,
   CircularProgress,
-  InputAdornment,
   Skeleton,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { CommunityMemberRow } from "./CommunityMemberRow";
 import { CommunityMembersHeader } from "./CommunityMembersHeader";
 import { CommunityMembersPagination } from "./CommunityMembersPagination";
@@ -20,6 +17,7 @@ import { useCommunityMembers } from "@/data/community-members/useCommunityMember
 import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
 import { communityMemberSortOptions } from "@/data/community-members/consts";
 import { useMemo } from "react";
+import { SearchBox } from "@/components/Common/SearchBox";
 
 export function CommunityMembers() {
   const { id, isManager, community } = useCommunityDetailsContext();
@@ -70,24 +68,14 @@ export function CommunityMembers() {
           alignItems: { xs: "stretch", md: "center" },
         }}
       >
-        <TextField
+        <SearchBox
           id="members-search-input"
           placeholder="Search by name or address..."
           value={search}
-          onChange={(e) => handleSearch(e.target.value)}
-          size="small"
+          onChange={handleSearch}
           sx={{
             flex: { xs: 1, md: "unset" },
             minWidth: { xs: "100%", md: 300 },
-          }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            },
           }}
         />
         <FilterSelect

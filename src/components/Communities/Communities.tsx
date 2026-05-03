@@ -7,15 +7,12 @@ import {
   Box,
   Button,
   FormControlLabel,
-  InputAdornment,
   Stack,
   Switch,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
 import {
   CommunitySortOption,
@@ -32,6 +29,7 @@ import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 import { useAccount } from "wagmi";
 import { CommunityTierFilter } from "./Tier/CommunityTierFilter";
 import { useNow } from "@/hooks/useNow";
+import { SearchBox } from "@/components/Common/SearchBox";
 
 export const Communities = () => {
   const { address: userAddress } = useAccount();
@@ -134,24 +132,14 @@ export const Communities = () => {
           }}
         >
           {/* Search */}
-          <TextField
+          <SearchBox
             id="communities-search-input"
             placeholder="Search by name..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            size="small"
+            onChange={setSearchQuery}
             sx={{
               flex: { xs: 1, md: "unset" },
               minWidth: { xs: "100%", md: 300 },
-            }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
             }}
           />
 

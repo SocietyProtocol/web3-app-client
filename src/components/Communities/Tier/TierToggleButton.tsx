@@ -43,18 +43,20 @@ export const TierToggleButton = styled(ToggleButton, {
       outline: `2px solid ${tierColor}`,
       outlineOffset: 2,
     },
-    [`&&.${toggleButtonGroupClasses.firstButton}, &&.${toggleButtonGroupClasses.middleButton}, &&.${toggleButtonGroupClasses.lastButton}`]:
-      {
-        borderRadius: 4,
-      },
-    [`&&.${toggleButtonGroupClasses.middleButton}, &&.${toggleButtonGroupClasses.lastButton}`]:
-      {
-        marginLeft: 0,
-        borderLeftColor: "transparent",
-      },
-    [`&&.${toggleButtonGroupClasses.middleButton}.Mui-selected, &&.${toggleButtonGroupClasses.lastButton}.Mui-selected`]:
-      {
-        borderLeftColor: tierColor,
-      },
+    "&&": {
+      [`&&.${toggleButtonGroupClasses.firstButton}, &&.${toggleButtonGroupClasses.middleButton}, &&.${toggleButtonGroupClasses.lastButton}`]:
+        {
+          borderRadius: 4,
+        },
+      [`&&.${toggleButtonGroupClasses.middleButton}, &&.${toggleButtonGroupClasses.lastButton}`]:
+        {
+          marginLeft: 0,
+          borderLeftColor: "transparent",
+        },
+      [`&&.${toggleButtonGroupClasses.middleButton}.Mui-selected, &&.${toggleButtonGroupClasses.lastButton}.Mui-selected`]:
+        {
+          borderLeft: `1px solid ${tierColor}`,
+        },
+    },
   };
 });

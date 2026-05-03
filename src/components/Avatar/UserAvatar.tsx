@@ -24,18 +24,23 @@ export const UserAvatar = ({
     [address, imageUrl],
   );
 
+  const gradientStyle = useMemo(
+    () =>
+      !imageUrl
+        ? ({
+            background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
+          } as SxProps)
+        : {},
+    [imageUrl, colors],
+  );
+
   return (
     <ImageDisplay
       loading={loading}
       {...(imageUrl && { src: imageUrl })}
       ariaLabel={address ? `Avatar for ${address}` : "User Avatar"}
       size={size}
-      sx={mergeSx(
-        sx,
-        !imageUrl && {
-          background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
-        },
-      )}
+      sx={mergeSx(sx, gradientStyle)}
     />
   );
 };

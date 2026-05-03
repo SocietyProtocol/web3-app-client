@@ -5,6 +5,7 @@ import {
   UsersDocument,
   UsersQuery,
 } from "../../../.graphclient";
+import { AccountSortOption } from "../accounts/types";
 import { defaultOptions } from "./consts";
 import { UserQueryOptions } from "./types";
 
@@ -16,11 +17,15 @@ import { UserQueryOptions } from "./types";
  */
 export const mergeOptions = (
   options?: UserQueryOptions,
-): UserQueryOptions & {
+): Omit<UserQueryOptions, "orderBy"> & {
   pageSize: number;
+  orderBy: AccountSortOption;
+  orderDirection: "asc" | "desc";
 } => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { searchText, onSuccess, ...rest } = options || {};
+  const orderBy = options?.orderBy ?? defaultOptions.orderBy;
+
   return {
     ...defaultOptions,
     ...rest,
@@ -28,6 +33,8 @@ export const mergeOptions = (
       ?.toLowerCase()
       .trim()
       .replace(/\s+/g, " "),
+    orderBy,
+    orderDirection: orderBy === AccountSortOption.Name ? "asc" : "desc",
   };
 };
 

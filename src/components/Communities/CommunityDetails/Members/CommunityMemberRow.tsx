@@ -4,28 +4,26 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { Hex } from "viem";
 import { LiveRelativeTime } from "@/components/Common/LiveRelativeTime";
 import { UserHandle } from "@/components/User/UserHandle";
-import type { CommunityMember } from "../CommunityDetails.context";
 import { Tr } from "./Tr";
+import { CommunityMember } from "@/data/community-members/types";
 
 interface CommunityMemberRowProps {
   member: CommunityMember;
-  joinedAt?: string;
   isManager: boolean;
 }
 
 export function CommunityMemberRow({
   member,
-  joinedAt,
   isManager,
 }: CommunityMemberRowProps) {
   return (
     <Tr isManager={isManager} role="row">
       <Box role="cell">
         <UserHandle
-          id={member.id as Hex}
-          name={member.name}
-          bio={member.bio}
-          imageUrl={member.imageUrl}
+          id={member.user.id as Hex}
+          name={member.user.name}
+          bio={member.user.bio}
+          imageUrl={member.user.imageUrl}
           highlightYou
           size="medium"
           link
@@ -33,9 +31,9 @@ export function CommunityMemberRow({
       </Box>
 
       <Box role="cell">
-        {joinedAt ? (
+        {member.timestamp ? (
           <LiveRelativeTime
-            timestamp={joinedAt}
+            timestamp={member.timestamp}
             sx={{
               color: "text.primary",
               fontSize: (theme) => theme.typography.pxToRem(12),

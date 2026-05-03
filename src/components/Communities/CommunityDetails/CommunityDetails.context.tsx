@@ -10,25 +10,9 @@ import { useQueryState } from "nuqs";
 import { parseAsStringEnum } from "nuqs";
 import { CommunityTier } from "@/data/communities/types";
 
-export interface CommunityMember {
-  id: string;
-  name?: string | null;
-  bio?: string | null;
-  imageUrl?: string | null;
-}
-
-export interface MemberJoinedActivity {
-  id: string;
-  timestamp: string | number | bigint;
-  user?: {
-    id: string;
-  } | null;
-}
-
 interface CommunityDetailsContextValue {
   id: string;
   community: CommunityQuery["community"] | undefined;
-  memberJoinedActivities: CommunityQuery["memberJoinedActivities"] | undefined;
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
@@ -58,7 +42,6 @@ export function CommunityDetailsProvider({
 
   const {
     community,
-    memberJoinedActivities,
     isLoading,
     isError,
     error,
@@ -90,7 +73,6 @@ export function CommunityDetailsProvider({
     return {
       id,
       community,
-      memberJoinedActivities,
       isLoading,
       isError,
       error,
@@ -112,7 +94,6 @@ export function CommunityDetailsProvider({
     isLoading,
     managerAddress,
     memberCount,
-    memberJoinedActivities,
     setTab,
     tab,
     tierColor,

@@ -1,74 +1,111 @@
 "use client";
 
-import { Box, Skeleton, Stack, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  InputAdornment,
+  Skeleton,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { CommunityMemberRow } from "./CommunityMemberRow";
 import { CommunityMembersHeader } from "./CommunityMembersHeader";
 import { CommunityMembersPagination } from "./CommunityMembersPagination";
 import { Tr } from "./Tr";
 import { useCommunityDetailsContext } from "../CommunityDetails.context";
-
-const ROWS_PER_PAGE = 10;
+import { useCommunityMembers } from "@/data/community-members/useCommunityMembers";
+import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
+import { communityMemberSortOptions } from "@/data/community-members/consts";
+import { useMemo } from "react";
 
 export function CommunityMembers() {
-  const { community, memberJoinedActivities, isLoading, isManager } =
-    useCommunityDetailsContext();
+  const { id, isManager, community } = useCommunityDetailsContext();
 
-  const [page, setPage] = useState(1);
-
-  const joinedAtByUserId = useMemo(() => {
-    return (
-      memberJoinedActivities?.reduce<Record<string, string>>((acc, event) => {
-        if (!event.user?.id) return acc;
-
-        const existing = acc[event.user.id];
-        if (!existing || Number(event.timestamp) > Number(existing)) {
-          acc[event.user.id] = event.timestamp.toString();
-        }
-
-        return acc;
-      }, {}) ?? {}
-    );
-  }, [memberJoinedActivities]);
-
-  const sortedMembers = useMemo(
-    () =>
-      [...(community?.members ?? [])].sort(
-        (a, b) =>
-          Number(joinedAtByUserId[b.id] ?? 0) -
-          Number(joinedAtByUserId[a.id] ?? 0),
-      ),
-    [joinedAtByUserId, community?.members],
+  const {
+    pageQuery,
+    searchQuery,
+    isSearching,
+    page,
+    totalPages,
+    search,
+    orderBy: sort,
+    setPage,
+    setSearch,
+    setSort,
+    hasNextPage,
+    loadMore,
+  } = useCommunityMembers(
+    id,
+    community?.memberCount ? Number(community?.memberCount) : undefined,
   );
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(sortedMembers.length / ROWS_PER_PAGE),
-  );
-  const currentPage = Math.min(page, totalPages);
+  const membersToDisplay = useMemo(() => {
+    if (isSearching) {
+      return (searchQuery.data?.pages ?? []).flatMap(
+        (p) => p.memberJoinedActivities ?? [],
+      );
+    }
+    return pageQuery.data?.memberJoinedActivities ?? [];
+  }, [isSearching, searchQuery.data, pageQuery.data]);
 
-  const currentMembers = useMemo(
-    () =>
-      sortedMembers.slice(
-        (currentPage - 1) * ROWS_PER_PAGE,
-        currentPage * ROWS_PER_PAGE,
-      ),
-    [currentPage, sortedMembers],
-  );
+  const handleSearch = (value: string) => {
+    setSearch(value);
+  };
+
+  const handleSort = (value: string) => {
+    setSort(value as typeof sort);
+  };
 
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
       <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+          justifyContent: "space-between",
+          alignItems: { xs: "stretch", md: "center" },
+        }}
+      >
+        <TextField
+          id="members-search-input"
+          placeholder="Search by name or address..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          size="small"
+          sx={{
+            flex: { xs: 1, md: "unset" },
+            minWidth: { xs: "100%", md: 300 },
+          }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <FilterSelect
+          label="Sort by"
+          value={sort}
+          options={communityMemberSortOptions}
+          onChange={handleSort}
+        />
+      </Box>
+
+      <Box
         role="table"
         aria-label="Community members"
-        sx={{
-          borderRadius: 2,
-          overflow: "hidden",
-        }}
+        sx={{ borderRadius: 2, overflow: "hidden" }}
       >
         <CommunityMembersHeader isManager={isManager} />
 
-        {isLoading &&
+        {(pageQuery.isLoading || searchQuery.isLoading) &&
           Array.from({ length: 6 }).map((_, index) => (
             <Tr key={`member-skeleton-${index}`} isManager={isManager}>
               <Skeleton width={120} height={20} />
@@ -81,31 +118,61 @@ export function CommunityMembers() {
             </Tr>
           ))}
 
-        {!isLoading && currentMembers.length === 0 && (
-          <Stack justifyContent="center" alignItems="center" minHeight={180}>
-            <Typography color="text.secondary" variant="body2">
-              No members found.
-            </Typography>
-          </Stack>
-        )}
+        {isSearching &&
+          !searchQuery.isLoading &&
+          searchQuery.data?.pages[0]?.memberJoinedActivities?.length === 0 && (
+            <Stack justifyContent="center" alignItems="center" minHeight={180}>
+              <Typography color="text.secondary" variant="body2">
+                No members match your search.
+              </Typography>
+            </Stack>
+          )}
 
-        {!isLoading &&
-          currentMembers.map((member) => (
+        {!isSearching &&
+          !pageQuery.isLoading &&
+          pageQuery.data?.memberJoinedActivities?.length === 0 && (
+            <Stack justifyContent="center" alignItems="center" minHeight={180}>
+              <Typography color="text.secondary" variant="body2">
+                No members found.
+              </Typography>
+            </Stack>
+          )}
+
+        {!pageQuery.isLoading &&
+          !searchQuery.isLoading &&
+          membersToDisplay.map((member) => (
             <CommunityMemberRow
               key={member.id}
               member={member}
-              joinedAt={joinedAtByUserId[member.id]}
               isManager={isManager}
             />
           ))}
       </Box>
 
-      {totalPages > 1 && !isLoading && (
-        <CommunityMembersPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setPage}
-        />
+      {isSearching ? (
+        <>
+          {searchQuery.isFetching && membersToDisplay.length > 0 && (
+            <Stack alignItems="center" py={1}>
+              <CircularProgress size={20} />
+            </Stack>
+          )}
+          {hasNextPage && !searchQuery.isFetching && (
+            <Stack alignItems="center" py={2}>
+              <Button variant="text" size="small" onClick={() => loadMore()}>
+                Load more
+              </Button>
+            </Stack>
+          )}
+        </>
+      ) : (
+        (totalPages > 1 || page > 1) &&
+        !pageQuery.isLoading && (
+          <CommunityMembersPagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        )
       )}
     </Stack>
   );

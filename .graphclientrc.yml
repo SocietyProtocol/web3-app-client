@@ -15,4 +15,5 @@ documents:
   - ./src/queries/lockTransactions.graphql
   - ./src/queries/communities.graphql
   - ./src/queries/community.graphql
+  - ./src/queries/communityMembers.graphql
   - ./src/queries/communityActivities.graphql

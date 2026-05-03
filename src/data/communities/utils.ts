@@ -75,8 +75,9 @@ export const buildWhereClause = (options: {
   managerAddress?: string | null;
   tiers?: CommunityTier[] | undefined;
   memberAddress?: string | null;
+  now?: number;
 }) => {
-  const { searchText, managerAddress, tiers, memberAddress } = options;
+  const { searchText, managerAddress, tiers, memberAddress, now } = options;
 
   const whereClauses: InputMaybe<InputMaybe<Community_filter>[]> = [];
 
@@ -106,9 +107,33 @@ export const buildWhereClause = (options: {
     tiers.length > 0 &&
     tiers.length < Object.keys(CommunityTier).length
   ) {
-    whereClauses.push({
+    const unaffiliatedIncluded = tiers.includes(CommunityTier.Unaffiliated);
+    const unexpiredCondition = {
       tierName_in: tiers,
-    });
+      tierExpiresAt_gt: now ? Math.floor(now) : undefined,
+    };
+
+    if (unaffiliatedIncluded) {
+      const unaffiliatedCondition = {
+        or: [
+          {
+            tierName: "unaffiliated",
+          },
+          {
+            tierExpiresAt_lt: now ? Math.floor(now) : undefined,
+          },
+          {
+            tierExpiresAt: null,
+          },
+        ],
+      };
+
+      whereClauses.push({
+        or: [unexpiredCondition, unaffiliatedCondition],
+      });
+    } else {
+      whereClauses.push(unexpiredCondition);
+    }
   }
 
   return { and: whereClauses };
@@ -128,6 +153,7 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
     managerAddress: mergedOptions.managerAddress,
     memberAddress: mergedOptions.memberAddress,
     tiers: mergedOptions.tiers,
+    now: Math.floor(Date.now() / 1000),
   });
 
   const res = await execute(CommunitiesDocument, {

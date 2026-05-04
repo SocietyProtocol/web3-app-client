@@ -16,7 +16,7 @@ export type CommunityMembersInfiniteQuery = CommunityMembersQuery & {
 export const useInfiniteCommunityMembersQuery = (
   options?: Omit<CommunityMembersQueryOptions, "skip">,
 ): UseInfiniteQueryResult<
-  InfiniteData<CommunityMembersInfiniteQuery, unknown>,
+  InfiniteData<CommunityMembersInfiniteQuery, number>,
   Error
 > => {
   const mergedOptions = mergeOptions(options);

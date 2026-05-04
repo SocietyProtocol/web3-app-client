@@ -57,6 +57,7 @@ export function SearchBox({
                 edge="end"
                 onClick={() => onChange("")}
                 aria-label="Clear search"
+                disabled={disabled}
               >
                 <CloseIcon fontSize="small" />
               </IconButton>

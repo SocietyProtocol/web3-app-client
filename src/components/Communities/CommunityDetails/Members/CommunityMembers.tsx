@@ -18,6 +18,7 @@ import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
 import { communityMemberSortOptions } from "@/data/community-members/consts";
 import { useMemo } from "react";
 import { SearchBox } from "@/components/Common/SearchBox";
+import { CommunityMembersSortOption } from "@/data/community-members/types";
 
 export function CommunityMembers() {
   const { id, isManager, community } = useCommunityDetailsContext();
@@ -53,8 +54,8 @@ export function CommunityMembers() {
     setSearch(value);
   };
 
-  const handleSort = (value: string) => {
-    setSort(value as typeof sort);
+  const handleSort = (value: CommunityMembersSortOption) => {
+    setSort(value);
   };
 
   return (

@@ -1,3 +1,4 @@
+import { OrderDirection } from "../../../.graphclient";
 import { AccountSortOption } from "../accounts/types";
 import { UserQueryOptions } from "./types";
 
@@ -6,7 +7,7 @@ export const defaultOptions: Omit<
   "orderBy" | "orderDirection" | "pageSize"
 > & {
   orderBy: AccountSortOption;
-  orderDirection: "asc" | "desc";
+  orderDirection: OrderDirection;
   pageSize: number;
 } = {
   searchText: "",

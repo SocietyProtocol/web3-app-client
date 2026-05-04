@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
 import { BadgeActions } from "@/components/Badges/BadgeActions";
@@ -55,6 +55,11 @@ export function CommunityBadgesActions() {
     [eligibleBadges],
   );
 
+  const optionFilter = useCallback(
+    (badge: BadgeOption) => eligibleBadgeIds.has(badge.id),
+    [eligibleBadgeIds],
+  );
+
   if (!eligibleBadges.length || !validSelectedBadgeId) {
     return null;
   }
@@ -91,9 +96,7 @@ export function CommunityBadgesActions() {
             value={validSelectedBadgeId}
             onChange={handleBadgeChange}
             queryOptions={{ isCommunity: true }}
-            optionFilter={(badge: BadgeOption) =>
-              eligibleBadgeIds.has(badge.id)
-            }
+            optionFilter={optionFilter}
           />
         }
       />

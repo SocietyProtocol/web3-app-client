@@ -1,10 +1,9 @@
 import {
   CommunityMembersDocument,
   CommunityMembersQuery,
+  CommunityMembership_filter,
+  CommunityMembership_orderBy,
   execute,
-  InputMaybe,
-  MemberJoinedActivity_filter,
-  MemberJoinedActivity_orderBy,
 } from "../../../.graphclient";
 import { defaultOptions } from "./consts";
 import {
@@ -37,12 +36,11 @@ export const mergeOptions = (
 const buildWhereClause = (
   communityId: string,
   searchText: string,
-): InputMaybe<InputMaybe<MemberJoinedActivity_filter>> => {
-  const where: InputMaybe<MemberJoinedActivity_filter> = {
+): CommunityMembership_filter => {
+  const where: CommunityMembership_filter = {
     community_: {
       id: communityId,
     },
-    leftAt: null,
   };
 
   if (searchText) {
@@ -58,7 +56,7 @@ const buildWhereClause = (
 const buildSorting = (
   sort: CommunityMembersSortOption = CommunityMembersSortOption.Newest,
 ): {
-  orderBy: MemberJoinedActivity_orderBy;
+  orderBy: CommunityMembership_orderBy;
   orderDirection: "asc" | "desc";
 } => {
   if (sort === CommunityMembersSortOption.Name) {
@@ -68,7 +66,7 @@ const buildSorting = (
     };
   } else {
     return {
-      orderBy: "timestamp",
+      orderBy: "joinActivity__timestamp",
       orderDirection:
         sort === CommunityMembersSortOption.Newest ? "desc" : "asc",
     };
@@ -85,11 +83,10 @@ export const fetchCommunityMembers = async (
   options: CommunityMembersQueryOptions,
 ): Promise<CommunityMembersQuery> => {
   const mergedOptions = mergeOptions(options);
-  const membersWhere = buildWhereClause(
+  const where = buildWhereClause(
     mergedOptions.communityId,
     mergedOptions.searchText ?? "",
   );
-
   const { orderBy, orderDirection } = buildSorting(mergedOptions.orderBy);
 
   const res = await execute(CommunityMembersDocument, {
@@ -97,7 +94,7 @@ export const fetchCommunityMembers = async (
     skip: mergedOptions.skip,
     orderBy,
     orderDirection,
-    where: membersWhere,
+    where,
   });
 
   return res.data as CommunityMembersQuery;

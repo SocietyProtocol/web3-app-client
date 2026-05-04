@@ -43,10 +43,10 @@ export function CommunityMembers() {
   const membersToDisplay = useMemo(() => {
     if (isSearching) {
       return (searchQuery.data?.pages ?? []).flatMap(
-        (p) => p.memberJoinedActivities ?? [],
+        (p) => p.communityMemberships ?? [],
       );
     }
-    return pageQuery.data?.memberJoinedActivities ?? [];
+    return pageQuery.data?.communityMemberships ?? [];
   }, [isSearching, searchQuery.data, pageQuery.data]);
 
   const handleSearch = (value: string) => {
@@ -108,7 +108,7 @@ export function CommunityMembers() {
 
         {isSearching &&
           !searchQuery.isLoading &&
-          searchQuery.data?.pages[0]?.memberJoinedActivities?.length === 0 && (
+          searchQuery.data?.pages[0]?.communityMemberships?.length === 0 && (
             <Stack justifyContent="center" alignItems="center" minHeight={180}>
               <Typography color="text.secondary" variant="body2">
                 No members match your search.
@@ -118,7 +118,7 @@ export function CommunityMembers() {
 
         {!isSearching &&
           !pageQuery.isLoading &&
-          pageQuery.data?.memberJoinedActivities?.length === 0 && (
+          pageQuery.data?.communityMemberships?.length === 0 && (
             <Stack justifyContent="center" alignItems="center" minHeight={180}>
               <Typography color="text.secondary" variant="body2">
                 No members found.

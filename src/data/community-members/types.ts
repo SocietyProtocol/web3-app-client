@@ -1,13 +1,13 @@
 import {
-  Community,
+  CommunityMembership,
   MemberJoinedActivity,
   OrderDirection,
   User,
 } from "../../../.graphclient";
 
-export type CommunityMember = Pick<MemberJoinedActivity, "id" | "timestamp"> & {
+export type CommunityMember = Pick<CommunityMembership, "id"> & {
+  joinActivity: Pick<MemberJoinedActivity, "timestamp" | "id">;
   user: Pick<User, "id" | "name" | "bio" | "imageUrl">;
-  community: Pick<Community, "id">;
 };
 
 export enum CommunityMembersSortOption {

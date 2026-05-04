@@ -59,9 +59,9 @@ export function CommunityMemberRow({
       </Stack>
 
       <Box role="cell">
-        {member.timestamp ? (
+        {member.joinActivity.timestamp ? (
           <LiveRelativeTime
-            timestamp={member.timestamp}
+            timestamp={member.joinActivity.timestamp}
             sx={{
               color: "text.primary",
               fontSize: (theme) => theme.typography.pxToRem(12),

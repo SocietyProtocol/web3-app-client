@@ -32,11 +32,8 @@ export const useInfiniteCommunityMembersQuery = (
     // Slice off the sentinel row so consumers always get at most ROWS_PER_PAGE items
     return {
       ...result,
-      memberJoinedActivities: result.memberJoinedActivities.slice(
-        0,
-        ROWS_PER_PAGE,
-      ),
-      hasMore: result.memberJoinedActivities.length > ROWS_PER_PAGE,
+      communityMemberships: result.communityMemberships.slice(0, ROWS_PER_PAGE),
+      hasMore: result.communityMemberships.length > ROWS_PER_PAGE,
     };
   };
 

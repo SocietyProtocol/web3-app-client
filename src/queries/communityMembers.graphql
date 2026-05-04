@@ -1,11 +1,11 @@
 query CommunityMembers(
   $first: Int
   $skip: Int
-  $where: MemberJoinedActivity_filter
-  $orderBy: MemberJoinedActivity_orderBy
+  $where: CommunityMembership_filter
+  $orderBy: CommunityMembership_orderBy
   $orderDirection: OrderDirection
 ) {
-  memberJoinedActivities(
+  communityMemberships(
     first: $first
     skip: $skip
     orderBy: $orderBy
@@ -13,11 +13,10 @@ query CommunityMembers(
     where: $where
   ) {
     id
-    community {
+    joinActivity {
       id
+      timestamp
     }
-    timestamp
-    leftAt
     user {
       id
       name

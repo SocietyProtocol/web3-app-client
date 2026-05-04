@@ -10,7 +10,14 @@ export const renderUserOption = (
   option: UserOption,
 ) => {
   return (
-    <Box component="li" {...props} key={option.id}>
+    <Box
+      component="li"
+      {...props}
+      key={option.id}
+      sx={{
+        width: "100%",
+      }}
+    >
       <UserHandle
         id={option.id}
         name={option.name}

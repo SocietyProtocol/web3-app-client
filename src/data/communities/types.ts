@@ -44,3 +44,4 @@ export interface CommunityData extends Omit<
   memberCount: number;
   manager: Pick<User, "id" | "name" | "imageUrl" | "bio">;
 }
+

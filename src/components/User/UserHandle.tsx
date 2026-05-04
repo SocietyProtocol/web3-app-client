@@ -95,7 +95,7 @@ export const UserHandle = ({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              maxWidth: size === "small" ? 80 : 350,
+              maxWidth: size === "small" ? 80 : 400,
               fontWeight: 800,
               fontSize: (theme) =>
                 theme.typography.pxToRem(size === "small" ? 10 : 12),

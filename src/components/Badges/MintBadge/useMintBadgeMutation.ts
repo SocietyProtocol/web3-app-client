@@ -28,7 +28,14 @@ export const useMintBadgeMutation = ({
       ? [args.recipients, args.id, BigInt(1), "0x" as const]
       : undefined,
     successMessage: "Badge minted successfully",
-    queryKeysToInvalidateOnSuccess: [["badge", args?.id.toString()], ["user"]],
+    queryKeysToInvalidateOnSuccess: [
+      ["badge", args?.id.toString()],
+      ["user"],
+      ["communities"],
+      ["community"],
+      ["communityMembers"],
+      ["communityMembersInfinite"],
+    ],
     onSuccess,
     onError,
   });

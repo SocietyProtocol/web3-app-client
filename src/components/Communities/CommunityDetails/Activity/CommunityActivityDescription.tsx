@@ -1,6 +1,6 @@
 "use client";
 
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { MemberJoinedDescription } from "./MemberJoinedDescription";
 import { MemberLeftDescription } from "./MemberLeftDescription";
 import { BadgeMintedDescription } from "./BadgeMintedDescription";

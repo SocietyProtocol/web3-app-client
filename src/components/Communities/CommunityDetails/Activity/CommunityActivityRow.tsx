@@ -2,7 +2,7 @@
 
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { CommunityActivityDescription } from "./CommunityActivityDescription";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import { Hex } from "viem";
@@ -21,13 +21,12 @@ export function CommunityActivityRow({ event }: CommunityActivityRowProps) {
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1.5 }}>
-      <Box sx={{ minWidth: 100 }}>
+      <Box sx={{ minWidth: 140 }}>
         <LiveRelativeTime
           timestamp={event.timestamp}
           variant="body2"
           color="text.primary"
           noWrap
-          sx={{ cursor: "default", fontSize: 12 }}
         />
       </Box>
       <Stack direction="row" spacing={0.5} alignItems="center">

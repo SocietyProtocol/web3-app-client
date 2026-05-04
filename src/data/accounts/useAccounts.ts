@@ -1,16 +1,17 @@
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { useDebounceValue } from "../../hooks/useDebounceValue";
-import { SortOption } from "./types";
+import { AccountSortOption } from "./types";
 import { useMemo } from "react";
 import { useUsersQuery } from "../users/useUsersQuery";
 import { mergeOptions } from "../users/utils";
 
 export const useAccounts = () => {
-  const [orderBy, setSortBy] = useQueryState<SortOption>(
+  const [orderBy, setSortBy] = useQueryState<AccountSortOption>(
     "orderBy",
-    parseAsStringEnum([SortOption.Newest, SortOption.Name]).withDefault(
-      SortOption.Newest,
-    ),
+    parseAsStringEnum([
+      AccountSortOption.Newest,
+      AccountSortOption.Name,
+    ]).withDefault(AccountSortOption.Newest),
   );
 
   const [searchQuery, setSearchQuery] = useQueryState(
@@ -25,7 +26,7 @@ export const useAccounts = () => {
       mergeOptions({
         searchText: debouncedSearchQuery,
         orderBy,
-        orderDirection: orderBy === SortOption.Name ? "asc" : "desc",
+        orderDirection: orderBy === AccountSortOption.Name ? "asc" : "desc",
       }),
     [debouncedSearchQuery, orderBy],
   );

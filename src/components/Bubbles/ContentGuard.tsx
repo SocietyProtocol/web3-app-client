@@ -3,7 +3,7 @@
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useAccount } from "wagmi";
-import { Box, Button, Stack, SxProps } from "@mui/material";
+import { Box, Button, Stack, SxProps, Theme } from "@mui/material";
 import { ConnectWalletBubble } from "./ConnectWalletBubble";
 import { WrongNetworkBubble } from "./WrongNetworkBubble";
 import { AccountSetupBubble } from "./AccountSetupBubble";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { mergeSx } from "@/utils/sx";
 
 export type ContentGuardProps = {
   requireNetwork?: boolean;
@@ -18,7 +19,7 @@ export type ContentGuardProps = {
   loading?: boolean;
   children?: ReactNode;
   fallback?: ReactNode;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 } & (
   | {
       hideBubbles?: false;
@@ -99,13 +100,13 @@ export const ContentGuard = (props: ContentGuardProps) => {
       <Stack
         alignItems="center"
         justifyContent="center"
-        sx={[
+        sx={mergeSx(
           {
             maxWidth: 600,
             marginX: "auto",
           },
-          ...(Array.isArray(sx) ? sx : [sx]),
-        ]}
+          sx,
+        )}
       >
         {!isConnected ? (
           <ConnectWalletBubble message={connectWalletMessage} />

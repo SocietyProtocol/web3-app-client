@@ -1,28 +1,34 @@
 import { Stack, Typography } from "@mui/material";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { UserHandle } from "@/components/User/UserHandle";
-import { BadgeHandle } from "@/components/Badges/BadgeHandle";
 import { Hex } from "viem";
 
 type Event = Extract<
   CommunityActivitiesQuery["communityActivityEvents"][number],
-  { __typename: "BadgeBurnedActivity" }
+  { __typename: "ManagerChangedActivity" }
 >;
 
-export function BadgeBurnedDescription({ event }: { event: Event }) {
+export function ManagerChangedDescription({ event }: { event: Event }) {
   return (
     <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
       <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
-        Badge
-      </Typography>
-      <BadgeHandle id={event.badge.id} name={event.badge.name} link />
-      <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
-        burned from
+        Manager changed from
       </Typography>
       <UserHandle
-        id={event.user.id as Hex}
-        name={event.user.name}
-        imageUrl={event.user.imageUrl}
+        id={event.fromManager.id as Hex}
+        name={event.fromManager.name}
+        imageUrl={event.fromManager.imageUrl}
+        size="small"
+        link
+        highlightYou
+      />
+      <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
+        to
+      </Typography>
+      <UserHandle
+        id={event.toManager.id as Hex}
+        name={event.toManager.name}
+        imageUrl={event.toManager.imageUrl}
         size="small"
         link
         highlightYou

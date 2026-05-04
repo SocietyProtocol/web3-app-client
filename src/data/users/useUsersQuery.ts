@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchUsers, mergeOptions } from "./utils";
 import { UserQueryOptions } from "./types";
+import { TEN_MINUTES_IN_MS } from "@/consts/time";
 
 export const useUsersQuery = (options?: UserQueryOptions) => {
   const { onSuccess, ...restOptions } = options || {};
@@ -41,7 +42,7 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
       return pages.length;
     },
     placeholderData: (prev) => prev,
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: TEN_MINUTES_IN_MS,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });

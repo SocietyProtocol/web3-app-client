@@ -1,15 +1,15 @@
 import { Stack, Typography } from "@mui/material";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { UserHandle } from "@/components/User/UserHandle";
 import { BadgeHandle } from "@/components/Badges/BadgeHandle";
 import { Hex } from "viem";
 
 type Event = Extract<
   CommunityActivitiesQuery["communityActivityEvents"][number],
-  { __typename: "BadgeMintedActivity" }
+  { __typename: "BadgeBurnedActivity" }
 >;
 
-export function BadgeMintedDescription({ event }: { event: Event }) {
+export function BadgeBurnedDescription({ event }: { event: Event }) {
   return (
     <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
       <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
@@ -17,7 +17,7 @@ export function BadgeMintedDescription({ event }: { event: Event }) {
       </Typography>
       <BadgeHandle id={event.badge.id} name={event.badge.name} link />
       <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
-        minted to
+        burned from
       </Typography>
       <UserHandle
         id={event.user.id as Hex}

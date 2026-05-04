@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { UserHandle } from "@/components/User/UserHandle";
 import { Hex } from "viem";
 

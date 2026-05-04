@@ -15,9 +15,16 @@ query Community($id: ID!) {
       bio
       imageUrl
     }
+    managerBadge {
+      id
+    }
+    memberBadge {
+      id
+    }
     memberCount
     badges(first: 100) {
       id
+      name
     }
   }
 }

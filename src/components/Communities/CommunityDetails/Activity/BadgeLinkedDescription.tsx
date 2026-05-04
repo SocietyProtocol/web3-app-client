@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { BadgeHandle } from "@/components/Badges/BadgeHandle";
 
 type Event = Extract<

@@ -1,11 +1,11 @@
 import { getQueryClient } from "@/lib/tanstack-query";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { CommunityDetail } from "@/components/Communities/Detail/CommunityDetail";
 import { fetchCommunity } from "@/data/communities/utils";
 import { Page } from "@/components/Page/Page";
 import { Metadata } from "next";
 import { Box } from "@mui/material";
 import { notFound } from "next/navigation";
+import { CommunityDetailsPage } from "@/components/Communities/CommunityDetails/CommunityDetailsPage";
 
 export async function generateMetadata({
   params,
@@ -55,7 +55,7 @@ export default async function CommunityPage({
             py: 3,
           }}
         >
-          <CommunityDetail id={id} />
+          <CommunityDetailsPage id={id} />
         </Box>
       </Page>
     </HydrationBoundary>

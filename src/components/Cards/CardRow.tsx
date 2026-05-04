@@ -1,4 +1,4 @@
-import { Box, Button, Stack, SxProps, Typography } from "@mui/material";
+import { Box, Button, Stack, SxProps, Theme, Typography } from "@mui/material";
 import { ReactNode } from "react";
 
 interface CardRowProps<T extends { id: string }> {
@@ -16,7 +16,7 @@ interface CardRowProps<T extends { id: string }> {
       loading?: boolean;
     },
   ) => ReactNode;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }
 
 export const CardRow = <T extends { id: string }>({

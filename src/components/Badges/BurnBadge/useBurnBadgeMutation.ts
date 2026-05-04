@@ -10,6 +10,7 @@ interface BadgeBurnData {
 }
 
 interface UseBurnBadgeMutationProps {
+  successMessage?: string;
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
   args?: BadgeBurnData;
@@ -19,14 +20,22 @@ export const useBurnBadgeMutation = ({
   onSuccess,
   onError,
   args,
+  successMessage = "Badge burned successfully",
 }: UseBurnBadgeMutationProps) =>
   useTransaction({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,
     functionName: "burn",
     args: args ? [args.holder, args.id, BigInt(1)] : undefined,
-    successMessage: "Badge burned successfully",
-    queryKeysToInvalidateOnSuccess: [["badge", args?.id.toString()], ["user"]],
+    successMessage,
+    queryKeysToInvalidateOnSuccess: [
+      ["badge", args?.id.toString()],
+      ["user"],
+      ["communities"],
+      ["community"],
+      ["communityMembers"],
+      ["communityMembersInfinite"],
+    ],
     onSuccess,
     onError,
   });

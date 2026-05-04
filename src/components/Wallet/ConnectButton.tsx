@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Stack, Tooltip, Typography } from "@mui/material";
+import { Button, Stack, Theme, Tooltip, Typography } from "@mui/material";
 import { ConnectButtonSkeleton } from "./ConnectButtonSkeleton";
 import type { SxProps } from "@mui/system";
 import type { ButtonPropsVariantOverrides } from "@mui/material/Button";
@@ -10,10 +10,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ErrorIcon from "@mui/icons-material/Error";
 import { Avatar } from "../Avatar/Avatar";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { mergeSx } from "@/utils/sx";
 import { useAccount } from "wagmi";
 
 interface ConnectButtonProps {
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
   fullWidth?: boolean;
   variant?: OverridableStringUnion<
     "text" | "outlined" | "contained",
@@ -77,12 +78,12 @@ export const ConnectButton = ({
             <Button
               variant={variant || "wallet"}
               onClick={chain?.unsupported ? openChainModal : openAccountModal}
-              sx={[
-                ...(Array.isArray(sx) ? sx : [sx]),
+              sx={mergeSx(
+                sx,
                 chain?.unsupported && {
                   border: (theme) => `1px solid ${theme.palette.error.dark}`,
                 },
-              ]}
+              )}
               fullWidth={fullWidth}
             >
               <Stack

@@ -72,6 +72,7 @@ export const UserAutocomplete = <
   const { data, isLoading, isFetching } = useUsersQuery({
     searchText: debouncedSearchQuery,
     pageSize: 50,
+    includeUnregistered: true,
     onSuccess: upsertAllUserMap,
   });
 
@@ -136,7 +137,7 @@ export const UserAutocomplete = <
         ) {
           return {
             id,
-            name: "Add ",
+            name: `Add ${id} as a new user`,
             imageUrl: undefined,
           };
         }
@@ -161,7 +162,7 @@ export const UserAutocomplete = <
       placeholder={
         (Array.isArray(selectedUsers) && selectedUsers.length === 0) ||
         !selectedUsers
-          ? "Search users by name or ID..."
+          ? "Search users by name or ID or enter an address..."
           : ""
       }
       filterOptions={filterOptions}

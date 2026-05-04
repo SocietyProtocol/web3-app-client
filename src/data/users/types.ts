@@ -1,18 +1,14 @@
-import {
-  Badge,
-  OrderDirection,
-  User,
-  User_orderBy,
-  UsersQuery,
-} from "../../../.graphclient";
+import { Badge, OrderDirection, User, UsersQuery } from "../../../.graphclient";
+import { AccountSortOption } from "../accounts/types";
 
 export interface UserQueryOptions {
   searchText?: string | null;
-  orderBy?: User_orderBy;
+  orderBy?: AccountSortOption;
   orderDirection?: OrderDirection;
   pageSize?: number;
   skip?: number;
   onSuccess?: (data: UsersQuery) => void;
+  includeUnregistered?: boolean;
 }
 
 export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {

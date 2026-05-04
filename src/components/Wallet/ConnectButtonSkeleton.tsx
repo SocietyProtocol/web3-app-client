@@ -1,18 +1,19 @@
-import { Stack, Skeleton } from "@mui/material";
+import { Stack, Skeleton, Theme } from "@mui/material";
 import type { SxProps } from "@mui/system";
+import { mergeSx } from "@/utils/sx";
 
 export const ConnectButtonSkeleton = ({
   fullWidth,
   sx,
 }: {
   fullWidth?: boolean;
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }) => (
   <Stack
     direction="row"
     alignItems="center"
     spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
-    sx={[
+    sx={mergeSx(
       {
         width: fullWidth ? "100%" : 180,
         height: {
@@ -27,8 +28,8 @@ export const ConnectButtonSkeleton = ({
         bgcolor: "action.disabledBackground",
         px: 2,
       },
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
+      sx,
+    )}
   >
     <Skeleton variant="circular" width={24} height={24} />
     <Skeleton

@@ -75,9 +75,14 @@ export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
           disabled={isFetchingNextPage}
           sx={{
             mt: 1,
-            p: 0,
-            textDecoration: "underline",
-            "&:hover:not(:disabled)": { textDecoration: "underline" },
+            "&&": {
+              px: 0,
+              py: 0,
+            },
+            "&:hover": {
+              backgroundColor: "transparent",
+              textDecoration: "underline",
+            },
           }}
         >
           {isFetchingNextPage ? "Loading…" : "Load more activities"}

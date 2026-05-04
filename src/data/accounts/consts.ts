@@ -1,7 +1,7 @@
 import { FilterSelectOption } from "../../components/FilterSelect/FilterSelect";
-import { SortOption } from "./types";
+import { AccountSortOption } from "./types";
 
-export const sortOptions: FilterSelectOption<SortOption>[] = [
-  { value: SortOption.Newest, label: "Newest" },
-  { value: SortOption.Name, label: "Name" },
+export const sortOptions: FilterSelectOption<AccountSortOption>[] = [
+  { value: AccountSortOption.Newest, label: "Newest" },
+  { value: AccountSortOption.Name, label: "Name" },
 ];

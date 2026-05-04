@@ -1,14 +1,14 @@
 import { Stack, Typography } from "@mui/material";
-import { CommunityActivitiesQuery } from "../../../../.graphclient";
+import { CommunityActivitiesQuery } from "../../../../../.graphclient";
 import { UserHandle } from "@/components/User/UserHandle";
 import { Hex } from "viem";
 
 type Event = Extract<
   CommunityActivitiesQuery["communityActivityEvents"][number],
-  { __typename: "MemberJoinedActivity" }
+  { __typename: "MemberLeftActivity" }
 >;
 
-export function MemberJoinedDescription({ event }: { event: Event }) {
+export function MemberLeftDescription({ event }: { event: Event }) {
   return (
     <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
       <UserHandle
@@ -20,7 +20,7 @@ export function MemberJoinedDescription({ event }: { event: Event }) {
         highlightYou
       />
       <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
-        joined the community
+        left the community
       </Typography>
     </Stack>
   );

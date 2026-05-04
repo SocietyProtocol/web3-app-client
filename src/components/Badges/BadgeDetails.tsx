@@ -305,13 +305,15 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           loading={isLoading}
           managers={data?.badge?.managers}
         />
-        <BadgeActions
-          id={id}
-          loading={isLoading}
-          canMint={canMint}
-          canBurn={canBurn}
-          canTransfer={canTransfer}
-        />
+        <Box paddingTop={4}>
+          <BadgeActions
+            id={id}
+            loading={isLoading}
+            canMint={canMint}
+            canBurn={canBurn}
+            canTransfer={canTransfer}
+          />
+        </Box>
       </Stack>
 
       {/* Holders Section */}

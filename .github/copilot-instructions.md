@@ -52,7 +52,7 @@ List/table hooks (e.g. `useBadges`, `useCommunities`, `useCommunityMembers`) fol
 ## Search & Sort UI Pattern
 
 - Use `FilterSelect` component (from `@/components/FilterSelect/FilterSelect`) for sort/filter dropdowns — **not** raw `Select`
-- Use `TextField` with `id`, `size="small"`, `slotProps.input.startAdornment: <SearchIcon>` for search inputs
+- Prefer the shared `SearchBox` component for search inputs — **not** a raw `TextField` with a `SearchIcon` adornment
 - Controls layout: `Box` with `display: flex`, `flexDirection: { xs: "column", md: "row" }`, `gap: 2`; search grows with `minWidth: { xs: "100%", md: 300 }`
 - Define sort/filter options as `FilterSelectOption[]` in `consts.ts`, not inline in the component
 - Reset pagination to page 1 whenever search or sort changes

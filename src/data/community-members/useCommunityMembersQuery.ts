@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { CommunityMembersQueryOptions } from "./types";
 import { fetchCommunityMembers, mergeOptions } from "./utils";
+import { TEN_MINUTES_IN_MS } from "@/consts/time";
 
 export const useCommunityMembersQuery = (
   options?: CommunityMembersQueryOptions,
@@ -15,8 +16,9 @@ export const useCommunityMembersQuery = (
       return result;
     },
     placeholderData: (prev) => prev,
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: TEN_MINUTES_IN_MS,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    enabled: !!options?.communityId,
   });
 };

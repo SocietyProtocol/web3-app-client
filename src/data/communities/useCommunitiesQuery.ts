@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CommunityQueryOptions } from "./types";
 import { fetchCommunities, mergeOptions } from "./utils";
+import { TEN_MINUTES_IN_MS } from "@/consts/time";
 
 export const useCommunitiesQuery = (options?: CommunityQueryOptions) => {
   const mergedOptions = mergeOptions(options);
@@ -26,7 +27,7 @@ export const useCommunitiesQuery = (options?: CommunityQueryOptions) => {
       return pages.length;
     },
     placeholderData: (prev) => prev,
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: TEN_MINUTES_IN_MS,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });

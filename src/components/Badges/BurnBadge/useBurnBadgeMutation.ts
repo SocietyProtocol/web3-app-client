@@ -11,7 +11,6 @@ interface BadgeBurnData {
 
 interface UseBurnBadgeMutationProps {
   successMessage?: string;
-  queryKeysToInvalidateOnSuccess?: (readonly unknown[])[];
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
   args?: BadgeBurnData;

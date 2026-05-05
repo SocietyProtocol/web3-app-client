@@ -5,6 +5,7 @@ import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
 import { OverviewTab } from "./OverviewTab";
 import { CommunityDetailHeader } from "./CommunityDetailHeader";
 import { MembersTab } from "./MembersTab";
+import { BadgesTab } from "./BadgesTab";
 import { PlaceholderTab } from "./PlaceholderTab";
 
 import { CommunityDetailsTab } from "./CommunityDetail.types";
@@ -70,9 +71,7 @@ export function CommunityDetails() {
       <Box>
         {tab === CommunityDetailsTab.Overview && <OverviewTab />}
         {tab === CommunityDetailsTab.Members && <MembersTab />}
-        {tab === CommunityDetailsTab.Badges && (
-          <PlaceholderTab label="Badges" />
-        )}
+        {tab === CommunityDetailsTab.Badges && <BadgesTab />}
         {tab === CommunityDetailsTab.Governance && (
           <PlaceholderTab label="Governance" />
         )}

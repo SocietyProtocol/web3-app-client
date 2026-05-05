@@ -22,9 +22,13 @@ query Community($id: ID!) {
       id
     }
     memberCount
-    badges(first: 100) {
+    badges(first: 1000) {
       id
       name
+      imageUrl
+      isOfficial
+      isCommunity
+      holdersCount
     }
   }
 }

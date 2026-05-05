@@ -4,6 +4,7 @@ import { Components, CssVarsTheme, Theme } from "@mui/material";
 declare module "@mui/material/Button" {
   interface ButtonPropsVariantOverrides {
     wallet: true;
+    link: true;
   }
 }
 
@@ -20,6 +21,36 @@ export const MuiButton: Components<
       style: ({ theme }) => ({
         background: theme.palette.background.subtle,
         border: "none",
+      }),
+    },
+    {
+      props: { variant: "link" },
+      style: ({ theme }) => ({
+        border: "none",
+        background: "transparent",
+        color: theme.palette.primary.main,
+        fontWeight: 600,
+        textTransform: "none",
+        textDecoration: "none",
+        fontSize: theme.typography.pxToRem(16),
+        fontFamily: "var(--font-inter), sans-serif",
+        "&&": {
+          padding: 0,
+          minWidth: "auto",
+          height: "auto",
+          lineHeight: "normal",
+        },
+        [theme.breakpoints.up("sm")]: {
+          fontSize: theme.typography.pxToRem(16),
+        },
+        "& .MuiButton-startIcon": {
+          fontSize: "16px",
+          marginRight: theme.spacing(0.5),
+        },
+        "&:hover": {
+          background: "transparent",
+          textDecoration: "underline",
+        },
       }),
     },
   ],

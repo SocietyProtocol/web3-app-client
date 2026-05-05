@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function CreateBadgePage() {
   return (
-    <Page wideMargin>
+    <Page wideMargin backButton defaultBackPath="/badges">
       <Suspense
         fallback={
           <Box

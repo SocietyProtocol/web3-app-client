@@ -25,7 +25,7 @@
 ## Component Structure
 
 - Small, composable components (<200 LOC)
-- One main component per file
+- One component per file — always extract sub-components to their own files, never define multiple exported or reusable components in the same file
 - Clear props interface
 - Separate logic & UI when complex
 - Logic in custom hooks

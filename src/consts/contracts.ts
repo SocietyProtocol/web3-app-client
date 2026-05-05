@@ -6,6 +6,7 @@ interface ContractAddresses {
   auction: ChainVariable<Address>;
   chainlinkFeed: ChainVariable<Address>;
   vipManager: ChainVariable<Address>;
+  communityRegistry: ChainVariable<Address>;
 }
 
 export const contracts: ContractAddresses = {
@@ -24,5 +25,9 @@ export const contracts: ContractAddresses = {
   vipManager: {
     sepolia: "0x51B7481dDe7Fd0b793dbF0CAabcCd6B78D9790DF",
     mainnet: "0x91715d95004Bd57eDC1E0FD718688CEd475E130A",
+  },
+  communityRegistry: {
+    sepolia: "0x84ffd2805af9d0946e02Fe19Cd1eE58228669B0e",
+    mainnet: "0x000000000000000000000000000000000000000000", // Placeholder, to be updated when deployed
   },
 };

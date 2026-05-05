@@ -68,35 +68,29 @@ export const ContentGuard = (props: ContentGuardProps) => {
 
   return (
     <Box>
-      {showBackButton && (
-        <Box
-          sx={{
-            alignSelf: "flex-start",
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={() => router.back()}
-            startIcon={<ArrowBackIcon sx={{ fontSize: "14px !important" }} />}
+      {showBackButton &&
+        typeof window !== "undefined" &&
+        window.history.length > 1 && (
+          <Box
             sx={{
-              color: "primary.main",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-              textTransform: "none",
-              fontWeight: 600,
-              minWidth: { xs: "auto", sm: "64px" },
-              px: { xs: 1, sm: 2 },
+              alignSelf: "flex-start",
             }}
-            aria-label="Go back"
           >
-            <Box
-              component="span"
-              sx={{ display: { xs: "none", sm: "inline" } }}
+            <Button
+              variant="link"
+              onClick={() => router.back()}
+              startIcon={<ArrowBackIcon />}
+              aria-label="Go back"
             >
-              Back
-            </Box>
-          </Button>
-        </Box>
-      )}
+              <Box
+                component="span"
+                sx={{ display: { xs: "none", sm: "inline" } }}
+              >
+                Back
+              </Box>
+            </Button>
+          </Box>
+        )}
       <Stack
         alignItems="center"
         justifyContent="center"

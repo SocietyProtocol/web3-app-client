@@ -11,7 +11,7 @@ export function BadgeLinkedDescription({ event }: { event: Event }) {
   return (
     <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
       <Typography variant="body2" color="text.primary" sx={{ fontSize: 12 }}>
-        Badge linked:
+        Badge created:
       </Typography>
       <BadgeHandle id={event.badge.id} name={event.badge.name} link />
     </Stack>

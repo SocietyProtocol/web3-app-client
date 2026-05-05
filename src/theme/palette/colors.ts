@@ -43,7 +43,7 @@ export const WARNING_LIGHT = "#C97744";
 export const WARNING_CONTRAST = "#FFB9A3";
 
 // Info colors
-export const INFO_MAIN = "#2AB4FF";
+export const INFO_MAIN = "#007ec2";
 export const INFO_DARK = "#158AC9";
 export const INFO_LIGHT = "#60C7FF";
 export const INFO_CONTRAST = "#EBF8FF";

@@ -19,6 +19,10 @@ query User($id: ID!) {
       creatorAddress
       createdAt
       holdersCount
+      community {
+        id
+        name
+      }
       createdBy {
         id
         name

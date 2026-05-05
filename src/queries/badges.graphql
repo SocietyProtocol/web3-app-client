@@ -23,6 +23,10 @@ query Badges(
     profileUser {
       name
     }
+    community {
+      id
+      name
+    }
     createdBy {
       id
       name

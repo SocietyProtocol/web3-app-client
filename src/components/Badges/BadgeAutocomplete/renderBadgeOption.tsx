@@ -15,6 +15,8 @@ export const renderBadgeOption = (
         id={option.id}
         name={option.name}
         profileUser={option.profileUser}
+        community={option.community}
+        fullWidth
       />
     </Box>
   );

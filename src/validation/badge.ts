@@ -35,22 +35,3 @@ export const badgeValidationSchema = z.object({
 
 export type BadgeInputData = z.input<typeof badgeValidationSchema>;
 export type BadgeTransformedData = z.output<typeof badgeValidationSchema>;
-
-export const communityBadgeValidationSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Badge name is required")
-    .max(100, "Badge name must be less than 100 characters"),
-  imageUrl: imageUrlSchema,
-  metadata: metadataSchema,
-  minters: z.array(bigNumericStringSchema), // Badge IDs
-  transferers: z.array(bigNumericStringSchema), // Badge IDs
-  burners: z.array(bigNumericStringSchema), // Badge IDs
-});
-
-export type CommunityBadgeInputData = z.input<
-  typeof communityBadgeValidationSchema
->;
-export type CommunityBadgeTransformedData = z.output<
-  typeof communityBadgeValidationSchema
->;

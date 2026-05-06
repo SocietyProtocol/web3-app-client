@@ -9,7 +9,7 @@ export function GovernanceTab() {
     <Box sx={{ display: "flex", justifyContent: "center" }}>
       <BubbleBase
         sx={{
-          minWidth: 500,
+          width: "500px",
         }}
         actions={
           <Stack

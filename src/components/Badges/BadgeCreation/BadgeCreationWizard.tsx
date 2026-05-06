@@ -32,6 +32,7 @@ const BadgeCreationWizardContent = () => {
     isSyncing,
     isUploadingToIpfs,
     isWritingContract,
+    communityId,
   } = useBadgeCreation();
 
   const { address } = useAccount();
@@ -140,7 +141,17 @@ const BadgeCreationWizardContent = () => {
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
           {activeStep === 0 && <BadgeInfoStep />}
-          {activeStep === 1 && <BadgePermissionsStep />}
+          {activeStep === 1 && (
+            <BadgePermissionsStep
+              hideSections={
+                communityId
+                  ? {
+                      editors: true,
+                    }
+                  : {}
+              }
+            />
+          )}
         </Wizard>
       </Box>
 
@@ -151,15 +162,21 @@ const BadgeCreationWizardContent = () => {
           maxWidth: 300,
         }}
       >
-        <BadgePreview />
+        <BadgePreview isCommunity={!!communityId} />
       </Box>
     </Stack>
   );
 };
 
-export const BadgeCreationWizard = () => {
+interface BadgeCreationWizardProps {
+  communityId?: string;
+}
+
+export const BadgeCreationWizard = ({
+  communityId,
+}: BadgeCreationWizardProps) => {
   return (
-    <BadgeCreationProvider>
+    <BadgeCreationProvider communityId={communityId}>
       <BadgeCreationWizardContent />
     </BadgeCreationProvider>
   );

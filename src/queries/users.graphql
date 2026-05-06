@@ -30,6 +30,10 @@ query Users(
       creatorAddress
       createdAt
       holdersCount
+      community {
+        id
+        name
+      }
       createdBy {
         id
         name

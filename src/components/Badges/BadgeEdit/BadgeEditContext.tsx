@@ -72,7 +72,6 @@ export const BadgeEditProvider = ({
     resolver: zodResolver(badgeEditValidationSchema),
     defaultValues: {
       name: badge.data?.badge?.name,
-      isCommunity: badge.data?.badge?.isCommunity,
       isOfficial: badge.data?.badge?.isOfficial,
       imageUrl: badge.data?.badge?.imageUrl,
     },
@@ -85,7 +84,6 @@ export const BadgeEditProvider = ({
       const { imageUrl, ...rest } = metadata.data;
       form.reset({
         name: badge.data?.badge?.name,
-        isCommunity: badge.data?.badge?.isCommunity,
         isOfficial: badge.data?.badge?.isOfficial,
         imageUrl: badge.data?.badge?.imageUrl,
         metadata: JSON.stringify(rest, null, 2),
@@ -93,7 +91,6 @@ export const BadgeEditProvider = ({
     }
   }, [
     badge.data?.badge?.imageUrl,
-    badge.data?.badge?.isCommunity,
     badge.data?.badge?.isOfficial,
     badge.data?.badge?.name,
     form,

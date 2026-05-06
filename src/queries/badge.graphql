@@ -14,6 +14,10 @@ query Badge($id: ID!) {
     profileUser {
       name
     }
+    community {
+      id
+      name
+    }
     holders {
       id
       name

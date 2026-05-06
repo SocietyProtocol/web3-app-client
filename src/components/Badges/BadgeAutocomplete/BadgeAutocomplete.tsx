@@ -126,6 +126,7 @@ export const BadgeAutocomplete = <
           id={item.id}
           name={item.name}
           profileUser={item.profileUser}
+          community={item.community}
         />
       )}
       inputValue={searchQuery}

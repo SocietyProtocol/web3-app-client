@@ -114,32 +114,6 @@ export const BadgeDetailsEditForm = ({
           />
         </Box>
       )}
-
-      <Box>
-        <Controller
-          name="isCommunity"
-          control={control}
-          render={({ field }) => (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={field.value}
-                  onChange={field.onChange}
-                  disabled={isLoading}
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="body1">Community Badge</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Mark this badge as a community badge
-                  </Typography>
-                </Box>
-              }
-            />
-          )}
-        />
-      </Box>
     </Stack>
   );
 };

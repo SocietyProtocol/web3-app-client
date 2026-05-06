@@ -4,13 +4,17 @@ import { BadgeCard } from "../BadgeCard";
 import { useAccount } from "wagmi";
 import { useWatch } from "react-hook-form";
 
-export const BadgePreview = () => {
+interface BadgePreviewProps {
+  isCommunity?: boolean;
+}
+
+export const BadgePreview = ({ isCommunity }: BadgePreviewProps) => {
   const { address } = useAccount();
   const { form } = useBadgeCreation();
 
-  const [name, imageUrl, isOfficial, isCommunity] = useWatch({
+  const [name, imageUrl, isOfficial] = useWatch({
     control: form.control,
-    name: ["name", "imageUrl", "isOfficial", "isCommunity"],
+    name: ["name", "imageUrl", "isOfficial"],
   });
 
   return (

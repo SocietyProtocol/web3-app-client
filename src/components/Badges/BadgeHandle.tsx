@@ -32,14 +32,14 @@ export const BadgeHandle = ({
     : name;
 
   const tooltip = community
-    ? `Badge #${id} for community ${community.name} (ID ${community.id})`
-    : `Badge #${id}`;
+    ? `Badge #${id} ${label} for community ${community.name} (ID ${community.id})`
+    : `Badge #${id} ${label}`;
 
   return (
     <OptionalLink
       href={link ? `/badges/${id}` : undefined}
-      aria-label={link ? `View badge “${name}” (ID #${id})` : undefined}
-      title={link ? `View badge “${name}” (ID #${id})` : undefined}
+      aria-label={link ? `View badge “${label}” (ID #${id})` : undefined}
+      title={link ? `View badge “${label}” (ID #${id})` : undefined}
     >
       <Box
         sx={{

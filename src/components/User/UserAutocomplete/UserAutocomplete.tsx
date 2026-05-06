@@ -8,6 +8,9 @@ import { useAtom } from "jotai";
 import { usersAtom } from "@/atoms/users";
 import { renderUserOption } from "./renderUserOption";
 import { renderUserItem } from "./renderUserItem";
+import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
+import { isEqualCaseInsensitive } from "@/utils/string";
 
 type SelectedUsers<
   Multiple extends boolean,
@@ -65,6 +68,7 @@ export const UserAutocomplete = <
   helperText,
 }: UserAutocompleteProps<Multiple, DisableClearable, FreeSolo>) => {
   const [allUsersMap, upsertAllUserMap] = useAtom(usersAtom);
+  const communityRegistry = useChainVar(contracts.communityRegistry);
 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
@@ -112,8 +116,11 @@ export const UserAutocomplete = <
     () =>
       users
         .map(({ id }) => allUsersMap.get(id.toLowerCase()))
-        .filter((u): u is UserOption => !!u),
-    [allUsersMap, users],
+        .filter(
+          (u): u is UserOption =>
+            !!u && !isEqualCaseInsensitive(u.id, communityRegistry),
+        ),
+    [allUsersMap, users, communityRegistry],
   );
 
   return (

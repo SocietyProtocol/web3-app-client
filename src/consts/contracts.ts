@@ -1,4 +1,4 @@
-import { Address } from "viem";
+import { Address, zeroAddress } from "viem";
 import { ChainVariable } from "./types";
 
 interface ContractAddresses {
@@ -28,6 +28,6 @@ export const contracts: ContractAddresses = {
   },
   communityRegistry: {
     sepolia: "0x84ffd2805af9d0946e02Fe19Cd1eE58228669B0e",
-    mainnet: "0x000000000000000000000000000000000000000000", // Placeholder, to be updated when deployed
+    mainnet: zeroAddress, // Placeholder, to be updated when deployed
   },
 };

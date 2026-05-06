@@ -44,7 +44,12 @@ export const useMutateMetadata = ({
           });
         }
       : undefined,
-    onError,
+    onError: (error) => {
+      if (showNotifications) {
+        closeSnackbar("ipfs-upload");
+      }
+      onError?.(error);
+    },
     onSuccess: showNotifications
       ? () => {
           closeSnackbar("ipfs-upload");

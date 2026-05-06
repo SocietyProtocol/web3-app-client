@@ -9,4 +9,8 @@ export const URLS = {
 
   // IPFS gateways
   IPFS_GATEWAY: `https://ipfs.io/ipfs`,
+
+  // Social
+  TWITTER: "https://x.com/ProtocolSociety",
+  DISCORD: "https://discord.com/invite/fpk7eH7aWQ",
 } as const;

@@ -7,6 +7,7 @@ import { CommunityDetailHeader } from "./CommunityDetailHeader";
 import { MembersTab } from "./MembersTab";
 import { BadgesTab } from "./BadgesTab";
 import { PlaceholderTab } from "./PlaceholderTab";
+import { GovernanceTab } from "./GovernanceTab";
 
 import { CommunityDetailsTab } from "./CommunityDetail.types";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
@@ -47,13 +48,14 @@ export function CommunityDetails() {
             <Stack direction="row" spacing={1} alignItems="center">
               <span>Governance</span>
               <Chip
-                label="coming soon"
+                label="Coming Soon"
                 color="success"
                 size="small"
                 sx={{
+                  textTransform: "none",
                   height: 18,
                   fontSize: (theme) => theme.typography.pxToRem(10),
-                  "& .MuiChip-label": { px: 1 },
+                  transform: "translateY(-2px)",
                 }}
               />
             </Stack>
@@ -72,9 +74,7 @@ export function CommunityDetails() {
         {tab === CommunityDetailsTab.Overview && <OverviewTab />}
         {tab === CommunityDetailsTab.Members && <MembersTab />}
         {tab === CommunityDetailsTab.Badges && <BadgesTab />}
-        {tab === CommunityDetailsTab.Governance && (
-          <PlaceholderTab label="Governance" />
-        )}
+        {tab === CommunityDetailsTab.Governance && <GovernanceTab />}
         {tab === CommunityDetailsTab.Settings && (
           <PlaceholderTab label="Settings" />
         )}

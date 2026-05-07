@@ -46,16 +46,16 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const wagmiReady = useWagmiReady();
   const { address, isConnected } = useAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
-  const profile = useUserQuery(requireAccount ? address : undefined);
+  const user = useUserQuery(requireAccount ? address : undefined);
 
-  if (loading || !wagmiReady || (requireAccount && profile.isLoading)) {
+  if (loading || !wagmiReady || (requireAccount && user.isLoading)) {
     return fallback;
   }
 
   if (
     isConnected &&
     (!requireNetwork || !isWrongNetwork) &&
-    (!requireAccount || profile.data)
+    (!requireAccount || user.data?.profile)
   ) {
     return children;
   }
@@ -108,7 +108,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
           <WrongNetworkBubble message={switchNetworkMessage} />
         ) : (
           requireAccount &&
-          !profile.data && (
+          !user.data?.profile && (
             <AccountSetupBubble
               onActionClick={() => router.push("/profile?setupOpen=true")}
             />

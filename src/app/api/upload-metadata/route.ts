@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { URLS } from "@/consts/urls";
 
 export interface UploadMetadataResponse {
-  uri: string;
+  uris: string[];
 }
 
 export interface UploadMetadataErrorResponse {
@@ -12,7 +12,6 @@ export interface UploadMetadataErrorResponse {
 }
 
 export async function POST(request: NextRequest) {
-  // Authenticate the request
   const auth = await authenticateRequest(request);
 
   if (!auth.authenticated) {
@@ -33,23 +32,37 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Basic validation - ensure it's an object
-  if (typeof body !== "object" || body === null) {
+  const items: unknown[] = Array.isArray(body) ? body : [body];
+
+  if (items.length === 0) {
     return NextResponse.json(
-      { error: "Request body must be a valid object" },
+      {
+        error:
+          "Request body must contain at least one metadata object (as an object or array)",
+      },
       { status: 400 },
     );
   }
 
+  for (const item of items) {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      return NextResponse.json(
+        { error: "Each item must be a valid object" },
+        { status: 400 },
+      );
+    }
+  }
+
   try {
-    // Upload to IPFS via Pinata (using public endpoint like profile route does)
-    const { cid } = await pinata.upload.public.json(
-      body as Record<string, unknown>,
+    const results = await Promise.all(
+      items.map((item) =>
+        pinata.upload.public.json(item as Record<string, unknown>),
+      ),
     );
 
-    const uri = `${URLS.IPFS_GATEWAY}/${cid}`;
+    const uris = results.map(({ cid }) => `${URLS.IPFS_GATEWAY}/${cid}`);
 
-    return NextResponse.json<UploadMetadataResponse>({ uri }, { status: 200 });
+    return NextResponse.json<UploadMetadataResponse>({ uris }, { status: 200 });
   } catch (error) {
     console.error("Error uploading to IPFS:", error);
 

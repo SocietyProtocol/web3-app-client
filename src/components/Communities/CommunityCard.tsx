@@ -17,6 +17,7 @@ import { useNow } from "@/hooks/useNow";
 
 export interface CommunityCardProps extends Partial<CommunityData> {
   loading?: boolean;
+  readonly?: boolean;
 }
 
 const StyledCommunityCard = styled(Paper, {
@@ -33,6 +34,8 @@ const StyledCommunityCard = styled(Paper, {
   borderRadius: 8,
   boxShadow: "none",
   width: "100%",
+  minWidth: 240,
+  maxWidth: 300,
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 
@@ -66,6 +69,7 @@ export const CommunityCard = ({
   tierName,
   tierExpiresAt,
   loading = false,
+  readonly = false,
 }: CommunityCardProps) => {
   const now = useNow({
     updateAt: tierExpiresAt ? Number(tierExpiresAt) : undefined,
@@ -120,7 +124,7 @@ export const CommunityCard = ({
           sx={{ flexShrink: 0 }}
         />
       ) : (
-        <OptionalLink href={`/communities/${id}`}>
+        <OptionalLink href={readonly ? undefined : `/communities/${id}`}>
           <Avatar
             src={imageUrl ?? "/images/community.png"}
             alt={name}
@@ -143,7 +147,7 @@ export const CommunityCard = ({
         <Skeleton width="80%" height={28} />
       ) : (
         <OptionalLink
-          href={`/communities/${id}`}
+          href={readonly ? undefined : `/communities/${id}`}
           style={{
             textAlign: "center",
             maxWidth: "180px",

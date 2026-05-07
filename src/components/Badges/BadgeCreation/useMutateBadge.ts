@@ -70,8 +70,8 @@ export const useMutateBadge = ({
           ...(data.metadata ? JSON.parse(data.metadata) : {}),
         } as Record<string, unknown>;
 
-        const res = await uploadIpfsResult.mutateAsync(metadata);
-        uri = res.uri;
+        const res = await uploadIpfsResult.mutateAsync([metadata]);
+        uri = res.uris[0];
       }
 
       // Call the contract

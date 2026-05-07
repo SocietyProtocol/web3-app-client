@@ -37,8 +37,8 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
           ...(data.metadata ? JSON.parse(data.metadata) : {}),
         } as Record<string, unknown>;
 
-        const ipfsData = await uploadIpfsResult.mutateAsync(metadata);
-        uri = ipfsData.uri;
+        const ipfsData = await uploadIpfsResult.mutateAsync([metadata]);
+        uri = ipfsData.uris[0];
       }
 
       await transaction.execute({

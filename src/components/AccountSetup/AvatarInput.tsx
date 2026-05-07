@@ -115,7 +115,7 @@ export const AvatarInput = ({
             variant="text"
             onClick={() => onChange(null)}
             size="small"
-            disabled={disabled}
+            disabled={disabled || !value}
             sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             Remove Photo

@@ -11,12 +11,7 @@ export const MetadataBlock = ({ label, metadata }: MetadataBlockProps) => {
   const formatted = useMemo(() => {
     if (!metadata) return null;
 
-    try {
-      return formatJson(metadata);
-    } catch (err) {
-      console.warn("MetadataBlock: failed to parse JSON", err);
-      return metadata;
-    }
+    return formatJson(metadata);
   }, [metadata]);
 
   return <MonoBlock label={label} value={formatted} />;

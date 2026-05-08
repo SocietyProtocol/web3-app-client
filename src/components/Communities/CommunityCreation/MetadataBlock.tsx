@@ -14,5 +14,7 @@ export const MetadataBlock = ({ label, metadata }: MetadataBlockProps) => {
     return formatJson(metadata);
   }, [metadata]);
 
-  return <MonoBlock label={label} value={formatted} />;
+  return (
+    <MonoBlock label={label} value={formatted ?? "No additional metadata"} />
+  );
 };

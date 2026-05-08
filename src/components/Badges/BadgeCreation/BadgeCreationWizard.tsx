@@ -15,6 +15,7 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 import { BadgePreview } from "./BadgePreview";
+import { useWatch } from "react-hook-form";
 
 const steps: WizardStep[] = [
   { label: "Badge Info", description: "Basic badge information" },
@@ -34,6 +35,11 @@ const BadgeCreationWizardContent = () => {
     isWritingContract,
     communityId,
   } = useBadgeCreation();
+
+  const [name, imageUrl, isOfficial] = useWatch({
+    control: form.control,
+    name: ["name", "imageUrl", "isOfficial"],
+  });
 
   const { address } = useAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
@@ -162,7 +168,19 @@ const BadgeCreationWizardContent = () => {
           maxWidth: 300,
         }}
       >
-        <BadgePreview isCommunity={!!communityId} />
+        <Box
+          sx={{
+            position: "sticky",
+            top: 24,
+          }}
+        >
+          <BadgePreview
+            name={name}
+            imageUrl={imageUrl}
+            isOfficial={isOfficial}
+            isCommunity={!!communityId}
+          />
+        </Box>
       </Box>
     </Stack>
   );

@@ -16,7 +16,11 @@ export const useMutateMetadata = ({
   const { generateAuthPayload } = useAuth();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  return useMutation<UploadMetadataResponse, Error, Record<string, unknown>>({
+  return useMutation<
+    UploadMetadataResponse,
+    Error,
+    Record<string, unknown> | Record<string, unknown>[]
+  >({
     mutationFn: async (data) => {
       const authPayload = await generateAuthPayload();
 

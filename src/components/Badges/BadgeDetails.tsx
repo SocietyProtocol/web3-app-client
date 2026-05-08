@@ -15,7 +15,7 @@ import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
-import { useMemo } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { UserTag } from "../User/UserTag";
@@ -23,29 +23,31 @@ import { BadgePermissions } from "./BadgePermissions";
 import { BadgeManagers } from "./BadgeManagers";
 import { getBadgePermissions } from "../../data/badges/utils";
 import { BadgeActions } from "./BadgeActions";
-import { parseAsBoolean, useQueryState } from "nuqs";
 import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
 import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { UserList } from "../User/UserList";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { useWagmiReady } from "@/atoms/wagmiReady";
 
 export interface BadgeDetailsProps {
   id: string;
+  isEditing: boolean;
+  setIsEditing: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
-  const [isEditing, setIsEditing] = useQueryState(
-    "edit",
-    parseAsBoolean.withDefault(false).withOptions({
-      history: "replace",
-    }),
-  );
-
+export const BadgeDetails = ({
+  id,
+  isEditing,
+  setIsEditing,
+}: BadgeDetailsProps) => {
+  const wagmiReady = useWagmiReady();
   const { address: userAddress } = useAccount();
 
   const { data, isLoading } = useBadge(id);
+
+  const showLoader = !wagmiReady || isLoading;
 
   const isManager = useMemo(() => {
     if (!data?.badge?.managers || !userAddress) return false;
@@ -113,7 +115,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
     >
       {/* Badge Image */}
       <Box sx={{ mt: { xs: 2, md: 5 } }}>
-        {isLoading ? (
+        {showLoader ? (
           <Skeleton
             variant="circular"
             sx={{
@@ -193,11 +195,11 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
           },
         }}
       >
-        {isLoading ? <Skeleton width={150} /> : data?.badge?.name}
+        {showLoader ? <Skeleton width={150} /> : data?.badge?.name}
       </Typography>
 
       {/* Badge Description */}
-      {(isLoading || data?.badge?.description) && (
+      {(showLoader || data?.badge?.description) && (
         <Typography
           variant="body1"
           color="text.secondary"
@@ -208,7 +210,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
             wordBreak: "break-word",
           }}
         >
-          {isLoading ? <Skeleton width={280} /> : data?.badge?.description}
+          {showLoader ? <Skeleton width={280} /> : data?.badge?.description}
         </Typography>
       )}
 
@@ -241,7 +243,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         {data?.badge?.creatorAddress && (
           <UserTag
             id={creatorAddress}
-            loading={isLoading || creator.isLoading}
+            loading={showLoader || creator.isLoading}
             name={
               creator.data?.name ??
               (creatorAddress ? truncateAddress(creatorAddress) : "")
@@ -284,31 +286,31 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         <BadgePermissions
           label="Who can Mint:"
           tooltip="Holders of this badge have permission to mint new badges."
-          isLoading={isLoading}
+          isLoading={showLoader}
           permissionBadges={data?.badge?.minters}
         />
         <BadgePermissions
           label="Who can Burn:"
           tooltip="Holders of this badge have permission to burn badges."
-          isLoading={isLoading}
+          isLoading={showLoader}
           permissionBadges={data?.badge?.burners}
         />
         <BadgePermissions
           label="Who can Transfer:"
           tooltip="Holders of this badge have permission to transfer badges."
-          isLoading={isLoading}
+          isLoading={showLoader}
           permissionBadges={data?.badge?.transferers}
         />
         <BadgeManagers
           label="Who can Manage:"
           tooltip="These are the users who can manage the badge."
-          loading={isLoading}
+          loading={showLoader}
           managers={data?.badge?.managers}
         />
         <Box paddingTop={4}>
           <BadgeActions
             id={id}
-            loading={isLoading}
+            loading={showLoader}
             canMint={canMint}
             canBurn={canBurn}
             canTransfer={canTransfer}
@@ -321,7 +323,7 @@ export const BadgeDetails = ({ id }: BadgeDetailsProps) => {
         title="Holders"
         modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
         users={data?.badge?.holders || []}
-        loading={isLoading}
+        loading={showLoader}
         noUsersFoundText="No holders found"
         viewAllButtonText="View All Holders"
         andMoreText="And {count} more holders..."

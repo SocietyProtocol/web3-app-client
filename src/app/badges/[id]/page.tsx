@@ -2,7 +2,7 @@ import { getQueryClient } from "@/lib/tanstack-query";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BadgeDetails } from "@/components/Badges/BadgeDetails";
 import { fetchBadge } from "@/data/badges/utils";
-import { Page } from "@/components/Page/Page";
+import { BadgePageLayout } from "./BadgePageLayout";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -21,10 +21,13 @@ export async function generateMetadata({
 
 export default async function BadgePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { id } = await params;
+  const { edit } = await searchParams;
 
   const queryClient = getQueryClient();
 
@@ -45,9 +48,7 @@ export default async function BadgePage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Page backButton defaultBackPath="/badges">
-        <BadgeDetails id={id} />
-      </Page>
+      <BadgePageLayout id={id} initiallyEditing={edit === "true"} />
     </HydrationBoundary>
   );
 }

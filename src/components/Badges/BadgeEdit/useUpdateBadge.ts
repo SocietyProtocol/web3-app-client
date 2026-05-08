@@ -6,6 +6,9 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useBadge } from "@/data/badges/useBadge";
 import { useTransaction } from "@/hooks/useTransaction";
+import { capturePostHogEvent } from "@/lib/posthog";
+import { useAccount } from "wagmi";
+import { decodeBadgeModified } from "@/data/badges/decodeUtils";
 
 interface UseUpdateBadgeProps {
   badgeId: string;
@@ -13,6 +16,7 @@ interface UseUpdateBadgeProps {
 
 export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
+  const { address } = useAccount();
   const { data: badgeData } = useBadge(badgeId);
 
   const uploadIpfsResult = useMutateMetadata({ showNotifications: false });
@@ -20,6 +24,16 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const transaction = useTransaction({
     waitForSync: true,
     queryKeysToInvalidateOnSuccess: [["badge", badgeId], ["badges"]],
+    onSuccess: (receipt) => {
+      const modified = decodeBadgeModified(receipt);
+      capturePostHogEvent("badge_updated", {
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+        badge_id: badgeId,
+        badge_name: modified?.name,
+        has_metadata: Boolean(modified?.metadataURI),
+      });
+    },
   });
 
   const mutate = useCallback(

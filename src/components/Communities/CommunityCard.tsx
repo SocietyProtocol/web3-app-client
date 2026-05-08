@@ -35,7 +35,6 @@ const StyledCommunityCard = styled(Paper, {
   boxShadow: "none",
   width: "100%",
   minWidth: 240,
-  maxWidth: 300,
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 

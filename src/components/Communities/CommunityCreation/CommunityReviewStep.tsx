@@ -1,49 +1,11 @@
-import { Paper, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { useWatch } from "react-hook-form";
 import { useCommunityCreation } from "./CommunityCreationContext";
 import { CommunityCard } from "../CommunityCard";
 import { BadgeCard } from "@/components/Badges/BadgeCard";
 import { getManagerBadgeName, getMemberBadgeName } from "./badgeNames";
-
-const formatMetadata = (value: string): string => {
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2);
-  } catch (err) {
-    console.warn("CommunityReviewStep: failed to parse metadata JSON", err);
-    return value;
-  }
-};
-
-const MetadataBlock = ({
-  label,
-  metadata,
-}: {
-  label: string;
-  metadata?: string;
-}) => {
-  return (
-    <Stack spacing={0.5}>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 1.5,
-          borderRadius: 1,
-          bgcolor: "background.default",
-          fontFamily: "monospace",
-          fontSize: 12,
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-all",
-        }}
-        component="pre"
-      >
-        {metadata ? formatMetadata(metadata) : "No additional metadata"}
-      </Paper>
-    </Stack>
-  );
-};
+import { MetadataBlock } from "./MetadataBlock";
+import { MonoBlock } from "./MonoBlock";
 
 export const CommunityReviewStep = () => {
   const { form } = useCommunityCreation();
@@ -80,7 +42,7 @@ export const CommunityReviewStep = () => {
           imageUrl={creatorBadgeImageUrl}
           readonly
         />
-        <MetadataBlock label="DESCRIPTION" metadata={description} />
+        <MonoBlock label="DESCRIPTION" value={description} />
       </Stack>
 
       {/* Badges */}

@@ -30,7 +30,7 @@ export const BadgePreview = ({
         isOfficial={isOfficial}
         isCommunity={isCommunity}
         creatorAddress={address}
-        readonly={false}
+        readonly
       />
     </Box>
   );

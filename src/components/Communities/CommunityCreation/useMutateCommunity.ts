@@ -7,6 +7,8 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
+import { useAccount } from "wagmi";
+import { decodeCommunityDetailsUpdated } from "@/data/communities/decodeUtils";
 
 interface UseMutateCommunityProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -18,6 +20,7 @@ export const useMutateCommunity = ({
   onError,
 }: UseMutateCommunityProps) => {
   const contractAddress = useChainVar(contracts.communityRegistry);
+  const { address } = useAccount();
 
   const uploadIpfsResult = useMutateMetadata({
     onError,
@@ -33,8 +36,14 @@ export const useMutateCommunity = ({
     successMessage: "Community created successfully",
     queryKeysToInvalidateOnSuccess,
     onSuccess: (transactionReceipt) => {
+      const detailsUpdated = decodeCommunityDetailsUpdated(transactionReceipt);
+
       capturePostHogEvent("community_created", {
+        wallet_address: address?.toLowerCase(),
         tx_hash: transactionReceipt.transactionHash,
+        community_name: detailsUpdated?.name,
+        community_id: detailsUpdated?.communityId?.toString(),
+        community_description: detailsUpdated?.description,
       });
       onSuccess?.(transactionReceipt);
     },
@@ -43,14 +52,15 @@ export const useMutateCommunity = ({
 
   const mutate = useCallback(
     async (data: CommunityTransformedData) => {
-      // Build manager badge metadata
       const creatorMetadata: Record<string, unknown> = {
         imageUrl: data.creatorBadgeImageUrl,
+        ...data.creatorBadgeMetadata,
       };
 
       // Build member badge metadata
       const memberMetadata: Record<string, unknown> = {
         imageUrl: data.memberBadgeImageUrl,
+        ...data.memberBadgeMetadata,
       };
 
       // Upload both in a single authenticated request (one signature)

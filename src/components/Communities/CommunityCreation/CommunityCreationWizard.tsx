@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { Wizard, WizardStep } from "../../Wizard";
+import { Wizard } from "../../Wizard";
 import { CommunityInfoStep } from "./CommunityInfoStep";
 import { BadgeDetailsStep } from "./BadgeDetailsStep";
 import { CommunityReviewStep } from "./CommunityReviewStep";
@@ -11,70 +11,13 @@ import {
   useCommunityCreation,
 } from "./CommunityCreationContext";
 import { useAccount } from "wagmi";
-import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { parseErrorMessage } from "@/utils/errors";
 import { CommunityPreview } from "./CommunityPreview";
 import { useWatch } from "react-hook-form";
-import Link from "next/link";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-
-const steps: WizardStep[] = [
-  { label: "Community Info", description: "Logo, name & description" },
-  { label: "Badge Details", description: "Manager & member badge settings" },
-  { label: "Review", description: "Review and submit" },
-];
-
-const CommunityCreatedScreen = ({
-  communityId,
-  communityName,
-  communityImage,
-}: {
-  communityId: bigint;
-  communityName: string;
-  communityImage: string | null;
-}) => {
-  return (
-    <Stack
-      alignItems="center"
-      justifyContent="center"
-      spacing={3}
-      sx={{ py: 8, px: 4, textAlign: "center" }}
-    >
-      <CheckCircleOutlineIcon sx={{ fontSize: 72, color: "success.main" }} />
-
-      <Typography variant="h4" component="h2" color="primary.main">
-        Community Created!
-      </Typography>
-
-      <Avatar
-        src={communityImage ?? undefined}
-        alt={communityName}
-        sx={{ width: 80, height: 80 }}
-      >
-        {!communityImage && communityName
-          ? communityName.charAt(0).toUpperCase()
-          : undefined}
-      </Avatar>
-
-      <Typography variant="h6">{communityName}</Typography>
-
-      <Typography variant="body1" color="text.secondary">
-        Your community has been successfully created on-chain.
-      </Typography>
-
-      <Button
-        component={Link}
-        href={`/communities/${communityId.toString()}`}
-        variant="contained"
-        size="large"
-        sx={{ mt: 1 }}
-      >
-        View Community
-      </Button>
-    </Stack>
-  );
-};
+import { CommunityCreatedScreen } from "./CommunityCreatedScreen";
+import { steps } from "./consts";
 
 const CommunityCreationWizardContent = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -87,7 +30,7 @@ const CommunityCreationWizardContent = () => {
     isSyncing,
     isUploadingToIpfs,
     isWritingContract,
-    createdCommunityId,
+    createdCommunity,
   } = useCommunityCreation();
 
   const { address } = useAccount();
@@ -157,11 +100,11 @@ const CommunityCreationWizardContent = () => {
     return "Saving...";
   }, [isUploadingToIpfs, isTransactionPending, isSyncing, isWritingContract]);
 
-  if (createdCommunityId !== null) {
+  if (createdCommunity !== null) {
     return (
       <CommunityCreatedScreen
-        communityId={createdCommunityId}
-        communityName={name}
+        communityId={createdCommunity.communityId}
+        communityName={createdCommunity.name}
         communityImage={creatorBadgeImageUrl}
       />
     );

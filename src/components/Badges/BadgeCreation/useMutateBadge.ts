@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
@@ -8,6 +8,12 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
+import { useAccount } from "wagmi";
+import {
+  decodeBadgeCreatedEvents,
+  decodeBadgePermissions,
+  decodeEditorsUpdated,
+} from "@/data/badges/decodeUtils";
 
 interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
@@ -24,7 +30,7 @@ export const useMutateBadge = ({
     communityId ? contracts.communityRegistry : contracts.badges,
   );
 
-  const pendingBadgeEventRef = useRef<BadgeTransformedData | null>(null);
+  const { address } = useAccount();
 
   const uploadIpfsResult = useMutateMetadata({ onError });
 
@@ -37,22 +43,31 @@ export const useMutateBadge = ({
       ...(communityId ? [["community", communityId], ["communities"]] : []),
     ],
     onSuccess: (transactionReceipt) => {
-      const pendingBadgeEvent = pendingBadgeEventRef.current;
+      const [created] = decodeBadgeCreatedEvents(transactionReceipt);
+      const permissions = decodeBadgePermissions(transactionReceipt);
+      const editorUpdates = decodeEditorsUpdated(transactionReceipt);
 
-      if (pendingBadgeEvent) {
-        capturePostHogEvent("badge_created", {
-          badge_name: pendingBadgeEvent.name,
-          has_image: Boolean(pendingBadgeEvent.imageUrl),
-          has_metadata: Boolean(pendingBadgeEvent.metadata),
-          is_official: pendingBadgeEvent.isOfficial,
-          editor_count: pendingBadgeEvent.editors.length,
-          is_community: Boolean(communityId),
-          community_id: communityId,
-          tx_hash: transactionReceipt.transactionHash,
-        });
-      }
+      capturePostHogEvent("badge_created", {
+        wallet_address: address?.toLowerCase(),
+        badge_id: created?.id.toString(),
+        badge_name: created?.name,
+        is_official: created?.isOfficial,
+        is_community: created?.isCommunity,
+        community_id: communityId,
+        tx_hash: transactionReceipt.transactionHash,
+        minter_badge_ids: permissions?.minters.map((id) => id.toString()),
+        transferer_badge_ids: permissions?.transferers.map((id) =>
+          id.toString(),
+        ),
+        burner_badge_ids: permissions?.burners.map((id) => id.toString()),
+        editors:
+          permissions?.editors ??
+          editorUpdates.filter((e) => e.isAllowed).map((e) => e.editor),
+        editor_count:
+          permissions?.editors.length ??
+          editorUpdates.filter((e) => e.isAllowed).length,
+      });
 
-      pendingBadgeEventRef.current = null;
       onSuccess?.(transactionReceipt);
     },
     onError,
@@ -60,7 +75,6 @@ export const useMutateBadge = ({
 
   const mutate = useCallback(
     async (data: BadgeTransformedData) => {
-      pendingBadgeEventRef.current = data;
       const hasMetadata = !!data.imageUrl || !!data.metadata;
 
       let uri = "";

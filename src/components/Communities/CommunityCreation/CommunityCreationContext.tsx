@@ -10,7 +10,10 @@ import {
   communityValidationSchema,
 } from "@/validation/community";
 import { TransactionReceipt } from "viem";
-import { decodeCommunityId } from "@/data/communities/decodeUtils";
+import {
+  decodeCommunityCreated,
+  decodeCommunityDetailsUpdated,
+} from "@/data/communities/decodeUtils";
 import { useSnackbar } from "notistack";
 
 interface CommunityCreationContextType {
@@ -27,7 +30,11 @@ interface CommunityCreationContextType {
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
   isTransactionPending: boolean;
-  createdCommunityId: bigint | null;
+  createdCommunity: {
+    communityId: bigint;
+    name: string;
+    description: string;
+  } | null;
 }
 
 const CommunityCreationContext = createContext<
@@ -51,9 +58,11 @@ interface CommunityCreationProviderProps {
 export const CommunityCreationProvider = ({
   children,
 }: CommunityCreationProviderProps) => {
-  const [createdCommunityId, setCreatedCommunityId] = useState<bigint | null>(
-    null,
-  );
+  const [createdCommunity, setCreatedCommunity] = useState<{
+    communityId: bigint;
+    name: string;
+    description: string;
+  } | null>(null);
 
   const form = useForm<CommunityInputData, unknown, CommunityTransformedData>({
     resolver: zodResolver(communityValidationSchema),
@@ -79,16 +88,22 @@ export const CommunityCreationProvider = ({
     isTransactionPending,
   } = useMutateCommunity({
     onSuccess: (receipt: TransactionReceipt) => {
-      const id = decodeCommunityId(receipt);
-      if (id === null) {
+      const communityCreated = decodeCommunityCreated(receipt);
+      const communityDetailsUpdated = decodeCommunityDetailsUpdated(receipt);
+
+      if (communityCreated === null) {
         enqueueSnackbar(
           "Community created successfully but ID could not be retrieved. Visit your communities page to view it.",
           { variant: "warning" },
         );
         return;
       }
-      setCreatedCommunityId(id);
-      form.reset();
+
+      setCreatedCommunity({
+        communityId: communityCreated.communityId,
+        name: communityDetailsUpdated?.name ?? "",
+        description: communityDetailsUpdated?.description ?? "",
+      });
     },
   });
 
@@ -103,7 +118,7 @@ export const CommunityCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
-      createdCommunityId,
+      createdCommunity,
     }),
     [
       form,
@@ -113,7 +128,7 @@ export const CommunityCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
-      createdCommunityId,
+      createdCommunity,
     ],
   );
 

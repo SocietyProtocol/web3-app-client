@@ -3,6 +3,9 @@ import { Hex, TransactionReceipt } from "viem";
 import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
+import { capturePostHogEvent } from "@/lib/posthog";
+import { useAccount } from "wagmi";
+import { decodeBurnTransfer } from "@/data/badges/decodeUtils";
 
 interface BadgeBurnData {
   id: bigint;
@@ -21,8 +24,9 @@ export const useBurnBadgeMutation = ({
   onError,
   args,
   successMessage = "Badge burned successfully",
-}: UseBurnBadgeMutationProps) =>
-  useTransaction({
+}: UseBurnBadgeMutationProps) => {
+  const { address } = useAccount();
+  return useTransaction({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,
     functionName: "burn",
@@ -36,8 +40,18 @@ export const useBurnBadgeMutation = ({
       ["communityMembers"],
       ["communityMembersInfinite"],
     ],
-    onSuccess,
+    onSuccess: (receipt) => {
+      const burn = decodeBurnTransfer(receipt);
+      capturePostHogEvent("badge_burned", {
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+        badge_id: burn?.id.toString(),
+        holder: burn?.from,
+      });
+      onSuccess?.(receipt);
+    },
     onError,
   });
+};
 
 export default useBurnBadgeMutation;

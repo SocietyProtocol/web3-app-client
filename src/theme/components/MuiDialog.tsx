@@ -9,7 +9,6 @@ export const MuiDialog: Components<
       boxShadow: "none",
       backgroundColor: theme.palette.background.page,
       backgroundImage: "none",
-      maxWidth: "fit-content",
     }),
   },
 };

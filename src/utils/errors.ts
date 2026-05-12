@@ -3,7 +3,11 @@ import {
   ValidationError,
   ValidationErrorDetails,
 } from "@/errors/ValidationError";
-import { BaseError, ContractFunctionExecutionError } from "viem";
+import {
+  BaseError,
+  ContractFunctionExecutionError,
+  ContractFunctionRevertedError,
+} from "viem";
 
 /**
  * Represents the result of parsing an error
@@ -117,8 +121,13 @@ export function parseErrorMessage(
 
   if (error instanceof ValidationError) {
     return error.message;
-  } else if (error instanceof ContractFunctionExecutionError) {
-    return defaultMessage;
+  } else if (
+    error instanceof ContractFunctionExecutionError &&
+    error.cause instanceof ContractFunctionRevertedError
+  ) {
+    console.error(error);
+
+    return defaultMessage; // Avoid showing raw revert reasons which can be technical and confusing
   } else if (error instanceof BaseError) {
     return error.shortMessage;
   } else if (

@@ -6,8 +6,8 @@ import { OverviewTab } from "./OverviewTab";
 import { CommunityDetailHeader } from "./CommunityDetailHeader";
 import { MembersTab } from "./MembersTab";
 import { BadgesTab } from "./BadgesTab";
-import { PlaceholderTab } from "./PlaceholderTab";
 import { GovernanceTab } from "./GovernanceTab";
+import { SettingsTab } from "./SettingsTab";
 
 import { CommunityDetailsTab } from "./CommunityDetail.types";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
@@ -75,9 +75,7 @@ export function CommunityDetails() {
         {tab === CommunityDetailsTab.Members && <MembersTab />}
         {tab === CommunityDetailsTab.Badges && <BadgesTab />}
         {tab === CommunityDetailsTab.Governance && <GovernanceTab />}
-        {tab === CommunityDetailsTab.Settings && (
-          <PlaceholderTab label="Settings" />
-        )}
+        {tab === CommunityDetailsTab.Settings && <SettingsTab />}
       </Box>
     </Stack>
   );

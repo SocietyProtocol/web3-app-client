@@ -9,6 +9,7 @@ import { MuiCard } from "./components/MuiCard";
 import { MuiDialog } from "./components/MuiDialog";
 import { MuiDialogTitle } from "./components/MuiDialogTitle";
 import { MuiDialogContent } from "./components/MuiDialogContent";
+import { MuiDialogActions } from "./components/MuiDialogActions";
 import { breakpoints } from "./breakpoints";
 import { MuiPaginationItem } from "./components/MuiPaginationItem";
 import { MuiChip } from "./components/MuiChip";
@@ -41,6 +42,7 @@ const baseTheme = createTheme({
     MuiDialog,
     MuiDialogTitle,
     MuiDialogContent,
+    MuiDialogActions,
     MuiAccordion,
     MuiAccordionSummary,
     MuiAccordionDetails,

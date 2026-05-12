@@ -243,6 +243,7 @@ export const useTransaction = ({
       } catch (error) {
         setStatus("error");
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+
         if (!suppressErrorSnackbar) {
           enqueueSnackbar(parseErrorMessage(error, errorMessage), {
             variant: "error",

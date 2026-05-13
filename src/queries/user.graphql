@@ -7,6 +7,12 @@ query User($id: ID!) {
     profile {
       id
     }
+    invitedBy {
+      id
+      name
+      bio
+      imageUrl
+    }
     badges(where: { isProfile: false }) {
       id
       name

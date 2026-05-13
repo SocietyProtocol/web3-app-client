@@ -5,7 +5,6 @@ import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
 import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
 import { ReferredBy } from "./ReferredBy";
-import { useReferredBy } from "./useReferredBy";
 
 interface ProfileDataCardProps {
   address: Address;
@@ -18,8 +17,6 @@ export const ProfileDataCard = ({
   profileId,
   readonly = false,
 }: ProfileDataCardProps) => {
-  const referredBy = useReferredBy(address);
-
   return (
     <Paper
       elevation={1}
@@ -84,17 +81,8 @@ export const ProfileDataCard = ({
           </DataItem>
         </Grid>
         <Grid size={1} container direction="column" spacing={4}>
-          <ReferredBy
-            readonly={readonly}
-            address={referredBy.data}
-            loading={referredBy.isLoading}
-          />
-          {!readonly && (
-            <ReferralCodeGenerator
-              referredBy={referredBy.data}
-              loading={referredBy.isLoading}
-            />
-          )}
+          <ReferredBy readonly={readonly} userAddress={address} />
+          {!readonly && <ReferralCodeGenerator />}
         </Grid>
       </Grid>
     </Paper>

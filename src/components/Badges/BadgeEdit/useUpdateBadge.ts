@@ -59,13 +59,7 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
         functionName: "modifyBadge",
-        args: [
-          BigInt(badgeId),
-          data.name,
-          data.isOfficial,
-          badgeData.badge.isCommunity,
-          uri,
-        ],
+        args: [BigInt(badgeId), data.name, data.isOfficial, uri],
       });
     },
     [contractAddress, badgeData, badgeId, uploadIpfsResult, transaction],

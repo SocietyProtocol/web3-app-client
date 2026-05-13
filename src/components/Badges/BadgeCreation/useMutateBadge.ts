@@ -52,7 +52,7 @@ export const useMutateBadge = ({
         badge_id: created?.id.toString(),
         badge_name: created?.name,
         is_official: created?.isOfficial,
-        is_community: created?.isCommunity,
+        is_community: created?.isCommunityBadge,
         community_id: communityId,
         tx_hash: transactionReceipt.transactionHash,
         minter_badge_ids: permissions?.minters.map((id) => id.toString()),

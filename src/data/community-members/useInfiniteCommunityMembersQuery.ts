@@ -38,7 +38,7 @@ export const useInfiniteCommunityMembersQuery = (
   };
 
   return useInfiniteQuery({
-    queryKey: ["communityMembersInfinite", mergedOptions],
+    queryKey: ["community-members-infinite", mergedOptions],
     queryFn,
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages) => {

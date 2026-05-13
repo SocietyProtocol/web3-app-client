@@ -9,6 +9,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseUpdateManagerBadgeProps {
+  enabled?: boolean;
   communityId: string;
   badgeId?: string;
   badgeName?: string;
@@ -17,6 +18,7 @@ interface UseUpdateManagerBadgeProps {
 }
 
 export function useUpdateManagerBadge({
+  enabled = true,
   communityId,
   badgeId,
   badgeName,
@@ -34,11 +36,21 @@ export function useUpdateManagerBadge({
     address: badgesAddress,
     abi: SocietyProtocolBadgesABI,
     functionName: "modifyBadge",
-    args: hasArgs ? [BigInt(badgeId), badgeName, false, true, ""] : undefined,
-    simulate: hasArgs,
+    args:
+      enabled && hasArgs
+        ? [BigInt(badgeId), badgeName, false, true, ""]
+        : undefined,
+    enabled: enabled && hasArgs,
+    simulate: enabled && hasArgs,
     waitForSync: true,
     successMessage: "Manager badge updated successfully",
-    queryKeysToInvalidateOnSuccess: [["community", communityId], ["badge"]],
+    queryKeysToInvalidateOnSuccess: [
+      ["community", communityId],
+      ["communities"],
+      ["badge", badgeId],
+      ["badges"],
+      ["user", address?.toLowerCase()],
+    ],
     onSuccess: (receipt) => {
       capturePostHogEvent("community_manager_badge_updated", {
         community_id: communityId,
@@ -63,8 +75,8 @@ export function useUpdateManagerBadge({
 
       if (hasMetadata) {
         const metadataObj = {
-          imageUrl,
           ...(metadata ? JSON.parse(metadata) : {}),
+          imageUrl,
         } as Record<string, unknown>;
 
         const res = await uploadMetadata.mutateAsync(metadataObj);

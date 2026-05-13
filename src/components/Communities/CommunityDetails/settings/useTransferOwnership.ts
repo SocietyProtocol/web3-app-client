@@ -8,6 +8,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseTransferOwnershipProps {
+  enabled?: boolean;
   communityId: string;
   managerBadgeId?: string;
   newOwner?: Hex;
@@ -16,6 +17,7 @@ interface UseTransferOwnershipProps {
 }
 
 export function useTransferOwnership({
+  enabled = true,
   communityId,
   managerBadgeId,
   newOwner,
@@ -31,15 +33,22 @@ export function useTransferOwnership({
     address: badgesAddress,
     abi: SocietyProtocolBadgesABI,
     functionName: "safeTransferFrom",
-    args: hasArgs
-      ? [address, newOwner, BigInt(managerBadgeId), BigInt(1), "0x" as Hex]
-      : undefined,
-    simulate: hasArgs,
+    args:
+      enabled && hasArgs
+        ? [address, newOwner, BigInt(managerBadgeId), BigInt(1), "0x" as Hex]
+        : undefined,
+    enabled: enabled && hasArgs,
+    simulate: enabled && hasArgs,
     waitForSync: true,
     successMessage: "Community ownership transferred successfully",
     queryKeysToInvalidateOnSuccess: [
       ["community", communityId],
       ["communities"],
+      ["badge", managerBadgeId],
+      ["badges"],
+      ["user", address?.toLowerCase()],
+      ["community-members"],
+      ["community-members-infinite"],
     ],
     onSuccess: (receipt) => {
       capturePostHogEvent("community_ownership_transferred", {

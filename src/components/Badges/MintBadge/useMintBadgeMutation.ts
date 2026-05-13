@@ -37,8 +37,8 @@ export const useMintBadgeMutation = ({
       ["user"],
       ["communities"],
       ["community"],
-      ["communityMembers"],
-      ["communityMembersInfinite"],
+      ["community-members"],
+      ["community-members-infinite"],
     ],
     onSuccess: (receipt) => {
       const mints = decodeMintTransfers(receipt);

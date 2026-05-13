@@ -13,7 +13,8 @@ import { CommunityDetailsTab } from "./CommunityDetail.types";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
 export function CommunityDetails() {
-  const { isError, error, tab, setTab } = useCommunityDetailsContext();
+  const { isError, error, tab, setTab, isManager } =
+    useCommunityDetailsContext();
 
   if (isError) {
     return <ErrorDisplay error={error} />;
@@ -75,7 +76,7 @@ export function CommunityDetails() {
         {tab === CommunityDetailsTab.Members && <MembersTab />}
         {tab === CommunityDetailsTab.Badges && <BadgesTab />}
         {tab === CommunityDetailsTab.Governance && <GovernanceTab />}
-        {tab === CommunityDetailsTab.Settings && <SettingsTab />}
+        {isManager && tab === CommunityDetailsTab.Settings && <SettingsTab />}
       </Box>
     </Stack>
   );

@@ -125,8 +125,6 @@ export function parseErrorMessage(
     error instanceof ContractFunctionExecutionError &&
     error.cause instanceof ContractFunctionRevertedError
   ) {
-    console.error(error);
-
     return defaultMessage; // Avoid showing raw revert reasons which can be technical and confusing
   } else if (error instanceof BaseError) {
     return error.shortMessage;

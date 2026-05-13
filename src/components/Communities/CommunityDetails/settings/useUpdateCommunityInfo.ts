@@ -8,6 +8,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseUpdateCommunityInfoProps {
+  enabled?: boolean;
   communityId: string;
   name?: string;
   description?: string;
@@ -16,6 +17,7 @@ interface UseUpdateCommunityInfoProps {
 }
 
 export function useUpdateCommunityInfo({
+  enabled = true,
   communityId,
   name,
   description,
@@ -25,14 +27,16 @@ export function useUpdateCommunityInfo({
   const registryAddress = useChainVar(contracts.communityRegistry);
   const { address } = useAccount();
 
-  const hasArgs = !!name && name.length > 0 && description !== undefined;
+  const hasArgs = !!communityId && !!name && !!description;
 
   const transaction = useTransaction({
     address: registryAddress,
     abi: CommunityRegistryAbi,
     functionName: "updateCommunityDetails",
-    args: hasArgs ? [BigInt(communityId), name, description] : undefined,
-    simulate: hasArgs,
+    args:
+      enabled && hasArgs ? [BigInt(communityId), name, description] : undefined,
+    enabled: enabled && hasArgs,
+    simulate: enabled && hasArgs,
     waitForSync: true,
     successMessage: "Community info updated successfully",
     queryKeysToInvalidateOnSuccess: [

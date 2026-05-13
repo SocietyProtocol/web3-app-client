@@ -34,7 +34,8 @@ const schema = z.object({
     .refine((val) => val === true, "You must confirm this action"),
 });
 
-type FormValues = z.input<typeof schema>;
+type FormInputValues = z.input<typeof schema>;
+type FormOutputValues = z.output<typeof schema>;
 
 interface TransferOwnershipDialogProps {
   open: boolean;
@@ -56,7 +57,7 @@ export function TransferOwnershipDialog({
     reset,
     control,
     formState: { errors, isValid },
-  } = useForm<FormValues>({
+  } = useForm<FormInputValues, unknown, FormOutputValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       newOwner: "",
@@ -87,7 +88,7 @@ export function TransferOwnershipDialog({
   };
 
   const onSubmit = handleSubmit(async ({ newOwner }) => {
-    await transfer(newOwner as Hex);
+    await transfer(newOwner);
   });
 
   return (

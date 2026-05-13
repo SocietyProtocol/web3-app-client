@@ -9,7 +9,7 @@ export const useCommunityMembersQuery = (
   const mergedOptions = mergeOptions(options);
 
   return useQuery({
-    queryKey: ["communityMembers", mergedOptions],
+    queryKey: ["community-members", mergedOptions],
     queryFn: async () => {
       const result = await fetchCommunityMembers(mergedOptions);
 

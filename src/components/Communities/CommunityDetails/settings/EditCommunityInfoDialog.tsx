@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -60,6 +61,15 @@ export function EditCommunityInfoDialog({
     mode: "onChange",
   });
 
+  useEffect(() => {
+    if (open) {
+      reset({
+        name: community?.name ?? "",
+        description: community?.description ?? "",
+      });
+    }
+  }, [open, community, reset]);
+
   const [name, description] = useWatch({
     control,
     name: ["name", "description"],
@@ -70,6 +80,7 @@ export function EditCommunityInfoDialog({
       communityId: id,
       name,
       description,
+      enabled: open,
       onSuccess: () => {
         onClose();
       },

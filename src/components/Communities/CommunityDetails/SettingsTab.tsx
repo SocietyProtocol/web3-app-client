@@ -18,10 +18,14 @@ import { EditManagerBadgeDialog } from "./settings/EditManagerBadgeDialog";
 import { TransferOwnershipDialog } from "./settings/TransferOwnershipDialog";
 
 export function SettingsTab() {
-  const { community } = useCommunityDetailsContext();
+  const { community, isManager } = useCommunityDetailsContext();
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [editBadgeOpen, setEditBadgeOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
+
+  if (!isManager) {
+    return null;
+  }
 
   return (
     <Stack spacing={10}>

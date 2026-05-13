@@ -65,7 +65,7 @@ export const BadgeHandle = ({
                 color={community ? "info" : "gold"}
                 label={
                   community
-                    ? `${community.name.length > MAX_COMMUNITY_NAME_LENGTH ? community.name.slice(0, MAX_COMMUNITY_NAME_LENGTH) + "..." : community.name} (${community.id}) · #${id}`
+                    ? `${community.name.length > MAX_COMMUNITY_NAME_LENGTH ? community.name.slice(0, MAX_COMMUNITY_NAME_LENGTH) + "…" : community.name} (${community.id}) · #${id}`
                     : `#${id}`
                 }
                 size="small"

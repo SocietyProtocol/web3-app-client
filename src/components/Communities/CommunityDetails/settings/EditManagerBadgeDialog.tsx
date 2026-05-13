@@ -88,6 +88,7 @@ export function EditManagerBadgeDialog({
 
   const { update, isLoading, isUploadingToIpfs, gas, gasLoading, gasError } =
     useUpdateManagerBadge({
+      enabled: open,
       communityId: id,
       badgeId: managerBadgeId,
       badgeName: watchedName || undefined,

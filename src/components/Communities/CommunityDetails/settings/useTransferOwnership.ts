@@ -5,6 +5,7 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseTransferOwnershipProps {
   communityId: string;
@@ -40,7 +41,16 @@ export function useTransferOwnership({
       ["community", communityId],
       ["communities"],
     ],
-    onSuccess,
+    onSuccess: (receipt) => {
+      capturePostHogEvent("community_ownership_transferred", {
+        community_id: communityId,
+        manager_badge_id: managerBadgeId,
+        new_owner: newOwner,
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+      });
+      onSuccess?.(receipt);
+    },
     onError,
   });
 

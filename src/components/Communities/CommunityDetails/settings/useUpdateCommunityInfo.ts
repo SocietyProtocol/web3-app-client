@@ -1,9 +1,11 @@
 import { useCallback } from "react";
 import { TransactionReceipt } from "viem";
+import { useAccount } from "wagmi";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseUpdateCommunityInfoProps {
   communityId: string;
@@ -21,6 +23,7 @@ export function useUpdateCommunityInfo({
   onError,
 }: UseUpdateCommunityInfoProps) {
   const registryAddress = useChainVar(contracts.communityRegistry);
+  const { address } = useAccount();
 
   const hasArgs = !!name && name.length > 0 && description !== undefined;
 
@@ -36,7 +39,14 @@ export function useUpdateCommunityInfo({
       ["community", communityId],
       ["communities"],
     ],
-    onSuccess,
+    onSuccess: (receipt) => {
+      capturePostHogEvent("community_info_updated", {
+        community_id: communityId,
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+      });
+      onSuccess?.(receipt);
+    },
     onError,
   });
 

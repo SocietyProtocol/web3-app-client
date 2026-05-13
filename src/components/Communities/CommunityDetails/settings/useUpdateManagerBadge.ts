@@ -1,10 +1,12 @@
 import { useCallback } from "react";
 import { TransactionReceipt } from "viem";
+import { useAccount } from "wagmi";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
 import { useTransaction } from "@/hooks/useTransaction";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseUpdateManagerBadgeProps {
   communityId: string;
@@ -22,6 +24,7 @@ export function useUpdateManagerBadge({
   onError,
 }: UseUpdateManagerBadgeProps) {
   const badgesAddress = useChainVar(contracts.badges);
+  const { address } = useAccount();
 
   const uploadMetadata = useMutateMetadata({ onError });
 
@@ -36,7 +39,15 @@ export function useUpdateManagerBadge({
     waitForSync: true,
     successMessage: "Manager badge updated successfully",
     queryKeysToInvalidateOnSuccess: [["community", communityId], ["badge"]],
-    onSuccess,
+    onSuccess: (receipt) => {
+      capturePostHogEvent("community_manager_badge_updated", {
+        community_id: communityId,
+        badge_id: badgeId,
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+      });
+      onSuccess?.(receipt);
+    },
     onError,
   });
 

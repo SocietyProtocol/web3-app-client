@@ -1,15 +1,9 @@
-The Society Protocol DAO is governed by those members of our community who possess _governor_ badges.
+The Society Protocol DAO is governed by community members who possess [Governor](https://app.societyprotocol.io/badges/11) badges. Governor badge holders consist of two primary segments: the core team and our affiliates (advisors and partner communities).
 
-The governors consist of members of the core team, advisors, partner communities, and outstanding community members.
+Making group decisions via Governor badges instead of the SPEC token is a deliberate design decision, which goes along with our ideological value of meritocracy and allows us to bypass the sybil-resistance issues of token voting in Web3. The Society Protocol movement is not a democracy; it is a meritocracy. This governance structure allows us to compress the highest and most aligned expertise possible—from our core team and deeply experienced affiliates (advisors and partner communities)—to make aligned and optimal group decisions.
 
-Making official decisions as a movement via governor badges, rather than the SPEC tokens goes along with our ideology of meritocracy. It allows us to compress the expertise of all our highly experienced and knowledgeable Governors into excellent decision-making for the Society Protocol movement.
+We believe that the Governor badges, awarded meritocratically, are the highest form of decision-making we can attain—giving our movement the best chance of success in the creation of Synchronized States.
 
-We believe that the Governor badges, held by known and respected individuals and groups in our community, who are experts in all the relevant fields will enable the most superior form of decision-making we can attain (with the tools at hand) and give our movement the best chance of success in the creation of Synchronized States (where decision-making abilities will improve).
+The SPEC token does NOT grant direct governance power in the Society Protocol movement. It's a representation of contribution. Nevertheless, the opinions of SPEC token holders are valuable. SPEC token holders are able to contribute an expression their opinions and intentions, by voting in a parallel decision-making structure, using the ([SPEC expression of feedback](https://testnet.snapshot.box/#/s-tn:phototest.eth)) Snapshot space. This space provides the Governors with valuable insight into our movement’s perceptions, intentions, and mindset—without requiring the SPEC token holders to deeply research and participate in operations.
 
-The SPEC token is not involved with official Society Protocol movement governance, it is a representation of contribution. This is because token-voting in Web3 plainly doesn't work due to a lack of sybil-resistance. (You can read [Fake Everything](<https://societyprotocol.io/Published/Articles/Fake+Everything+(Prelude)>) for more information.)
-
-SPEC token holders will be able to provide feedback on all governance decisions, by running their own parallel votes––allowing our community to voice their opinion on any decision, which will be taken into consideration.
-
-There is additionally a "security council" multi-signature Safe established, whose role is for more lightweight execution of actions which don't require the full consensus of governors.
-
-In the near future, all communities within the Society Protocol movement will receive their own Snapshot spaces and be able to setup their own community governance systems. Community governance will be completely separate from the official Society Protocol DAO. Each community's governance is a way to make independent decisions within that particular community in relation to their intentions for Society Protocol.
+Disclaimer: The community governance for each community is NOT in this section. For each community, it’s located in the management tab of that specific community's page. Go to [communities](/communities).

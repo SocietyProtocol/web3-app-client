@@ -55,6 +55,9 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
             lineHeight: 1.7,
             fontSize: "1.125rem",
           },
+          "& p": {
+            mb: 2,
+          },
           "& ul, & ol": {
             paddingLeft: 3,
             mb: 2,

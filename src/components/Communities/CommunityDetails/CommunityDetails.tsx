@@ -8,7 +8,6 @@ import { MembersTab } from "./MembersTab";
 import { BadgesTab } from "./BadgesTab";
 import { GovernanceTab } from "./GovernanceTab";
 import { SettingsTab } from "./SettingsTab";
-
 import { CommunityDetailsTab } from "./CommunityDetail.types";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
@@ -64,11 +63,13 @@ export function CommunityDetails() {
           value={CommunityDetailsTab.Governance}
           disableRipple
         />
-        <Tab
-          label="Settings"
-          value={CommunityDetailsTab.Settings}
-          disableRipple
-        />
+        {isManager && (
+          <Tab
+            label="Settings"
+            value={CommunityDetailsTab.Settings}
+            disableRipple
+          />
+        )}
       </Tabs>
 
       <Box>

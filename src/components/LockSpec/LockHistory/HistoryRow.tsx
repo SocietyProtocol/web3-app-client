@@ -16,7 +16,7 @@ import { LockHistoryItem, LockOperationType } from "./types";
 import { TokenIcon } from "@/components/TokenIcon/TokenIcon";
 import { FormattedNumber } from "@/components/FormattedNumber/FormattedNumber";
 import { SPEC_DECIMALS } from "../consts";
-import { formatDate } from "@/utils/date";
+import { formatDateInSeconds } from "@/utils/date";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import Link from "next/link";
 
@@ -79,7 +79,7 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
           justifyContent={{ xs: "flex-start", sm: "center" }}
         >
           <Typography variant="body2" color="text.primary">
-            {item.lockDate != null ? formatDate(item.lockDate) : "—"}
+            {item.lockDate != null ? formatDateInSeconds(item.lockDate) : "—"}
           </Typography>
         </Stack>
       </Stack>
@@ -93,7 +93,9 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
           justifyContent={{ xs: "flex-start", sm: "center" }}
         >
           <Typography variant="body2" color="text.primary">
-            {item.unlockDate != null ? formatDate(item.unlockDate) : "—"}
+            {item.unlockDate != null
+              ? formatDateInSeconds(item.unlockDate)
+              : "—"}
           </Typography>
         </Stack>
       </Stack>

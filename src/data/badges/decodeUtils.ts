@@ -9,7 +9,7 @@ export const decodeBadgeCreatedEvents = (receipt: TransactionReceipt) => {
     id: bigint;
     name: string;
     isOfficial: boolean;
-    isCommunity: boolean;
+    isCommunityBadge: boolean;
     creator: Hex;
   }> = [];
 

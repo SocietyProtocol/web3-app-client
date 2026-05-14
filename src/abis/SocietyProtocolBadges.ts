@@ -18,6 +18,18 @@ export const SocietyProtocolBadgesABI = [
   { inputs: [], name: "BadgeDoesNotExist", type: "error" },
   { inputs: [], name: "BurnDeniedByHook", type: "error" },
   { inputs: [], name: "BurnNotAuthorized", type: "error" },
+  { inputs: [], name: "CircularInvitation", type: "error" },
+  { inputs: [], name: "ECDSAInvalidSignature", type: "error" },
+  {
+    inputs: [{ internalType: "uint256", name: "length", type: "uint256" }],
+    name: "ECDSAInvalidSignatureLength",
+    type: "error",
+  },
+  {
+    inputs: [{ internalType: "bytes32", name: "s", type: "bytes32" }],
+    name: "ECDSAInvalidSignatureS",
+    type: "error",
+  },
   {
     inputs: [
       { internalType: "address", name: "sender", type: "address" },
@@ -73,22 +85,24 @@ export const SocietyProtocolBadgesABI = [
   },
   { inputs: [], name: "ERC1967NonPayable", type: "error" },
   { inputs: [], name: "FailedCall", type: "error" },
+  { inputs: [], name: "HookAlreadySet", type: "error" },
   { inputs: [], name: "InvalidInitialization", type: "error" },
+  {
+    inputs: [{ internalType: "uint256", name: "rule", type: "uint256" }],
+    name: "InvalidPermissionRule",
+    type: "error",
+  },
   { inputs: [], name: "InvalidSignature", type: "error" },
   { inputs: [], name: "MintDeniedByHook", type: "error" },
   { inputs: [], name: "MintNotAuthorized", type: "error" },
+  { inputs: [], name: "NonceAlreadyUsed", type: "error" },
   { inputs: [], name: "NotInitializing", type: "error" },
   { inputs: [], name: "NotProfileOwner", type: "error" },
   { inputs: [], name: "ProfileAlreadyExists", type: "error" },
+  { inputs: [], name: "ProfileMustBeUnique", type: "error" },
   { inputs: [], name: "SelfInvitation", type: "error" },
-  {
-    inputs: [
-      { internalType: "uint256", name: "value", type: "uint256" },
-      { internalType: "uint256", name: "length", type: "uint256" },
-    ],
-    name: "StringsInsufficientHexLength",
-    type: "error",
-  },
+  { inputs: [], name: "SignatureExpired", type: "error" },
+  { inputs: [], name: "TooManyPermissionRules", type: "error" },
   { inputs: [], name: "TransferDeniedByHook", type: "error" },
   { inputs: [], name: "TransferNotAuthorized", type: "error" },
   { inputs: [], name: "UUPSUnauthorizedCallContext", type: "error" },
@@ -132,7 +146,7 @@ export const SocietyProtocolBadgesABI = [
       {
         indexed: false,
         internalType: "bool",
-        name: "isCommunity",
+        name: "isCommunityBadge",
         type: "bool",
       },
       {
@@ -159,7 +173,7 @@ export const SocietyProtocolBadgesABI = [
       {
         indexed: false,
         internalType: "bool",
-        name: "isCommunity",
+        name: "isCommunityBadge",
         type: "bool",
       },
       {
@@ -385,16 +399,34 @@ export const SocietyProtocolBadgesABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
       {
         indexed: true,
         internalType: "address",
         name: "inviter",
         type: "address",
       },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "invitee",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "nonce",
+        type: "uint256",
+      },
     ],
     name: "UserInvited",
     type: "event",
+  },
+  {
+    inputs: [],
+    name: "COMMUNITY_MANAGER_ROLE",
+    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
@@ -412,6 +444,13 @@ export const SocietyProtocolBadgesABI = [
   },
   {
     inputs: [],
+    name: "MAX_PERMISSION_RULES",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "OFFICIAL_BADGE_CREATOR_ROLE",
     outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
     stateMutability: "view",
@@ -420,13 +459,6 @@ export const SocietyProtocolBadgesABI = [
   {
     inputs: [],
     name: "PERM_EVERYONE",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "PERM_NONE",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
@@ -455,12 +487,20 @@ export const SocietyProtocolBadgesABI = [
   {
     inputs: [
       { internalType: "address", name: "inviter", type: "address" },
-      { internalType: "string", name: "message", type: "string" },
+      { internalType: "uint256", name: "nonce", type: "uint256" },
+      { internalType: "uint256", name: "expiry", type: "uint256" },
       { internalType: "bytes", name: "signature", type: "bytes" },
     ],
     name: "acceptInvite",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    name: "badgeExists",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -470,7 +510,7 @@ export const SocietyProtocolBadgesABI = [
       { internalType: "string", name: "name", type: "string" },
       { internalType: "address", name: "hook", type: "address" },
       { internalType: "bool", name: "isOfficial", type: "bool" },
-      { internalType: "bool", name: "isCommunity", type: "bool" },
+      { internalType: "bool", name: "isCommunityBadge", type: "bool" },
       { internalType: "string", name: "metadataURI", type: "string" },
     ],
     stateMutability: "view",
@@ -562,7 +602,7 @@ export const SocietyProtocolBadgesABI = [
     inputs: [
       { internalType: "string", name: "name", type: "string" },
       { internalType: "bool", name: "isOfficial", type: "bool" },
-      { internalType: "bool", name: "isCommunity", type: "bool" },
+      { internalType: "bool", name: "isCommunityBadge", type: "bool" },
       { internalType: "address", name: "hook", type: "address" },
       { internalType: "string", name: "metadataURI", type: "string" },
       { internalType: "uint256[]", name: "minters", type: "uint256[]" },
@@ -613,13 +653,6 @@ export const SocietyProtocolBadgesABI = [
   },
   {
     inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
-    name: "getBadgeEditors",
-    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
     name: "getBadgeMinters",
     outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
     stateMutability: "view",
@@ -629,6 +662,20 @@ export const SocietyProtocolBadgesABI = [
     inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
     name: "getBadgeTransferers",
     outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "inviter", type: "address" }],
+    name: "getInvitees",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    name: "getIsCommunityBadge",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
@@ -651,6 +698,16 @@ export const SocietyProtocolBadgesABI = [
   },
   {
     inputs: [
+      { internalType: "address", name: "", type: "address" },
+      { internalType: "address", name: "", type: "address" },
+    ],
+    name: "hasInvited",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       { internalType: "bytes32", name: "role", type: "bytes32" },
       { internalType: "address", name: "account", type: "address" },
     ],
@@ -667,18 +724,18 @@ export const SocietyProtocolBadgesABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "invitedBy",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       { internalType: "address", name: "account", type: "address" },
       { internalType: "address", name: "operator", type: "address" },
     ],
     name: "isApprovedForAll",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "isProfileBadge",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
@@ -724,7 +781,6 @@ export const SocietyProtocolBadgesABI = [
       { internalType: "uint256", name: "id", type: "uint256" },
       { internalType: "string", name: "name", type: "string" },
       { internalType: "bool", name: "isOfficial", type: "bool" },
-      { internalType: "bool", name: "isCommunity", type: "bool" },
       { internalType: "string", name: "metadataURI", type: "string" },
     ],
     name: "modifyBadge",
@@ -874,6 +930,16 @@ export const SocietyProtocolBadgesABI = [
     inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
     name: "uri",
     outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "", type: "address" },
+      { internalType: "uint256", name: "", type: "uint256" },
+    ],
+    name: "usedNonces",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },

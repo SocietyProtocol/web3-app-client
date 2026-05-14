@@ -8,24 +8,32 @@ import {
   Typography,
 } from "@mui/material";
 import { DataItem } from "./DataItem";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import {
+  useController,
+  useForm,
+  useFormState,
+  useWatch,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { addressValidationSchema } from "@/validation/address";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
-import { useAccount, useSignMessage } from "wagmi";
+import { useAccount } from "wagmi";
 import { CopyButton } from "../CopyButton/CopyButton";
-import { Hex, isAddress, zeroAddress } from "viem";
+import { Hex } from "viem";
 import { useSnackbar } from "notistack";
 import { parseErrorMessage } from "@/utils/errors";
 import { isEqualCaseInsensitive } from "@/utils/string";
-import { useReferredBy } from "./useReferredBy";
-import {
-  generateReferralCode,
-  generateReferralMessage,
-} from "@/utils/referralCode";
+import { parseReferralCode } from "@/utils/referralCode";
+import { useGenerateReferralCode } from "./useGenerateReferralCode";
+import { formatDateInSeconds } from "@/utils/date";
+import { useUserQuery } from "@/data/users/useUserQuery";
+import { useTemporaryState } from "@/hooks/useTemporaryState";
+
+// Set the minimum validity to 3 minutes to ensure the user has enough time to copy and share the code, even if they encounter some issues during the process. This is especially important considering potential delays in signing the message or copying the code on mobile devices.
+const REFERRAL_CODE_MIN_VALIDITY_MS = 180_000;
 
 interface AddressInputProps extends Omit<TextFieldProps, "variant"> {
   loading?: boolean;
@@ -69,22 +77,16 @@ const AddressInput = ({
   );
 };
 
-interface ReferralCodeGeneratorProps {
-  referredBy?: Hex;
-  loading?: boolean;
-}
-
-export const ReferralCodeGenerator = ({
-  referredBy,
-  loading,
-}: ReferralCodeGeneratorProps) => {
-  const [referralCodeMap, setReferralCodeMap] = useState<
-    Record<Hex, Record<Hex, Hex | null>>
-  >({});
+export const ReferralCodeGenerator = () => {
+  const [generatedCode, setGeneratedCode] = useTemporaryState<{
+    address: Hex;
+    code: Hex;
+  } | null>(null);
 
   const { address: account } = useAccount();
-  const { signMessageAsync } = useSignMessage();
+  const currentUser = useUserQuery(account);
   const { enqueueSnackbar } = useSnackbar();
+  const { generate, isSigning, isReady } = useGenerateReferralCode(account);
 
   const form = useForm({
     resolver: zodResolver(
@@ -97,8 +99,11 @@ export const ReferralCodeGenerator = ({
           )
           .refine(
             (value) =>
-              referredBy
-                ? !isEqualCaseInsensitive(value as Hex, referredBy)
+              currentUser.data?.invitedBy
+                ? !isEqualCaseInsensitive(
+                    value as Hex,
+                    currentUser.data.invitedBy.id as Hex,
+                  )
                 : true,
             "You cannot generate a referral code for the address that referred you",
           )
@@ -115,34 +120,38 @@ export const ReferralCodeGenerator = ({
     control: form.control,
   });
 
-  const existingReferrer = useReferredBy(
-    useMemo(
-      () =>
-        address &&
-        account &&
-        referredBy &&
-        isAddress(address, { strict: false }) &&
-        !isEqualCaseInsensitive(address, account as Hex) &&
-        !isEqualCaseInsensitive(address, referredBy as Hex)
-          ? address
-          : undefined,
-      [account, address, referredBy],
-    ),
-  );
+  const { field: addressField, fieldState: addressFieldState } = useController({
+    name: "address",
+    control: form.control,
+  });
 
-  const alreadyReferred =
-    existingReferrer.data !== undefined &&
-    existingReferrer.data !== zeroAddress;
+  const { isValid } = useFormState({ control: form.control });
 
+  const targetUser = useUserQuery(address as Hex | undefined);
+
+  const existingReferrer = targetUser.data?.invitedBy;
+
+  const alreadyReferred = !!existingReferrer;
+
+  // Show the generated code only if it was generated for the current address
   const referralCode = useMemo(() => {
-    if (!account || !address) return null;
+    return generatedCode &&
+      address &&
+      isEqualCaseInsensitive(generatedCode.address, address as Hex)
+      ? generatedCode.code
+      : null;
+  }, [generatedCode, address]);
 
-    if (!isAddress(address, { strict: false })) return null;
+  const expiryFormatted = useMemo(() => {
+    if (!referralCode) return null;
 
-    const normalizedAddress = address.toLowerCase() as Hex;
-
-    return referralCodeMap[account]?.[normalizedAddress] ?? null;
-  }, [account, referralCodeMap, address]);
+    try {
+      const parsed = parseReferralCode(referralCode);
+      return formatDateInSeconds(parsed.expiry);
+    } catch {
+      return null;
+    }
+  }, [referralCode]);
 
   const onPaste = useCallback(async () => {
     if (!navigator?.clipboard?.readText) {
@@ -154,8 +163,10 @@ export const ReferralCodeGenerator = ({
 
     try {
       const text = await navigator.clipboard.readText();
-      form.setValue("address", text, {
+      form.setValue("address", text.trim(), {
         shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
       });
     } catch {
       enqueueSnackbar("Unable to read from clipboard. Please paste manually.", {
@@ -176,21 +187,10 @@ export const ReferralCodeGenerator = ({
         }
 
         try {
-          const message = generateReferralMessage(data.address);
-
-          const signature = await signMessageAsync({ message });
-
-          const referralCode = generateReferralCode(signature, account);
-
-          const normalizedAddress = data.address.toLowerCase() as Hex;
-
-          setReferralCodeMap((prev) => ({
-            ...prev,
-            [account]: {
-              ...prev[account],
-              [normalizedAddress]: referralCode,
-            },
-          }));
+          setGeneratedCode(
+            await generate(data.address as Hex),
+            REFERRAL_CODE_MIN_VALIDITY_MS,
+          );
         } catch (error) {
           enqueueSnackbar(
             parseErrorMessage(
@@ -201,7 +201,7 @@ export const ReferralCodeGenerator = ({
           );
         }
       },
-      [signMessageAsync, account, enqueueSnackbar],
+      [account, setGeneratedCode, generate, enqueueSnackbar],
     ),
   );
 
@@ -209,40 +209,30 @@ export const ReferralCodeGenerator = ({
     <DataItem
       label="Generate a Referral Code"
       tooltip="Referral codes will be used to invite new users to the platform"
-      loading={loading}
+      loading={currentUser.isLoading}
     >
-      <Controller
-        name="address"
-        control={form.control}
-        render={({ field, fieldState }) => {
-          const error = Boolean(fieldState.error) || alreadyReferred;
-
-          const referrer =
-            account &&
-            alreadyReferred &&
-            isEqualCaseInsensitive(existingReferrer.data, account)
-              ? "you"
-              : existingReferrer.data;
-
-          const helperText = fieldState.error
-            ? fieldState.error.message
+      <AddressInput
+        {...addressField}
+        value={addressField.value ?? ""}
+        loading={currentUser.isLoading || targetUser.isLoading}
+        onCancel={onCancel}
+        onPaste={onPaste}
+        error={Boolean(addressFieldState.error) || alreadyReferred}
+        helperText={
+          addressFieldState.error
+            ? addressFieldState.error.message
             : alreadyReferred
-              ? `This address was already referred by ${referrer}`
-              : "";
-
-          return (
-            <AddressInput
-              {...field}
-              value={field.value ?? ""}
-              loading={loading || existingReferrer.isLoading}
-              onCancel={onCancel}
-              onPaste={onPaste}
-              error={error}
-              helperText={helperText}
-              autoComplete="off"
-            />
-          );
-        }}
+              ? `This address was already referred by ${
+                  account &&
+                  alreadyReferred &&
+                  existingReferrer &&
+                  isEqualCaseInsensitive(existingReferrer.id, account)
+                    ? "you"
+                    : existingReferrer?.id
+                }`
+              : ""
+        }
+        autoComplete="off"
       />
 
       {referralCode ? (
@@ -260,6 +250,9 @@ export const ReferralCodeGenerator = ({
             </Typography>
             <CopyButton textToCopy={referralCode} size="medium" />
           </Stack>
+          <Typography variant="caption" color="text.secondary">
+            Expires {expiryFormatted}
+          </Typography>
         </Stack>
       ) : (
         <Button
@@ -269,14 +262,17 @@ export const ReferralCodeGenerator = ({
           disabled={
             !account ||
             !address ||
-            !form.formState.isValid ||
+            !isValid ||
+            !isReady ||
             alreadyReferred ||
-            loading ||
-            existingReferrer.isLoading
+            currentUser.isLoading ||
+            targetUser.isLoading ||
+            isSigning
           }
+          startIcon={isSigning ? <CircularProgress size={14} /> : undefined}
           onClick={onSubmit}
         >
-          Generate
+          {isSigning ? "Signing..." : "Generate"}
         </Button>
       )}
     </DataItem>

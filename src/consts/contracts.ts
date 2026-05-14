@@ -11,7 +11,7 @@ interface ContractAddresses {
 
 export const contracts: ContractAddresses = {
   badges: {
-    sepolia: "0x6AcD7735B3acF0DD677332a599FFfF71C18818BA",
+    sepolia: "0x12406bB6d11Cb641e100F1d8595c0C5e63F0bD47",
     mainnet: "0xa3af0da9733061da88b91ea28740780a887c8ce3",
   },
   auction: {
@@ -27,7 +27,7 @@ export const contracts: ContractAddresses = {
     mainnet: "0x91715d95004Bd57eDC1E0FD718688CEd475E130A",
   },
   communityRegistry: {
-    sepolia: "0x84ffd2805af9d0946e02Fe19Cd1eE58228669B0e",
+    sepolia: "0xE517446f4AC1035E334B5AEc57941F2644BA8639",
     mainnet: zeroAddress, // Placeholder, to be updated when deployed
   },
 };

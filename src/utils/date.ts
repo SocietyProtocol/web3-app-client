@@ -24,7 +24,9 @@ export function formatDateTime(timestamp: string | bigint | number): string {
  * @param timestamp - The UNIX timestamp in seconds.
  * @returns A formatted date string.
  */
-export function formatDate(timestamp: string | bigint | number): string {
+export function formatDateInSeconds(
+  timestamp: string | bigint | number,
+): string {
   return new Date(Number(timestamp) * 1000).toLocaleDateString(undefined, {
     day: "numeric",
     month: "short",
@@ -47,7 +49,7 @@ export function formatRelativeTime(
   const tsMs = Number(timestamp) * 1000;
   const nowMs = now ?? Date.now();
 
-  if (tsMs > nowMs) return formatDate(timestamp);
+  if (tsMs > nowMs) return formatDateInSeconds(timestamp);
 
   const diffMs = nowMs - tsMs;
   const diffMin = Math.floor(diffMs / 60_000);
@@ -58,5 +60,5 @@ export function formatRelativeTime(
 
   if (diffMin < 60) return rtf.format(-diffMin, "minute");
   if (diffHours < 24) return rtf.format(-diffHours, "hour");
-  return formatDate(timestamp);
+  return formatDateInSeconds(timestamp);
 }

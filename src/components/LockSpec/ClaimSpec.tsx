@@ -15,7 +15,7 @@ import { useClaimMutation } from "./useClaimMutation";
 import { SimulationError } from "../Transaction/SimulationError";
 import { DataRow } from "./DataRow";
 import { GasEstimation } from "../Transaction/GasEstimation";
-import { formatDate } from "@/utils/date";
+import { formatDateInSeconds } from "@/utils/date";
 
 interface ClaimDataColumnProps {
   label: string;
@@ -115,7 +115,7 @@ export const ClaimSpec = () => {
               color="primary.main"
               sx={{ fontWeight: 700 }}
             >
-              {unlockTime !== undefined ? formatDate(unlockTime) : "—"}
+              {unlockTime !== undefined ? formatDateInSeconds(unlockTime) : "—"}
             </Typography>
           }
         />

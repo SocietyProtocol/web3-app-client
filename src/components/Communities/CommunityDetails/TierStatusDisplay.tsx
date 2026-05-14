@@ -2,7 +2,7 @@ import { capitalize, Stack, Typography } from "@mui/material";
 import { TierIcon } from "@/components/Communities/Tier/TierIcon";
 import { CommunityTier } from "@/data/communities/types";
 import { WithTooltip } from "@/components/WithTooltip/WithTooltip";
-import { formatDate } from "@/utils/date";
+import { formatDateInSeconds } from "@/utils/date";
 import { useMemo } from "react";
 
 interface TierStatusDisplayProps {
@@ -35,7 +35,7 @@ export function TierStatusDisplay({
   const expiryTooltip = useMemo(
     () =>
       showExpiry
-        ? `${capitalize(tierName)} Partner status active until ${formatDate(tierExpiresAt!)}`
+        ? `${capitalize(tierName)} Partner status active until ${formatDateInSeconds(tierExpiresAt!)}`
         : undefined,
     [showExpiry, tierName, tierExpiresAt],
   );

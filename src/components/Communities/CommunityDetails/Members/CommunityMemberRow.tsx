@@ -25,16 +25,17 @@ export function CommunityMemberRow({
   const burnBadge = useBurnBadgeMutation(
     useMemo(
       () => ({
-        args: memberBadgeId
-          ? {
-              id: BigInt(memberBadgeId),
-              holder: member.user.id as Hex,
-            }
-          : undefined,
+        args:
+          memberBadgeId && isManager
+            ? {
+                id: BigInt(memberBadgeId),
+                holder: member.user.id as Hex,
+              }
+            : undefined,
         successMessage: `Badge revoked from ${member.user.name ?? member.user.id}`,
       }),
 
-      [memberBadgeId, member.user.id, member.user.name],
+      [memberBadgeId, isManager, member.user.id, member.user.name],
     ),
   );
 

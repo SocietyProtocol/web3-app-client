@@ -82,15 +82,19 @@ export const useLockMutation = ({
     await transaction.execute();
   }, [amount, durationInSeconds, transaction, enqueueSnackbar]);
 
+  const isMutating =
+    transaction.isApproving || transaction.isExecuting || transaction.isLoading;
+
   return {
     mutate: lock,
     reset: transaction.reset,
-    isLoading: transaction.isLoading,
+    isTransactionPending: transaction.isLoading,
     isApproving: transaction.isApproving,
-    isMutating: transaction.isExecuting,
-    isSuccess: transaction.isSuccess,
+    isWritingContract: transaction.isExecuting,
+    isTransactionConfirmed: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,
+    isMutating,
     approveRequired: transaction.approveRequired,
     lockReceipt: transaction.txReceipt,
     approveReceipt: transaction.approveReceipt,

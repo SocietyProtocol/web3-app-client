@@ -64,8 +64,8 @@ export const ClaimSpec = () => {
 
   const {
     mutate: onClaim,
-    isLoading: loading,
-    simulation: { isFetching: simulating, isError, error: simulationError },
+    isTransactionPending,
+    simulation: { isFetching: isSimulating, isError, error: simulationError },
     gas,
     gasError,
     gasLoading,
@@ -79,7 +79,12 @@ export const ClaimSpec = () => {
     : "CLAIM SPEC";
 
   const disabled =
-    !canClaim || isLocked || isLoadingLock || loading || simulating || isError;
+    !canClaim ||
+    isLocked ||
+    isLoadingLock ||
+    isTransactionPending ||
+    isSimulating ||
+    isError;
 
   return (
     <Stack spacing={3}>
@@ -161,9 +166,9 @@ export const ClaimSpec = () => {
         fullWidth
         disabled={disabled}
         onClick={onClaim}
-        loading={loading || isLoadingLock}
+        loading={isTransactionPending || isLoadingLock}
         loadingText={isLoadingLock ? "Loading..." : "Claiming..."}
-        simulating={simulating}
+        simulating={isSimulating}
         sx={{ py: 1.5, fontWeight: 700, letterSpacing: 1 }}
       >
         {buttonLabel}

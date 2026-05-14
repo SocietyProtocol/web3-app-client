@@ -3,7 +3,11 @@ import { useWatch } from "react-hook-form";
 import { useCommunityCreation } from "./CommunityCreationContext";
 import { CommunityCard } from "../CommunityCard";
 import { BadgeCard } from "@/components/Badges/BadgeCard";
-import { getManagerBadgeName, getMemberBadgeName } from "./badgeNames";
+import {
+  getManagerBadgeName,
+  getAssistantBadgeName,
+  getMemberBadgeName,
+} from "./badgeNames";
 import { MetadataBlock } from "./MetadataBlock";
 import { MonoBlock } from "./MonoBlock";
 
@@ -15,6 +19,8 @@ export const CommunityReviewStep = () => {
     description,
     creatorBadgeImageUrl,
     creatorBadgeMetadata,
+    assistantBadgeImageUrl,
+    assistantBadgeMetadata,
     memberBadgeImageUrl,
     memberBadgeMetadata,
   ] = useWatch({
@@ -24,6 +30,8 @@ export const CommunityReviewStep = () => {
       "description",
       "creatorBadgeImageUrl",
       "creatorBadgeMetadata",
+      "assistantBadgeImageUrl",
+      "assistantBadgeMetadata",
       "memberBadgeImageUrl",
       "memberBadgeMetadata",
     ],
@@ -61,6 +69,18 @@ export const CommunityReviewStep = () => {
             readonly
           />
           <MetadataBlock label="METADATA" metadata={creatorBadgeMetadata} />
+        </Stack>
+
+        <Stack spacing={1} minWidth={240} width={{ sm: 300 }}>
+          <Typography variant="subtitle2">Assistant Badge</Typography>
+          <BadgeCard
+            id="(Preview)"
+            name={name ? getAssistantBadgeName(name) : "Assistant Badge"}
+            imageUrl={assistantBadgeImageUrl ?? undefined}
+            isCommunity
+            readonly
+          />
+          <MetadataBlock label="METADATA" metadata={assistantBadgeMetadata} />
         </Stack>
 
         <Stack spacing={1} minWidth={240} width={{ sm: 300 }}>

@@ -60,8 +60,8 @@ export const LockSpec = () => {
 
   const disabled =
     !canAfford ||
-    lockMutation.isLoading ||
-    lockMutation.isMutating ||
+    lockMutation.isTransactionPending ||
+    lockMutation.isWritingContract ||
     lockMutation.simulation.isFetching ||
     lockMutation.simulation.isError;
 
@@ -129,8 +129,10 @@ export const LockSpec = () => {
         fullWidth
         disabled={disabled}
         onClick={lockMutation.mutate}
-        loading={lockMutation.isLoading || isLoading}
-        loadingText={lockMutation.isLoading ? "Locking..." : "Loading..."}
+        loading={lockMutation.isTransactionPending || isLoading}
+        loadingText={
+          lockMutation.isTransactionPending ? "Locking..." : "Loading..."
+        }
         simulating={lockMutation.simulation.isFetching}
         sx={{ py: 1.5, fontWeight: 700, letterSpacing: 1 }}
       >
@@ -155,7 +157,7 @@ export const LockSpec = () => {
         tier={selectedTier}
         duration={selectedDuration}
         amount={tierAmounts[selectedTierId].data}
-        isLoading={lockMutation.isLoading || isLoading}
+        isLoading={lockMutation.isTransactionPending || isLoading}
       />
     </Stack>
   );

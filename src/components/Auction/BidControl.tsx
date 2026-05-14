@@ -79,10 +79,10 @@ export const BidControl = () => {
     approveRequired,
     mutate,
     isApproving,
-    isMutating: isBidding,
+    isWritingContract,
     isSyncing,
-    isLoading,
-    isSuccess,
+    isTransactionPending,
+    isTransactionConfirmed,
     approveReceipt,
     bidReceipt,
     simulation,
@@ -103,9 +103,9 @@ export const BidControl = () => {
       form.formState.disabled ||
       !values.sellAmount ||
       !values.price ||
-      isLoading ||
+      isTransactionPending ||
       isApproving ||
-      isBidding ||
+      isWritingContract ||
       isSyncing ||
       simulation.isLoading ||
       simulation.isError
@@ -115,9 +115,9 @@ export const BidControl = () => {
     form.formState.disabled,
     values.sellAmount,
     values.price,
-    isLoading,
+    isTransactionPending,
     isApproving,
-    isBidding,
+    isWritingContract,
     isSyncing,
     simulation.isLoading,
     simulation.isError,
@@ -218,7 +218,7 @@ export const BidControl = () => {
               max={userBiddingTokenBalance.data}
               error={fieldState.invalid}
               helperText={fieldState.error?.message}
-              disabled={form.formState.disabled || isLoading}
+              disabled={form.formState.disabled || isTransactionPending}
               fullWidth
             />
           )}
@@ -237,7 +237,7 @@ export const BidControl = () => {
               onBlur={field.onBlur}
               error={fieldState.invalid}
               helperText={fieldState.error?.message}
-              disabled={form.formState.disabled || isLoading}
+              disabled={form.formState.disabled || isTransactionPending}
               fullWidth
             />
           )}
@@ -275,22 +275,27 @@ export const BidControl = () => {
           disabled={isActionDisabled}
           onClick={mutate}
           simulating={simulation.isFetching}
-          loading={isLoading || isApproving || isBidding || isSyncing}
+          loading={
+            isTransactionPending ||
+            isApproving ||
+            isWritingContract ||
+            isSyncing
+          }
           loadingText={
             isSyncing
-              ? "Syncing with subgraph..."
+              ? "Syncing..."
               : bidReceipt.isFetching
                 ? "Confirming bid..."
                 : approveReceipt.isFetching
                   ? "Confirming approval..."
                   : isApproving
                     ? "Approving..."
-                    : isBidding
+                    : isWritingContract
                       ? "Placing bid..."
                       : undefined
           }
         >
-          {isSuccess
+          {isTransactionConfirmed
             ? "Bid Placed!"
             : approveRequired
               ? "Approve"

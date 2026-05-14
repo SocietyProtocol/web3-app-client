@@ -4,34 +4,53 @@ import {
   Alert,
   AlertTitle,
   Avatar,
-  Box,
   Button,
   Stack,
   Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
-import { EditCommunityInfoDialog } from "./settings/EditCommunityInfoDialog";
-import { EditManagerBadgeDialog } from "./settings/EditManagerBadgeDialog";
-import { TransferOwnershipDialog } from "./settings/TransferOwnershipDialog";
+import { EditCommunityInfoDialog } from "./Settings/EditCommunityInfoDialog";
+import { TransferOwnershipDialog } from "./Settings/TransferOwnershipDialog";
+import { EditBadgeDialog } from "./Settings/EditBadgeDialog";
+import { BadgeSettingsCard } from "./Settings/BadgeSettingsCard";
+import { BADGE_ROLE_LABELS, CommunityBadgeRole } from "./Settings/types";
 
 export function SettingsTab() {
   const { community, isManager } = useCommunityDetailsContext();
   const [editInfoOpen, setEditInfoOpen] = useState(false);
-  const [editBadgeOpen, setEditBadgeOpen] = useState(false);
+  const [editBadgeOpen, setEditBadgeOpen] = useState<CommunityBadgeRole | null>(
+    null,
+  );
+
+  const badges = useMemo(
+    () => ({
+      [CommunityBadgeRole.manager]: community?.managerBadge,
+      [CommunityBadgeRole.assistant]: community?.assistantBadge,
+      [CommunityBadgeRole.member]: community?.memberBadge,
+    }),
+    [community],
+  );
+
   const [transferOpen, setTransferOpen] = useState(false);
 
   if (!isManager) {
     return null;
   }
 
+  const badgeRoles = [
+    CommunityBadgeRole.manager,
+    CommunityBadgeRole.assistant,
+    CommunityBadgeRole.member,
+  ];
+
   return (
-    <Stack spacing={10}>
+    <Stack spacing={6}>
       {/* General */}
-      <Box>
-        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+      <Stack spacing={2}>
+        <Typography variant="subtitle1" fontWeight={700}>
           General Information
         </Typography>
 
@@ -85,33 +104,42 @@ export function SettingsTab() {
             </Stack>
           </Stack>
 
-          {/* Edit actions */}
-          <Stack
-            direction={{ xs: "row", sm: "column" }}
-            spacing={2}
+          {/* Edit action */}
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon />}
+            aria-label="Edit community info"
             sx={{ flexShrink: 0 }}
+            onClick={() => setEditInfoOpen(true)}
           >
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon />}
-              aria-label="Edit community info"
-              onClick={() => setEditInfoOpen(true)}
-            >
-              Edit Info
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon />}
-              aria-label="Edit manager badge metadata"
-              onClick={() => setEditBadgeOpen(true)}
-            >
-              Edit Manager Badge
-            </Button>
-          </Stack>
+            Edit Info
+          </Button>
         </Stack>
-      </Box>
+      </Stack>
+
+      {/* Badge Modifications */}
+      <Stack spacing={2}>
+        <Typography variant="subtitle1" fontWeight={700}>
+          Badge Modifications
+        </Typography>
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={3}
+          flexWrap="wrap"
+          useFlexGap
+        >
+          {badgeRoles.map((badgeRole) => (
+            <BadgeSettingsCard
+              key={badgeRole}
+              label={BADGE_ROLE_LABELS[badgeRole]}
+              badge={badges[badgeRole]}
+              onEdit={() => setEditBadgeOpen(badgeRole)}
+            />
+          ))}
+        </Stack>
+      </Stack>
 
       {/* Danger zone */}
       <Alert
@@ -141,10 +169,15 @@ export function SettingsTab() {
         open={editInfoOpen}
         onClose={() => setEditInfoOpen(false)}
       />
-      <EditManagerBadgeDialog
-        open={editBadgeOpen}
-        onClose={() => setEditBadgeOpen(false)}
+
+      <EditBadgeDialog
+        open={editBadgeOpen !== null}
+        onClose={() => setEditBadgeOpen(null)}
+        title={editBadgeOpen ? `Edit ${BADGE_ROLE_LABELS[editBadgeOpen]}` : ""}
+        badgeId={editBadgeOpen ? badges[editBadgeOpen]?.id : undefined}
+        badgeRole={editBadgeOpen ?? CommunityBadgeRole.member}
       />
+
       <TransferOwnershipDialog
         open={transferOpen}
         onClose={() => setTransferOpen(false)}

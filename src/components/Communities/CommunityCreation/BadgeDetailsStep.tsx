@@ -17,7 +17,7 @@ export const BadgeDetailsStep = () => {
         Customize the badges that will be minted for your community
       </Typography>
 
-      <Typography variant="subtitle2" color="text.secondary">
+      <Typography variant="h6" color="textPrimary" fontWeight={600}>
         Manager Badge
       </Typography>
 
@@ -37,7 +37,41 @@ export const BadgeDetailsStep = () => {
 
       <Divider />
 
-      <Typography variant="subtitle2" color="text.secondary">
+      <Typography variant="h6" color="textPrimary" fontWeight={600}>
+        Assistant Badge
+      </Typography>
+
+      <Controller
+        name="assistantBadgeImageUrl"
+        control={control}
+        render={({ field }) => (
+          <AvatarInput
+            label="Assistant Badge Image"
+            value={field.value}
+            onChange={field.onChange}
+            error={Boolean(errors.assistantBadgeImageUrl)}
+            helperText={errors.assistantBadgeImageUrl?.message}
+          />
+        )}
+      />
+
+      <TextField
+        label="Assistant Badge Metadata (JSON)"
+        placeholder='{"attributes": []}'
+        fullWidth
+        multiline
+        rows={4}
+        {...register("assistantBadgeMetadata")}
+        error={Boolean(errors.assistantBadgeMetadata)}
+        helperText={
+          errors.assistantBadgeMetadata?.message ||
+          "Optional: Additional metadata in JSON format"
+        }
+      />
+
+      <Divider />
+
+      <Typography variant="h6" color="textPrimary" fontWeight={600}>
         Member Badge
       </Typography>
 

@@ -16,7 +16,7 @@ import { EditCommunityInfoDialog } from "./Settings/EditCommunityInfoDialog";
 import { TransferOwnershipDialog } from "./Settings/TransferOwnershipDialog";
 import { EditBadgeDialog } from "./Settings/EditBadgeDialog";
 import { BadgeSettingsCard } from "./Settings/BadgeSettingsCard";
-import { BADGE_ROLE_LABELS, CommunityBadgeRole } from "./Settings/types";
+import { BADGE_ROLE_LABELS, CommunityBadgeRole } from "./Settings/badgeTypes";
 
 export function SettingsTab() {
   const { community, isManager } = useCommunityDetailsContext();

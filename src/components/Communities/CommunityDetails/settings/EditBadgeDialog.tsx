@@ -22,7 +22,7 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useBadge } from "@/data/badges/useBadge";
 import { imageUrlSchema } from "@/validation/imageUrl";
 import { useCommunityDetailsContext } from "../CommunityDetails.context";
-import { CommunityBadgeRole } from "./types";
+import { CommunityBadgeRole } from "./badgeTypes";
 import { useUpdateBadge } from "./useUpdateBadge";
 import { useBadgeMetadata } from "@/hooks/useBadgeMetadata";
 

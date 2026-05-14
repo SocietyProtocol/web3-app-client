@@ -7,7 +7,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
 import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { BADGE_ROLE_LABELS, CommunityBadgeRole } from "./types";
+import { BADGE_ROLE_LABELS, CommunityBadgeRole } from "./badgeTypes";
 
 interface UseUpdateBadgeProps {
   enabled?: boolean;

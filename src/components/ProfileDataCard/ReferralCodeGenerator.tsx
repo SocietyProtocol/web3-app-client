@@ -32,7 +32,7 @@ import { formatDateInSeconds } from "@/utils/date";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useTemporaryState } from "@/hooks/useTemporaryState";
 
-// Set the minimum validity to 3 minutes to ensure the user has enough time to copy and share the code, even if they encounter some issues during the process. This is especially important considering potential delays in signing the message or copying the code on mobile devices.
+// Keep the generated code in local UI state for 3 minutes so the user has enough time to copy and share it, even if signing or copying is delayed on mobile devices. This only controls how long the code is displayed locally; it does not determine the referral code's actual validity period.
 const REFERRAL_CODE_MIN_VALIDITY_MS = 180_000;
 
 interface AddressInputProps extends Omit<TextFieldProps, "variant"> {

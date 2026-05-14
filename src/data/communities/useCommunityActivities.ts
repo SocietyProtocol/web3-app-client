@@ -5,7 +5,7 @@ import {
   CommunityActivitiesQuery,
 } from "../../../.graphclient";
 
-const DEFAULT_PAGE_SIZE = 6;
+const DEFAULT_PAGE_SIZE = 7;
 
 export const useCommunityActivities = (
   communityId: string,

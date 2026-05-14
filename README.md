@@ -22,7 +22,7 @@ A web client for [Society Protocol](https://society.finance) — a framework for
 ### 1. Prerequisites
 
 - Node.js **18.x** or later
-- npm / yarn / pnpm / bun
+- Yarn
 
 ### 2. Environment Variables
 
@@ -51,25 +51,25 @@ cp .env.example .env.local
 
 ```bash
 # Install dependencies (also runs graphclient code-gen via postinstall)
-npm install
+yarn install
 
 # Start the development server
-npm run dev
+yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 4. Available Scripts
 
-| Script               | Description                                           |
-| -------------------- | ----------------------------------------------------- |
-| `npm run dev`        | GraphQL code-gen + Next.js dev server with hot reload |
-| `npm run build`      | GraphQL code-gen + production build                   |
-| `npm start`          | Start the production server                           |
-| `npm run codegen`    | Regenerate the GraphQL client from subgraph schema    |
-| `npm run type-check` | TypeScript type check without emitting                |
-| `npm run lint`       | ESLint                                                |
-| `npm test`           | Vitest unit tests                                     |
+| Script            | Description                                           |
+| ----------------- | ----------------------------------------------------- |
+| `yarn dev`        | GraphQL code-gen + Next.js dev server with hot reload |
+| `yarn build`      | GraphQL code-gen + production build                   |
+| `yarn start`      | Start the production server                           |
+| `yarn codegen`    | Regenerate the GraphQL client from subgraph schema    |
+| `yarn type-check` | TypeScript type check without emitting                |
+| `yarn lint`       | ESLint                                                |
+| `yarn test`       | Vitest unit tests                                     |
 
 ---
 

@@ -32,6 +32,8 @@ export const communityValidationSchema = z.object({
     .max(500, "Description must be less than 500 characters"),
   memberBadgeMetadata: optionalJsonSchema,
   memberBadgeImageUrl: imageUrlSchema,
+  assistantBadgeImageUrl: imageUrlSchema,
+  assistantBadgeMetadata: optionalJsonSchema,
   creatorBadgeImageUrl: imageUrlSchema,
   creatorBadgeMetadata: optionalJsonSchema,
 });

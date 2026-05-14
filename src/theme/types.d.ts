@@ -22,6 +22,7 @@ declare module "@mui/material/styles" {
     toggleButton: string;
     toggleButtonHover: string;
     highContrast: string;
+    danger: string;
   }
 
   interface TypeText {

@@ -6,14 +6,14 @@ import { OverviewTab } from "./OverviewTab";
 import { CommunityDetailHeader } from "./CommunityDetailHeader";
 import { MembersTab } from "./MembersTab";
 import { BadgesTab } from "./BadgesTab";
-import { PlaceholderTab } from "./PlaceholderTab";
 import { GovernanceTab } from "./GovernanceTab";
-
+import { SettingsTab } from "./SettingsTab";
 import { CommunityDetailsTab } from "./CommunityDetail.types";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
 export function CommunityDetails() {
-  const { isError, error, tab, setTab } = useCommunityDetailsContext();
+  const { isError, error, tab, setTab, isManager } =
+    useCommunityDetailsContext();
 
   if (isError) {
     return <ErrorDisplay error={error} />;
@@ -63,11 +63,13 @@ export function CommunityDetails() {
           value={CommunityDetailsTab.Governance}
           disableRipple
         />
-        <Tab
-          label="Settings"
-          value={CommunityDetailsTab.Settings}
-          disableRipple
-        />
+        {isManager && (
+          <Tab
+            label="Settings"
+            value={CommunityDetailsTab.Settings}
+            disableRipple
+          />
+        )}
       </Tabs>
 
       <Box>
@@ -75,9 +77,7 @@ export function CommunityDetails() {
         {tab === CommunityDetailsTab.Members && <MembersTab />}
         {tab === CommunityDetailsTab.Badges && <BadgesTab />}
         {tab === CommunityDetailsTab.Governance && <GovernanceTab />}
-        {tab === CommunityDetailsTab.Settings && (
-          <PlaceholderTab label="Settings" />
-        )}
+        {isManager && tab === CommunityDetailsTab.Settings && <SettingsTab />}
       </Box>
     </Stack>
   );

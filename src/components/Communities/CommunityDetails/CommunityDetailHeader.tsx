@@ -52,8 +52,9 @@ export function CommunityDetailHeader() {
                 fontSize: (theme) => theme.typography.pxToRem(18),
                 fontWeight: 700,
                 color: "text.primary",
-                fontFamily: (t) => t.typography.subtitle1.fontFamily,
+                fontFamily: (theme) => theme.typography.h6.fontFamily,
               }}
+              component="h6"
             >
               {community?.name}
             </Typography>

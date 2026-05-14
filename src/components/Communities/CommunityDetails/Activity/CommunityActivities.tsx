@@ -85,7 +85,7 @@ export function CommunityActivities({ communityId }: CommunityActivitiesProps) {
             },
           }}
         >
-          {isFetchingNextPage ? "Loading…" : "Load more activities"}
+          {isFetchingNextPage ? "Loading..." : "Load more activities"}
         </Button>
       )}
     </Stack>

@@ -5,6 +5,7 @@ export const CommunityRegistryAbi = [
     name: "AddressEmptyCode",
     type: "error",
   },
+  { inputs: [], name: "BadgeNotInCommunity", type: "error" },
   { inputs: [], name: "CommunityDoesNotExist", type: "error" },
   {
     inputs: [
@@ -73,6 +74,12 @@ export const CommunityRegistryAbi = [
       {
         indexed: false,
         internalType: "uint256",
+        name: "assistantBadgeId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
         name: "memberBadgeId",
         type: "uint256",
       },
@@ -89,12 +96,7 @@ export const CommunityRegistryAbi = [
         name: "communityId",
         type: "uint256",
       },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
+      { indexed: false, internalType: "string", name: "name", type: "string" },
       {
         indexed: false,
         internalType: "string",
@@ -195,6 +197,7 @@ export const CommunityRegistryAbi = [
     outputs: [
       { internalType: "string", name: "name", type: "string" },
       { internalType: "string", name: "description", type: "string" },
+      { internalType: "uint256", name: "assistantBadgeId", type: "uint256" },
       { internalType: "uint256", name: "memberBadgeId", type: "uint256" },
       { internalType: "address", name: "wrapper", type: "address" },
       { internalType: "uint256", name: "createdAt", type: "uint256" },
@@ -213,7 +216,8 @@ export const CommunityRegistryAbi = [
     inputs: [
       { internalType: "string", name: "name", type: "string" },
       { internalType: "string", name: "description", type: "string" },
-      { internalType: "string", name: "creatorBadgeURI", type: "string" },
+      { internalType: "string", name: "managerBadgeURI", type: "string" },
+      { internalType: "string", name: "assistantBadgeURI", type: "string" },
       { internalType: "string", name: "memberBadgeURI", type: "string" },
     ],
     name: "createCommunity",
@@ -229,11 +233,7 @@ export const CommunityRegistryAbi = [
       { internalType: "string", name: "name", type: "string" },
       { internalType: "string", name: "metadataURI", type: "string" },
       { internalType: "uint256[]", name: "minters", type: "uint256[]" },
-      {
-        internalType: "uint256[]",
-        name: "transferers",
-        type: "uint256[]",
-      },
+      { internalType: "uint256[]", name: "transferers", type: "uint256[]" },
       { internalType: "uint256[]", name: "burners", type: "uint256[]" },
     ],
     name: "createCommunityBadge",
@@ -269,9 +269,10 @@ export const CommunityRegistryAbi = [
           { internalType: "string", name: "description", type: "string" },
           {
             internalType: "uint256",
-            name: "memberBadgeId",
+            name: "assistantBadgeId",
             type: "uint256",
           },
+          { internalType: "uint256", name: "memberBadgeId", type: "uint256" },
           { internalType: "address", name: "wrapper", type: "address" },
           { internalType: "uint256", name: "createdAt", type: "uint256" },
         ],
@@ -286,11 +287,7 @@ export const CommunityRegistryAbi = [
   {
     inputs: [
       { internalType: "address", name: "_badges", type: "address" },
-      {
-        internalType: "address",
-        name: "_wrapperFactory",
-        type: "address",
-      },
+      { internalType: "address", name: "_wrapperFactory", type: "address" },
       { internalType: "address", name: "_owner", type: "address" },
     ],
     name: "initialize",
@@ -303,9 +300,21 @@ export const CommunityRegistryAbi = [
       { internalType: "uint256", name: "communityId", type: "uint256" },
       { internalType: "address", name: "account", type: "address" },
     ],
-    name: "isCreator",
+    name: "isManager",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "communityId", type: "uint256" },
+      { internalType: "uint256", name: "badgeId", type: "uint256" },
+      { internalType: "string", name: "name", type: "string" },
+      { internalType: "string", name: "metadataURI", type: "string" },
+    ],
+    name: "modifyBadge",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -330,6 +339,28 @@ export const CommunityRegistryAbi = [
     type: "function",
   },
   {
+    inputs: [
+      { internalType: "uint256", name: "communityId", type: "uint256" },
+      { internalType: "uint256", name: "badgeId", type: "uint256" },
+      { internalType: "address", name: "hook", type: "address" },
+    ],
+    name: "setBadgeHook",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "communityId", type: "uint256" },
+      { internalType: "uint256", name: "badgeId", type: "uint256" },
+      { internalType: "string", name: "uri", type: "string" },
+    ],
+    name: "setBadgeURI",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
     name: "transferOwnership",
     outputs: [],
@@ -349,11 +380,7 @@ export const CommunityRegistryAbi = [
   },
   {
     inputs: [
-      {
-        internalType: "address",
-        name: "newImplementation",
-        type: "address",
-      },
+      { internalType: "address", name: "newImplementation", type: "address" },
       { internalType: "bytes", name: "data", type: "bytes" },
     ],
     name: "upgradeToAndCall",

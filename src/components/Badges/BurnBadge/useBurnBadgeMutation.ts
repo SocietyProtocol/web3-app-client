@@ -37,8 +37,8 @@ export const useBurnBadgeMutation = ({
       ["user"],
       ["communities"],
       ["community"],
-      ["communityMembers"],
-      ["communityMembersInfinite"],
+      ["community-members"],
+      ["community-members-infinite"],
     ],
     onSuccess: (receipt) => {
       const burn = decodeBurnTransfer(receipt);

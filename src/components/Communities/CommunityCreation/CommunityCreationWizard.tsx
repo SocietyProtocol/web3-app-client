@@ -93,10 +93,10 @@ const CommunityCreationWizardContent = () => {
   };
 
   const loadingText = useMemo(() => {
-    if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
-    if (isTransactionPending) return "Waiting for transaction confirmation...";
-    if (isSyncing) return "Waiting for subgraph to sync...";
-    if (isWritingContract) return "Waiting for wallet confirmation...";
+    if (isUploadingToIpfs) return "Uploading...";
+    if (isTransactionPending) return "Confirming transaction...";
+    if (isSyncing) return "Syncing...";
+    if (isWritingContract) return "Executing transaction...";
     return "Saving...";
   }, [isUploadingToIpfs, isTransactionPending, isSyncing, isWritingContract]);
 
@@ -104,8 +104,8 @@ const CommunityCreationWizardContent = () => {
     return (
       <CommunityCreatedScreen
         communityId={createdCommunity.communityId}
-        communityName={createdCommunity.name}
         communityImage={creatorBadgeImageUrl}
+        txHash={createdCommunity.txHash}
       />
     );
   }

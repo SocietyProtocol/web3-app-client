@@ -18,6 +18,7 @@ export const BACKGROUND_BUBBLE = "#151515";
 export const BACKGROUND_TOGGLE_BUTTON = "#201E1D";
 export const BACKGROUND_TOGGLE_BUTTON_HOVER = "#2A2827";
 export const BACKGROUND_HIGH_CONTRAST = "#000000";
+export const BACKGROUND_DANGER = "#241A1A";
 
 // Text colors
 export const TEXT_PRIMARY = "#CACACA";

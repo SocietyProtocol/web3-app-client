@@ -9,11 +9,8 @@ import {
   CommunityTransformedData,
   communityValidationSchema,
 } from "@/validation/community";
-import { TransactionReceipt } from "viem";
-import {
-  decodeCommunityCreated,
-  decodeCommunityDetailsUpdated,
-} from "@/data/communities/decodeUtils";
+import { Hex, TransactionReceipt } from "viem";
+import { decodeCommunityCreated } from "@/data/communities/decodeUtils";
 import { useSnackbar } from "notistack";
 
 interface CommunityCreationContextType {
@@ -32,8 +29,7 @@ interface CommunityCreationContextType {
   isTransactionPending: boolean;
   createdCommunity: {
     communityId: bigint;
-    name: string;
-    description: string;
+    txHash: Hex;
   } | null;
 }
 
@@ -60,8 +56,7 @@ export const CommunityCreationProvider = ({
 }: CommunityCreationProviderProps) => {
   const [createdCommunity, setCreatedCommunity] = useState<{
     communityId: bigint;
-    name: string;
-    description: string;
+    txHash: Hex;
   } | null>(null);
 
   const form = useForm<CommunityInputData, unknown, CommunityTransformedData>({
@@ -71,6 +66,8 @@ export const CommunityCreationProvider = ({
       description: "",
       memberBadgeMetadata: "",
       memberBadgeImageUrl: null,
+      assistantBadgeImageUrl: null,
+      assistantBadgeMetadata: "",
       creatorBadgeImageUrl: null,
       creatorBadgeMetadata: "",
     },
@@ -87,9 +84,8 @@ export const CommunityCreationProvider = ({
     isSyncing,
     isTransactionPending,
   } = useMutateCommunity({
-    onSuccess: (receipt: TransactionReceipt) => {
+    onSuccess: async (receipt: TransactionReceipt) => {
       const communityCreated = decodeCommunityCreated(receipt);
-      const communityDetailsUpdated = decodeCommunityDetailsUpdated(receipt);
 
       if (communityCreated === null) {
         enqueueSnackbar(
@@ -101,8 +97,7 @@ export const CommunityCreationProvider = ({
 
       setCreatedCommunity({
         communityId: communityCreated.communityId,
-        name: communityDetailsUpdated?.name ?? "",
-        description: communityDetailsUpdated?.description ?? "",
+        txHash: receipt.transactionHash,
       });
     },
   });

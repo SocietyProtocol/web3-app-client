@@ -17,9 +17,21 @@ query Community($id: ID!) {
     }
     managerBadge {
       id
+      name
+      imageUrl
+      uri
+    }
+    assistantBadge {
+      id
+      name
+      imageUrl
+      uri
     }
     memberBadge {
       id
+      name
+      imageUrl
+      uri
     }
     memberCount
     badges(first: 1000) {

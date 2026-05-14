@@ -53,29 +53,42 @@ export const useMutateCommunity = ({
   const mutate = useCallback(
     async (data: CommunityTransformedData) => {
       const creatorMetadata: Record<string, unknown> = {
-        imageUrl: data.creatorBadgeImageUrl,
         ...data.creatorBadgeMetadata,
+        imageUrl: data.creatorBadgeImageUrl,
+      };
+
+      // Build assistant badge metadata
+      const assistantMetadata: Record<string, unknown> = {
+        ...data.assistantBadgeMetadata,
+        imageUrl: data.assistantBadgeImageUrl,
       };
 
       // Build member badge metadata
       const memberMetadata: Record<string, unknown> = {
-        imageUrl: data.memberBadgeImageUrl,
         ...data.memberBadgeMetadata,
+        imageUrl: data.memberBadgeImageUrl,
       };
 
-      // Upload both in a single authenticated request (one signature)
+      // Upload all three in a single authenticated request (one signature)
       const { uris } = await uploadIpfsResult.mutateAsync([
         creatorMetadata,
+        assistantMetadata,
         memberMetadata,
       ]);
 
-      const [creatorBadgeURI, memberBadgeURI] = uris;
+      const [creatorBadgeURI, assistantBadgeURI, memberBadgeURI] = uris;
 
       await transaction.execute({
         address: contractAddress,
         abi: CommunityRegistryAbi,
         functionName: "createCommunity",
-        args: [data.name, data.description, creatorBadgeURI, memberBadgeURI],
+        args: [
+          data.name,
+          data.description,
+          creatorBadgeURI,
+          assistantBadgeURI,
+          memberBadgeURI,
+        ],
       });
     },
     [transaction, contractAddress, uploadIpfsResult],

@@ -1,4 +1,4 @@
-import { Components, CssVarsTheme, Theme } from "@mui/material";
+import { alpha, Components, CssVarsTheme, Theme } from "@mui/material";
 
 // Augment MUI Button variant types
 declare module "@mui/material/Button" {
@@ -16,6 +16,29 @@ export const MuiButton: Components<
     disableRipple: true,
   },
   variants: [
+    {
+      props: { variant: "contained", color: "error" },
+      style: ({ theme }) => ({
+        backgroundColor: theme.palette.error.main,
+        border: "none",
+        color: theme.palette.primary.contrastText,
+        "&:disabled, &.Mui-disabled": {
+          backgroundColor: theme.palette.error.dark,
+          color: theme.palette.primary.contrastText,
+          opacity: 0.5,
+        },
+        "&:hover": {
+          backgroundColor: theme.palette.error.light,
+        },
+        "&:active": {
+          backgroundColor: theme.palette.error.dark,
+        },
+        "&:focus, &:focus-visible, &.Mui-focusVisible": {
+          backgroundColor: theme.palette.error.main,
+          outline: `6px solid ${alpha(theme.palette.error.main, 0.3)}`,
+        },
+      }),
+    },
     {
       props: { variant: "wallet" },
       style: ({ theme }) => ({

@@ -19,11 +19,16 @@ query Users(
     profile {
       id
     }
+<<<<<<< Updated upstream
     invitedBy {
       id
       name
       bio
       imageUrl
+=======
+    communities {
+      id
+>>>>>>> Stashed changes
     }
     badges(where: { isProfile: false }) {
       id

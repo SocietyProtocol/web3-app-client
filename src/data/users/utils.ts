@@ -35,6 +35,7 @@ export const mergeOptions = (
       .replace(/\s+/g, " "),
     orderBy,
     orderDirection: orderBy === AccountSortOption.Name ? "asc" : "desc",
+    skip: options?.skip ?? 0,
   };
 };
 

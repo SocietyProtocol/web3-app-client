@@ -27,7 +27,8 @@ export function CommunityBadgesActions() {
   }, [community]);
 
   const [selectedBadgeId, setSelectedBadgeId] = useState<string | undefined>(
-    eligibleBadges[0]?.id,
+    eligibleBadges.find((badge) => badge.id === community?.memberBadge?.id)
+      ?.id ?? eligibleBadges[0]?.id,
   );
 
   const validSelectedBadgeId = useMemo(() => {
@@ -93,6 +94,7 @@ export function CommunityBadgesActions() {
           <BadgeAutocomplete
             label="Badge"
             multiple={false}
+            disableClearable
             value={validSelectedBadgeId}
             onChange={handleBadgeChange}
             queryOptions={{ isCommunity: true }}

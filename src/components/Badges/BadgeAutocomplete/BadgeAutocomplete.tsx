@@ -29,6 +29,7 @@ interface BadgeAutocompleteProps<
     true
   >["onChange"];
   multiple?: Multiple;
+  disableClearable?: DisableClearable;
 }
 
 export const BadgeAutocomplete = <
@@ -42,6 +43,7 @@ export const BadgeAutocomplete = <
   value,
   onChange,
   multiple,
+  disableClearable,
 }: BadgeAutocompleteProps<Multiple, DisableClearable>) => {
   const [selectedBadgeMap, setSelectedBadgeMap] = useState<
     Map<string, BadgeOption>
@@ -106,6 +108,7 @@ export const BadgeAutocomplete = <
   return (
     <CustomAutocompleteBadge
       multiple={multiple}
+      disableClearable={disableClearable}
       freeSolo
       label={label}
       tooltip={tooltip}

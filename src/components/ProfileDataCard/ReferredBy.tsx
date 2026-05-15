@@ -19,6 +19,8 @@ export const ReferredBy = ({
     userAddress && userAddress !== zeroAddress ? userAddress : undefined,
   );
 
+  console.log({ data: user.data });
+
   const invitedByAddress = user.data?.invitedBy?.id
     ? (user.data.invitedBy.id as Hex)
     : undefined;

@@ -40,9 +40,7 @@ export function CommunityDetails() {
             flex: { xs: "0 0 auto", md: "1 1 0%" },
             minWidth: { xs: 120, md: 0 },
           },
-        }}
-        TabIndicatorProps={{
-          sx: {
+          "& .MuiTabs-indicator": {
             left: { xs: 0, md: undefined },
             right: { xs: 0, md: undefined },
             width: { xs: "100%", md: undefined },

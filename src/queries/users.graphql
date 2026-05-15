@@ -19,6 +19,12 @@ query Users(
     profile {
       id
     }
+    invitedBy {
+      id
+      name
+      bio
+      imageUrl
+    }
     badges(where: { isProfile: false }) {
       id
       name

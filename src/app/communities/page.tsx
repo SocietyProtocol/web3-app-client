@@ -2,7 +2,6 @@ import { ButtonLink } from "@/components/ButtonLink";
 import { Communities } from "@/components/Communities/Communities";
 import { Page } from "@/components/Page/Page";
 import { Box } from "@mui/material";
-import Link from "next/link";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -17,7 +16,8 @@ export default function CommunitiesPage() {
       title="Communities"
       rightAction={
         <Box display="flex" gap={2} alignItems="center">
-          <Link
+          {/* TODO: complete the Communities FAQ section, then re-enable this link */}
+          {/* <Link
             href="/communities-faq"
             style={{
               textDecoration: "underline",
@@ -25,7 +25,7 @@ export default function CommunitiesPage() {
             }}
           >
             Learn more about communities
-          </Link>
+          </Link> */}
           <ButtonLink
             variant="contained"
             sx={{

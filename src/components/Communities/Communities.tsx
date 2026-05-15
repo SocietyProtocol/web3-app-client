@@ -30,6 +30,7 @@ import { useAccount } from "wagmi";
 import { CommunityTierFilter } from "./Tier/CommunityTierFilter";
 import { useNow } from "@/hooks/useNow";
 import { SearchBox } from "@/components/Common/SearchBox";
+import { ButtonLink } from "../ButtonLink";
 
 export const Communities = () => {
   const { address: userAddress } = useAccount();
@@ -106,12 +107,66 @@ export const Communities = () => {
   return (
     <>
       <Stack spacing={3} width="100%" marginTop={3}>
+        {/* Header + Create Community button */}
+        <Box
+          sx={{
+            pt: { xs: 4, md: 0 },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: 22, sm: 28 },
+              mb: { xs: 1, sm: 0 },
+              textAlign: { xs: "left", sm: "inherit" },
+            }}
+          >
+            Communities
+          </Typography>
+          <ButtonLink
+            variant="contained"
+            sx={{
+              width: { xs: "100%", sm: "auto !important" },
+              maxWidth: { xs: "100% !important", sm: "220px !important" },
+              whiteSpace: "nowrap",
+              minWidth: "200px !important",
+              flex: 1,
+            }}
+            href="/create-community"
+          >
+            Create Community
+          </ButtonLink>
+        </Box>
         {/* Tabs */}
         <Tabs
           value={activeTab}
           onChange={(_, value) => setActiveTab(value)}
-          variant="fullWidth"
-          sx={{ borderBottom: 1, borderColor: "divider" }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            // Responsive: scrollable on xs/sm, fullWidth on md+
+            ".MuiTabs-flexContainer": {
+              justifyContent: { xs: "flex-start", md: "center" },
+            },
+            "& .MuiTab-root": {
+              flex: { xs: "0 0 auto", md: "1 1 0%" },
+              minWidth: { xs: 120, md: 0 },
+            },
+            "& .MuiTabs-indicator": {
+              left: { xs: 0, md: undefined },
+              right: { xs: 0, md: undefined },
+              width: { xs: "100%", md: undefined },
+            },
+          }}
         >
           <Tab label="All Communities" value={CommunityTabOption.All} />
           <Tab
@@ -125,39 +180,56 @@ export const Communities = () => {
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: { xs: "column", xl: "row" },
             gap: 2,
             justifyContent: "space-between",
-            alignItems: { xs: "stretch", md: "center" },
+            alignItems: "center",
           }}
         >
-          {/* Search */}
-          <SearchBox
-            id="communities-search-input"
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChange={setSearchQuery}
+          <Box
             sx={{
-              flex: { xs: 1, md: "unset" },
-              minWidth: { xs: "100%", md: 300 },
+              display: "flex",
+              flexDirection: { xs: "column", xl: "row" },
+              gap: 2,
+              flex: 1,
+              alignItems: "center",
             }}
-          />
+          >
+            {/* Search */}
+            <SearchBox
+              id="communities-search-input"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              sx={{
+                flex: { xs: 1, md: "unset" },
+                minWidth: { xs: "100%", xl: 300 },
+              }}
+            />
+            <CommunityTierFilter value={tiers} onChange={setTiers} />
+          </Box>
 
-          <CommunityTierFilter value={tiers} onChange={setTiers} />
-
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+          <Box sx={{ minWidth: { xs: "100%", sm: 180 }, mt: { xs: 2, xl: 0 } }}>
             <FilterSelect
               label="Sort by"
               value={orderBy}
               options={communitySortOptions}
               onChange={setSortBy}
             />
-          </Stack>
+          </Box>
         </Box>
 
         {/* My Communities extra filters */}
         {activeTab === CommunityTabOption.My && (
-          <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: {
+                xs: "center",
+                xl: "flex-start",
+              },
+            }}
+          >
             <FormControlLabel
               control={
                 <Switch

@@ -11,7 +11,7 @@ export function MembersTab() {
   return (
     <Stack
       spacing={4}
-      direction="row"
+      direction={{ xs: "column", md: isManager ? "row" : "column" }}
       sx={{
         width: "100%",
         flexDirection: { xs: "column", md: "row" },

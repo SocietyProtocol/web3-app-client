@@ -94,37 +94,4 @@ We are anticipating an ICO fundraiser to raise the capital required for the next
 
 ### FAQs
 
-<details>
-  <summary>What are the most important next steps to make this project successful?</summary>
-  
-  1. Step 1) Raise awareness about the project (April 1st–October 1st, 2026)
-  2. Step 2) Host a successful ICO fundraise with participation from a wide global community of supporters
-  3. Step 3) Develop the optimal foundational MVP for Society Protocol
-</details>
-
-<details>
-  <summary>Will each Web4 instance of Society Protocol use the same account and Energy distribution?</summary>
-  
-  1. Step 1) Raise awareness about the project (April 1st–October 1st, 2026)
-  2. Step 2) Host a successful ICO fundraise with participation from a wide global community of supporters
-  3. Step 3) Develop the optimal foundational MVP for Society Protocol
-</details>
-
-<details>
-  <summary>Do partner communities need to follow the ideology?</summary>
-  
-  Yes, all tiers of our partner communities have committed to following the official ideology of the Society Protocol movement. Unaffiliated communities, on the other hand, are not bound by the rules of the ideology and free to create their own ideologies.
-</details>
-
-<details>
-  <summary>Will communities be able to launch SP instances without using the account system and SPEC token on their own?</summary>
-  
-  Yes, anyone will be able to launch instances of Society Protocol using any cast of Genesis Actors and Energy distribution at any time. But doing so at scale, while maintaining a legitimacy about Energy distribution (which is a competitive negotiation between parties), will prove to be difficult without the account system and SPEC tokens to add legitimacy and automation to these instances. It's like "Who gets to decide who's included and how much Energy they each get?" Well, the account system and SPEC tokens are legitimate methods to start SP instances using legitimate movement participants at scale. We predict that instances which don't use the Web3 Outpost's account and SPEC systems will have a difficult time legitimizing their instance, launching with adequate scale, and overall competing with those SP instances which use the accounts and SPEC token to launch instances reflecting the legitimate history and participation of interested peers.
-</details>
-
-<details>
-  <summary>How will Society Protocol remain funded for the next 30-75 years––after the MVP is developed and the funds from the initial fundraiser run out to continue the project?</summary>
-  
-  1. The treasury retains 27% of the SPEC token distribution for this purpose. Their value will go up in the future, proportional to the project's success during the initial MVP phase. If the MVP is successful, the SP DAO treasury will sell a smaller amount of tokens to fund the next stage of development.
-  2. Our partner communities will increase upon success and the project will be funded through association dues from our partner communities.
-</details>
+The home page FAQs live in [Home FAQs.md](./Home%20FAQs.md) and are surfaced at `/api/copywriting/home-faqs`.

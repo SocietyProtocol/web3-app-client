@@ -3,23 +3,48 @@ import { BadgeHandle } from "../BadgeHandle";
 import { useBadgesQuery } from "../../../data/badges/useBadgesQuery";
 import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { CustomAutocomplete } from "@/components/CustomAutocomplete/CustomAutocomplete";
-import { AutocompleteProps } from "@mui/material";
+import { AutocompleteProps, AutocompleteValue } from "@mui/material";
 import { renderBadgeOption } from "./renderBadgeOption";
 import { BadgeOption } from "./types";
+import { BadgeQueryOptions } from "@/data/badges/types";
 
-interface BadgeAutocompleteProps {
+type SelectedBadges<
+  Multiple extends boolean,
+  DisableClearable extends boolean,
+> = AutocompleteValue<BadgeOption, Multiple, DisableClearable, true>;
+
+interface BadgeAutocompleteProps<
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+> {
   label: string;
-  value: string[];
-  onChange: AutocompleteProps<BadgeOption, true, false, true>["onChange"];
   tooltip?: string;
+  queryOptions?: Omit<BadgeQueryOptions, "searchText">;
+  optionFilter?: (badge: BadgeOption) => boolean;
+  value: Multiple extends true ? string[] : string | undefined;
+  onChange: AutocompleteProps<
+    BadgeOption,
+    Multiple,
+    DisableClearable,
+    true
+  >["onChange"];
+  multiple?: Multiple;
+  disableClearable?: DisableClearable;
 }
 
-export const BadgeAutocomplete = ({
+export const BadgeAutocomplete = <
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+>({
   label,
+  tooltip,
+  queryOptions,
+  optionFilter,
   value,
   onChange,
-  tooltip,
-}: BadgeAutocompleteProps) => {
+  multiple,
+  disableClearable,
+}: BadgeAutocompleteProps<Multiple, DisableClearable>) => {
   const [selectedBadgeMap, setSelectedBadgeMap] = useState<
     Map<string, BadgeOption>
   >(new Map());
@@ -31,12 +56,19 @@ export const BadgeAutocomplete = ({
     searchText: debouncedSearchQuery,
     includeProfile: true,
     pageSize: 50,
+    ...queryOptions,
   });
 
-  const badges = useMemo(
-    () => data?.pages.flatMap((page) => page.badges) || [],
-    [data],
-  );
+  const badges = useMemo(() => {
+    const fetchedBadges = data?.pages.flatMap((page) => page.badges) || [];
+    if (!optionFilter) return fetchedBadges;
+    return fetchedBadges.filter(optionFilter);
+  }, [data, optionFilter]);
+
+  const selectedBadgeIds = useMemo((): string[] => {
+    if (multiple) return value as string[];
+    return value ? [value as string] : [];
+  }, [multiple, value]);
 
   // Update selectedBadgeMap when badges are found
   useEffect(() => {
@@ -44,26 +76,39 @@ export const BadgeAutocomplete = ({
       setSelectedBadgeMap((prev) => {
         const newMap = new Map(prev);
         badges.forEach((badge) => {
-          if (value.includes(badge.id)) {
+          if (selectedBadgeIds.includes(badge.id)) {
             newMap.set(badge.id, badge);
           }
         });
         return newMap;
       });
     });
-  }, [badges, value]);
+  }, [badges, selectedBadgeIds]);
 
-  const selectedBadges = useMemo(
-    () =>
-      value
+  const selectedBadges: SelectedBadges<Multiple, DisableClearable> =
+    useMemo(() => {
+      const found = selectedBadgeIds
         .map((id) => selectedBadgeMap.get(id))
-        .filter((badge): badge is BadgeOption => !!badge),
-    [value, selectedBadgeMap],
-  );
+        .filter((badge): badge is BadgeOption => !!badge);
+
+      if (multiple) {
+        return found as SelectedBadges<Multiple, DisableClearable>;
+      }
+      return (found[0] ?? null) as SelectedBadges<Multiple, DisableClearable>;
+    }, [multiple, selectedBadgeIds, selectedBadgeMap]);
+
+  const CustomAutocompleteBadge =
+    CustomAutocomplete as typeof CustomAutocomplete<
+      BadgeOption,
+      Multiple,
+      DisableClearable,
+      true
+    >;
 
   return (
-    <CustomAutocomplete
-      multiple
+    <CustomAutocompleteBadge
+      multiple={multiple}
+      disableClearable={disableClearable}
       freeSolo
       label={label}
       tooltip={tooltip}
@@ -84,6 +129,7 @@ export const BadgeAutocomplete = ({
           id={item.id}
           name={item.name}
           profileUser={item.profileUser}
+          community={item.community}
         />
       )}
       inputValue={searchQuery}
@@ -93,7 +139,10 @@ export const BadgeAutocomplete = ({
         }
       }}
       placeholder={
-        selectedBadges.length === 0 ? "Search badges by name or ID..." : ""
+        (Array.isArray(selectedBadges) && selectedBadges.length === 0) ||
+        !selectedBadges
+          ? "Search badges by name or ID..."
+          : ""
       }
     />
   );

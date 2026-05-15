@@ -2,15 +2,7 @@
 
 import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
-import {
-  Stack,
-  TextField,
-  Box,
-  InputAdornment,
-  Typography,
-  Button,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Stack, Box, Typography, Button } from "@mui/material";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
 import { useAccounts } from "@/data/accounts/useAccounts";
 import { sortOptions } from "../../data/accounts/consts";
@@ -21,6 +13,7 @@ import { Hex } from "viem";
 import { useRouter } from "next/navigation";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useAccount } from "wagmi";
+import { SearchBox } from "@/components/Common/SearchBox";
 
 export const Accounts = () => {
   const router = useRouter();
@@ -108,27 +101,17 @@ export const Accounts = () => {
             }}
           >
             {/* Search */}
-            <TextField
+            <SearchBox
               id="accounts-search-input"
               placeholder="Search by name or address..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              size="small"
+              onChange={setSearchQuery}
               sx={{
                 flex: {
                   xs: 1,
                   md: "unset",
                 },
                 minWidth: { xs: "100%", md: 300 },
-              }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
               }}
             />
             {/* Sort */}

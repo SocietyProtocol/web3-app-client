@@ -1,0 +1,27 @@
+query CommunityMembers(
+  $first: Int
+  $skip: Int
+  $where: CommunityMembership_filter
+  $orderBy: CommunityMembership_orderBy
+  $orderDirection: OrderDirection
+) {
+  communityMemberships(
+    first: $first
+    skip: $skip
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    where: $where
+  ) {
+    id
+    joinActivity {
+      id
+      timestamp
+    }
+    user {
+      id
+      name
+      bio
+      imageUrl
+    }
+  }
+}

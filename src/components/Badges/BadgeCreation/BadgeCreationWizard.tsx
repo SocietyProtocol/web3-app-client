@@ -15,6 +15,7 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
 import { BadgePreview } from "./BadgePreview";
+import { useWatch } from "react-hook-form";
 
 const steps: WizardStep[] = [
   { label: "Badge Info", description: "Basic badge information" },
@@ -32,7 +33,13 @@ const BadgeCreationWizardContent = () => {
     isSyncing,
     isUploadingToIpfs,
     isWritingContract,
+    communityId,
   } = useBadgeCreation();
+
+  const [name, imageUrl, isOfficial] = useWatch({
+    control: form.control,
+    name: ["name", "imageUrl", "isOfficial"],
+  });
 
   const { address } = useAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
@@ -111,10 +118,10 @@ const BadgeCreationWizardContent = () => {
 
   // Determine loading text based on state
   const loadingText = useMemo(() => {
-    if (isUploadingToIpfs) return "Uploading metadata to IPFS...";
-    if (isTransactionPending) return "Waiting for transaction confirmation...";
-    if (isSyncing) return "Waiting for subgraph to sync...";
-    if (isWritingContract) return "Waiting for wallet confirmation...";
+    if (isUploadingToIpfs) return "Uploading...";
+    if (isTransactionPending) return "Confirming transaction...";
+    if (isSyncing) return "Syncing...";
+    if (isWritingContract) return "Executing transaction...";
     return "Saving...";
   }, [isUploadingToIpfs, isTransactionPending, isSyncing, isWritingContract]);
 
@@ -140,7 +147,17 @@ const BadgeCreationWizardContent = () => {
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
           {activeStep === 0 && <BadgeInfoStep />}
-          {activeStep === 1 && <BadgePermissionsStep />}
+          {activeStep === 1 && (
+            <BadgePermissionsStep
+              hideSections={
+                communityId
+                  ? {
+                      editors: true,
+                    }
+                  : {}
+              }
+            />
+          )}
         </Wizard>
       </Box>
 
@@ -151,15 +168,33 @@ const BadgeCreationWizardContent = () => {
           maxWidth: 300,
         }}
       >
-        <BadgePreview />
+        <Box
+          sx={{
+            position: "sticky",
+            top: 24,
+          }}
+        >
+          <BadgePreview
+            name={name}
+            imageUrl={imageUrl}
+            isOfficial={isOfficial}
+            isCommunity={!!communityId}
+          />
+        </Box>
       </Box>
     </Stack>
   );
 };
 
-export const BadgeCreationWizard = () => {
+interface BadgeCreationWizardProps {
+  communityId?: string;
+}
+
+export const BadgeCreationWizard = ({
+  communityId,
+}: BadgeCreationWizardProps) => {
   return (
-    <BadgeCreationProvider>
+    <BadgeCreationProvider communityId={communityId}>
       <BadgeCreationWizardContent />
     </BadgeCreationProvider>
   );

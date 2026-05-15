@@ -9,6 +9,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
 import { SocietyVipManagerABI } from "@/abis/SocietyVipManager";
 import { useCurrentLock } from "./useCurrentLock";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseClaimMutationParams {
   enabled?: boolean;
@@ -37,8 +38,19 @@ export const useClaimMutation = ({
     args: [],
     enabled: isEnabled,
     simulate: isEnabled,
-    queryKeysToInvalidateOnSuccess: [specBalance.queryKey, currentLock.queryKey],
-    onSuccess,
+    queryKeysToInvalidateOnSuccess: [
+      specBalance.queryKey,
+      currentLock.queryKey,
+    ],
+    onSuccess: (receipt) => {
+      capturePostHogEvent("spec_claimed", {
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+        locked_amount: currentLock.amount?.toString(),
+        unlock_time: currentLock.unlockTime?.toString(),
+      });
+      onSuccess?.();
+    },
     onError,
   });
 
@@ -47,14 +59,17 @@ export const useClaimMutation = ({
     await transaction.execute();
   }, [transaction]);
 
+  const isMutating = transaction.isExecuting || transaction.isLoading;
+
   return {
     mutate: claim,
     reset: transaction.reset,
-    isLoading: transaction.isLoading,
-    isMutating: transaction.isExecuting,
-    isSuccess: transaction.isSuccess,
+    isTransactionPending: transaction.isLoading,
+    isWritingContract: transaction.isExecuting,
+    isTransactionConfirmed: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,
+    isMutating,
     simulation: transaction.simulation,
     gas: transaction.gas,
     gasLoading: transaction.gasLoading,

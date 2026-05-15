@@ -5,6 +5,10 @@ export const MuiTabs: Components<
 >["MuiTabs"] = {
   styleOverrides: {
     root: ({ theme }) => ({
+      "& .MuiTab-root": {
+        fontFamily: theme.typography.subtitle1.fontFamily,
+      },
+
       // Apply pill styling when the Tabs root contains the class 'pill'
       "&.pill": {
         borderRadius: 30,

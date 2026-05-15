@@ -18,6 +18,7 @@ export const BACKGROUND_BUBBLE = "#151515";
 export const BACKGROUND_TOGGLE_BUTTON = "#201E1D";
 export const BACKGROUND_TOGGLE_BUTTON_HOVER = "#2A2827";
 export const BACKGROUND_HIGH_CONTRAST = "#000000";
+export const BACKGROUND_DANGER = "#241A1A";
 
 // Text colors
 export const TEXT_PRIMARY = "#CACACA";
@@ -43,16 +44,28 @@ export const WARNING_LIGHT = "#C97744";
 export const WARNING_CONTRAST = "#FFB9A3";
 
 // Info colors
-export const INFO_MAIN = "#2AB4FF";
+export const INFO_MAIN = "#007ec2";
 export const INFO_DARK = "#158AC9";
 export const INFO_LIGHT = "#60C7FF";
 export const INFO_CONTRAST = "#EBF8FF";
 
 // Gold colors
-export const GOLD_DARK = "#705216";
-export const GOLD_LIGHT = "#F7A600";
-export const GOLD_MAIN = "#916100";
-export const GOLD_CONTRAST = "#FFE2A7";
+export const GOLD_DARK = "#755310";
+export const GOLD_LIGHT = "#e6b947";
+export const GOLD_MAIN = "#7e5f11";
+export const GOLD_CONTRAST = "#f5e2b3";
+
+// Silver colors
+export const SILVER_DARK = "#3e5a74";
+export const SILVER_LIGHT = "#a2b8cd";
+export const SILVER_MAIN = "#84a2bd";
+export const SILVER_CONTRAST = "#ebf0f4";
+
+// Bronze colors
+export const BRONZE_DARK = "#654225";
+export const BRONZE_LIGHT = "#c08454";
+export const BRONZE_MAIN = "#865832";
+export const BRONZE_CONTRAST = "#e8d2c0";
 
 // Neutral colors
 export const NEUTRAL_MAIN = "#454545";

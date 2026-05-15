@@ -63,3 +63,26 @@ export const searchInCollection = <T extends object>(
 export function uniq<T extends string>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
+
+/**
+ * Removes duplicate items from an array based on a specified key extractor function.
+ * Preserves the original order of items.
+ *
+ * @param arr The array of items to be processed.
+ * @param getKey A function that extracts a unique key from each item.
+ * @returns A new array containing only unique items based on the extracted key.
+ */
+export function uniqueBy<T>(arr: T[], getKey: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+
+  for (const item of arr) {
+    const key = getKey(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  }
+
+  return result;
+}

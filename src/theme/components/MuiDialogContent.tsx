@@ -5,7 +5,7 @@ export const MuiDialogContent: Components<
 >["MuiDialogContent"] = {
   styleOverrides: {
     root: ({ theme }) => ({
-      padding: theme.spacing(5, 7),
+      padding: theme.spacing(4, 3),
     }),
   },
 };

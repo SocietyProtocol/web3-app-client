@@ -5,7 +5,7 @@ import {
   User,
 } from "../../../.graphclient";
 
-export enum SortOption {
+export enum BadgeSortOption {
   Newest = "createdAt",
   Holders = "holdersCount",
   Name = "name",
@@ -28,6 +28,7 @@ export interface BadgeQueryOptions {
   managerAddress?: string | null;
   holderAddress?: string | null;
   includeProfile?: boolean;
+  isCommunity?: boolean;
   orderBy?: Badge_orderBy;
   orderDirection?: OrderDirection;
   pageSize?: number;
@@ -38,6 +39,7 @@ export type BadgeData = Pick<
   Badge,
   | "id"
   | "name"
+  | "description"
   | "isOfficial"
   | "isCommunity"
   | "uri"

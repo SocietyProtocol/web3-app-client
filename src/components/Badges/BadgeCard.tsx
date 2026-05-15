@@ -19,6 +19,7 @@ import { UserHandle } from "../User/UserHandle";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
+  readonly?: boolean;
 }
 
 const StyledBadgeCard = styled(Paper, {
@@ -42,8 +43,8 @@ const StyledBadgeCard = styled(Paper, {
 
   ...(isOfficial && {
     border: "none",
-    ...theme.mixins.borderGradient("8px", "official"),
-    background: theme.palette.gradients.darkOfficial,
+    ...theme.mixins.borderGradient("8px", "gold"),
+    ...theme.mixins.backgroundGradient("135deg", "gold"),
   }),
 }));
 
@@ -56,6 +57,7 @@ export const BadgeCard = ({
   uri,
   loading = false,
   imageUrl,
+  readonly = false,
 }: BadgeCardProps) => {
   return (
     <StyledBadgeCard isOfficial={isOfficial}>
@@ -120,7 +122,7 @@ export const BadgeCard = ({
           }}
         />
       ) : (
-        <OptionalLink href={`/badges/${id}`}>
+        <OptionalLink href={readonly ? undefined : `/badges/${id}`}>
           <Avatar
             src={
               imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
@@ -141,7 +143,7 @@ export const BadgeCard = ({
         <Skeleton width="80%" />
       ) : (
         <OptionalLink
-          href={`/badges/${id}`}
+          href={readonly ? undefined : `/badges/${id}`}
           style={{
             maxWidth: "180px",
             overflow: "hidden",
@@ -201,7 +203,7 @@ export const BadgeCard = ({
                 size="small"
                 highlightYou
                 showPreview
-                link
+                link={!readonly}
               />
             ) : (
               "Unknown"

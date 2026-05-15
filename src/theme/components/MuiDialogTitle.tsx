@@ -5,8 +5,7 @@ export const MuiDialogTitle: Components<
 >["MuiDialogTitle"] = {
   styleOverrides: {
     root: ({ theme }) => ({
-      padding: theme.spacing(5, 7),
-      paddingBottom: theme.spacing(3),
+      padding: theme.spacing(4, 3, 0),
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",

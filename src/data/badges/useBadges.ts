@@ -2,7 +2,11 @@ import { useAccount } from "wagmi";
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { addressParser } from "@/lib/nuqs";
 import { useDebounceValue } from "../../hooks/useDebounceValue";
-import { CreatedByOption, SortOption, TabOption } from "@/data/badges/types";
+import {
+  CreatedByOption,
+  BadgeSortOption,
+  TabOption,
+} from "@/data/badges/types";
 import { mergeOptions } from "./utils";
 import { useBadgesQuery } from "./useBadgesQuery";
 import { useMemo } from "react";
@@ -18,14 +22,14 @@ export const useBadges = () => {
     ]).withDefault(TabOption.All),
   );
 
-  const [orderBy, setSortBy] = useQueryState<SortOption>(
+  const [orderBy, setSortBy] = useQueryState<BadgeSortOption>(
     "orderBy",
     parseAsStringEnum([
-      SortOption.Newest,
-      SortOption.Holders,
-      SortOption.Name,
-      SortOption.Id,
-    ]).withDefault(SortOption.Newest),
+      BadgeSortOption.Newest,
+      BadgeSortOption.Holders,
+      BadgeSortOption.Name,
+      BadgeSortOption.Id,
+    ]).withDefault(BadgeSortOption.Newest),
   );
 
   const [createdBy, setCreatedBy] = useQueryState<CreatedByOption>(
@@ -63,7 +67,7 @@ export const useBadges = () => {
         holderAddress:
           activeTab === TabOption.MyBadges ? userAddress : undefined,
         orderBy: orderBy,
-        orderDirection: orderBy === SortOption.Name ? "asc" : "desc",
+        orderDirection: orderBy === BadgeSortOption.Name ? "asc" : "desc",
       }),
     [
       debouncedSearchQuery,

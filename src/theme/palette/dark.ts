@@ -19,6 +19,7 @@ export const dark: PaletteOptions = {
     toggleButton: colors.BACKGROUND_TOGGLE_BUTTON,
     toggleButtonHover: colors.BACKGROUND_TOGGLE_BUTTON_HOVER,
     highContrast: colors.BACKGROUND_HIGH_CONTRAST,
+    danger: colors.BACKGROUND_DANGER,
   },
   text: {
     primary: colors.TEXT_PRIMARY,
@@ -55,6 +56,18 @@ export const dark: PaletteOptions = {
     dark: colors.GOLD_DARK,
     contrastText: colors.GOLD_CONTRAST,
   },
+  silver: {
+    main: colors.SILVER_MAIN,
+    light: colors.SILVER_LIGHT,
+    dark: colors.SILVER_DARK,
+    contrastText: colors.SILVER_CONTRAST,
+  },
+  bronze: {
+    main: colors.BRONZE_MAIN,
+    light: colors.BRONZE_LIGHT,
+    dark: colors.BRONZE_DARK,
+    contrastText: colors.BRONZE_CONTRAST,
+  },
   neutral: {
     main: colors.NEUTRAL_MAIN,
   },
@@ -71,17 +84,6 @@ export const dark: PaletteOptions = {
   action: {
     hover: alpha(colors.PRIMARY_MAIN, 0.11),
     selected: alpha(colors.PRIMARY_MAIN, 0.047),
-  },
-  gradients: {
-    official: `linear-gradient(180deg, ${colors.GOLD_LIGHT} 0%, ${colors.GOLD_MAIN} 100%)`,
-    darkOfficial: `linear-gradient(90deg, ${alpha(
-      colors.GOLD_LIGHT,
-      0.1,
-    )} 0%, ${alpha(colors.PRIMARY_CONTRAST_TEXT, 0.1)} 100%)`,
-    primary: `linear-gradient(to bottom, ${colors.PRIMARY_MAIN}, ${alpha(
-      colors.PRIMARY_MAIN,
-      0.31,
-    )})`,
   },
   chart: {
     stroke: colors.CHART_STROKE,

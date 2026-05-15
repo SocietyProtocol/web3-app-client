@@ -1,25 +1,24 @@
 import { Box, Typography } from "@mui/material";
-import { useBadgeCreation } from "./BadgeCreationContext";
 import { BadgeCard } from "../BadgeCard";
 import { useAccount } from "wagmi";
-import { useWatch } from "react-hook-form";
 
-export const BadgePreview = () => {
+interface BadgePreviewProps {
+  name?: string;
+  imageUrl?: string | null;
+  isOfficial?: boolean;
+  isCommunity?: boolean;
+}
+
+export const BadgePreview = ({
+  name,
+  imageUrl,
+  isOfficial,
+  isCommunity,
+}: BadgePreviewProps) => {
   const { address } = useAccount();
-  const { form } = useBadgeCreation();
-
-  const [name, imageUrl, isOfficial, isCommunity] = useWatch({
-    control: form.control,
-    name: ["name", "imageUrl", "isOfficial", "isCommunity"],
-  });
 
   return (
-    <Box
-      sx={{
-        position: "sticky",
-        top: 24,
-      }}
-    >
+    <Box>
       <Typography variant="h6" mb={2}>
         Preview
       </Typography>
@@ -31,7 +30,7 @@ export const BadgePreview = () => {
         isOfficial={isOfficial}
         isCommunity={isCommunity}
         creatorAddress={address}
-        uri={"#"}
+        readonly
       />
     </Box>
   );

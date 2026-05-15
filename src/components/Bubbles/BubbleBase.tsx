@@ -5,10 +5,12 @@ import {
   CardHeader,
   Stack,
   SxProps,
+  Theme,
 } from "@mui/material";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import Image from "next/image";
+import { mergeSx } from "@/utils/sx";
 
 export interface BubbleBaseProps {
   children: React.ReactNode;
@@ -17,7 +19,7 @@ export interface BubbleBaseProps {
   show?: boolean;
   showIcon?: boolean;
   variant?: "info" | "warning" | "none";
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
 }
 
 export const BubbleBase = ({
@@ -36,10 +38,10 @@ export const BubbleBase = ({
   return (
     <Card
       variant="bubble"
-      sx={[
-        ...(variant === "warning" ? [{ borderColor: "warning.light" }] : []),
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
+      sx={mergeSx(
+        variant === "warning" && { borderColor: "warning.light" },
+        sx,
+      )}
     >
       <CardHeader
         title={

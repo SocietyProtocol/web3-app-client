@@ -39,3 +39,12 @@ export const isValidUrl = (urlString: string): boolean => {
 export const isEqualCaseInsensitive = (str1: string, str2: string): boolean => {
   return str1.toLowerCase() === str2.toLowerCase();
 };
+
+export const formatJson = (value: string): string => {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 2);
+  } catch (err) {
+    console.warn("formatJson: failed to parse JSON", err);
+    return value;
+  }
+};

@@ -15,8 +15,9 @@ export const SocietyVipManagerABI = [
   { inputs: [], name: "ERC1967NonPayable", type: "error" },
   { inputs: [], name: "FailedCall", type: "error" },
   { inputs: [], name: "InsufficientAmount", type: "error" },
-  { inputs: [], name: "InvalidBadgeId", type: "error" },
+  { inputs: [], name: "InvalidAddress", type: "error" },
   { inputs: [], name: "InvalidInitialization", type: "error" },
+  { inputs: [], name: "InvalidTierAmounts", type: "error" },
   { inputs: [], name: "LockDurationTooShort", type: "error" },
   { inputs: [], name: "LockStillActive", type: "error" },
   { inputs: [], name: "NoTokensLocked", type: "error" },
@@ -65,6 +66,44 @@ export const SocietyVipManagerABI = [
       },
     ],
     name: "AmountsUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "communityId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tierId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "expiry",
+        type: "uint256",
+      },
+    ],
+    name: "CommunityTierGranted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "communityId",
+        type: "uint256",
+      },
+    ],
+    name: "CommunityTierRevoked",
     type: "event",
   },
   {
@@ -162,19 +201,6 @@ export const SocietyVipManagerABI = [
   },
   {
     inputs: [],
-    name: "badgesContract",
-    outputs: [
-      {
-        internalType: "contract SocietyProtocolBadges",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "bronzeAmount",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
@@ -184,6 +210,26 @@ export const SocietyVipManagerABI = [
     inputs: [],
     name: "bronzeBadgeId",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "communityTiers",
+    outputs: [
+      { internalType: "uint256", name: "tierId", type: "uint256" },
+      { internalType: "uint256", name: "expiry", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "communityId", type: "uint256" }],
+    name: "getCommunityTier",
+    outputs: [
+      { internalType: "uint256", name: "tierId", type: "uint256" },
+      { internalType: "uint256", name: "expiry", type: "uint256" },
+    ],
     stateMutability: "view",
     type: "function",
   },
@@ -202,17 +248,25 @@ export const SocietyVipManagerABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "governorBadgeId",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
+    inputs: [
+      { internalType: "uint256", name: "communityId", type: "uint256" },
+      { internalType: "uint256", name: "tierId", type: "uint256" },
+      { internalType: "uint256", name: "duration", type: "uint256" },
+    ],
+    name: "grantCommunityTier",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
       { internalType: "address", name: "_stakingToken", type: "address" },
-      { internalType: "address", name: "_badgesContract", type: "address" },
-      { internalType: "uint256", name: "_governorBadgeId", type: "uint256" },
+      { internalType: "uint256", name: "_bronzeBadgeId", type: "uint256" },
+      { internalType: "uint256", name: "_silverBadgeId", type: "uint256" },
+      { internalType: "uint256", name: "_goldBadgeId", type: "uint256" },
+      { internalType: "uint256", name: "_bronzeAmount", type: "uint256" },
+      { internalType: "uint256", name: "_silverAmount", type: "uint256" },
+      { internalType: "uint256", name: "_goldAmount", type: "uint256" },
     ],
     name: "initialize",
     outputs: [],
@@ -303,6 +357,13 @@ export const SocietyVipManagerABI = [
   {
     inputs: [],
     name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "communityId", type: "uint256" }],
+    name: "revokeCommunityTier",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

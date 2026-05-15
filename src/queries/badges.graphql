@@ -14,12 +14,17 @@ query Badges(
   ) {
     id
     name
+    description
     isOfficial
     isCommunity
     uri
     imageUrl
     creatorAddress
     profileUser {
+      name
+    }
+    community {
+      id
       name
     }
     createdBy {

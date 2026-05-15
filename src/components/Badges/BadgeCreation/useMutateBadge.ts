@@ -1,100 +1,73 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { throwResponseError } from "@/utils/errors";
-import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
+import { useMutateMetadata } from "@/hooks/useMutateMetadata";
 import { useTransaction } from "@/hooks/useTransaction";
 import { TransactionReceipt, zeroAddress } from "viem";
-import { useSnackbar } from "notistack";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
+import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
+import { useAccount } from "wagmi";
+import {
+  decodeBadgeCreatedEvents,
+  decodeBadgePermissions,
+  decodeEditorsUpdated,
+} from "@/data/badges/decodeUtils";
 
 interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
+  communityId?: string;
 }
 
-export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
-  const contractAddress = useChainVar(contracts.badges);
-  const pendingBadgeEventRef = useRef<BadgeTransformedData | null>(null);
-
-  const { generateAuthPayload } = useAuth();
-
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-  const uploadIpfsResult = useMutation<
-    UploadMetadataResponse,
-    Error,
-    Record<string, unknown>
-  >({
-    mutationFn: async (data) => {
-      // Generate authentication payload
-      const authPayload = await generateAuthPayload();
-
-      const response = await fetch("/api/upload-metadata", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-payload": JSON.stringify(authPayload),
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        await throwResponseError(response);
-      }
-
-      const responseData = await response.json();
-
-      return responseData;
-    },
-    onMutate: () => {
-      enqueueSnackbar("Uploading metadata to IPFS...", {
-        variant: "info",
-        key: "ipfs-upload",
-        persist: true,
-      });
-    },
-
-    onError,
-    onSuccess: () => {
-      closeSnackbar("ipfs-upload");
-
-      enqueueSnackbar("Metadata uploaded to IPFS", {
-        variant: "success",
-        key: "ipfs-upload-success",
-      });
-    },
-  });
-
-  const queryKeysToInvalidateOnSuccess = useMemo(
-    () => [["badges"], ["badge"]],
-    [],
+export const useMutateBadge = ({
+  onSuccess,
+  onError,
+  communityId,
+}: UseMutateBadgeProps) => {
+  const contractAddress = useChainVar(
+    communityId ? contracts.communityRegistry : contracts.badges,
   );
+
+  const { address } = useAccount();
+
+  const uploadIpfsResult = useMutateMetadata({ onError });
 
   const transaction = useTransaction({
     waitForSync: true,
     successMessage: "Badge created successfully",
-    queryKeysToInvalidateOnSuccess,
+    queryKeysToInvalidateOnSuccess: [
+      ["badges"],
+      ["badge"],
+      ...(communityId ? [["community", communityId], ["communities"]] : []),
+    ],
     onSuccess: (transactionReceipt) => {
-      const pendingBadgeEvent = pendingBadgeEventRef.current;
+      const [created] = decodeBadgeCreatedEvents(transactionReceipt);
+      const permissions = decodeBadgePermissions(transactionReceipt);
+      const editorUpdates = decodeEditorsUpdated(transactionReceipt);
 
-      if (pendingBadgeEvent) {
-        capturePostHogEvent("badge_created", {
-          badge_name: pendingBadgeEvent.name,
-          has_image: Boolean(pendingBadgeEvent.imageUrl),
-          has_metadata: Boolean(pendingBadgeEvent.metadata),
-          is_official: pendingBadgeEvent.isOfficial,
-          is_community: pendingBadgeEvent.isCommunity,
-          editor_count: pendingBadgeEvent.editors.length,
-          tx_hash: transactionReceipt.transactionHash,
-        });
-      }
+      capturePostHogEvent("badge_created", {
+        wallet_address: address?.toLowerCase(),
+        badge_id: created?.id.toString(),
+        badge_name: created?.name,
+        is_official: created?.isOfficial,
+        is_community: created?.isCommunityBadge,
+        community_id: communityId,
+        tx_hash: transactionReceipt.transactionHash,
+        minter_badge_ids: permissions?.minters.map((id) => id.toString()),
+        transferer_badge_ids: permissions?.transferers.map((id) =>
+          id.toString(),
+        ),
+        burner_badge_ids: permissions?.burners.map((id) => id.toString()),
+        editors:
+          permissions?.editors ??
+          editorUpdates.filter((e) => e.isAllowed).map((e) => e.editor),
+        editor_count:
+          permissions?.editors.length ??
+          editorUpdates.filter((e) => e.isAllowed).length,
+      });
 
-      pendingBadgeEventRef.current = null;
       onSuccess?.(transactionReceipt);
     },
     onError,
@@ -102,7 +75,6 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
 
   const mutate = useCallback(
     async (data: BadgeTransformedData) => {
-      pendingBadgeEventRef.current = data;
       const hasMetadata = !!data.imageUrl || !!data.metadata;
 
       let uri = "";
@@ -112,29 +84,45 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
           ...(data.metadata ? JSON.parse(data.metadata) : {}),
         } as Record<string, unknown>;
 
-        const res = await uploadIpfsResult.mutateAsync(metadata);
-        uri = res.uri;
+        const res = await uploadIpfsResult.mutateAsync([metadata]);
+        uri = res.uris[0];
       }
 
       // Call the contract
-      await transaction.execute({
-        address: contractAddress,
-        abi: SocietyProtocolBadgesABI,
-        functionName: "createBadge",
-        args: [
-          data.name,
-          data.isOfficial,
-          data.isCommunity,
-          zeroAddress,
-          uri,
-          data.minters,
-          data.transferers,
-          data.burners,
-          data.editors,
-        ],
-      });
+      if (communityId) {
+        await transaction.execute({
+          address: contractAddress,
+          abi: CommunityRegistryAbi,
+          functionName: "createCommunityBadge",
+          args: [
+            BigInt(communityId),
+            data.name,
+            uri,
+            data.minters,
+            data.transferers,
+            data.burners,
+          ],
+        });
+      } else {
+        await transaction.execute({
+          address: contractAddress,
+          abi: SocietyProtocolBadgesABI,
+          functionName: "createBadge",
+          args: [
+            data.name,
+            data.isOfficial,
+            false,
+            zeroAddress,
+            uri,
+            data.minters,
+            data.transferers,
+            data.burners,
+            data.editors,
+          ],
+        });
+      }
     },
-    [transaction, contractAddress, uploadIpfsResult],
+    [communityId, transaction, contractAddress, uploadIpfsResult],
   );
 
   const reset = useCallback(() => {
@@ -145,6 +133,7 @@ export const useMutateBadge = ({ onSuccess, onError }: UseMutateBadgeProps) => {
   const error =
     uploadIpfsResult.error ||
     (transaction.isError ? new Error("Transaction failed") : null);
+
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
   return {

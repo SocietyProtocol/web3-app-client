@@ -42,6 +42,7 @@ export const BadgePermissionsField = ({
 
   return (
     <BadgeAutocomplete
+      multiple
       tooltip={description}
       label={label}
       value={values}

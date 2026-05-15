@@ -171,15 +171,19 @@ export const useBidMutation = ({
     transaction.mainTransaction.txHash,
   ]);
 
+  const isMutating =
+    transaction.isApproving || transaction.isExecuting || transaction.isLoading;
+
   return {
     mutate: placeBid,
     reset: transaction.reset,
-    isLoading: transaction.isLoading,
+    isTransactionPending: transaction.isLoading,
     isApproving: transaction.isApproving,
-    isMutating: transaction.isExecuting,
-    isSuccess: transaction.isSuccess,
+    isWritingContract: transaction.isExecuting,
+    isTransactionConfirmed: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,
+    isMutating,
     approveRequired: transaction.approveRequired,
     bidReceipt: transaction.txReceipt,
     approveReceipt: transaction.approveReceipt,

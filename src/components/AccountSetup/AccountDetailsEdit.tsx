@@ -196,9 +196,9 @@ export const AccountDetailsEdit = ({
             isUploadingToIpfs
               ? "Uploading to IPFS..."
               : isSigning
-                ? "Confirm transaction..."
+                ? "Signing transaction..."
                 : isConfirming
-                  ? "Confirming..."
+                  ? "Confirming transaction..."
                   : isSyncing
                     ? "Syncing..."
                     : undefined

@@ -7,7 +7,10 @@ export const referralCodeValidationSchema = z
   .refine(
     (value) => {
       const trimmed = value.trim();
-      if (!isHex(trimmed) || trimmed.length !== 172) return false;
+      /**
+       * Basic validation to check if the referral code is a valid hex string of the expected length (300 characters for 149 bytes). This ensures that the code has the correct format before attempting to parse it. The actual parsing will be done in the transform step, which will throw an error if the format is correct but the content is invalid (e.g., invalid address).
+       */
+      if (!isHex(trimmed) || trimmed.length !== 300) return false;
 
       const bytes = hexToBytes(trimmed);
 

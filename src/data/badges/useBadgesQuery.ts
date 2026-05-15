@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchBadges, mergeOptions } from "./utils";
 import { BadgeQueryOptions } from "./types";
+import { TEN_MINUTES_IN_MS } from "@/consts/time";
 
 export const useBadgesQuery = (options?: BadgeQueryOptions) => {
   const mergedOptions = mergeOptions(options);
@@ -26,7 +27,7 @@ export const useBadgesQuery = (options?: BadgeQueryOptions) => {
       return pages.length;
     },
     placeholderData: (prev) => prev,
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: TEN_MINUTES_IN_MS,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });

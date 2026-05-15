@@ -183,7 +183,7 @@ export const Communities = () => {
             flexDirection: { xs: "column", xl: "row" },
             gap: 2,
             justifyContent: "space-between",
-            alignItems: { xs: "stretch", md: "center" },
+            alignItems: "center",
           }}
         >
           <Box
@@ -203,13 +203,13 @@ export const Communities = () => {
               onChange={setSearchQuery}
               sx={{
                 flex: { xs: 1, md: "unset" },
-                minWidth: { xs: "100%", md: 300 },
+                minWidth: { xs: "100%", xl: 300 },
               }}
             />
             <CommunityTierFilter value={tiers} onChange={setTiers} />
           </Box>
 
-          <Box sx={{ minWidth: { xs: "100%", sm: 180 }, mt: { xs: 2, md: 0 } }}>
+          <Box sx={{ minWidth: { xs: "100%", sm: 180 }, mt: { xs: 2, xl: 0 } }}>
             <FilterSelect
               label="Sort by"
               value={orderBy}
@@ -221,7 +221,15 @@ export const Communities = () => {
 
         {/* My Communities extra filters */}
         {activeTab === CommunityTabOption.My && (
-          <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: {
+                xs: "center",
+                xl: "flex-start",
+              },
+            }}
+          >
             <FormControlLabel
               control={
                 <Switch

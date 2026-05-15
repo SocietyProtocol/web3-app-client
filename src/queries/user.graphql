@@ -4,6 +4,9 @@ query User($id: ID!) {
     name
     bio
     imageUrl
+    communities {
+      id
+    }
     profile {
       id
     }

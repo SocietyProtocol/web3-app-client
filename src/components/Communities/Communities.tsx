@@ -129,6 +129,16 @@ export const Communities = () => {
           >
             Communities
           </Typography>
+          {/* TODO: complete the Communities FAQ section, then re-enable this link */}
+          {/* <Link
+            href="/communities-faq"
+            style={{
+              textDecoration: "underline",
+              fontSize: "1rem",
+            }}
+          >
+            Learn more about communities
+          </Link> */}
           <ButtonLink
             variant="contained"
             sx={{

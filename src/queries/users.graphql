@@ -25,6 +25,9 @@ query Users(
       bio
       imageUrl
     }
+    communities {
+      id
+    }
     badges(where: { isProfile: false }) {
       id
       name

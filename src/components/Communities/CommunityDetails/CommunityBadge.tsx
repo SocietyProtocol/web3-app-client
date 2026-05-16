@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
+import { Avatar, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import NextLink from "next/link";
 
 export interface CommunityBadgeProps {
@@ -34,7 +34,15 @@ export function CommunityBadge({
   );
 
   return (
-    <Stack spacing={0.75} alignItems="center">
+    <Stack
+      spacing={0.75}
+      alignItems="center"
+      sx={{
+        width: "fit-content",
+        maxWidth: "200px",
+        overflow: "hidden",
+      }}
+    >
       {loading ? (
         <Skeleton variant="circular" width={52} height={52} />
       ) : (
@@ -46,24 +54,33 @@ export function CommunityBadge({
       {loading ? (
         <Skeleton width={80} height={14} />
       ) : (
-        <NextLink href={`/badges/${id}`} style={{ textDecoration: "none" }}>
-          <Typography
-            component="span"
-            variant="body2"
-            sx={{
-              fontSize: 14,
-              color: "text.primary",
-              fontWeight: 600,
-              textAlign: "center",
+        <Tooltip title={name ?? "Badge Name"} placement="bottom">
+          <NextLink
+            href={`/badges/${id}`}
+            style={{
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              maxWidth: "100%",
             }}
-            title={name}
           >
-            {name}
-          </Typography>
-        </NextLink>
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{
+                fontSize: 14,
+                color: "text.primary",
+                fontWeight: 600,
+                textAlign: "center",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {name}
+            </Typography>
+          </NextLink>
+        </Tooltip>
       )}
 
       {loading ? (

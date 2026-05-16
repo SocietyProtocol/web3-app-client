@@ -55,10 +55,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
 
   const badgesCount = data?.badges?.length;
 
-  const communityCount = useMemo(
-    () => data?.badges.filter((b) => b.isCommunity).length,
-    [data],
-  );
+  const communityCount = data?.communities?.length;
 
   const [isEditing, setIsEditing] = useQueryState(
     "edit",

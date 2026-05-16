@@ -26,10 +26,25 @@ export function CommunityDetails() {
       <Tabs
         value={tab}
         onChange={(_, newValue) => setTab(newValue)}
-        variant="fullWidth"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
         sx={{
           borderBottom: 1,
           borderColor: "divider",
+          // Responsive: scrollable on xs/sm, fullWidth on md+
+          ".MuiTabs-flexContainer": {
+            justifyContent: { xs: "flex-start", md: "center" },
+          },
+          "& .MuiTab-root": {
+            flex: { xs: "0 0 auto", md: "1 1 0%" },
+            minWidth: { xs: 120, md: 0 },
+          },
+          "& .MuiTabs-indicator": {
+            left: { xs: 0, md: undefined },
+            right: { xs: 0, md: undefined },
+            width: { xs: "100%", md: undefined },
+          },
         }}
       >
         <Tab

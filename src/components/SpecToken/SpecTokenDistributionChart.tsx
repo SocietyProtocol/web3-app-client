@@ -23,7 +23,7 @@ export const SpecTokenDistributionChart = () => {
       sx={{
         mt: 4,
         mb: 2,
-        p: { xs: 3, md: 4 },
+        p: { xs: 2, sm: 3, md: 4 },
         borderRadius: 3,
         border: (theme) => `1px solid ${theme.palette.border.area}`,
         backgroundColor: (theme) => theme.palette.background.paper,
@@ -53,14 +53,14 @@ export const SpecTokenDistributionChart = () => {
 
       <Stack
         direction={{ xs: "column", md: "row" }}
-        spacing={{ xs: 3, md: 4 }}
+        spacing={{ xs: 2.5, md: 4 }}
         alignItems="center"
         justifyContent="center"
       >
         <Box
           sx={{
-            width: { xs: 240, sm: 280, md: 320 },
-            height: { xs: 240, sm: 280, md: 320 },
+            width: { xs: 220, sm: 280, md: 320 },
+            height: { xs: 220, sm: 280, md: 320 },
             flexShrink: 0,
             position: "relative",
           }}
@@ -184,8 +184,8 @@ export const SpecTokenDistributionChart = () => {
             p: 0,
             m: 0,
             display: "grid",
-            gridTemplateColumns: { xs: "1fr 1fr", sm: "1fr" },
-            gap: 1,
+            gridTemplateColumns: "1fr",
+            gap: { xs: 0.5, md: 1 },
             minWidth: { md: 260 },
             width: { xs: "100%", md: "auto" },
           }}
@@ -205,8 +205,8 @@ export const SpecTokenDistributionChart = () => {
                     display: "flex",
                     alignItems: "center",
                     gap: 1.5,
-                    px: 1.5,
-                    py: 1,
+                    px: { xs: 1, sm: 1.5 },
+                    py: { xs: 0.75, sm: 1 },
                     borderRadius: 2,
                     textAlign: "left",
                     transition: "background-color 0.15s, opacity 0.15s",
@@ -214,10 +214,7 @@ export const SpecTokenDistributionChart = () => {
                     backgroundColor: isActive
                       ? "rgba(255, 255, 255, 0.06)"
                       : "transparent",
-                    border: (theme) =>
-                      `1px solid ${
-                        isActive ? color : "transparent"
-                      }`,
+                    border: `1px solid ${isActive ? color : "transparent"}`,
                     "&:hover": {
                       backgroundColor: "rgba(255, 255, 255, 0.04)",
                     },

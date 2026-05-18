@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   FormControlLabel,
+  Link,
   Stack,
   Switch,
   Tab,
@@ -120,38 +121,39 @@ export const Communities = () => {
         >
           <Typography
             variant="h4"
+            component="h1"
+            color="primary.main"
             sx={{
-              fontWeight: 700,
-              fontSize: { xs: 22, sm: 28 },
               mb: { xs: 1, sm: 0 },
               textAlign: { xs: "left", sm: "inherit" },
             }}
           >
             Communities
           </Typography>
-          {/* TODO: complete the Communities FAQ section, then re-enable this link */}
-          {/* <Link
-            href="/communities-faq"
-            style={{
-              textDecoration: "underline",
-              fontSize: "1rem",
-            }}
-          >
-            Learn more about communities
-          </Link> */}
-          <ButtonLink
-            variant="contained"
-            sx={{
-              width: { xs: "100%", sm: "auto !important" },
-              maxWidth: { xs: "100% !important", sm: "220px !important" },
-              whiteSpace: "nowrap",
-              minWidth: "200px !important",
-              flex: 1,
-            }}
-            href="/create-community"
-          >
-            Create Community
-          </ButtonLink>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "center", gap: 4 }}>
+            <Link
+              href="/communities-faq"
+              style={{
+                textDecoration: "underline",
+                fontSize: "1rem",
+              }}
+            >
+              Learn more about communities
+            </Link>
+            <ButtonLink
+              variant="contained"
+              sx={{
+                width: { xs: "100%", sm: "auto !important" },
+                maxWidth: { xs: "100% !important", sm: "220px !important" },
+                whiteSpace: "nowrap",
+                minWidth: "200px !important",
+                flex: 1,
+              }}
+              href="/create-community"
+            >
+              Create Community
+            </ButtonLink>
+          </Box>
         </Box>
         {/* Tabs */}
         <Tabs

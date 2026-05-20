@@ -53,5 +53,8 @@
     "eslint-config-next": "16.0.3",
     "typescript": "^5",
     "vitest": "^1.0.0"
+  },
+  "resolutions": {
+    "qr": "0.5.5"
   }
 }

@@ -49,7 +49,7 @@ export const Page = ({
           sx={{
             pl: { xs: 3, md: 6 },
             pt: { xs: 5, md: 7 },
-            mb: wideMargin ? { xs: 1, md: -6 } : 0,
+            mb: wideMargin ? { xs: 1, md: 0, xl: -6 } : 0,
           }}
         >
           <Button

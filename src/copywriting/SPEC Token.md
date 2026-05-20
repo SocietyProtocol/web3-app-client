@@ -2,7 +2,7 @@
 
 The purpose of the SPEC token is to store a value of contribution to Society Protocol. This value is retrieved upon the launch of the Society Protocol's minimum-viable-product (MVP) and thereafter, for the length of the duration that it takes humanity to transition the world into Synchronized States, as communities launch new Web4 instances.
 
-**How it works:**
+#### How it works
 The SPEC token is designed to measure (objective) contributions to the Society Protocol (SP) movement. It works in conjunction with the account system, which is designed to measure (subjective) contributions. Together the two systems combine to provide our movement with a real-time sybil-resistant identity map of all participants, their contributions, and their characteristics.
 
 This sybil-resistant community map forms the backbone of allowing anyone to launch their unique SP Web4 instances, by giving them a legitimate map of sybil-resistant accounts on Ethereum, consisting of our movement's participants classified by their subjective (accounts) and objective (SPEC) contribution. Everyone launching an instance of Society Protocol will have a choice to make––_"who gets to be the initial Genesis Actors in my instance?"_ and _"how much Energy does each one of them receive?"_ Everyone will approach this problem differently, but our hypothesis is: that providing a list of mapped accounts...will be used to easily launch SP instances, which are filled with legitimate and interested participants, immediately, at scale, in an accessible manner (by mapping Ethereum accounts to the SP account system).

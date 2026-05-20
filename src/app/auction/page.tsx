@@ -38,43 +38,38 @@ export default async function AuctionPage() {
     <Suspense fallback={<AuctionDetailsSkeleton />}>
       <AuctionProvider auctionId={env.auctionId}>
         <Page>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Box sx={{ maxWidth: 1100, mx: "auto" }}>
             {env.auctionId !== undefined ? (
               <AuctionDetails />
             ) : (
-              <Stack
-                sx={{
-                  mx: "auto",
-                  mt: 8,
-                  px: { xs: 2, md: 0 },
-                }}
-              >
+              <>
                 <Typography
                   variant="h4"
                   component="h1"
                   color="primary.main"
-                  sx={{
-                    fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                  }}
+                  sx={{ mb: 6 }}
                 >
                   SPEC ICO Auction
                 </Typography>
                 <Stack
-                  direction="row"
+                  direction={{ xs: "column", lg: "row" }}
                   spacing={4}
-                  alignItems="flex-start"
-                  justifyContent="center"
-                  sx={{
-                    mx: "auto",
-                    mt: 8,
-                  }}
+                  alignItems={{ xs: "stretch", lg: "flex-start" }}
                 >
                   <MarkdownRenderer
                     src="/api/copywriting/ico"
-                    sx={{ maxWidth: 980, mx: "auto", px: { xs: 2, md: 0 } }}
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      "& p, & li": { color: "text.primary" },
+                    }}
                   />
                   <BubbleBase
-                    sx={{ maxWidth: 400, margin: "40px auto" }}
+                    sx={{
+                      width: { xs: "100%", lg: 320 },
+                      maxWidth: { xs: "100%", lg: 320 },
+                      flexShrink: 0,
+                    }}
                     actions={
                       <Typography variant="body1" sx={{ mt: 2 }}>
                         Stay tuned for updates!
@@ -86,7 +81,7 @@ export default async function AuctionPage() {
                     </Typography>
                   </BubbleBase>
                 </Stack>
-              </Stack>
+              </>
             )}
           </Box>
         </Page>

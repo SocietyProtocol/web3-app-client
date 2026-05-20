@@ -119,6 +119,20 @@ export const Badges = () => {
             alignItems: { xs: "stretch", md: "center" },
           }}
         >
+          {/* Search */}
+          <SearchBox
+            id="badges-search-input"
+            placeholder="Search by name or address..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            sx={{
+              flex: {
+                xs: 1,
+                md: "unset",
+              },
+              minWidth: { xs: "100%", md: 300 },
+            }}
+          />
           <Stack
             direction={{
               xs: "column",
@@ -151,21 +165,6 @@ export const Badges = () => {
               customInputPlaceholder="0x..."
             />
           </Stack>
-
-          {/* Search */}
-          <SearchBox
-            id="badges-search-input"
-            placeholder="Search by name or address..."
-            value={searchQuery}
-            onChange={setSearchQuery}
-            sx={{
-              flex: {
-                xs: 1,
-                md: "unset",
-              },
-              minWidth: { xs: "100%", md: 300 },
-            }}
-          />
         </Box>
 
         {/* Badge Grid */}

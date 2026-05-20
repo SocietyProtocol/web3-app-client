@@ -62,7 +62,7 @@ export const Home = () => {
   );
 
   return (
-    <Box sx={{ pt: { xs: 8, md: 10 } }}>
+    <Box sx={{ pt: { xs: 6, md: 8 } }}>
       <Typography
         variant="h4"
         component="h1"

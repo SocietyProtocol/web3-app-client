@@ -107,7 +107,7 @@ export const Communities = () => {
 
   return (
     <>
-      <Stack spacing={3} width="100%" marginTop={3}>
+      <Stack spacing={3} width="100%">
         {/* Header + Create Community button */}
         <Box
           sx={{

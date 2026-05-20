@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function CommunitiesPage() {
   return (
-    <Page wideMargin>
+    <Page>
       <Box>
         <Suspense>
           <Communities />

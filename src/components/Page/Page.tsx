@@ -79,13 +79,17 @@ export const Page = ({
       )}
       <Box
         sx={{
-          paddingX: wideMargin ? { xs: 3, md: 19 } : { xs: 3, md: 6 },
+          paddingX: wideMargin
+            ? { xs: 3, md: 6, xl: 19 }
+            : { xs: 3, md: 6 },
           paddingTop: backButton
             ? 2
             : wideMargin
-              ? { xs: 5, md: 12 }
+              ? { xs: 5, md: 7, xl: 12 }
               : { xs: 5, md: 7 },
-          paddingBottom: wideMargin ? { xs: 5, md: 12 } : { xs: 5, md: 7 },
+          paddingBottom: wideMargin
+            ? { xs: 5, md: 7, xl: 12 }
+            : { xs: 5, md: 7 },
           overflow: "clip",
         }}
       >

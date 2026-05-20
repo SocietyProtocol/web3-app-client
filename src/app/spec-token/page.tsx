@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Page } from "@/components/Page/Page";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer/MarkdownRenderer";
 import { SpecTokenDistributionChart } from "@/components/SpecToken/SpecTokenDistributionChart";
@@ -10,23 +10,29 @@ export const metadata = {
 
 export default function SpecTokenPage() {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", lg: "row" },
-        gap: { xs: 3, md: 4, lg: 6 },
-        alignItems: { xs: "stretch", lg: "flex-start" },
-        width: "100%",
-      }}
-    >
-      <Box sx={{ flex: 1, minWidth: 0, order: { xs: 1, lg: 1 } }}>
-        <Page title="SPEC Token" wideMargin>
-          <Box sx={{ maxWidth: 980 }}>
-            <MarkdownRenderer src="/api/copywriting/spec-token" />
-            <SpecTokenDistributionChart />
-          </Box>
-        </Page>
+    <Page>
+      <Box sx={{ maxWidth: 1100, mx: "auto" }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          color="primary.main"
+          sx={{ mb: 6 }}
+        >
+          SPEC Token
+        </Typography>
+        <MarkdownRenderer
+          src="/api/copywriting/spec-token"
+          sx={{
+            "& p, & li": { color: "text.primary" },
+            "& h4:first-of-type + p": {
+              fontSize: { xs: "1.2rem", md: "1.4rem" },
+              lineHeight: 1.5,
+              mb: 4,
+            },
+          }}
+        />
+        <SpecTokenDistributionChart />
       </Box>
-    </Box>
+    </Page>
   );
 }

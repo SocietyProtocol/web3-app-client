@@ -19,7 +19,6 @@ export const Governance = () => {
           justifyContent: "space-between",
           alignItems: "flex-start",
           gap: 6,
-          paddingX: { xs: 2, md: 8 },
         }}
       >
         <Box
@@ -31,10 +30,10 @@ export const Governance = () => {
         >
           <MarkdownRenderer
             src="/api/copywriting/governance"
-            sx={{ maxWidth: 980 }}
+            sx={{ maxWidth: 980, "& p, & li": { color: "text.primary" } }}
           />
         </Box>
-        <Box 
+        <Box
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -43,12 +42,18 @@ export const Governance = () => {
           <Box sx={{ width: { xs: "100%", md: "auto" }, minWidth: { md: 300 } }}>
             <BubbleBase
               variant="none"
+              sx={{
+                "& .MuiCardHeader-root": { padding: 2 },
+                "& > .MuiCardContent-root": { padding: 2 },
+                "& > .MuiCardActions-root": { padding: 2 },
+              }}
               actions={
                 <Button
                   variant="contained"
                   sx={{
                     width: { xs: "100%", sm: "auto" },
                     fontSize: { xs: "0.875rem", sm: "1rem" },
+                    whiteSpace: "nowrap",
                   }}
                   href={env.snapshotUrl}
                   target="_blank"
@@ -69,12 +74,18 @@ export const Governance = () => {
           <Box sx={{ width: { xs: "100%", md: "auto" }, minWidth: { md: 300 } }}>
             <BubbleBase
               variant="none"
+              sx={{
+                "& .MuiCardHeader-root": { padding: 2 },
+                "& > .MuiCardContent-root": { padding: 2 },
+                "& > .MuiCardActions-root": { padding: 2 },
+              }}
               actions={
                 <Button
                   variant="outlined"
                   sx={{
                     width: { xs: "100%", sm: "auto" },
                     fontSize: { xs: "0.875rem", sm: "1rem" },
+                    whiteSpace: "nowrap",
                   }}
                   href={env.snapshotUrl}
                   target="_blank"

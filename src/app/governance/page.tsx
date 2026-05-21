@@ -1,5 +1,6 @@
 import { Governance } from "@/components/Governance/Governance";
 import { Page } from "@/components/Page/Page";
+import { Box, Typography } from "@mui/material";
 
 export const metadata = {
   title: "Governance",
@@ -8,8 +9,18 @@ export const metadata = {
 
 export default function GovernancePage() {
   return (
-    <Page title="Governance">
-      <Governance />
+    <Page>
+      <Box sx={{ maxWidth: 1100, mx: "auto" }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          color="primary.main"
+          sx={{ mb: 6 }}
+        >
+          Governance
+        </Typography>
+        <Governance />
+      </Box>
     </Page>
   );
 }

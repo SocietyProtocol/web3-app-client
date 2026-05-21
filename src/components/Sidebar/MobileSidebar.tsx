@@ -26,6 +26,9 @@ export const MobileSidebar = ({ open, onClose }: MobileSidebarProps) => {
           padding: (theme) => theme.spacing(2),
           display: "flex",
           flexDirection: "column",
+          backgroundColor: (theme) => theme.palette.background.page,
+          backgroundImage: "none",
+          border: "none",
         },
       }}
     >

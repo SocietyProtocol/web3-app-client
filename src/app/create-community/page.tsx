@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function CreateCommunityPage() {
   return (
-    <Page wideMargin>
+    <Page wideMargin backButton defaultBackPath="/communities">
       <Suspense
         fallback={
           <Box

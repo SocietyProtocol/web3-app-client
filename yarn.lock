@@ -13139,9 +13139,9 @@ __metadata:
   linkType: hard
 
 "qr@npm:~0":
-  version: 0.6.0
-  resolution: "qr@npm:0.6.0"
-  checksum: 10c0/ab23397fb4e0f8d2034af838f4b13b7c02ac0defd449a5963a1753c22c6da168837bf693120fef0daef5e93dca432cac5543561ce307b2dab875e0a859935ee7
+  version: 0.5.5
+  resolution: "qr@npm:0.5.5"
+  checksum: 10c0/3aa10a9fd32c8b36f2f3992630778b80802918a2afc333be7301d2bf53267d31d5d2938bd4e2c9698f1a8164596eb7ecf94a50977c91cdb990a9098c1adf218e
   languageName: node
   linkType: hard
 

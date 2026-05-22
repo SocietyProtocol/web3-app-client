@@ -11,9 +11,19 @@ import { Expandable } from "../Expandable";
 interface MarkdownRendererProps {
   src: string;
   sx?: SxProps<Theme>;
+  /**
+   * Optional map of `{{key}}` placeholders to replace in the fetched markdown
+   * before rendering. Use for injecting runtime values (e.g. env vars) that
+   * can't be hardcoded into static copy files.
+   */
+  replacements?: Record<string, string>;
 }
 
-export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
+export function MarkdownRenderer({
+  src,
+  sx,
+  replacements,
+}: MarkdownRendererProps) {
   const [content, setContent] = useState("");
 
   useEffect(() => {
@@ -25,7 +35,12 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
         throw new Error(`Failed to load markdown: ${response.status}`);
       }
 
-      const markdown = await response.text();
+      let markdown = await response.text();
+      if (replacements) {
+        for (const [key, value] of Object.entries(replacements)) {
+          markdown = markdown.replaceAll(`{{${key}}}`, value);
+        }
+      }
       setContent(markdown);
     }
 
@@ -39,7 +54,7 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
     return () => {
       controller.abort();
     };
-  }, [src]);
+  }, [src, replacements]);
 
   return (
     <Box

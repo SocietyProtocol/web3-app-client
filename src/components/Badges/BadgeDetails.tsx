@@ -303,7 +303,7 @@ export const BadgeDetails = ({
         />
         <BadgeManagers
           label="Who can Manage:"
-          tooltip="These are the users who can manage the badge."
+          tooltip="Managers can mint and burn this badge, and update its settings."
           loading={showLoader}
           managers={data?.badge?.managers}
         />

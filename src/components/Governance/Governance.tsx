@@ -30,6 +30,7 @@ export const Governance = () => {
         >
           <MarkdownRenderer
             src="/api/copywriting/governance"
+            replacements={{ snapshotSpecUrl: env.snapshotSpecUrl }}
             sx={{ maxWidth: 980, "& p, & li": { color: "text.primary" } }}
           />
         </Box>
@@ -87,7 +88,7 @@ export const Governance = () => {
                     fontSize: { xs: "0.875rem", sm: "1rem" },
                     whiteSpace: "nowrap",
                   }}
-                  href={env.snapshotUrl}
+                  href={env.snapshotSpecUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

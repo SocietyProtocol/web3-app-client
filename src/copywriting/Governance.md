@@ -1,4 +1,4 @@
-The Society Protocol DAO is governed by community members who possess [Governor](https://app.societyprotocol.io/badges/11) badges. Governor badge holders consist of two primary segments: the core team and our affiliates (advisors and partner communities).
+The Society Protocol DAO is governed by community members who possess [Governor](https://app.societyprotocol.io/badges/13) badges. Governor badge holders consist of two primary segments: the core team and our affiliates (advisors and partner communities).
 
 Making group decisions via Governor badges instead of the SPEC token is a deliberate design decision, which goes along with our ideological value of meritocracy and allows us to bypass the sybil-resistance issues of token voting in Web3. The Society Protocol movement is not a democracy; it is a meritocracy. This governance structure allows us to compress the highest and most aligned expertise possible—from our core team and deeply experienced affiliates (advisors and partner communities)—to make aligned and optimal group decisions.
 

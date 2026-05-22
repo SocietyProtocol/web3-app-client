@@ -1,6 +1,7 @@
 #### The Purpose
 
-The purpose of the SPEC token is to store a value of contribution to Society Protocol. This value is retrieved upon the launch of the Society Protocol's minimum-viable-product (MVP) and thereafter, for the length of the duration that it takes humanity to transition the world into Synchronized States, as communities launch new Web4 instances.
+<!-- markdownlint-disable-next-line MD033 -->
+<p style="color: #7A7A7A">The purpose of the SPEC token is to store a value of contribution to Society Protocol. This value is retrieved upon the launch of the Society Protocol's minimum-viable-product (MVP) and thereafter, for the length of the duration that it takes humanity to transition the world into Synchronized States, as communities launch new Web4 instances.</p>
 
 #### How it works
 The SPEC token is designed to measure (objective) contributions to the Society Protocol (SP) movement. It works in conjunction with the account system, which is designed to measure (subjective) contributions. Together the two systems combine to provide our movement with a real-time sybil-resistant identity map of all participants, their contributions, and their characteristics.

@@ -235,7 +235,7 @@ export const Home = () => {
               fullWidth
               onClick={() => router.push("/governance")}
             >
-              Snapshot
+              GOVERNANCE
             </Button>
           }
         />

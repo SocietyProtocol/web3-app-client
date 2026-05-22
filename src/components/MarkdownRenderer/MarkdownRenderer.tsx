@@ -11,9 +11,19 @@ import { Expandable } from "../Expandable";
 interface MarkdownRendererProps {
   src: string;
   sx?: SxProps<Theme>;
+  /**
+   * Optional map of `{{key}}` placeholders to replace in the fetched markdown
+   * before rendering. Use for injecting runtime values (e.g. env vars) that
+   * can't be hardcoded into static copy files.
+   */
+  replacements?: Record<string, string>;
 }
 
-export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
+export function MarkdownRenderer({
+  src,
+  sx,
+  replacements,
+}: MarkdownRendererProps) {
   const [content, setContent] = useState("");
 
   useEffect(() => {
@@ -25,7 +35,12 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
         throw new Error(`Failed to load markdown: ${response.status}`);
       }
 
-      const markdown = await response.text();
+      let markdown = await response.text();
+      if (replacements) {
+        for (const [key, value] of Object.entries(replacements)) {
+          markdown = markdown.replaceAll(`{{${key}}}`, value);
+        }
+      }
       setContent(markdown);
     }
 
@@ -39,19 +54,29 @@ export function MarkdownRenderer({ src, sx }: MarkdownRendererProps) {
     return () => {
       controller.abort();
     };
-  }, [src]);
+  }, [src, replacements]);
 
   return (
     <Box
       sx={[
         {
-          "& h1, & h2, & h3, & h4": {
+          "& h1, & h2, & h3, & h4, & h5, & h6": {
             color: (theme) => theme.palette.primary[100],
-            mt: 3,
+            fontFamily:
+              "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+            fontWeight: 400,
+            lineHeight: 1.2,
+            mt: 5,
             mb: 2,
           },
+          "& h1": { fontSize: "2.5rem" },
+          "& h2": { fontSize: "2rem" },
+          "& h3": { fontSize: "1.75rem" },
+          "& h4": { fontSize: "1.5rem" },
+          "& h5": { fontSize: "1.25rem" },
+          "& h6": { fontSize: "1.125rem" },
           "& p, & li": {
-            color: (theme) => theme.palette.primary.main,
+            color: (theme) => theme.palette.text.primary,
             lineHeight: 1.7,
             fontSize: "1.125rem",
           },

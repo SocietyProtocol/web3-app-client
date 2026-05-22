@@ -5,6 +5,7 @@ interface ClientEnv {
   alchemyApiKey: string;
   auctionId?: number;
   snapshotUrl: string;
+  snapshotSpecUrl: string;
   graphUrl: string;
   posthogProjectToken?: string;
   posthogHost?: string;
@@ -43,6 +44,12 @@ if (!process.env.NEXT_PUBLIC_SNAPSHOT_URL) {
   throw new Error("NEXT_PUBLIC_SNAPSHOT_URL environment variable is not set");
 }
 
+if (!process.env.NEXT_PUBLIC_SNAPSHOT_SPEC_URL) {
+  throw new Error(
+    "NEXT_PUBLIC_SNAPSHOT_SPEC_URL environment variable is not set",
+  );
+}
+
 if (!process.env.NEXT_PUBLIC_GRAPH_URL) {
   throw new Error("NEXT_PUBLIC_GRAPH_URL environment variable is not set");
 }
@@ -61,6 +68,7 @@ export const env: Env = {
     ? parseInt(process.env.NEXT_PUBLIC_AUCTION_ID, 10)
     : undefined,
   snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
+  snapshotSpecUrl: process.env.NEXT_PUBLIC_SNAPSHOT_SPEC_URL,
   graphUrl: process.env.NEXT_PUBLIC_GRAPH_URL,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
   posthogProjectToken: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,

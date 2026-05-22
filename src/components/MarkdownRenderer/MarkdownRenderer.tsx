@@ -60,13 +60,23 @@ export function MarkdownRenderer({
     <Box
       sx={[
         {
-          "& h1, & h2, & h3, & h4": {
+          "& h1, & h2, & h3, & h4, & h5, & h6": {
             color: (theme) => theme.palette.primary[100],
-            mt: 3,
+            fontFamily:
+              "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+            fontWeight: 400,
+            lineHeight: 1.2,
+            mt: 5,
             mb: 2,
           },
+          "& h1": { fontSize: "2.5rem" },
+          "& h2": { fontSize: "2rem" },
+          "& h3": { fontSize: "1.75rem" },
+          "& h4": { fontSize: "1.5rem" },
+          "& h5": { fontSize: "1.25rem" },
+          "& h6": { fontSize: "1.125rem" },
           "& p, & li": {
-            color: (theme) => theme.palette.primary.main,
+            color: (theme) => theme.palette.text.primary,
             lineHeight: 1.7,
             fontSize: "1.125rem",
           },

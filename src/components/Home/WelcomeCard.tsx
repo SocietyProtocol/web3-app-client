@@ -5,7 +5,8 @@ import NorthEastIcon from "@mui/icons-material/NorthEast";
 import Image from "next/image";
 import Link from "next/link";
 
-const LEARN_MORE_URL = "https://societyprotocol.io";
+const LEARN_MORE_URL =
+  "https://societyprotocol.io/articles/how-we-are-building-society-protocol/";
 
 export const WelcomeCard = () => {
   return (

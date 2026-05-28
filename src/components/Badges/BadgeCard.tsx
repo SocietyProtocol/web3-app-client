@@ -31,12 +31,10 @@ export interface BadgeCardProps extends Partial<BadgeData> {
 }
 
 const StyledBadgeCard = styled(Paper, {
-  shouldForwardProp: (prop) =>
-    prop !== "isOfficial" && prop !== "isUnaffiliated",
+  shouldForwardProp: (prop) => prop !== "isOfficial",
 })<{
   isOfficial?: boolean;
-  isUnaffiliated?: boolean;
-}>(({ theme, isOfficial = false, isUnaffiliated = false }) => ({
+}>(({ theme, isOfficial = false }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -50,10 +48,6 @@ const StyledBadgeCard = styled(Paper, {
 
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
-
-  ...(isUnaffiliated && {
-    border: `1px solid ${theme.palette.error.main}`,
-  }),
 
   ...(isOfficial && {
     border: "none",
@@ -78,12 +72,9 @@ export const BadgeCard = ({
 }: BadgeCardProps) => {
   const showGovernorCounter =
     governorMaxCount !== undefined && governorCount !== undefined;
-  // Badges flagged as community but missing a community link are surfaced
-  // visually as "unaffiliated" — a red border helps holders spot them.
-  const isUnaffiliated = !!isCommunity && !community;
   const isIndividual = !isOfficial && !isCommunity;
   return (
-    <StyledBadgeCard isOfficial={isOfficial} isUnaffiliated={isUnaffiliated}>
+    <StyledBadgeCard isOfficial={isOfficial}>
       {/* Badge ID and Official Label */}
       <Stack
         width="100%"

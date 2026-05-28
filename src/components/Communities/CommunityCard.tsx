@@ -58,6 +58,10 @@ const StyledCommunityCard = styled(Paper, {
     ...theme.mixins.backgroundGradient("135deg", "bronze"),
     color: theme.palette.bronze.light,
   }),
+
+  ...(tierName === CommunityTier.Unaffiliated && {
+    border: `1px solid ${theme.palette.error.main}`,
+  }),
 }));
 
 export const CommunityCard = ({

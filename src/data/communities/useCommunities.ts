@@ -53,7 +53,11 @@ export const useCommunities = () => {
         CommunityTier.Bronze,
         CommunityTier.Unaffiliated,
       ]),
-    ).withDefault([]),
+    ).withDefault([
+      CommunityTier.Gold,
+      CommunityTier.Silver,
+      CommunityTier.Bronze,
+    ]),
   );
 
   const [searchQuery, setSearchQuery] = useQueryState(

@@ -34,6 +34,11 @@ const SLUG_MAP: Record<
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },
+  "badges-faq": {
+    file: "src/copywriting/Badges FAQ.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
   governance: {
     file: "src/copywriting/Governance.md",
     contentType: "text/markdown; charset=utf-8",

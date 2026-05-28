@@ -1,9 +1,15 @@
 import { useAccount } from "wagmi";
-import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+import {
+  parseAsArrayOf,
+  parseAsString,
+  parseAsStringEnum,
+  useQueryState,
+} from "nuqs";
 import { addressParser } from "@/lib/nuqs";
 import { useDebounceValue } from "../../hooks/useDebounceValue";
 import {
   CreatedByOption,
+  BadgeCategory,
   BadgeSortOption,
   TabOption,
 } from "@/data/badges/types";
@@ -45,6 +51,22 @@ export const useBadges = () => {
     addressParser,
   );
 
+  const [categories, setCategories] = useQueryState<BadgeCategory[]>(
+    "category",
+    parseAsArrayOf(
+      parseAsStringEnum([
+        BadgeCategory.Official,
+        BadgeCategory.Community,
+        BadgeCategory.Individual,
+        BadgeCategory.NonOfficial,
+      ]),
+    ).withDefault([
+      BadgeCategory.Official,
+      BadgeCategory.Community,
+      BadgeCategory.Individual,
+    ]),
+  );
+
   const [searchQuery, setSearchQuery] = useQueryState(
     "search",
     parseAsString.withDefault(""),
@@ -68,6 +90,7 @@ export const useBadges = () => {
           activeTab === TabOption.MyBadges ? userAddress : undefined,
         orderBy: orderBy,
         orderDirection: orderBy === BadgeSortOption.Name ? "asc" : "desc",
+        categories,
       }),
     [
       debouncedSearchQuery,
@@ -76,6 +99,7 @@ export const useBadges = () => {
       userAddress,
       activeTab,
       orderBy,
+      categories,
     ],
   );
 
@@ -89,10 +113,12 @@ export const useBadges = () => {
     createdByAddress,
     searchQuery,
     orderBy,
+    categories,
     setActiveTab,
     setSortBy,
     setCreatedBy,
     setCreatedByAddress,
     setSearchQuery,
+    setCategories,
   };
 };

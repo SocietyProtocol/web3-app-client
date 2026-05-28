@@ -12,6 +12,7 @@ import { useBadges } from "@/data/badges/useBadges";
 import { filterOptions, sortOptions } from "../../data/badges/consts";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 import { SearchBox } from "@/components/Common/SearchBox";
+import { BadgeCategoryFilter } from "./BadgeCategoryFilter";
 
 export const Badges = () => {
   const { address: userAddress } = useAccount();
@@ -31,11 +32,13 @@ export const Badges = () => {
     createdBy,
     createdByAddress,
     orderBy,
+    categories,
     setSearchQuery,
     setActiveTab,
     setCreatedBy,
     setCreatedByAddress,
     setSortBy,
+    setCategories,
   } = useBadges();
 
   const { start, complete } = useLoadingBar();
@@ -166,6 +169,9 @@ export const Badges = () => {
             />
           </Stack>
         </Box>
+
+        {/* Category toggles */}
+        <BadgeCategoryFilter value={categories} onChange={setCategories} />
 
         {/* Badge Grid */}
         <Box

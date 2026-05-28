@@ -23,6 +23,21 @@ export enum TabOption {
   MyBadges = "my-badges",
 }
 
+/**
+ * Visual categories surfaced as toggle filters on the Badges page.
+ *
+ * `Official`, `Community` and `Individual` are mutually-exclusive
+ * categories that map directly to the on-chain flags (`isOfficial`,
+ * `isCommunity`). `NonOfficial` is a shortcut superset that selects
+ * Community + Individual at once.
+ */
+export enum BadgeCategory {
+  Official = "official",
+  Community = "community",
+  Individual = "individual",
+  NonOfficial = "non-official",
+}
+
 export interface BadgeQueryOptions {
   searchText?: string | null;
   creatorAddress?: string | null;
@@ -30,6 +45,7 @@ export interface BadgeQueryOptions {
   holderAddress?: string | null;
   includeProfile?: boolean;
   isCommunity?: boolean;
+  categories?: BadgeCategory[];
   orderBy?: Badge_orderBy;
   orderDirection?: OrderDirection;
   pageSize?: number;

@@ -9,7 +9,7 @@ import {
   InputMaybe,
 } from "../../../.graphclient";
 import { defaultOptions } from "./consts";
-import { BadgeQueryOptions, FullBadgeData } from "./types";
+import { BadgeCategory, BadgeQueryOptions, FullBadgeData } from "./types";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 
 /**
@@ -51,6 +51,7 @@ export const buildWhereClause = (options: {
   holderAddress?: string | null;
   includeProfile?: boolean;
   isCommunity?: boolean;
+  categories?: BadgeCategory[];
 }) => {
   const {
     searchText,
@@ -59,6 +60,7 @@ export const buildWhereClause = (options: {
     holderAddress,
     includeProfile,
     isCommunity,
+    categories,
   } = options;
 
   const whereClauses: InputMaybe<InputMaybe<Badge_filter>[]> = [];
@@ -107,6 +109,30 @@ export const buildWhereClause = (options: {
     whereClauses.push({ isCommunity });
   }
 
+  if (categories && categories.length > 0) {
+    const showOfficial = categories.includes(BadgeCategory.Official);
+    const showCommunity =
+      categories.includes(BadgeCategory.Community) ||
+      categories.includes(BadgeCategory.NonOfficial);
+    const showIndividual =
+      categories.includes(BadgeCategory.Individual) ||
+      categories.includes(BadgeCategory.NonOfficial);
+
+    // If every concrete category is allowed there's nothing to constrain.
+    if (!(showOfficial && showCommunity && showIndividual)) {
+      const orClauses: InputMaybe<Badge_filter>[] = [];
+      if (showOfficial) orClauses.push({ isOfficial: true });
+      if (showCommunity)
+        orClauses.push({ isOfficial: false, isCommunity: true });
+      if (showIndividual)
+        orClauses.push({ isOfficial: false, isCommunity: false });
+
+      if (orClauses.length > 0) {
+        whereClauses.push({ or: orClauses });
+      }
+    }
+  }
+
   return { and: whereClauses };
 };
 
@@ -140,6 +166,7 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
     holderAddress: mergedOptions.holderAddress,
     includeProfile: mergedOptions.includeProfile,
     isCommunity: mergedOptions.isCommunity,
+    categories: mergedOptions.categories,
   });
 
   const res = await execute(BadgesDocument, {

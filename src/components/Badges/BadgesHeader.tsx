@@ -1,5 +1,5 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Link, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 export const BadgesHeader = () => {
@@ -48,18 +48,34 @@ export const BadgesHeader = () => {
           communities, currencies, and rules through code.
         </Typography>
 
-        <Button
-          variant="contained"
-          sx={{
-            maxWidth: { xs: "100% !important", sm: "200px !important" },
-            whiteSpace: "nowrap",
-            minWidth: "154px !important",
-            flex: 1,
-          }}
-          onClick={handleCreateBadge}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          alignItems={{ xs: "stretch", sm: "center" }}
+          spacing={{ xs: 2, sm: 4 }}
         >
-          Create Badge
-        </Button>
+          <Link
+            href="/badges-faq"
+            style={{
+              textDecoration: "underline",
+              fontSize: "1rem",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Learn more about Badges
+          </Link>
+          <Button
+            variant="contained"
+            sx={{
+              maxWidth: { xs: "100% !important", sm: "200px !important" },
+              whiteSpace: "nowrap",
+              minWidth: "154px !important",
+              flex: 1,
+            }}
+            onClick={handleCreateBadge}
+          >
+            Create Badge
+          </Button>
+        </Stack>
       </Box>
     </Box>
   );

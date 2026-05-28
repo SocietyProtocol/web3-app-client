@@ -116,32 +116,46 @@ export const Badges = () => {
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: { xs: "column", xl: "row" },
             gap: 2,
             justifyContent: "space-between",
-            alignItems: { xs: "stretch", md: "center" },
+            alignItems: "center",
           }}
         >
-          {/* Search */}
-          <SearchBox
-            id="badges-search-input"
-            placeholder="Search by name or address..."
-            value={searchQuery}
-            onChange={setSearchQuery}
+          <Box
             sx={{
-              flex: {
-                xs: 1,
-                md: "unset",
-              },
-              minWidth: { xs: "100%", md: 300 },
+              display: "flex",
+              flexDirection: { xs: "column", xl: "row" },
+              gap: 2,
+              flex: 1,
+              alignItems: "center",
             }}
-          />
+          >
+            {/* Search */}
+            <SearchBox
+              id="badges-search-input"
+              placeholder="Search by name or address..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              sx={{
+                flex: { xs: 1, md: "unset" },
+                minWidth: { xs: "100%", xl: 300 },
+              }}
+            />
+            {/* Category toggles */}
+            <BadgeCategoryFilter
+              value={categories}
+              onChange={setCategories}
+            />
+          </Box>
+
           <Stack
             direction={{
               xs: "column",
               md: "row",
             }}
             spacing={2}
+            sx={{ mt: { xs: 2, xl: 0 } }}
           >
             {/* Sort */}
             <FilterSelect
@@ -169,9 +183,6 @@ export const Badges = () => {
             />
           </Stack>
         </Box>
-
-        {/* Category toggles */}
-        <BadgeCategoryFilter value={categories} onChange={setCategories} />
 
         {/* Badge Grid */}
         <Box

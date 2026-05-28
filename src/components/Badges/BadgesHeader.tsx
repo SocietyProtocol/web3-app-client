@@ -18,7 +18,7 @@ export const BadgesHeader = () => {
           color: (theme) => theme.palette.primary[100],
         }}
       >
-        Create Badges and share value
+        Browse on-chain badges
       </Typography>
       <Box
         display="flex"
@@ -36,22 +36,19 @@ export const BadgesHeader = () => {
           variant="body1"
           color="text.primary"
           sx={{
-            flexBasis: {
-              xs: "100%",
-              sm: "60%",
-              md: "70%",
-            },
+            flex: { xs: "1 1 100%", sm: "0 1 auto" },
+            maxWidth: { sm: 360, md: 460 },
           }}
         >
-          Create your own community with user badges, automated trust, and
-          secure identities. The protocol acts as a civic OS, managing
-          communities, currencies, and rules through code.
+          Verifiable credentials of role, status and membership across Society
+          Protocol — Official, Community or Individual.
         </Typography>
 
         <Stack
           direction={{ xs: "column", sm: "row" }}
           alignItems={{ xs: "stretch", sm: "center" }}
           spacing={{ xs: 2, sm: 4 }}
+          sx={{ flexShrink: 0 }}
         >
           <Link
             href="/badges-faq"

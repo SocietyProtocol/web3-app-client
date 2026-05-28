@@ -48,7 +48,10 @@ export const BadgeCategoryFilter = ({
   const colorFor = (category: BadgeCategory): string => {
     switch (category) {
       case BadgeCategory.Official:
-        return theme.palette.officialBlue.main;
+        // Use the lighter shade so the toggle reads well on the dark page
+        // background; the darker `main` is reserved for the badge card
+        // gradient where it sits against its own light fill.
+        return theme.palette.officialBlue.light;
       case BadgeCategory.Community:
         return theme.palette.success.main;
       case BadgeCategory.NonOfficial:

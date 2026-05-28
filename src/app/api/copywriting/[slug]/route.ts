@@ -49,6 +49,11 @@ const SLUG_MAP: Record<
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },
+  "referral-program": {
+    file: "src/copywriting/Referral Program.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
   "general-info-image.png": {
     file: "src/copywriting/general-information.png",
     contentType: "image/png",

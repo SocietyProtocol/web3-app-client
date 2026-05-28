@@ -1,9 +1,10 @@
-import { Grid, Paper, Typography } from "@mui/material";
+import { Button, Grid, Paper, Typography } from "@mui/material";
+import Link from "next/link";
+import NorthEastIcon from "@mui/icons-material/NorthEast";
 import { AddressDisplay } from "../AddressDisplay/AddressDisplay";
 import { DataItem } from "./DataItem";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Address } from "viem";
-import { ReferralCodeGenerator } from "./ReferralCodeGenerator";
 import { ReferredBy } from "./ReferredBy";
 
 interface ProfileDataCardProps {
@@ -81,8 +82,19 @@ export const ProfileDataCard = ({
           </DataItem>
         </Grid>
         <Grid size={1} container direction="column" spacing={4}>
-          <ReferredBy readonly={readonly} userAddress={address} />
-          {!readonly && <ReferralCodeGenerator />}
+          <ReferredBy userAddress={address} />
+          {!readonly && (
+            <Button
+              component={Link}
+              href="/referrals"
+              variant="outlined"
+              size="small"
+              endIcon={<NorthEastIcon sx={{ fontSize: 16 }} />}
+              sx={{ alignSelf: "flex-start" }}
+            >
+              Manage referrals
+            </Button>
+          )}
         </Grid>
       </Grid>
     </Paper>

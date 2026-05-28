@@ -21,6 +21,11 @@ import { CardRow } from "../Cards/CardRow";
 import { Page } from "../Page/Page";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { truncateAddress } from "@/utils/string";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import {
+  GOVERNOR_BADGE_ID,
+  GOVERNOR_BADGE_MAX_COUNT,
+} from "@/consts/badges";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -53,6 +58,11 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
   });
 
   const badgesCount = data?.badges?.length;
+
+  const governorBalance = useBadgeBalanceOf(overrideAddress, GOVERNOR_BADGE_ID);
+  const governorCount = governorBalance.data
+    ? Number(governorBalance.data)
+    : 0;
 
   const communityCount = data?.communities?.length;
 
@@ -237,6 +247,14 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 creatorAddress={badge.creatorAddress}
                 uri={badge.uri}
                 loading={badge.loading}
+                governorCount={
+                  badge.id === GOVERNOR_BADGE_ID ? governorCount : undefined
+                }
+                governorMaxCount={
+                  badge.id === GOVERNOR_BADGE_ID
+                    ? GOVERNOR_BADGE_MAX_COUNT
+                    : undefined
+                }
               />
             )}
             noneFoundText="No badges found"

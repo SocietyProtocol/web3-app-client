@@ -20,6 +20,13 @@ import { UserHandle } from "../User/UserHandle";
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
   readonly?: boolean;
+  /**
+   * For badges where the holder may own multiple ERC-1155 instances
+   * (e.g. Governor), display an "X / N" counter at the bottom of the card.
+   * Both `governorCount` and `governorMaxCount` must be provided.
+   */
+  governorCount?: number;
+  governorMaxCount?: number;
 }
 
 const StyledBadgeCard = styled(Paper, {
@@ -58,7 +65,11 @@ export const BadgeCard = ({
   loading = false,
   imageUrl,
   readonly = false,
+  governorCount,
+  governorMaxCount,
 }: BadgeCardProps) => {
+  const showGovernorCounter =
+    governorMaxCount !== undefined && governorCount !== undefined;
   return (
     <StyledBadgeCard isOfficial={isOfficial}>
       {/* Badge ID and Official Label */}
@@ -242,6 +253,23 @@ export const BadgeCard = ({
             />
           </Link>
         )
+      )}
+
+      {/* Multi-instance counter (e.g. Governor: x / 10) */}
+      {!loading && showGovernorCounter && (
+        <Chip
+          label={`${governorCount} / ${governorMaxCount}`}
+          size="small"
+          sx={{
+            mt: "auto",
+            fontSize: (theme) => theme.typography.pxToRem(10),
+            height: 18,
+            "& .MuiChip-label": {
+              px: 1.5,
+              lineHeight: "18px",
+            },
+          }}
+        />
       )}
     </StyledBadgeCard>
   );

@@ -49,8 +49,13 @@ const SLUG_MAP: Record<
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },
-  "referral-program": {
-    file: "src/copywriting/Referral Program.md",
+  "referral-program-intro": {
+    file: "src/copywriting/Referral Program Intro.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
+  "referral-program-faq": {
+    file: "src/copywriting/Referral Program FAQ.md",
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },

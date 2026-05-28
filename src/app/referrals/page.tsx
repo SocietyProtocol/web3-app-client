@@ -30,12 +30,12 @@ export default function ReferralsPage() {
           </Typography>
         </Stack>
 
-        <MarkdownRenderer src="/api/copywriting/referral-program" />
+        <MarkdownRenderer src="/api/copywriting/referral-program-intro" />
 
         <Paper
           elevation={1}
           sx={{
-            mt: { xs: 4, md: 6 },
+            my: { xs: 4, md: 6 },
             p: { xs: 2, md: 4 },
             borderRadius: 2,
             boxShadow: "none",
@@ -43,6 +43,8 @@ export default function ReferralsPage() {
         >
           <ReferralForms />
         </Paper>
+
+        <MarkdownRenderer src="/api/copywriting/referral-program-faq" />
       </Box>
     </Page>
   );

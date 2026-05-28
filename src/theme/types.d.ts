@@ -35,6 +35,7 @@ declare module "@mui/material/styles" {
     gold: Palette["primary"];
     silver: Palette["primary"];
     bronze: Palette["primary"];
+    officialBlue: Palette["primary"];
     neutral: {
       main: string;
     };
@@ -58,6 +59,7 @@ declare module "@mui/material/styles" {
     gold?: PaletteOptions["primary"];
     silver?: PaletteOptions["primary"];
     bronze?: PaletteOptions["primary"];
+    officialBlue?: PaletteOptions["primary"];
     neutral?: {
       main?: string;
     };
@@ -85,13 +87,13 @@ declare module "@mui/material/styles" {
   interface Mixins {
     backgroundGradient: (
       angle: string | number,
-      gradient: "gold" | "silver" | "bronze" | "primary",
+      gradient: "gold" | "silver" | "bronze" | "primary" | "officialBlue",
       startOpacity?: number,
       endOpacity?: number,
     ) => Record<string, unknown>;
     borderGradient: (
       borderRadius?: string | number,
-      gradient?: "gold" | "silver" | "bronze" | "primary",
+      gradient?: "gold" | "silver" | "bronze" | "primary" | "officialBlue",
     ) => Record<string, unknown>;
   }
 }
@@ -101,5 +103,6 @@ declare module "@mui/material/Chip" {
     gold: true;
     silver: true;
     bronze: true;
+    officialBlue: true;
   }
 }

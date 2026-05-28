@@ -26,7 +26,12 @@ export const CommunityChip = ({
         sx={{
           fontSize: size === "small" ? 12 : 16,
           filter: (theme) =>
-            `drop-shadow(0 0 1px ${alpha(theme.palette.gold.main, 0.8)})`,
+            `drop-shadow(0 0 1px ${alpha(
+              isOfficial
+                ? theme.palette.officialBlue.main
+                : theme.palette.gold.main,
+              0.8,
+            )})`,
         }}
         isOfficial={isOfficial}
       />

@@ -1,6 +1,7 @@
 import {
   Badge,
   Badge_orderBy,
+  Community,
   OrderDirection,
   User,
 } from "../../../.graphclient";
@@ -51,6 +52,7 @@ export type BadgeData = Pick<
   createdBy?: Pick<User, "id" | "name" | "bio" | "imageUrl"> | null;
   holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
   managers: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+  community?: Pick<Community, "id" | "name"> | null;
 };
 
 export type FullBadgeData = BadgeData & {

@@ -15,6 +15,7 @@ import { BadgeData } from "../../data/badges/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
+import { IndividualChip } from "./IndividualChip";
 import { UserHandle } from "../User/UserHandle";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
@@ -30,10 +31,12 @@ export interface BadgeCardProps extends Partial<BadgeData> {
 }
 
 const StyledBadgeCard = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== "isOfficial",
+  shouldForwardProp: (prop) =>
+    prop !== "isOfficial" && prop !== "isUnaffiliated",
 })<{
   isOfficial?: boolean;
-}>(({ theme, isOfficial = false }) => ({
+  isUnaffiliated?: boolean;
+}>(({ theme, isOfficial = false, isUnaffiliated = false }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -48,10 +51,14 @@ const StyledBadgeCard = styled(Paper, {
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 
+  ...(isUnaffiliated && {
+    border: `1px solid ${theme.palette.error.main}`,
+  }),
+
   ...(isOfficial && {
     border: "none",
-    ...theme.mixins.borderGradient("8px", "gold"),
-    ...theme.mixins.backgroundGradient("135deg", "gold"),
+    ...theme.mixins.borderGradient("8px", "officialBlue"),
+    ...theme.mixins.backgroundGradient("135deg", "officialBlue"),
   }),
 }));
 
@@ -60,6 +67,7 @@ export const BadgeCard = ({
   name,
   isOfficial,
   isCommunity,
+  community,
   createdBy,
   uri,
   loading = false,
@@ -70,8 +78,12 @@ export const BadgeCard = ({
 }: BadgeCardProps) => {
   const showGovernorCounter =
     governorMaxCount !== undefined && governorCount !== undefined;
+  // Badges flagged as community but missing a community link are surfaced
+  // visually as "unaffiliated" — a red border helps holders spot them.
+  const isUnaffiliated = !!isCommunity && !community;
+  const isIndividual = !isOfficial && !isCommunity;
   return (
-    <StyledBadgeCard isOfficial={isOfficial}>
+    <StyledBadgeCard isOfficial={isOfficial} isUnaffiliated={isUnaffiliated}>
       {/* Badge ID and Official Label */}
       <Stack
         width="100%"
@@ -85,7 +97,7 @@ export const BadgeCard = ({
           <Skeleton width={50} />
         ) : (
           <Chip
-            color={isOfficial ? "gold" : "default"}
+            color={isOfficial ? "officialBlue" : "default"}
             label={`ID: #${id}`}
             size="small"
             sx={{
@@ -117,8 +129,10 @@ export const BadgeCard = ({
           <Skeleton width={50} />
         ) : isCommunity ? (
           <CommunityChip isOfficial={isOfficial} />
+        ) : isOfficial ? (
+          <OfficialChip />
         ) : (
-          isOfficial && <OfficialChip />
+          isIndividual && <IndividualChip />
         )}
       </Stack>
 

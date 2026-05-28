@@ -149,7 +149,7 @@ export const BadgeDetails = ({
         sx={{ gap: { xs: 1, sm: 2 } }}
       >
         <Chip
-          color={data?.badge?.isOfficial ? "gold" : "default"}
+          color={data?.badge?.isOfficial ? "officialBlue" : "default"}
           label={`ID: #${id}`}
           size="medium"
           sx={{

@@ -244,6 +244,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 imageUrl={badge.imageUrl}
                 isOfficial={badge.isOfficial}
                 isCommunity={badge.isCommunity}
+                community={badge.community}
                 creatorAddress={badge.creatorAddress}
                 uri={badge.uri}
                 loading={badge.loading}

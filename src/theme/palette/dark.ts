@@ -56,6 +56,12 @@ export const dark: PaletteOptions = {
     dark: colors.GOLD_DARK,
     contrastText: colors.GOLD_CONTRAST,
   },
+  officialBlue: {
+    main: colors.OFFICIAL_BLUE_MAIN,
+    light: colors.OFFICIAL_BLUE_LIGHT,
+    dark: colors.OFFICIAL_BLUE_DARK,
+    contrastText: colors.OFFICIAL_BLUE_CONTRAST,
+  },
   silver: {
     main: colors.SILVER_MAIN,
     light: colors.SILVER_LIGHT,

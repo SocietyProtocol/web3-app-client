@@ -37,7 +37,7 @@ export const BadgesHeader = () => {
           color="text.primary"
           sx={{
             flex: { xs: "1 1 100%", sm: "0 1 auto" },
-            maxWidth: { sm: 360, md: 460 },
+            maxWidth: { sm: 460, md: 640, lg: 760 },
           }}
         >
           Verifiable credentials of role, status and membership across Society

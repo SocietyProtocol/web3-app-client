@@ -21,6 +21,10 @@ import {
   CommunityTier,
 } from "../../data/communities/types";
 import { useCommunities } from "@/data/communities/useCommunities";
+import {
+  UNAFFILIATED_COUNT_CAP,
+  useUnaffiliatedCommunitiesCount,
+} from "@/data/communities/useUnaffiliatedCommunitiesCount";
 import { communitySortOptions } from "../../data/communities/consts";
 import {
   getTierExpirationDates,
@@ -85,6 +89,17 @@ export const Communities = () => {
       complete();
     }
   }, [complete, isFetching, start]);
+
+  // When the main query comes back empty and the active filter does not
+  // include the Unaffiliated tier, hint that there are unaffiliated
+  // communities the user can opt-in to see.
+  const unaffiliatedExcluded =
+    !!tiers && tiers.length > 0 && !tiers.includes(CommunityTier.Unaffiliated);
+  const showUnaffiliatedHint =
+    !isLoading && allCommunities.length === 0 && unaffiliatedExcluded;
+  const unaffiliatedCountQuery =
+    useUnaffiliatedCommunitiesCount(showUnaffiliatedHint);
+  const unaffiliatedCount = unaffiliatedCountQuery.data ?? 0;
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -285,14 +300,44 @@ export const Communities = () => {
               sx={{
                 gridColumn: "1 / -1",
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
+                gap: 1.5,
                 minHeight: 200,
               }}
             >
               <Typography variant="body1" color="text.primary">
                 No communities found
               </Typography>
+              {showUnaffiliatedHint && unaffiliatedCount > 0 && (
+                <>
+                  <Typography
+                    variant="body2"
+                    color="text.tertiary"
+                    sx={{ textAlign: "center" }}
+                  >
+                    We have{" "}
+                    {unaffiliatedCount >= UNAFFILIATED_COUNT_CAP
+                      ? `${UNAFFILIATED_COUNT_CAP}+`
+                      : unaffiliatedCount}{" "}
+                    unaffiliated{" "}
+                    {unaffiliatedCount === 1 ? "community" : "communities"}.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() =>
+                      setTiers([
+                        ...(tiers ?? []),
+                        CommunityTier.Unaffiliated,
+                      ])
+                    }
+                  >
+                    Show unaffiliated
+                  </Button>
+                </>
+              )}
             </Box>
           ) : (
             allCommunities.map((community) => (

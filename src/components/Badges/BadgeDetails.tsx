@@ -199,20 +199,23 @@ export const BadgeDetails = ({
       </Typography>
 
       {/* Badge Description */}
-      {(showLoader || data?.badge?.description) && (
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{
-            textAlign: "center",
-            px: 2,
-            maxWidth: { xs: "100%", sm: "80%", md: 600 },
-            wordBreak: "break-word",
-          }}
-        >
-          {showLoader ? <Skeleton width={280} /> : data?.badge?.description}
-        </Typography>
-      )}
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{
+          textAlign: "center",
+          px: 2,
+          maxWidth: { xs: "100%", sm: "80%", md: 600 },
+          wordBreak: "break-word",
+          fontStyle: data?.badge?.description ? "normal" : "italic",
+        }}
+      >
+        {showLoader ? (
+          <Skeleton width={280} />
+        ) : (
+          data?.badge?.description || "No description provided"
+        )}
+      </Typography>
 
       {/* IPFS Metadata Link */}
       {data?.badge?.uri && (

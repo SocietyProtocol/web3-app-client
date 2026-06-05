@@ -30,11 +30,13 @@ export interface BadgeCardProps extends Partial<BadgeData> {
   governorMaxCount?: number;
 }
 
+type BadgeOutline = "official" | "community" | "individual" | "non-affiliated";
+
 const StyledBadgeCard = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== "isOfficial",
+  shouldForwardProp: (prop) => prop !== "outline",
 })<{
-  isOfficial?: boolean;
-}>(({ theme, isOfficial = false }) => ({
+  outline?: BadgeOutline;
+}>(({ theme, outline }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -49,10 +51,22 @@ const StyledBadgeCard = styled(Paper, {
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 
-  ...(isOfficial && {
+  ...(outline === "official" && {
     border: "none",
     ...theme.mixins.borderGradient("8px", "officialBlue"),
     ...theme.mixins.backgroundGradient("135deg", "officialBlue"),
+  }),
+
+  ...(outline === "community" && {
+    border: `1px solid ${theme.palette.success.main}`,
+  }),
+
+  ...(outline === "individual" && {
+    border: `1px solid ${theme.palette.silver.light}`,
+  }),
+
+  ...(outline === "non-affiliated" && {
+    border: `1px solid ${theme.palette.error.main}`,
   }),
 }));
 
@@ -73,8 +87,17 @@ export const BadgeCard = ({
   const showGovernorCounter =
     governorMaxCount !== undefined && governorCount !== undefined;
   const isIndividual = !isOfficial && !isCommunity;
+  const outline: BadgeOutline | undefined = loading
+    ? undefined
+    : isOfficial
+      ? "official"
+      : isCommunity
+        ? "community"
+        : isIndividual
+          ? "individual"
+          : "non-affiliated";
   return (
-    <StyledBadgeCard isOfficial={isOfficial}>
+    <StyledBadgeCard outline={outline}>
       {/* Badge ID and Official Label */}
       <Stack
         width="100%"

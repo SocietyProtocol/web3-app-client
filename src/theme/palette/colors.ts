@@ -55,6 +55,12 @@ export const GOLD_LIGHT = "#e6b947";
 export const GOLD_MAIN = "#7e5f11";
 export const GOLD_CONTRAST = "#f5e2b3";
 
+// Official Blue colors — used for Official badges
+export const OFFICIAL_BLUE_DARK = "#0d4a6e";
+export const OFFICIAL_BLUE_MAIN = "#126291";
+export const OFFICIAL_BLUE_LIGHT = "#1a8ac7";
+export const OFFICIAL_BLUE_CONTRAST = "#c8e1f0";
+
 // Silver colors
 export const SILVER_DARK = "#3e5a74";
 export const SILVER_LIGHT = "#a2b8cd";

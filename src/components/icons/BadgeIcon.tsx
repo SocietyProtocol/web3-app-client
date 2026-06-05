@@ -15,8 +15,8 @@ export const BadgeIcon = ({ isOfficial, ...props }: BadgeIconProps) => {
       {isOfficial && (
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={theme.palette.gold.light} />
-            <stop offset="100%" stopColor={theme.palette.gold.main} />
+            <stop offset="0%" stopColor={theme.palette.officialBlue.light} />
+            <stop offset="100%" stopColor={theme.palette.officialBlue.main} />
           </linearGradient>
         </defs>
       )}

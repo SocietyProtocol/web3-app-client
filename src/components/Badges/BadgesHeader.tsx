@@ -1,5 +1,5 @@
 "use client";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Link, Stack, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 export const BadgesHeader = () => {
@@ -18,7 +18,7 @@ export const BadgesHeader = () => {
           color: (theme) => theme.palette.primary[100],
         }}
       >
-        Create Badges and share value
+        Browse on-chain badges
       </Typography>
       <Box
         display="flex"
@@ -36,30 +36,43 @@ export const BadgesHeader = () => {
           variant="body1"
           color="text.primary"
           sx={{
-            flexBasis: {
-              xs: "100%",
-              sm: "60%",
-              md: "70%",
-            },
+            flex: { xs: "1 1 100%", sm: "0 1 auto" },
+            maxWidth: { sm: 460, md: 640, lg: 760 },
           }}
         >
-          Create your own community with user badges, automated trust, and
-          secure identities. The protocol acts as a civic OS, managing
-          communities, currencies, and rules through code.
+          Verifiable credentials of role, status and membership across Society
+          Protocol — Official, Community or Individual.
         </Typography>
 
-        <Button
-          variant="contained"
-          sx={{
-            maxWidth: { xs: "100% !important", sm: "200px !important" },
-            whiteSpace: "nowrap",
-            minWidth: "154px !important",
-            flex: 1,
-          }}
-          onClick={handleCreateBadge}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          alignItems={{ xs: "stretch", sm: "center" }}
+          spacing={{ xs: 2, sm: 4 }}
+          sx={{ flexShrink: 0 }}
         >
-          Create Badge
-        </Button>
+          <Link
+            href="/badges-faq"
+            style={{
+              textDecoration: "underline",
+              fontSize: "1rem",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Learn more about Badges
+          </Link>
+          <Button
+            variant="contained"
+            sx={{
+              maxWidth: { xs: "100% !important", sm: "200px !important" },
+              whiteSpace: "nowrap",
+              minWidth: "154px !important",
+              flex: 1,
+            }}
+            onClick={handleCreateBadge}
+          >
+            Create Badge
+          </Button>
+        </Stack>
       </Box>
     </Box>
   );

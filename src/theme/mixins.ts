@@ -3,7 +3,7 @@ import { alpha, type Theme } from "@mui/material/styles";
 export const createCustomMixins = (theme: Theme) => ({
   backgroundGradient: (
     angle: string = "45deg",
-    color: "gold" | "silver" | "bronze" | "primary",
+    color: "gold" | "silver" | "bronze" | "primary" | "officialBlue",
     startOpacity: number = 0.1,
     endOpacity: number = 0,
   ) => {
@@ -19,7 +19,7 @@ export const createCustomMixins = (theme: Theme) => ({
 
   borderGradient: (
     borderRadius: string | number = "10px",
-    color: "gold" | "silver" | "bronze" | "primary" = "primary",
+    color: "gold" | "silver" | "bronze" | "primary" | "officialBlue" = "primary",
     angle: string = "180deg",
   ) => {
     const startColor =

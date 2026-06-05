@@ -23,7 +23,7 @@ export const OfficialChip = ({ size = "small" }: OfficialChipProps) => {
         sx={{
           fontSize: size === "small" ? 12 : 16,
           filter: (theme) =>
-            `drop-shadow(0 0 1px ${alpha(theme.palette.gold.main, 0.8)})`,
+            `drop-shadow(0 0 1px ${alpha(theme.palette.officialBlue.main, 0.8)})`,
         }}
       />
     </Stack>

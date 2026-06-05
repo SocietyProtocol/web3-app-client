@@ -1,4 +1,10 @@
-import { Badge, OrderDirection, User, UsersQuery } from "../../../.graphclient";
+import {
+  Badge,
+  Community,
+  OrderDirection,
+  User,
+  UsersQuery,
+} from "../../../.graphclient";
 import { AccountSortOption } from "../accounts/types";
 
 export interface UserQueryOptions {
@@ -28,6 +34,7 @@ export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {
     > & {
       holders: Array<Pick<User, "id">>;
       managers: Array<Pick<User, "id">>;
+      community?: Pick<Community, "id" | "name"> | null;
     }
   >;
   managedBadges: Array<

@@ -2,13 +2,15 @@
 
 import { Box, Button, Typography } from "@mui/material";
 import { BubbleBase } from "../Bubbles/BubbleBase";
-import { User } from "../../../.graphclient";
 import { UserList } from "../User/UserList";
 import { env } from "@/lib/env";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer/MarkdownRenderer";
+import { useBadge } from "@/data/badges/useBadge";
+import { GOVERNOR_BADGE_ID } from "@/consts/badges";
 
 export const Governance = () => {
-  const governors: Pick<User, "id" | "name" | "imageUrl" | "bio">[] = [];
+  const { data, isLoading } = useBadge(GOVERNOR_BADGE_ID);
+  const governors = data?.badge?.holders ?? [];
 
   return (
     <Box>
@@ -110,7 +112,11 @@ export const Governance = () => {
       <UserList
         title="Governors"
         users={governors}
+        loading={isLoading}
         noUsersFoundText="No governors found"
+        modalTitle="Governors"
+        viewAllButtonText="View All Governors"
+        andMoreText="And {count} more governors..."
         sx={{
           marginTop: 10,
         }}

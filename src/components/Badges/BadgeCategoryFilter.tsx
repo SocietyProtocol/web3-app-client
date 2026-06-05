@@ -17,21 +17,21 @@ const CATEGORY_ORDER: BadgeCategory[] = [
   BadgeCategory.Official,
   BadgeCategory.Community,
   BadgeCategory.Individual,
-  BadgeCategory.NonOfficial,
+  BadgeCategory.NonAffiliated,
 ];
 
 const CATEGORY_LABELS: Record<BadgeCategory, string> = {
   [BadgeCategory.Official]: "Official",
   [BadgeCategory.Community]: "Community",
   [BadgeCategory.Individual]: "Individual",
-  [BadgeCategory.NonOfficial]: "Non-official",
+  [BadgeCategory.NonAffiliated]: "Non-Affiliated",
 };
 
 const CATEGORY_ICONS: Record<BadgeCategory, typeof VerifiedIcon> = {
   [BadgeCategory.Official]: VerifiedIcon,
   [BadgeCategory.Community]: GroupsOutlinedIcon,
   [BadgeCategory.Individual]: PersonOutlineIcon,
-  [BadgeCategory.NonOfficial]: HideSourceOutlinedIcon,
+  [BadgeCategory.NonAffiliated]: HideSourceOutlinedIcon,
 };
 
 export interface BadgeCategoryFilterProps {
@@ -54,9 +54,10 @@ export const BadgeCategoryFilter = ({
         return theme.palette.officialBlue.light;
       case BadgeCategory.Community:
         return theme.palette.success.main;
-      case BadgeCategory.NonOfficial:
-        return theme.palette.error.main;
       case BadgeCategory.Individual:
+        return theme.palette.silver.light;
+      case BadgeCategory.NonAffiliated:
+        return theme.palette.error.main;
       default:
         return theme.palette.text.primary;
     }

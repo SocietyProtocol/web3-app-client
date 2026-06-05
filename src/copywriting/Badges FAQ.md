@@ -1,4 +1,3 @@
-# Badges FAQ
 
 <details>
 <summary><strong>What is a Badge?</strong></summary>
@@ -10,18 +9,19 @@ A Badge is an on-chain credential that represents your role, status, or membersh
 <details>
 <summary><strong>What types of Badges exist?</strong></summary>
 
-There are three main types:
+There are four main types:
 
-- **Official** — issued by Society Protocol (e.g. Core Team, Governor, Advisor, Contributor, Moderator, VIP).
-- **Community** — issued by a specific community to its managers, assistants, or members.
-- **Individual** — created by a user without being tied to an official role or community.
+- **Official** — Includes only badges issued and supported by the Society Protocol DAO (e.g. Core Team, Governor, Advisor, Contributor, Moderator).
+- **Community** — Issued by a trusted partner community to its managers, assistants, or members.
+- **Individual** — Issued by a trusted user without being tied to a specific community.
+- **Non-Affiliated** — Issued by parties not affiliated with Society Protocol in any way.
 
 </details>
 
 <details>
 <summary><strong>How do I know if a Badge is Official?</strong></summary>
 
-Official badges are visually distinct and verified on-chain. Non-Official badges (Community and Individual) are marked with a red border to clearly differentiate them.
+Official badges are visually distinct with a **blue** outline. Trusted Community and Individual badges are visually distinct with a **green** or **silver** outline respectively. All other badges are considered **Non-Affiliated** and are visually distinct with a **red** outline.
 
 </details>
 

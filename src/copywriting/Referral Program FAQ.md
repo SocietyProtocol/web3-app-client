@@ -24,7 +24,7 @@ On-chain affiliations are permanent records. They cannot be undone, so make sure
 <details>
 <summary><strong>What do I get for referring someone?</strong></summary>
 
-Referrals contribute to your reputation and network footprint within the protocol. Specific rewards tied to referrals may be announced as the program evolves.
+Referrals primarily tie accounts together on-chain — they record a verifiable relationship between profiles and contribute to your reputation and network footprint within the protocol. Rewards are **not guaranteed**: referrers and invitees could be eligible for retroactive incentives in special cases, and any future reward programs may be announced as the protocol evolves.
 
 </details>
 

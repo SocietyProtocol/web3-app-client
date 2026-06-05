@@ -1,6 +1,5 @@
-# Referral Program
 
-Grow the network by inviting trusted members. Every accepted invitation strengthens the Society Protocol community and unlocks rewards for both you and the people you bring in.
+Grow the network by inviting trusted members. Every accepted invitation strengthens the Society Protocol community and unlocks **potential** rewards for both you and the people you bring in.
 
 ## How it works
 

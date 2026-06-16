@@ -1,25 +1,18 @@
 import { DataItem } from "./DataItem";
 import { UserHandle } from "../User/UserHandle";
 import { Hex, zeroAddress } from "viem";
-import { AcceptInvitation } from "./AcceptInvitation";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useMemo } from "react";
 import { truncateAddress } from "@/utils/string";
 
 interface ReferredByProps {
-  readonly?: boolean;
   userAddress?: Hex;
 }
 
-export const ReferredBy = ({
-  readonly = false,
-  userAddress,
-}: ReferredByProps) => {
+export const ReferredBy = ({ userAddress }: ReferredByProps) => {
   const user = useUserQuery(
     userAddress && userAddress !== zeroAddress ? userAddress : undefined,
   );
-
-  console.log({ data: user.data });
 
   const invitedByAddress = user.data?.invitedBy?.id
     ? (user.data.invitedBy.id as Hex)
@@ -32,9 +25,7 @@ export const ReferredBy = ({
     [user.data?.invitedBy?.name, invitedByAddress],
   );
 
-  return !readonly && !user.isLoading && !user.data?.invitedBy ? (
-    <AcceptInvitation />
-  ) : (
+  return (
     <DataItem
       loading={user.isLoading}
       label="Referred by"

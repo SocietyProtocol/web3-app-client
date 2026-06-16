@@ -1,6 +1,7 @@
 import {
   Badge,
   Badge_orderBy,
+  Community,
   OrderDirection,
   User,
 } from "../../../.graphclient";
@@ -22,6 +23,23 @@ export enum TabOption {
   MyBadges = "my-badges",
 }
 
+/**
+ * Visual categories surfaced as toggle filters on the Badges page.
+ *
+ * `Official`, `Community` and `Individual` map directly to on-chain flags
+ * (`isOfficial`, `isCommunity`). `NonAffiliated` is reserved for badges
+ * issued by parties not affiliated with Society Protocol; under the
+ * current subgraph schema no badge classifies into it (every badge is
+ * Official, Community or Individual), so the filter currently returns no
+ * additional results.
+ */
+export enum BadgeCategory {
+  Official = "official",
+  Community = "community",
+  Individual = "individual",
+  NonAffiliated = "non-affiliated",
+}
+
 export interface BadgeQueryOptions {
   searchText?: string | null;
   creatorAddress?: string | null;
@@ -29,6 +47,7 @@ export interface BadgeQueryOptions {
   holderAddress?: string | null;
   includeProfile?: boolean;
   isCommunity?: boolean;
+  categories?: BadgeCategory[];
   orderBy?: Badge_orderBy;
   orderDirection?: OrderDirection;
   pageSize?: number;
@@ -51,6 +70,7 @@ export type BadgeData = Pick<
   createdBy?: Pick<User, "id" | "name" | "bio" | "imageUrl"> | null;
   holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
   managers: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+  community?: Pick<Community, "id" | "name"> | null;
 };
 
 export type FullBadgeData = BadgeData & {

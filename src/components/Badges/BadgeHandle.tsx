@@ -62,7 +62,7 @@ export const BadgeHandle = ({
               sx={{ width: "100%" }}
             >
               <Chip
-                color={community ? "info" : "gold"}
+                color={community ? "info" : "officialBlue"}
                 label={
                   community
                     ? `${community.name.length > MAX_COMMUNITY_NAME_LENGTH ? community.name.slice(0, MAX_COMMUNITY_NAME_LENGTH) + "…" : community.name} (${community.id}) · #${id}`

@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useAccount } from "wagmi";
 import { SearchBox } from "@/components/Common/SearchBox";
+import { AccountsRoleFilter } from "./AccountsRoleFilter";
 
 export const Accounts = () => {
   const router = useRouter();
@@ -129,6 +130,9 @@ export const Accounts = () => {
             </Button>
           )}
         </Box>
+
+        {/* Role filters (UI-only) */}
+        <AccountsRoleFilter />
 
         {/* Accounts Grid */}
         <Box

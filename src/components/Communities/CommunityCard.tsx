@@ -58,6 +58,10 @@ const StyledCommunityCard = styled(Paper, {
     ...theme.mixins.backgroundGradient("135deg", "bronze"),
     color: theme.palette.bronze.light,
   }),
+
+  ...(tierName === CommunityTier.Unaffiliated && {
+    border: `1px solid ${theme.palette.error.main}`,
+  }),
 }));
 
 export const CommunityCard = ({
@@ -79,7 +83,7 @@ export const CommunityCard = ({
   }, [tierName, tierExpiresAt, now]);
 
   return (
-    <StyledCommunityCard tierName={realTierName}>
+    <StyledCommunityCard tierName={loading ? undefined : realTierName}>
       {/* Top row: ID chip + COMMUNITY chip */}
       <Stack
         width="100%"

@@ -34,6 +34,11 @@ const SLUG_MAP: Record<
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },
+  "badges-faq": {
+    file: "src/copywriting/Badges FAQ.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
   governance: {
     file: "src/copywriting/Governance.md",
     contentType: "text/markdown; charset=utf-8",
@@ -46,6 +51,16 @@ const SLUG_MAP: Record<
   },
   "spec-token": {
     file: "src/copywriting/SPEC Token.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
+  "referral-program-intro": {
+    file: "src/copywriting/Referral Program Intro.md",
+    contentType: "text/markdown; charset=utf-8",
+    encoding: "utf8",
+  },
+  "referral-program-faq": {
+    file: "src/copywriting/Referral Program FAQ.md",
     contentType: "text/markdown; charset=utf-8",
     encoding: "utf8",
   },

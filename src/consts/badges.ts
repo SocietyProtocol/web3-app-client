@@ -12,4 +12,4 @@ export const GOVERNOR_BADGE_ID = "13";
  * Used as the denominator of the "x / N" counter shown on the Governor
  * BadgeCard in a user's profile.
  */
-export const GOVERNOR_BADGE_MAX_COUNT = 10;
+export const GOVERNOR_BADGE_MAX_COUNT = 11;

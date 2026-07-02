@@ -16,8 +16,10 @@ import { useWagmiReady } from "@/atoms/wagmiReady";
 import { ConnectButton } from "../Wallet/ConnectButton";
 import { FeatureCard } from "./FeatureCard";
 import { WelcomeCard } from "./WelcomeCard";
+import { HeroVideoCard } from "./HeroVideoCard";
 import { WhyNowCard } from "./WhyNowCard";
 import { CommonQuestions } from "./CommonQuestions";
+import { env } from "@/lib/env";
 
 const CardIcon = ({ src, alt }: { src: string; alt: string }) => (
   <Image src={src} alt={alt} width={24} height={24} />
@@ -89,7 +91,11 @@ export const Home = () => {
           mb: { xs: 6, md: 8 },
         }}
       >
-        <WelcomeCard />
+        {env.heroVideoUrl ? (
+          <HeroVideoCard videoUrl={env.heroVideoUrl} />
+        ) : (
+          <WelcomeCard />
+        )}
 
         <Stack spacing={2.5} sx={{ pt: { md: 1 } }}>
           <Typography

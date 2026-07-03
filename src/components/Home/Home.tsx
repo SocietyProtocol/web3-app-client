@@ -7,7 +7,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import NorthEastIcon from "@mui/icons-material/NorthEast";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useProfileId } from "@/data/users/useProfileId";
@@ -16,8 +18,13 @@ import { useWagmiReady } from "@/atoms/wagmiReady";
 import { ConnectButton } from "../Wallet/ConnectButton";
 import { FeatureCard } from "./FeatureCard";
 import { WelcomeCard } from "./WelcomeCard";
+import { HeroVideoCard } from "./HeroVideoCard";
 import { WhyNowCard } from "./WhyNowCard";
 import { CommonQuestions } from "./CommonQuestions";
+import { env } from "@/lib/env";
+
+const LEARN_MORE_URL =
+  "https://societyprotocol.io/articles/how-we-are-building-society-protocol/";
 
 const CardIcon = ({ src, alt }: { src: string; alt: string }) => (
   <Image src={src} alt={alt} width={24} height={24} />
@@ -89,7 +96,11 @@ export const Home = () => {
           mb: { xs: 6, md: 8 },
         }}
       >
-        <WelcomeCard />
+        {env.heroVideoUrl ? (
+          <HeroVideoCard videoUrl={env.heroVideoUrl} />
+        ) : (
+          <WelcomeCard />
+        )}
 
         <Stack spacing={2.5} sx={{ pt: { md: 1 } }}>
           <Typography
@@ -135,6 +146,32 @@ export const Home = () => {
             This app is your entry point. Create an account, earn badges, and
             stake your place in the movement — before the world catches on.
           </Typography>
+          <Box
+            component={Link}
+            href={LEARN_MORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.75,
+              mt: { xs: 1, md: 1.5 },
+              color: "primary.main",
+              textDecoration: "none",
+              fontFamily:
+                "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+              fontSize: { xs: "0.8125rem", md: "0.875rem" },
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              width: "fit-content",
+              "&:hover": {
+                opacity: 0.8,
+              },
+            }}
+          >
+            Learn about Society Protocol
+            <NorthEastIcon sx={{ fontSize: { xs: 16, md: 18 } }} />
+          </Box>
         </Stack>
       </Box>
 

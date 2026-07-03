@@ -1,12 +1,7 @@
 "use client";
 
 import { Box, Stack, Typography } from "@mui/material";
-import NorthEastIcon from "@mui/icons-material/NorthEast";
 import Image from "next/image";
-import Link from "next/link";
-
-const LEARN_MORE_URL =
-  "https://societyprotocol.io/articles/how-we-are-building-society-protocol/";
 
 export const WelcomeCard = () => {
   return (
@@ -76,33 +71,6 @@ export const WelcomeCard = () => {
           permanently, yours.
         </Typography>
       </Stack>
-
-      <Box
-        component={Link}
-        href={LEARN_MORE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 0.75,
-          mt: { xs: 3, md: 4 },
-          color: "primary.main",
-          textDecoration: "none",
-          fontFamily:
-            "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
-          fontSize: { xs: "0.8125rem", md: "0.875rem" },
-          letterSpacing: "0.15em",
-          textTransform: "uppercase",
-          width: "fit-content",
-          "&:hover": {
-            opacity: 0.8,
-          },
-        }}
-      >
-        Learn about Society Protocol
-        <NorthEastIcon sx={{ fontSize: { xs: 16, md: 18 } }} />
-      </Box>
     </Box>
   );
 };

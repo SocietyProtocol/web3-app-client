@@ -7,6 +7,7 @@ interface ClientEnv {
   snapshotUrl: string;
   snapshotSpecUrl: string;
   graphUrl: string;
+  heroVideoUrl?: string;
   posthogProjectToken?: string;
   posthogHost?: string;
 }
@@ -70,6 +71,7 @@ export const env: Env = {
   snapshotUrl: process.env.NEXT_PUBLIC_SNAPSHOT_URL,
   snapshotSpecUrl: process.env.NEXT_PUBLIC_SNAPSHOT_SPEC_URL,
   graphUrl: process.env.NEXT_PUBLIC_GRAPH_URL,
+  heroVideoUrl: process.env.NEXT_PUBLIC_HERO_VIDEO_URL,
   ...(isServer && { pinataJwt: process.env.PINATA_JWT }),
   posthogProjectToken: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
   posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,

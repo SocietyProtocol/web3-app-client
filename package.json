@@ -31,11 +31,15 @@
     "notistack": "^3.0.2",
     "nuqs": "^2.8.6",
     "pinata": "^2.5.2",
+    "posthog-js": "^1.364.7",
     "react": "19.2.1",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.69.0",
+    "react-markdown": "^10.1.0",
     "react-top-loading-bar": "^3.0.2",
     "recharts": "^3.6.0",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
     "viem": "^2.39.0",
     "wagmi": "^2.19.4",
     "zod": "^4.3.3"
@@ -49,5 +53,8 @@
     "eslint-config-next": "16.0.3",
     "typescript": "^5",
     "vitest": "^1.0.0"
+  },
+  "resolutions": {
+    "qr": "0.5.5"
   }
 }

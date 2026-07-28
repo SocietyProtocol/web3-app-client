@@ -22,6 +22,7 @@ declare module "@mui/material/styles" {
     toggleButton: string;
     toggleButtonHover: string;
     highContrast: string;
+    danger: string;
   }
 
   interface TypeText {
@@ -32,6 +33,9 @@ declare module "@mui/material/styles" {
 
   interface Palette {
     gold: Palette["primary"];
+    silver: Palette["primary"];
+    bronze: Palette["primary"];
+    officialBlue: Palette["primary"];
     neutral: {
       main: string;
     };
@@ -44,11 +48,6 @@ declare module "@mui/material/styles" {
       area: string;
       dropArea: string;
     };
-    gradients: {
-      official: string;
-      primary: string;
-      darkOfficial: string;
-    };
 
     chart: {
       stroke: string;
@@ -58,6 +57,9 @@ declare module "@mui/material/styles" {
 
   interface PaletteOptions {
     gold?: PaletteOptions["primary"];
+    silver?: PaletteOptions["primary"];
+    bronze?: PaletteOptions["primary"];
+    officialBlue?: PaletteOptions["primary"];
     neutral?: {
       main?: string;
     };
@@ -70,11 +72,7 @@ declare module "@mui/material/styles" {
       area?: string;
       dropArea?: string;
     };
-    gradients?: {
-      official?: string;
-      primary?: string;
-      darkOfficial?: string;
-    };
+
     chart?: {
       stroke?: string;
       fill?: string;
@@ -87,9 +85,15 @@ declare module "@mui/material/styles" {
   }
 
   interface Mixins {
+    backgroundGradient: (
+      angle: string | number,
+      gradient: "gold" | "silver" | "bronze" | "primary" | "officialBlue",
+      startOpacity?: number,
+      endOpacity?: number,
+    ) => Record<string, unknown>;
     borderGradient: (
       borderRadius?: string | number,
-      gradient?: keyof Palette["gradients"],
+      gradient?: "gold" | "silver" | "bronze" | "primary" | "officialBlue",
     ) => Record<string, unknown>;
   }
 }
@@ -97,5 +101,8 @@ declare module "@mui/material/styles" {
 declare module "@mui/material/Chip" {
   interface ChipPropsColorOverrides {
     gold: true;
+    silver: true;
+    bronze: true;
+    officialBlue: true;
   }
 }

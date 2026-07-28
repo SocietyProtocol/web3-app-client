@@ -1,0 +1,46 @@
+query Community($id: ID!) {
+  community(id: $id) {
+    id
+    name
+    description
+    imageUrl
+    createdAt
+    tierId
+    tierName
+    tierExpiresAt
+    managerAddress
+    manager {
+      id
+      name
+      bio
+      imageUrl
+    }
+    managerBadge {
+      id
+      name
+      imageUrl
+      uri
+    }
+    assistantBadge {
+      id
+      name
+      imageUrl
+      uri
+    }
+    memberBadge {
+      id
+      name
+      imageUrl
+      uri
+    }
+    memberCount
+    badges(first: 1000) {
+      id
+      name
+      imageUrl
+      isOfficial
+      isCommunity
+      holdersCount
+    }
+  }
+}

@@ -34,6 +34,7 @@ interface BadgeCreationContextType {
   isWritingContract: boolean;
   getServerFieldError: (field: keyof BadgeInputData) => string | undefined;
   isTransactionPending: boolean;
+  communityId?: string;
 }
 
 const BadgeCreationContext = createContext<
@@ -52,10 +53,12 @@ export const useBadgeCreation = () => {
 
 interface BadgeCreationProviderProps {
   children: ReactNode;
+  communityId?: string;
 }
 
 export const BadgeCreationProvider = ({
   children,
+  communityId,
 }: BadgeCreationProviderProps) => {
   const router = useRouter();
   const { address } = useAccount();
@@ -68,7 +71,6 @@ export const BadgeCreationProvider = ({
       imageUrl: null,
       metadata: "",
       isOfficial: false,
-      isCommunity: false,
       minters: [],
       transferers: [],
       burners: [],
@@ -91,8 +93,14 @@ export const BadgeCreationProvider = ({
     isTransactionPending,
     error: serverError,
   } = useMutateBadge({
+    communityId,
     onSuccess: (receipt: TransactionReceipt) => {
       form.reset();
+
+      if (communityId) {
+        router.push(`/communities/${communityId}?tab=badges`);
+        return;
+      }
 
       const createdBadgeId = decodeBadgeId(receipt);
 
@@ -140,16 +148,18 @@ export const BadgeCreationProvider = ({
       isTransactionPending,
       isSyncing,
       getServerFieldError,
+      communityId,
     }),
     [
       form,
+      onSubmit,
       isMutating,
       isUploadingToIpfs,
       isWritingContract,
       isTransactionPending,
       isSyncing,
-      onSubmit,
       getServerFieldError,
+      communityId,
     ],
   );
 

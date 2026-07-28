@@ -1,5 +1,5 @@
 import { Stack, Tabs, Tab, Box, Skeleton } from "@mui/material";
-import { useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { WithTooltip } from "../WithTooltip/WithTooltip";
 import { MintTab } from "./MintBadge/MintTab";
 import { TransferTab } from "./TransferTab/TransferTab";
@@ -12,6 +12,7 @@ interface BadgeActionsProps {
   canBurn: boolean;
   canTransfer: boolean;
   loading?: boolean;
+  badgeSelector?: ReactNode;
 }
 
 enum TabKey {
@@ -26,6 +27,7 @@ export const BadgeActions = ({
   canBurn,
   canTransfer,
   loading = false,
+  badgeSelector,
 }: BadgeActionsProps) => {
   const actions = useMemo(
     () => [
@@ -54,7 +56,7 @@ export const BadgeActions = ({
 
   if (loading) {
     return (
-      <Box padding={1} paddingTop={4}>
+      <Box padding={1}>
         <WithTooltip
           variant="body1"
           sx={{
@@ -66,6 +68,9 @@ export const BadgeActions = ({
         >
           Actions
         </WithTooltip>
+
+        {badgeSelector && <Box marginTop={2}>{badgeSelector}</Box>}
+
         <Stack
           marginTop={2}
           spacing={2}
@@ -80,11 +85,27 @@ export const BadgeActions = ({
   }
 
   if (!validTab) {
-    return null;
+    return (
+      <Box padding={1}>
+        <WithTooltip
+          variant="body1"
+          sx={{
+            fontWeight: 700,
+            color: "text.primary",
+            fontSize: (theme) => theme.typography.pxToRem(16),
+          }}
+          tooltip="Actions you can perform with this badge"
+        >
+          Actions
+        </WithTooltip>
+
+        {badgeSelector && <Box marginTop={2}>{badgeSelector}</Box>}
+      </Box>
+    );
   }
 
   return (
-    <Box padding={1} paddingTop={4}>
+    <Box padding={1}>
       <WithTooltip
         variant="body1"
         sx={{
@@ -96,6 +117,9 @@ export const BadgeActions = ({
       >
         Actions
       </WithTooltip>
+
+      {badgeSelector && <Box marginTop={2}>{badgeSelector}</Box>}
+
       <ContentGuard
         requireNetwork
         connectWalletMessage="Connect your wallet to perform badge actions"

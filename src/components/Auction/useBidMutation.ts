@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { scaleUp } from "@/utils/bigint";
 import { Hex } from "viem";
 import { EasyAuctionAbi } from "@/abis/EasyAuction";
@@ -11,6 +11,7 @@ import { contracts } from "@/consts/contracts";
 import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useAccount } from "wagmi";
 import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 const PREV_SELL_ORDER =
   "0x0000000000000000000000000000000000000000000000000000000000000001" as Hex;
@@ -31,6 +32,7 @@ export const useBidMutation = ({
   enabled = true,
 }: UseBidMutationValues) => {
   const { address } = useAccount();
+  const trackedBidTxHashRef = useRef<string | undefined>(undefined);
 
   const { enqueueSnackbar } = useSnackbar();
   const { auctionDetail } = useAuctionContext();
@@ -141,15 +143,47 @@ export const useBidMutation = ({
     placeBid,
   ]);
 
+  useEffect(() => {
+    const bidTxHash = transaction.mainTransaction.txHash;
+
+    if (!bidTxHash || trackedBidTxHashRef.current === bidTxHash) {
+      return;
+    }
+
+    capturePostHogEvent("bid_submitted", {
+      wallet_address: address?.toLowerCase(),
+      auction_id: auctionId,
+      sell_amount: sellAmount,
+      buy_amount: buyAmount,
+      bidding_token_address: addressBiddingToken,
+      tx_hash: bidTxHash,
+      requires_approval: transaction.approveRequired,
+    });
+
+    trackedBidTxHashRef.current = bidTxHash;
+  }, [
+    address,
+    addressBiddingToken,
+    auctionId,
+    buyAmount,
+    sellAmount,
+    transaction.approveRequired,
+    transaction.mainTransaction.txHash,
+  ]);
+
+  const isMutating =
+    transaction.isApproving || transaction.isExecuting || transaction.isLoading;
+
   return {
     mutate: placeBid,
     reset: transaction.reset,
-    isLoading: transaction.isLoading,
+    isTransactionPending: transaction.isLoading,
     isApproving: transaction.isApproving,
-    isMutating: transaction.isExecuting,
-    isSuccess: transaction.isSuccess,
+    isWritingContract: transaction.isExecuting,
+    isTransactionConfirmed: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,
+    isMutating,
     approveRequired: transaction.approveRequired,
     bidReceipt: transaction.txReceipt,
     approveReceipt: transaction.approveReceipt,

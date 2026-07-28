@@ -9,7 +9,7 @@ import {
   InputMaybe,
 } from "../../../.graphclient";
 import { defaultOptions } from "./consts";
-import { BadgeQueryOptions, FullBadgeData } from "./types";
+import { BadgeCategory, BadgeQueryOptions, FullBadgeData } from "./types";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 
 /**
@@ -25,6 +25,7 @@ export const mergeOptions = (
 } => {
   const { searchText, creatorAddress, managerAddress, holderAddress } =
     options || {};
+
   return {
     ...defaultOptions,
     ...options,
@@ -49,6 +50,8 @@ export const buildWhereClause = (options: {
   managerAddress?: string | null;
   holderAddress?: string | null;
   includeProfile?: boolean;
+  isCommunity?: boolean;
+  categories?: BadgeCategory[];
 }) => {
   const {
     searchText,
@@ -56,6 +59,8 @@ export const buildWhereClause = (options: {
     managerAddress,
     holderAddress,
     includeProfile,
+    isCommunity,
+    categories,
   } = options;
 
   const whereClauses: InputMaybe<InputMaybe<Badge_filter>[]> = [];
@@ -100,6 +105,34 @@ export const buildWhereClause = (options: {
     whereClauses.push({ isProfile: false });
   }
 
+  if (isCommunity !== undefined) {
+    whereClauses.push({ isCommunity });
+  }
+
+  if (categories && categories.length > 0) {
+    const showOfficial = categories.includes(BadgeCategory.Official);
+    const showCommunity = categories.includes(BadgeCategory.Community);
+    const showIndividual = categories.includes(BadgeCategory.Individual);
+
+    // NonAffiliated has no on-chain selector under the current subgraph
+    // schema, so it can never widen the result set on its own.
+    if (!(showOfficial && showCommunity && showIndividual)) {
+      const orClauses: InputMaybe<Badge_filter>[] = [];
+      if (showOfficial) orClauses.push({ isOfficial: true });
+      if (showCommunity)
+        orClauses.push({ isOfficial: false, isCommunity: true });
+      if (showIndividual)
+        orClauses.push({ isOfficial: false, isCommunity: false });
+
+      if (orClauses.length === 0) {
+        // User left only NonAffiliated selected — force empty result.
+        whereClauses.push({ id: "0x" });
+      } else {
+        whereClauses.push({ or: orClauses });
+      }
+    }
+  }
+
   return { and: whereClauses };
 };
 
@@ -132,6 +165,8 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
     managerAddress: mergedOptions.managerAddress,
     holderAddress: mergedOptions.holderAddress,
     includeProfile: mergedOptions.includeProfile,
+    isCommunity: mergedOptions.isCommunity,
+    categories: mergedOptions.categories,
   });
 
   const res = await execute(BadgesDocument, {

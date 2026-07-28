@@ -55,11 +55,13 @@ cp .env.example .env.local
 
 ### Optional Variables
 
-| Variable                 | Description                                 | Example |
-| ------------------------ | ------------------------------------------- | ------- |
-| `NEXT_PUBLIC_AUCTION_ID` | ID of the specific auction to interact with | `1`     |
+| Variable                            | Description                                                                                      | Example                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------- |
+| `NEXT_PUBLIC_AUCTION_ID`            | ID of the specific auction to interact with                                                      | `1`                        |
+| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project token used to enable client-side analytics, pageviews, and custom event tracking | `phc_abc123...`            |
+| `NEXT_PUBLIC_POSTHOG_HOST`          | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com` | `https://us.i.posthog.com` |
 
-> **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `PINATA_JWT`) in a `NEXT_PUBLIC_` variable.
+> **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `PINATA_JWT`) in a `NEXT_PUBLIC_` variable. PostHog analytics stay disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 
 ---
 
@@ -100,6 +102,13 @@ The application uses a **single unified subgraph per network** (badges and aucti
 
 1. Create a Snapshot space at [https://snapshot.box/](https://snapshot.box/).
 2. Set `NEXT_PUBLIC_SNAPSHOT_URL` to the full URL of your space (e.g., `https://snapshot.box/#/s:your-space.eth`).
+
+### 3.6 PostHog (Analytics)
+
+1. Create a PostHog project in your target region or self-hosted instance.
+2. Copy the project token into `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`.
+3. If you need a non-default ingest endpoint, set `NEXT_PUBLIC_POSTHOG_HOST` to the ingest host for your region or deployment, such as `https://us.i.posthog.com` or `https://eu.i.posthog.com`.
+4. Leave both variables unset if you do not want analytics enabled in that deployment.
 
 ---
 
@@ -249,6 +258,8 @@ ARG NEXT_PUBLIC_GRAPH_URL
 ARG NEXT_PUBLIC_PINATA_GATEWAY_URL
 ARG NEXT_PUBLIC_SNAPSHOT_URL
 ARG NEXT_PUBLIC_AUCTION_ID
+ARG NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+ARG NEXT_PUBLIC_POSTHOG_HOST
 
 RUN npm run build
 
@@ -283,6 +294,8 @@ docker build \
   --build-arg NEXT_PUBLIC_GRAPH_URL=xxx \
   --build-arg NEXT_PUBLIC_PINATA_GATEWAY_URL=xxx \
   --build-arg NEXT_PUBLIC_SNAPSHOT_URL=xxx \
+  --build-arg NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=xxx \
+  --build-arg NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com \
   -t society-protocol-client .
 
 docker run -p 3000:3000 \

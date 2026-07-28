@@ -1,7 +1,6 @@
 import { Drawer } from "@mui/material";
 import { SidebarContent } from "./SidebarContent";
-
-const EXPANDED_WIDTH = 312;
+import { EXPANDED_WIDTH } from "./consts";
 
 interface MobileSidebarProps {
   open: boolean;
@@ -27,6 +26,9 @@ export const MobileSidebar = ({ open, onClose }: MobileSidebarProps) => {
           padding: (theme) => theme.spacing(2),
           display: "flex",
           flexDirection: "column",
+          backgroundColor: (theme) => theme.palette.background.page,
+          backgroundImage: "none",
+          border: "none",
         },
       }}
     >

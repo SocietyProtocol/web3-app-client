@@ -111,11 +111,11 @@ const AccountSetupWizardContent = ({
     }
 
     if (isSigning) {
-      return "Confirm transaction...";
+      return "Signing transaction...";
     }
 
     if (isConfirming) {
-      return "Confirming...";
+      return "Confirming transaction...";
     }
 
     if (isSyncing) {

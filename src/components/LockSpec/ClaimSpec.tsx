@@ -15,7 +15,7 @@ import { useClaimMutation } from "./useClaimMutation";
 import { SimulationError } from "../Transaction/SimulationError";
 import { DataRow } from "./DataRow";
 import { GasEstimation } from "../Transaction/GasEstimation";
-import { formatDate } from "@/utils/date";
+import { formatDateInSeconds } from "@/utils/date";
 
 interface ClaimDataColumnProps {
   label: string;
@@ -64,8 +64,8 @@ export const ClaimSpec = () => {
 
   const {
     mutate: onClaim,
-    isLoading: loading,
-    simulation: { isFetching: simulating, isError, error: simulationError },
+    isTransactionPending,
+    simulation: { isFetching: isSimulating, isError, error: simulationError },
     gas,
     gasError,
     gasLoading,
@@ -79,7 +79,12 @@ export const ClaimSpec = () => {
     : "CLAIM SPEC";
 
   const disabled =
-    !canClaim || isLocked || isLoadingLock || loading || simulating || isError;
+    !canClaim ||
+    isLocked ||
+    isLoadingLock ||
+    isTransactionPending ||
+    isSimulating ||
+    isError;
 
   return (
     <Stack spacing={3}>
@@ -115,7 +120,7 @@ export const ClaimSpec = () => {
               color="primary.main"
               sx={{ fontWeight: 700 }}
             >
-              {unlockTime !== undefined ? formatDate(unlockTime) : "—"}
+              {unlockTime !== undefined ? formatDateInSeconds(unlockTime) : "—"}
             </Typography>
           }
         />
@@ -161,9 +166,9 @@ export const ClaimSpec = () => {
         fullWidth
         disabled={disabled}
         onClick={onClaim}
-        loading={loading || isLoadingLock}
+        loading={isTransactionPending || isLoadingLock}
         loadingText={isLoadingLock ? "Loading..." : "Claiming..."}
-        simulating={simulating}
+        simulating={isSimulating}
         sx={{ py: 1.5, fontWeight: 700, letterSpacing: 1 }}
       >
         {buttonLabel}

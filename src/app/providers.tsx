@@ -15,6 +15,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { jotaiStore } from "@/lib/jotai";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
+import { WalletConnectAutoConnectFix } from "@/components/WalletConnectAutoConnectFix";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { getQueryClient } from "@/lib/tanstack-query";
 import { LoadingBarContainer } from "react-top-loading-bar";
@@ -35,6 +36,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <JotaiProvider store={jotaiStore}>
             <ThemeProvider theme={theme} defaultMode="dark">
               <CssBaseline enableColorScheme />
+              <WalletConnectAutoConnectFix />
               <RainbowKitProvider
                 avatar={Avatar}
                 appInfo={{

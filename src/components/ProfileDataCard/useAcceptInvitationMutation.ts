@@ -2,17 +2,19 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
-import { Address, Hex } from "viem";
-import { useReferredBy } from "./useReferredBy";
+import { Address, Hex, TransactionReceipt } from "viem";
+import { capturePostHogEvent } from "@/lib/posthog";
+import { useAccount } from "wagmi";
 
 interface AcceptInvitationData {
   inviter: Address;
-  message: string;
+  nonce: bigint;
+  expiry: bigint;
   signature: Hex;
 }
 
 interface UseAcceptInvitationMutationParams {
-  onSuccess?: () => void;
+  onSuccess?: (receipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
   args?: AcceptInvitationData;
 }
@@ -21,15 +23,26 @@ export const useAcceptInvitationMutation = ({
   onSuccess,
   onError,
   args,
-}: UseAcceptInvitationMutationParams) =>
-  useTransaction({
+}: UseAcceptInvitationMutationParams) => {
+  const { address } = useAccount();
+  return useTransaction({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,
     functionName: "acceptInvite",
-    args: args ? [args.inviter, args.message, args.signature] : undefined,
+    args: args
+      ? [args.inviter, args.nonce, args.expiry, args.signature]
+      : undefined,
     successMessage: "Invitation accepted successfully",
     errorMessage: "Failed to accept invitation",
-    queryKeysToInvalidateOnSuccess: [useReferredBy(args?.inviter).queryKey],
-    onSuccess,
+    queryKeysToInvalidateOnSuccess: [["user", address?.toLowerCase()]],
+    onSuccess: (receipt) => {
+      capturePostHogEvent("invitation_accepted", {
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+        inviter: args?.inviter,
+      });
+      onSuccess?.(receipt);
+    },
     onError,
   });
+};

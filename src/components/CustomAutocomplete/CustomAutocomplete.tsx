@@ -182,7 +182,7 @@ export const CustomAutocomplete = <
             sx={{
               "& .MuiInputBase-root": {
                 flexWrap: "wrap",
-                alignItems: "flex-start",
+                alignItems: multiple ? "flex-start" : "center",
                 height: "auto !important",
                 py: 0.5,
               },

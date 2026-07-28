@@ -22,7 +22,7 @@ A web client for [Society Protocol](https://society.finance) — a framework for
 ### 1. Prerequisites
 
 - Node.js **18.x** or later
-- npm / yarn / pnpm / bun
+- Yarn
 
 ### 2. Environment Variables
 
@@ -32,42 +32,46 @@ Copy the example file and fill in the required values:
 cp .env.example .env.local
 ```
 
-| Variable                         | Required | Description                                                                                                                                                | Where to get                                                |
-| -------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `NEXT_PUBLIC_ENVIRONMENT`        | ✅       | `development` → Sepolia · `production` → Mainnet                                                                                                           | —                                                           |
-| `NEXT_PUBLIC_WC_PROJECT_ID`      | ✅       | WalletConnect project ID                                                                                                                                   | [cloud.walletconnect.com](https://cloud.walletconnect.com/) |
-| `NEXT_PUBLIC_ALCHEMY_API_KEY`    | ✅       | Alchemy API key for Ethereum RPC                                                                                                                           | [alchemy.com](https://www.alchemy.com/)                     |
-| `NEXT_PUBLIC_GRAPH_URL`          | ✅       | Unified subgraph URL used for this deployment (mainnet for production and testnet for development & staging) — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | ✅       | Pinata IPFS gateway URL                                                                                                                                    | [pinata.cloud](https://pinata.cloud/)                       |
-| `PINATA_JWT`                     | ✅       | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser                                                                                 | [pinata.cloud](https://pinata.cloud/)                       |
-| `NEXT_PUBLIC_SNAPSHOT_URL`       | ✅       | Snapshot governance space URL                                                                                                                              | [snapshot.box](https://snapshot.box/)                       |
-| `NEXT_PUBLIC_AUCTION_ID`         | —        | ID of the auction to interact with                                                                                                                         | Smart contract deployment                                   |
+| Variable                            | Required | Description                                                                                                                                                | Where to get                                                |
+| ----------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `NEXT_PUBLIC_ENVIRONMENT`           | ✅       | `development` → Sepolia · `production` → Mainnet                                                                                                           | —                                                           |
+| `NEXT_PUBLIC_WC_PROJECT_ID`         | ✅       | WalletConnect project ID                                                                                                                                   | [cloud.walletconnect.com](https://cloud.walletconnect.com/) |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY`       | ✅       | Alchemy API key for Ethereum RPC                                                                                                                           | [alchemy.com](https://www.alchemy.com/)                     |
+| `NEXT_PUBLIC_GRAPH_URL`             | ✅       | Unified subgraph URL used for this deployment (mainnet for production and testnet for development & staging) — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
+| `NEXT_PUBLIC_PINATA_GATEWAY_URL`    | ✅       | Pinata IPFS gateway URL                                                                                                                                    | [pinata.cloud](https://pinata.cloud/)                       |
+| `PINATA_JWT`                        | ✅       | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser                                                                                 | [pinata.cloud](https://pinata.cloud/)                       |
+| `NEXT_PUBLIC_SNAPSHOT_URL`          | ✅       | Snapshot governance space URL                                                                                                                              | [snapshot.box](https://snapshot.box/)                       |
+| `NEXT_PUBLIC_SNAPSHOT_SPEC_URL`     | ✅       | Snapshot space URL for the SPEC expression-of-feedback votes (parallel to the main governance space)                                                       | [snapshot.box](https://snapshot.box/)                       |
+| `NEXT_PUBLIC_AUCTION_ID`            | —        | ID of the auction to interact with                                                                                                                         | Smart contract deployment                                   |
+| `NEXT_PUBLIC_HERO_VIDEO_URL`        | —        | Public URL of the "Web3 Outpost" video shown on the home hero. When unset the previous Welcome card is rendered instead.                                   | Vercel Blob dashboard                                       |
+| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | —        | PostHog project token used to enable client-side analytics, pageviews, and event tracking                                                                  | Your PostHog project settings                               |
+| `NEXT_PUBLIC_POSTHOG_HOST`          | —        | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com`; leave unset to use the SDK default                       | Your PostHog deployment or region                           |
 
-> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT`) in a `NEXT_PUBLIC_` variable.
+> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT`) in a `NEXT_PUBLIC_` variable. PostHog analytics remain disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 
 ### 3. Install & Run
 
 ```bash
 # Install dependencies (also runs graphclient code-gen via postinstall)
-npm install
+yarn install
 
 # Start the development server
-npm run dev
+yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 4. Available Scripts
 
-| Script               | Description                                           |
-| -------------------- | ----------------------------------------------------- |
-| `npm run dev`        | GraphQL code-gen + Next.js dev server with hot reload |
-| `npm run build`      | GraphQL code-gen + production build                   |
-| `npm start`          | Start the production server                           |
-| `npm run codegen`    | Regenerate the GraphQL client from subgraph schema    |
-| `npm run type-check` | TypeScript type check without emitting                |
-| `npm run lint`       | ESLint                                                |
-| `npm test`           | Vitest unit tests                                     |
+| Script            | Description                                           |
+| ----------------- | ----------------------------------------------------- |
+| `yarn dev`        | GraphQL code-gen + Next.js dev server with hot reload |
+| `yarn build`      | GraphQL code-gen + production build                   |
+| `yarn start`      | Start the production server                           |
+| `yarn codegen`    | Regenerate the GraphQL client from subgraph schema    |
+| `yarn type-check` | TypeScript type check without emitting                |
+| `yarn lint`       | ESLint                                                |
+| `yarn test`       | Vitest unit tests                                     |
 
 ---
 

@@ -12,14 +12,3 @@ export const StakeSpecButton = () => (
     Stake SPEC →
   </Button>
 );
-
-export const TokenomicsButton = () => (
-  <Button
-    variant="outlined"
-    onClick={() => {
-      // TODO: Navigate to the Tokenomics page when available.
-    }}
-  >
-    Tokenomics →
-  </Button>
-);

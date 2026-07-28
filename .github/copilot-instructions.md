@@ -25,13 +25,37 @@
 ## Component Structure
 
 - Small, composable components (<200 LOC)
-- One main component per file
+- One component per file — always extract sub-components to their own files, never define multiple exported or reusable components in the same file
 - Clear props interface
 - Separate logic & UI when complex
 - Logic in custom hooks
 - PascalCase components
 - camelCase utilities
 - Co-locate related files
+
+---
+
+## Data Hooks Pattern
+
+List/table hooks (e.g. `useBadges`, `useCommunities`, `useCommunityMembers`) follow this standard:
+
+- The hook owns **all** search/sort/filter/pagination state
+- Use `useQueryState` (nuqs) for URL-persisted state; `useState` for local-only state
+- Debounce search with `useDebounceValue` inside the hook (not in the component)
+- Expose a pure `fetch*` function alongside the hook for direct calls
+- Build query variables in a separate `buildVariables` (or `mergeOptions`) helper
+- Return `{ ...queryResult, search, sort, setSearch, setSort, ... }` — components just destructure
+- `queryKey` must include all variables that affect the result
+
+---
+
+## Search & Sort UI Pattern
+
+- Use `FilterSelect` component (from `@/components/FilterSelect/FilterSelect`) for sort/filter dropdowns — **not** raw `Select`
+- Prefer the shared `SearchBox` component for search inputs — **not** a raw `TextField` with a `SearchIcon` adornment
+- Controls layout: `Box` with `display: flex`, `flexDirection: { xs: "column", md: "row" }`, `gap: 2`; search grows with `minWidth: { xs: "100%", md: 300 }`
+- Define sort/filter options as `FilterSelectOption[]` in `consts.ts`, not inline in the component
+- Reset pagination to page 1 whenever search or sort changes
 
 ---
 

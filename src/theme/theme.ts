@@ -9,6 +9,7 @@ import { MuiCard } from "./components/MuiCard";
 import { MuiDialog } from "./components/MuiDialog";
 import { MuiDialogTitle } from "./components/MuiDialogTitle";
 import { MuiDialogContent } from "./components/MuiDialogContent";
+import { MuiDialogActions } from "./components/MuiDialogActions";
 import { breakpoints } from "./breakpoints";
 import { MuiPaginationItem } from "./components/MuiPaginationItem";
 import { MuiChip } from "./components/MuiChip";
@@ -16,6 +17,7 @@ import { MuiTabs } from "./components/MuiTabs";
 import { MuiAccordion } from "./components/MuiAccordion";
 import { MuiAccordionSummary } from "./components/MuiAccordionSummary";
 import { MuiAccordionDetails } from "./components/MuiAccordionDetails";
+import { MuiSwitch } from "./components/MuiSwitch";
 
 const baseTheme = createTheme({
   cssVariables: {
@@ -40,32 +42,59 @@ const baseTheme = createTheme({
     MuiDialog,
     MuiDialogTitle,
     MuiDialogContent,
+    MuiDialogActions,
     MuiAccordion,
     MuiAccordionSummary,
     MuiAccordionDetails,
     MuiPaginationItem,
     MuiChip,
     MuiTabs,
+    MuiSwitch,
   },
   typography: {
-    fontFamily: "var(--font-space-grotesk), sans-serif",
+    fontFamily: "var(--font-inter), var(--font-space-grotesk), sans-serif",
     allVariants: {
       letterSpacing: "0.89px",
     },
 
+    h1: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+    },
+    h2: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+    },
+    h3: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+    },
     h4: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       fontWeight: 400,
       fontSize: "2.375rem",
       lineHeight: "100%",
     },
     h5: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       fontWeight: 400,
       fontSize: "2rem",
       lineHeight: "120%",
     },
     h6: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       fontWeight: 500,
       fontSize: "1.25rem",
+      lineHeight: 1.6,
+    },
+    subtitle1: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
+      fontWeight: 500,
+      fontSize: "1rem",
       lineHeight: 1.6,
     },
   },

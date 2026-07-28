@@ -3,17 +3,7 @@
 import { BadgeCard } from "./BadgeCard";
 import { useMemo, useEffect, useRef } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
-import {
-  Stack,
-  TextField,
-  Box,
-  InputAdornment,
-  Tabs,
-  Tab,
-  Typography,
-  Button,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Stack, Box, Tabs, Tab, Typography, Button } from "@mui/material";
 import { useAccount } from "wagmi";
 import { isAddress } from "viem";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
@@ -21,6 +11,8 @@ import { CreatedByOption, TabOption } from "../../data/badges/types";
 import { useBadges } from "@/data/badges/useBadges";
 import { filterOptions, sortOptions } from "../../data/badges/consts";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
+import { SearchBox } from "@/components/Common/SearchBox";
+import { BadgeCategoryFilter } from "./BadgeCategoryFilter";
 
 export const Badges = () => {
   const { address: userAddress } = useAccount();
@@ -40,11 +32,13 @@ export const Badges = () => {
     createdBy,
     createdByAddress,
     orderBy,
+    categories,
     setSearchQuery,
     setActiveTab,
     setCreatedBy,
     setCreatedByAddress,
     setSortBy,
+    setCategories,
   } = useBadges();
 
   const { start, complete } = useLoadingBar();
@@ -122,18 +116,46 @@ export const Badges = () => {
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: { xs: "column", xl: "row" },
             gap: 2,
             justifyContent: "space-between",
-            alignItems: { xs: "stretch", md: "center" },
+            alignItems: "center",
           }}
         >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", xl: "row" },
+              gap: 2,
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            {/* Search */}
+            <SearchBox
+              id="badges-search-input"
+              placeholder="Search by name or address..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              sx={{
+                flex: { xs: 1, md: "unset" },
+                minWidth: { xs: "100%", xl: 300 },
+              }}
+            />
+            {/* Category toggles */}
+            <BadgeCategoryFilter
+              value={categories}
+              onChange={setCategories}
+            />
+          </Box>
+
           <Stack
             direction={{
               xs: "column",
               md: "row",
             }}
             spacing={2}
+            sx={{ mt: { xs: 2, xl: 0 } }}
           >
             {/* Sort */}
             <FilterSelect
@@ -160,31 +182,6 @@ export const Badges = () => {
               customInputPlaceholder="0x..."
             />
           </Stack>
-
-          {/* Search */}
-          <TextField
-            id="badges-search-input"
-            placeholder="Search by name or address..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            size="small"
-            sx={{
-              flex: {
-                xs: 1,
-                md: "unset",
-              },
-              minWidth: { xs: "100%", md: 300 },
-            }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
         </Box>
 
         {/* Badge Grid */}

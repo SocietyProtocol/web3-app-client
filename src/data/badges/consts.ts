@@ -1,11 +1,11 @@
 import { FilterSelectOption } from "../../components/FilterSelect/FilterSelect";
-import { BadgeQueryOptions, CreatedByOption, SortOption } from "./types";
+import { BadgeQueryOptions, CreatedByOption, BadgeSortOption } from "./types";
 
-export const sortOptions: FilterSelectOption<SortOption>[] = [
-  { value: SortOption.Newest, label: "Newest" },
-  { value: SortOption.Holders, label: "Holders" },
-  { value: SortOption.Name, label: "Name" },
-  { value: SortOption.Id, label: "ID" },
+export const sortOptions: FilterSelectOption<BadgeSortOption>[] = [
+  { value: BadgeSortOption.Newest, label: "Newest" },
+  { value: BadgeSortOption.Holders, label: "Holders" },
+  { value: BadgeSortOption.Name, label: "Name" },
+  { value: BadgeSortOption.Id, label: "ID" },
 ];
 
 export const filterOptions: FilterSelectOption<CreatedByOption>[] = [

@@ -2,12 +2,15 @@
 
 import { Box, Button, Typography } from "@mui/material";
 import { BubbleBase } from "../Bubbles/BubbleBase";
-import { User } from "../../../.graphclient";
 import { UserList } from "../User/UserList";
 import { env } from "@/lib/env";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer/MarkdownRenderer";
+import { useBadge } from "@/data/badges/useBadge";
+import { GOVERNOR_BADGE_ID } from "@/consts/badges";
 
 export const Governance = () => {
-  const governors: Pick<User, "id" | "name" | "imageUrl" | "bio">[] = [];
+  const { data, isLoading } = useBadge(GOVERNOR_BADGE_ID);
+  const governors = data?.badge?.holders ?? [];
 
   return (
     <Box>
@@ -18,7 +21,6 @@ export const Governance = () => {
           justifyContent: "space-between",
           alignItems: "flex-start",
           gap: 6,
-          paddingX: { xs: 2, md: 8 },
         }}
       >
         <Box
@@ -28,113 +30,93 @@ export const Governance = () => {
             gap: 4,
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "1.125rem",
-                fontWeight: 700,
-                color: (theme) => theme.palette.primary[100],
-              }}
-            >
-              Think, share and vote.
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: "1.25rem",
-                fontWeight: 400,
-                color: (theme) => theme.palette.text.secondary,
-              }}
-            >
-              Build your own society with modular governance, automated trust,
-              and sybil-resistant identities. The protocol works like a civic
-              operating system: communities, currencies, laws, and
-              membership—defined in code.
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "1.125rem",
-                fontWeight: 700,
-                color: (theme) => theme.palette.primary[100],
-              }}
-            >
-              Tokenomics & governance
-            </Typography>
-            <Typography
-              component="ol"
-              sx={{
-                fontSize: "0.875rem",
-                fontWeight: 400,
-                color: (theme) => theme.palette.primary.main,
-                paddingLeft: (theme) => theme.spacing(2),
-              }}
-            >
-              <li>
-                Fairness: Each participant in society should retain status /
-                value equal to their contribution to society, at each point in
-                time.
-              </li>
-              <li>
-                Alignment: There are two inherently competing interests which
-                must both be balanced and aligned: the individual desire and the
-                societal interest.
-                <br />• The goal of alignment is to make it such that each
-                individual&apos;s optimal game theoretic move is the same as the
-                optimal move for the society as a whole.
-              </li>
-              <li>
-                Agency: We believe that agency and decentralization of control
-                enables more potential actions for every individual, increasing
-                human potential.
-              </li>
-            </Typography>
-          </Box>
+          <MarkdownRenderer
+            src="/api/copywriting/governance"
+            replacements={{ snapshotSpecUrl: env.snapshotSpecUrl }}
+            sx={{ maxWidth: 980, "& p, & li": { color: "text.primary" } }}
+          />
         </Box>
-        <Box sx={{ width: { xs: "100%", md: "auto" }, minWidth: { md: 300 } }}>
-          <BubbleBase
-            variant="none"
-            actions={
-              <Button
-                variant="contained"
-                sx={{
-                  width: { xs: "100%", sm: "auto" },
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                }}
-                href={env.snapshotUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Check Snapshot →
-              </Button>
-            }
-          >
-            <Typography
-              variant="h5"
-              sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+          }}>
+          <Box sx={{ width: { xs: "100%", md: "auto" }, minWidth: { md: 300 } }}>
+            <BubbleBase
+              variant="none"
+              sx={{
+                "& .MuiCardHeader-root": { padding: 2 },
+                "& > .MuiCardContent-root": { padding: 2 },
+                "& > .MuiCardActions-root": { padding: 2 },
+              }}
+              actions={
+                <Button
+                  variant="contained"
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
+                    whiteSpace: "nowrap",
+                  }}
+                  href={env.snapshotUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Check Snapshot →
+                </Button>
+              }
             >
-              Governance
-            </Typography>
-          </BubbleBase>
+              <Typography
+                variant="h5"
+                sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+              >
+                Governance
+              </Typography>
+            </BubbleBase>
+          </Box>
+          <Box sx={{ width: { xs: "100%", md: "auto" }, minWidth: { md: 300 } }}>
+            <BubbleBase
+              variant="none"
+              sx={{
+                "& .MuiCardHeader-root": { padding: 2 },
+                "& > .MuiCardContent-root": { padding: 2 },
+                "& > .MuiCardActions-root": { padding: 2 },
+              }}
+              actions={
+                <Button
+                  variant="outlined"
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
+                    whiteSpace: "nowrap",
+                  }}
+                  href={env.snapshotSpecUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SPEC Token Snapshot →
+                </Button>
+              }
+            >
+              <Typography
+                variant="h5"
+                sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+              >
+                Expression of Feedback
+              </Typography>
+            </BubbleBase>
+          </Box>
         </Box>
       </Box>
 
       <UserList
         title="Governors"
         users={governors}
+        loading={isLoading}
         noUsersFoundText="No governors found"
+        modalTitle="Governors"
+        viewAllButtonText="View All Governors"
+        andMoreText="And {count} more governors..."
         sx={{
           marginTop: 10,
         }}

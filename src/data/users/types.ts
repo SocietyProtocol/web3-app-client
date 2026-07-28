@@ -1,18 +1,20 @@
 import {
   Badge,
+  Community,
   OrderDirection,
   User,
-  User_orderBy,
   UsersQuery,
 } from "../../../.graphclient";
+import { AccountSortOption } from "../accounts/types";
 
 export interface UserQueryOptions {
   searchText?: string | null;
-  orderBy?: User_orderBy;
+  orderBy?: AccountSortOption;
   orderDirection?: OrderDirection;
   pageSize?: number;
   skip?: number;
   onSuccess?: (data: UsersQuery) => void;
+  includeUnregistered?: boolean;
 }
 
 export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {
@@ -32,6 +34,7 @@ export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {
     > & {
       holders: Array<Pick<User, "id">>;
       managers: Array<Pick<User, "id">>;
+      community?: Pick<Community, "id" | "name"> | null;
     }
   >;
   managedBadges: Array<

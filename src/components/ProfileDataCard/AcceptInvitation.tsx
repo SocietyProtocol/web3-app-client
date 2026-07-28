@@ -5,63 +5,18 @@ import { useForm, useWatch } from "react-hook-form";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import { referralCodeValidationSchema } from "@/validation/referralCode";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { useAcceptInvitationMutation } from "./useAcceptInvitationMutation";
-import { useAccount, useConfig } from "wagmi";
-import { generateReferralMessage } from "@/utils/referralCode";
+import { useAccount } from "wagmi";
 import { SimulationError } from "@/components/Transaction/SimulationError";
-import { readContract } from "@wagmi/core";
-import { useChainVar } from "@/hooks/useChainVar";
-import { contracts } from "@/consts/contracts";
-import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { expectedNetwork } from "@/lib/wagmi";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { type Hex } from "viem";
+import { useHasInvited } from "@/data/users/useHasInvited";
 
 export const AcceptInvitation = () => {
-  const wagmiConfig = useConfig();
-  const badgesContract = useChainVar(contracts.badges);
   const { address } = useAccount();
   const { enqueueSnackbar } = useSnackbar();
-
-  const validateCrossReferral = useCallback(
-    async (value: string) => {
-      if (!address) {
-        return "Wallet address is not available. Please connect your wallet.";
-      }
-
-      let inviter: Hex;
-      try {
-        ({ inviter } = referralCodeValidationSchema.parse(value));
-      } catch {
-        return "Invalid referral code format.";
-      }
-
-      if (isEqualCaseInsensitive(inviter, address)) {
-        return "You cannot use your own referral code.";
-      }
-
-      try {
-        const inviterInviter = await readContract(wagmiConfig, {
-          address: badgesContract,
-          abi: SocietyProtocolBadgesABI,
-          functionName: "invitedBy",
-          args: [inviter],
-          chainId: expectedNetwork.id,
-        });
-
-        if (isEqualCaseInsensitive(inviterInviter, address)) {
-          return "You cannot use a referral code from someone you have already invited.";
-        }
-
-        return true;
-      } catch {
-        return "Unable to validate referral code. Please check your network connection and try again.";
-      }
-    },
-    [address, badgesContract, wagmiConfig],
-  );
 
   const form = useForm({
     defaultValues: {
@@ -75,13 +30,8 @@ export const AcceptInvitation = () => {
     name: "referralCode",
   });
 
-  const invitationArgs = useMemo(() => {
-    if (
-      !address ||
-      !referralCode ||
-      typeof referralCode !== "string" ||
-      !form.formState.isValid
-    ) {
+  const parsedReferral = useMemo(() => {
+    if (!address || !referralCode || typeof referralCode !== "string") {
       return undefined;
     }
 
@@ -91,11 +41,65 @@ export const AcceptInvitation = () => {
       return undefined;
     }
 
-    const { inviter, signature } = parsed.data;
-    const message = generateReferralMessage(address);
+    return parsed.data;
+  }, [address, referralCode]);
 
-    return { inviter, signature, message };
-  }, [address, referralCode, form.formState.isValid]);
+  const hasInvited = useHasInvited(address, parsedReferral?.inviter);
+
+  useEffect(() => {
+    if (!referralCode) {
+      return;
+    }
+
+    void form.trigger("referralCode");
+  }, [
+    form,
+    hasInvited.data,
+    hasInvited.error,
+    hasInvited.isFetching,
+    referralCode,
+  ]);
+
+  const validate = useCallback(
+    async (value: string) => {
+      if (!address) {
+        return "Wallet address is not available. Please connect your wallet.";
+      }
+
+      let inviter: Hex;
+
+      try {
+        ({ inviter } = referralCodeValidationSchema.parse(value));
+      } catch {
+        return "Invalid referral code format.";
+      }
+
+      if (isEqualCaseInsensitive(inviter, address)) {
+        return "You cannot use your own referral code.";
+      }
+
+      if (hasInvited.error) {
+        return "Unable to validate referral code. Please check your network connection and try again.";
+      }
+
+      if (hasInvited.data) {
+        return "You cannot use a referral code from someone you have already invited.";
+      }
+
+      return true;
+    },
+    [address, hasInvited.data, hasInvited.error],
+  );
+
+  const invitationArgs = useMemo(() => {
+    if (!parsedReferral) {
+      return undefined;
+    }
+
+    const { inviter, nonce, expiry, signature } = parsedReferral;
+
+    return { inviter, nonce, expiry, signature };
+  }, [parsedReferral]);
 
   const transaction = useAcceptInvitationMutation({
     args: invitationArgs,
@@ -152,7 +156,7 @@ export const AcceptInvitation = () => {
           fullWidth
           placeholder="Paste or enter a referral code"
           {...form.register("referralCode", {
-            validate: validateCrossReferral,
+            validate,
           })}
           error={!!form.formState.errors.referralCode}
           helperText={form.formState.errors.referralCode?.message}
@@ -191,11 +195,12 @@ export const AcceptInvitation = () => {
             !form.formState.isValid ||
             transaction.isSuccess ||
             transaction.simulation.isFetching ||
-            transaction.simulation.isError
+            transaction.simulation.isError ||
+            hasInvited.isFetching
           }
           simulating={transaction.simulation.isFetching}
-          loading={transaction.isExecuting}
-          loadingText="Accepting..."
+          loading={transaction.isExecuting || hasInvited.isFetching}
+          loadingText={hasInvited.isFetching ? "Loading..." : "Accepting..."}
           onClick={onSubmit}
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}

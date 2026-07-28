@@ -2,6 +2,7 @@ query Badge($id: ID!) {
   badge(id: $id) {
     id
     name
+    description
     isOfficial
     isCommunity
     uri
@@ -11,6 +12,10 @@ query Badge($id: ID!) {
     createdAt
     holdersCount
     profileUser {
+      name
+    }
+    community {
+      id
       name
     }
     holders {

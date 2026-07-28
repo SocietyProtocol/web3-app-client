@@ -19,6 +19,15 @@ query Users(
     profile {
       id
     }
+    invitedBy {
+      id
+      name
+      bio
+      imageUrl
+    }
+    communities {
+      id
+    }
     badges(where: { isProfile: false }) {
       id
       name
@@ -30,6 +39,10 @@ query Users(
       creatorAddress
       createdAt
       holdersCount
+      community {
+        id
+        name
+      }
       createdBy {
         id
         name

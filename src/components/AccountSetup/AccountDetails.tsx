@@ -1,5 +1,4 @@
 import { Stack, Button, Grid, Skeleton } from "@mui/material";
-import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useMemo, useState } from "react";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
@@ -22,6 +21,11 @@ import { CardRow } from "../Cards/CardRow";
 import { Page } from "../Page/Page";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { truncateAddress } from "@/utils/string";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import {
+  GOVERNOR_BADGE_ID,
+  GOVERNOR_BADGE_MAX_COUNT,
+} from "@/consts/badges";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -55,10 +59,12 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
 
   const badgesCount = data?.badges?.length;
 
-  const communityCount = useMemo(
-    () => data?.badges.filter((b) => b.isCommunity).length,
-    [data],
-  );
+  const governorBalance = useBadgeBalanceOf(overrideAddress, GOVERNOR_BADGE_ID);
+  const governorCount = governorBalance.data
+    ? Number(governorBalance.data)
+    : 0;
+
+  const communityCount = data?.communities?.length;
 
   const [isEditing, setIsEditing] = useQueryState(
     "edit",
@@ -93,15 +99,17 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
     <Page
       title={`${username}'s Profile`}
       rightAction={
-        !readonly && !isEditing ? (
-          <Button
-            variant="contained"
-            component={Link}
-            href="/profile/lock-spec"
-          >
-            Lock SPEC →
-          </Button>
-        ) : undefined
+        // Lock SPEC button for next phase.
+        // !readonly && !isEditing ? (
+        //   <Button
+        //     variant="contained"
+        //     component={Link}
+        //     href="/profile/lock-spec"
+        //   >
+        //     Lock SPEC →
+        //   </Button>
+        // ) : undefined
+        undefined
       }
     >
       {isEditing ? (
@@ -236,9 +244,18 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 imageUrl={badge.imageUrl}
                 isOfficial={badge.isOfficial}
                 isCommunity={badge.isCommunity}
+                community={badge.community}
                 creatorAddress={badge.creatorAddress}
                 uri={badge.uri}
                 loading={badge.loading}
+                governorCount={
+                  badge.id === GOVERNOR_BADGE_ID ? governorCount : undefined
+                }
+                governorMaxCount={
+                  badge.id === GOVERNOR_BADGE_ID
+                    ? GOVERNOR_BADGE_MAX_COUNT
+                    : undefined
+                }
               />
             )}
             noneFoundText="No badges found"

@@ -9,6 +9,7 @@ import { tokens } from "@/consts/tokens";
 import { useTransactionWithApproval } from "@/hooks/useTransactionWithApproval";
 import { useBalanceOf } from "@/hooks/erc20/useBalanceOf";
 import { SocietyVipManagerABI } from "@/abis/SocietyVipManager";
+import { capturePostHogEvent } from "@/lib/posthog";
 
 interface UseLockMutationParams {
   amount?: bigint;
@@ -48,7 +49,17 @@ export const useLockMutation = ({
         ? [amount, durationInSeconds]
         : undefined,
     queryKeysToInvalidateOnSuccess: [specBalance.queryKey],
-    onSuccess,
+    onSuccess: (transactionReceipt) => {
+      capturePostHogEvent("spec_locked", {
+        wallet_address: address?.toLowerCase(),
+        amount,
+        duration_seconds: durationInSeconds,
+        token_address: tokenAddress,
+        tx_hash: transactionReceipt.transactionHash,
+      });
+
+      onSuccess?.();
+    },
     onError,
     enabled: isEnabled,
     autoExecute: true,
@@ -71,15 +82,19 @@ export const useLockMutation = ({
     await transaction.execute();
   }, [amount, durationInSeconds, transaction, enqueueSnackbar]);
 
+  const isMutating =
+    transaction.isApproving || transaction.isExecuting || transaction.isLoading;
+
   return {
     mutate: lock,
     reset: transaction.reset,
-    isLoading: transaction.isLoading,
+    isTransactionPending: transaction.isLoading,
     isApproving: transaction.isApproving,
-    isMutating: transaction.isExecuting,
-    isSuccess: transaction.isSuccess,
+    isWritingContract: transaction.isExecuting,
+    isTransactionConfirmed: transaction.isSuccess,
     isError: transaction.isError,
     isSyncing: transaction.isSyncing,
+    isMutating,
     approveRequired: transaction.approveRequired,
     lockReceipt: transaction.txReceipt,
     approveReceipt: transaction.approveReceipt,

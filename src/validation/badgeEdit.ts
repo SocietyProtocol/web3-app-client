@@ -6,7 +6,6 @@ export const badgeEditValidationSchema = badgeValidationSchema.pick({
   imageUrl: true,
   metadata: true,
   isOfficial: true,
-  isCommunity: true,
 });
 
 export type BadgeEditInputData = z.input<typeof badgeEditValidationSchema>;

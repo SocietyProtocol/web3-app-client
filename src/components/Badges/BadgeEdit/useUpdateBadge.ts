@@ -1,14 +1,14 @@
 import { useCallback } from "react";
 import { BadgeEditTransformedData } from "@/validation/badgeEdit";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
-import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { throwResponseError } from "@/utils/errors";
-import { UploadMetadataResponse } from "@/app/api/upload-metadata/route";
+import { useMutateMetadata } from "@/hooks/useMutateMetadata";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useBadge } from "@/data/badges/useBadge";
 import { useTransaction } from "@/hooks/useTransaction";
+import { capturePostHogEvent } from "@/lib/posthog";
+import { useAccount } from "wagmi";
+import { decodeBadgeModified } from "@/data/badges/decodeUtils";
 
 interface UseUpdateBadgeProps {
   badgeId: string;
@@ -16,40 +16,24 @@ interface UseUpdateBadgeProps {
 
 export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
+  const { address } = useAccount();
   const { data: badgeData } = useBadge(badgeId);
 
-  const { generateAuthPayload } = useAuth();
-
-  const uploadIpfsResult = useMutation<
-    UploadMetadataResponse,
-    Error,
-    Record<string, unknown>
-  >({
-    mutationFn: async (data) => {
-      const authPayload = await generateAuthPayload();
-
-      const response = await fetch("/api/upload-metadata", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-payload": JSON.stringify(authPayload),
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        await throwResponseError(response);
-      }
-
-      const responseData: UploadMetadataResponse = await response.json();
-
-      return responseData;
-    },
-  });
+  const uploadIpfsResult = useMutateMetadata({ showNotifications: false });
 
   const transaction = useTransaction({
     waitForSync: true,
     queryKeysToInvalidateOnSuccess: [["badge", badgeId], ["badges"]],
+    onSuccess: (receipt) => {
+      const modified = decodeBadgeModified(receipt);
+      capturePostHogEvent("badge_updated", {
+        wallet_address: address?.toLowerCase(),
+        tx_hash: receipt.transactionHash,
+        badge_id: badgeId,
+        badge_name: modified?.name,
+        has_metadata: Boolean(modified?.metadataURI),
+      });
+    },
   });
 
   const mutate = useCallback(
@@ -67,21 +51,15 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
           ...(data.metadata ? JSON.parse(data.metadata) : {}),
         } as Record<string, unknown>;
 
-        const ipfsData = await uploadIpfsResult.mutateAsync(metadata);
-        uri = ipfsData.uri;
+        const ipfsData = await uploadIpfsResult.mutateAsync([metadata]);
+        uri = ipfsData.uris[0];
       }
 
       await transaction.execute({
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
         functionName: "modifyBadge",
-        args: [
-          BigInt(badgeId),
-          data.name,
-          data.isOfficial,
-          data.isCommunity,
-          uri,
-        ],
+        args: [BigInt(badgeId), data.name, data.isOfficial, uri],
       });
     },
     [contractAddress, badgeData, badgeId, uploadIpfsResult, transaction],

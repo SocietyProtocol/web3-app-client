@@ -15,17 +15,28 @@ import { BadgeData } from "../../data/badges/types";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
+import { IndividualChip } from "./IndividualChip";
 import { UserHandle } from "../User/UserHandle";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
+  readonly?: boolean;
+  /**
+   * For badges where the holder may own multiple ERC-1155 instances
+   * (e.g. Governor), display an "X / N" counter at the bottom of the card.
+   * Both `governorCount` and `governorMaxCount` must be provided.
+   */
+  governorCount?: number;
+  governorMaxCount?: number;
 }
 
+type BadgeOutline = "official" | "community" | "individual" | "non-affiliated";
+
 const StyledBadgeCard = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== "isOfficial",
+  shouldForwardProp: (prop) => prop !== "outline",
 })<{
-  isOfficial?: boolean;
-}>(({ theme, isOfficial = false }) => ({
+  outline?: BadgeOutline;
+}>(({ theme, outline }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -40,10 +51,22 @@ const StyledBadgeCard = styled(Paper, {
   background: theme.palette.background.page,
   border: `1px solid ${theme.palette.border.card}`,
 
-  ...(isOfficial && {
+  ...(outline === "official" && {
     border: "none",
-    ...theme.mixins.borderGradient("8px", "official"),
-    background: theme.palette.gradients.darkOfficial,
+    ...theme.mixins.borderGradient("8px", "officialBlue"),
+    ...theme.mixins.backgroundGradient("135deg", "officialBlue"),
+  }),
+
+  ...(outline === "community" && {
+    border: `1px solid ${theme.palette.success.main}`,
+  }),
+
+  ...(outline === "individual" && {
+    border: `1px solid ${theme.palette.silver.light}`,
+  }),
+
+  ...(outline === "non-affiliated" && {
+    border: `1px solid ${theme.palette.error.main}`,
   }),
 }));
 
@@ -52,13 +75,29 @@ export const BadgeCard = ({
   name,
   isOfficial,
   isCommunity,
+  community,
   createdBy,
   uri,
   loading = false,
   imageUrl,
+  readonly = false,
+  governorCount,
+  governorMaxCount,
 }: BadgeCardProps) => {
+  const showGovernorCounter =
+    governorMaxCount !== undefined && governorCount !== undefined;
+  const isIndividual = !isOfficial && !isCommunity;
+  const outline: BadgeOutline | undefined = loading
+    ? undefined
+    : isOfficial
+      ? "official"
+      : isCommunity
+        ? "community"
+        : isIndividual
+          ? "individual"
+          : "non-affiliated";
   return (
-    <StyledBadgeCard isOfficial={isOfficial}>
+    <StyledBadgeCard outline={outline}>
       {/* Badge ID and Official Label */}
       <Stack
         width="100%"
@@ -72,7 +111,7 @@ export const BadgeCard = ({
           <Skeleton width={50} />
         ) : (
           <Chip
-            color={isOfficial ? "gold" : "default"}
+            color={isOfficial ? "officialBlue" : "default"}
             label={`ID: #${id}`}
             size="small"
             sx={{
@@ -104,8 +143,10 @@ export const BadgeCard = ({
           <Skeleton width={50} />
         ) : isCommunity ? (
           <CommunityChip isOfficial={isOfficial} />
+        ) : isOfficial ? (
+          <OfficialChip />
         ) : (
-          isOfficial && <OfficialChip />
+          isIndividual && <IndividualChip />
         )}
       </Stack>
 
@@ -120,7 +161,7 @@ export const BadgeCard = ({
           }}
         />
       ) : (
-        <OptionalLink href={`/badges/${id}`}>
+        <OptionalLink href={readonly ? undefined : `/badges/${id}`}>
           <Avatar
             src={
               imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
@@ -141,7 +182,7 @@ export const BadgeCard = ({
         <Skeleton width="80%" />
       ) : (
         <OptionalLink
-          href={`/badges/${id}`}
+          href={readonly ? undefined : `/badges/${id}`}
           style={{
             maxWidth: "180px",
             overflow: "hidden",
@@ -201,7 +242,7 @@ export const BadgeCard = ({
                 size="small"
                 highlightYou
                 showPreview
-                link
+                link={!readonly}
               />
             ) : (
               "Unknown"
@@ -240,6 +281,23 @@ export const BadgeCard = ({
             />
           </Link>
         )
+      )}
+
+      {/* Multi-instance counter (e.g. Governor: x / 10) */}
+      {!loading && showGovernorCounter && (
+        <Chip
+          label={`${governorCount} / ${governorMaxCount}`}
+          size="small"
+          sx={{
+            mt: "auto",
+            fontSize: (theme) => theme.typography.pxToRem(10),
+            height: 18,
+            "& .MuiChip-label": {
+              px: 1.5,
+              lineHeight: "18px",
+            },
+          }}
+        />
       )}
     </StyledBadgeCard>
   );

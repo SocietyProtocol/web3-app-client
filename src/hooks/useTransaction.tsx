@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   useSimulateContract,
   useWaitForTransactionReceipt,
@@ -163,6 +170,10 @@ export const useTransaction = ({
           args,
 
           ...(value !== undefined && { value }),
+
+          query: {
+            retry: false, // Don't retry simulation on failure
+          },
         } as Parameters<typeof useSimulateContract>[0])
       : undefined,
   );
@@ -232,6 +243,7 @@ export const useTransaction = ({
       } catch (error) {
         setStatus("error");
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+
         if (!suppressErrorSnackbar) {
           enqueueSnackbar(parseErrorMessage(error, errorMessage), {
             variant: "error",

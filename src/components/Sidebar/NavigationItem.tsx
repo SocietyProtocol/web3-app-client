@@ -6,6 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
+  Tooltip,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { NavigationItem as NavigationItemType } from "./navigationItems";
@@ -24,6 +25,10 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   position: "relative",
   overflow: "hidden",
   isolation: "isolate",
+
+  "& .MuiListItemText-primary": {
+    fontFamily: theme.typography.subtitle1.fontFamily,
+  },
 
   "&.Mui-selected": {
     background: "transparent",
@@ -77,7 +82,6 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
 
   const content = (
     <StyledListItemButton
-      title={item.text}
       selected={isActive}
       sx={{
         justifyContent: isExpanded ? "initial" : "center",
@@ -118,24 +122,38 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
 
   return (
     <ListItem disablePadding>
-      {item.isExternal ? (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-        >
-          {content}
-        </a>
-      ) : (
-        <Link
-          href={item.url}
-          passHref
-          style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-        >
-          {content}
-        </Link>
-      )}
+      <Tooltip title={!isExpanded ? item.text : ""} placement="right" arrow>
+        <Box sx={{ width: "100%" }}>
+          {item.isExternal ? (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                width: "100%",
+                display: "block",
+              }}
+            >
+              {content}
+            </a>
+          ) : (
+            <Link
+              href={item.url}
+              passHref
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                width: "100%",
+                display: "block",
+              }}
+            >
+              {content}
+            </Link>
+          )}
+        </Box>
+      </Tooltip>
     </ListItem>
   );
 };

@@ -1,9 +1,10 @@
-import { Components, CssVarsTheme, Theme } from "@mui/material";
+import { alpha, Components, CssVarsTheme, Theme } from "@mui/material";
 
 // Augment MUI Button variant types
 declare module "@mui/material/Button" {
   interface ButtonPropsVariantOverrides {
     wallet: true;
+    link: true;
   }
 }
 
@@ -16,15 +17,70 @@ export const MuiButton: Components<
   },
   variants: [
     {
+      props: { variant: "contained", color: "error" },
+      style: ({ theme }) => ({
+        backgroundColor: theme.palette.error.main,
+        border: "none",
+        color: theme.palette.primary.contrastText,
+        "&:disabled, &.Mui-disabled": {
+          backgroundColor: theme.palette.error.dark,
+          color: theme.palette.primary.contrastText,
+          opacity: 0.5,
+        },
+        "&:hover": {
+          backgroundColor: theme.palette.error.light,
+        },
+        "&:active": {
+          backgroundColor: theme.palette.error.dark,
+        },
+        "&:focus, &:focus-visible, &.Mui-focusVisible": {
+          backgroundColor: theme.palette.error.main,
+          outline: `6px solid ${alpha(theme.palette.error.main, 0.3)}`,
+        },
+      }),
+    },
+    {
       props: { variant: "wallet" },
       style: ({ theme }) => ({
         background: theme.palette.background.subtle,
         border: "none",
       }),
     },
+    {
+      props: { variant: "link" },
+      style: ({ theme }) => ({
+        border: "none",
+        background: "transparent",
+        color: theme.palette.primary.main,
+        fontWeight: 600,
+        textTransform: "none",
+        textDecoration: "none",
+        fontSize: theme.typography.pxToRem(16),
+        fontFamily: "var(--font-inter), sans-serif",
+        "&&": {
+          padding: 0,
+          minWidth: "auto",
+          height: "auto",
+          lineHeight: "normal",
+        },
+        [theme.breakpoints.up("sm")]: {
+          fontSize: theme.typography.pxToRem(16),
+        },
+        "& .MuiButton-startIcon": {
+          fontSize: "16px",
+          marginRight: theme.spacing(0.5),
+        },
+        "&:hover": {
+          background: "transparent",
+          textDecoration: "underline",
+        },
+      }),
+    },
   ],
   styleOverrides: {
     root: {
+      fontFamily:
+        "var(--font-pptelegraf), var(--font-space-grotesk), sans-serif",
       borderRadius: 50,
       border: "1.48px solid currentColor",
     },

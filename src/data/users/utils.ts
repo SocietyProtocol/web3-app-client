@@ -5,6 +5,7 @@ import {
   UsersDocument,
   UsersQuery,
 } from "../../../.graphclient";
+import { AccountSortOption } from "../accounts/types";
 import { defaultOptions } from "./consts";
 import { UserQueryOptions } from "./types";
 
@@ -16,11 +17,15 @@ import { UserQueryOptions } from "./types";
  */
 export const mergeOptions = (
   options?: UserQueryOptions,
-): UserQueryOptions & {
+): Omit<UserQueryOptions, "orderBy"> & {
   pageSize: number;
+  orderBy: AccountSortOption;
+  orderDirection: "asc" | "desc";
 } => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { searchText, onSuccess, ...rest } = options || {};
+  const orderBy = options?.orderBy ?? defaultOptions.orderBy;
+
   return {
     ...defaultOptions,
     ...rest,
@@ -28,6 +33,9 @@ export const mergeOptions = (
       ?.toLowerCase()
       .trim()
       .replace(/\s+/g, " "),
+    orderBy,
+    orderDirection: orderBy === AccountSortOption.Name ? "asc" : "desc",
+    skip: options?.skip ?? 0,
   };
 };
 
@@ -37,8 +45,11 @@ export const mergeOptions = (
  * @param options Options to build the where clause from
  * @returns Where clause object
  */
-export const buildWhereClause = (options: { searchText?: string | null }) => {
-  const { searchText } = options;
+export const buildWhereClause = (options: {
+  searchText?: string | null;
+  includeUnregistered?: boolean;
+}) => {
+  const { searchText, includeUnregistered } = options;
 
   const whereClauses: InputMaybe<InputMaybe<User_filter>[]> = [];
 
@@ -54,7 +65,9 @@ export const buildWhereClause = (options: { searchText?: string | null }) => {
     });
   }
 
-  whereClauses.push({ profile_not: null });
+  if (!includeUnregistered) {
+    whereClauses.push({ profile_not: null });
+  }
 
   return { and: whereClauses };
 };
@@ -70,6 +83,7 @@ export const fetchUsers = async (options?: UserQueryOptions) => {
 
   const where = buildWhereClause({
     searchText: mergedOptions.searchText,
+    includeUnregistered: mergedOptions.includeUnregistered,
   });
 
   const res = await execute(UsersDocument, {

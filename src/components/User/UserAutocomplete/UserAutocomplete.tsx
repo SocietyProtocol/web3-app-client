@@ -8,6 +8,9 @@ import { useAtom } from "jotai";
 import { usersAtom } from "@/atoms/users";
 import { renderUserOption } from "./renderUserOption";
 import { renderUserItem } from "./renderUserItem";
+import { useChainVar } from "@/hooks/useChainVar";
+import { contracts } from "@/consts/contracts";
+import { isEqualCaseInsensitive } from "@/utils/string";
 
 type SelectedUsers<
   Multiple extends boolean,
@@ -65,6 +68,7 @@ export const UserAutocomplete = <
   helperText,
 }: UserAutocompleteProps<Multiple, DisableClearable, FreeSolo>) => {
   const [allUsersMap, upsertAllUserMap] = useAtom(usersAtom);
+  const communityRegistry = useChainVar(contracts.communityRegistry);
 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
@@ -72,6 +76,7 @@ export const UserAutocomplete = <
   const { data, isLoading, isFetching } = useUsersQuery({
     searchText: debouncedSearchQuery,
     pageSize: 50,
+    includeUnregistered: true,
     onSuccess: upsertAllUserMap,
   });
 
@@ -111,8 +116,11 @@ export const UserAutocomplete = <
     () =>
       users
         .map(({ id }) => allUsersMap.get(id.toLowerCase()))
-        .filter((u): u is UserOption => !!u),
-    [allUsersMap, users],
+        .filter(
+          (u): u is UserOption =>
+            !!u && !isEqualCaseInsensitive(u.id, communityRegistry),
+        ),
+    [allUsersMap, users, communityRegistry],
   );
 
   return (
@@ -136,7 +144,7 @@ export const UserAutocomplete = <
         ) {
           return {
             id,
-            name: "Add ",
+            name: `Add ${id} as a new user`,
             imageUrl: undefined,
           };
         }
@@ -161,7 +169,7 @@ export const UserAutocomplete = <
       placeholder={
         (Array.isArray(selectedUsers) && selectedUsers.length === 0) ||
         !selectedUsers
-          ? "Search users by name or ID..."
+          ? "Search users by name or ID or enter an address..."
           : ""
       }
       filterOptions={filterOptions}

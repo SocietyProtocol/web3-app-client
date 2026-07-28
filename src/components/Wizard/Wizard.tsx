@@ -72,7 +72,6 @@ export const Wizard = ({
           component="h1"
           sx={{
             mb: { xs: 3, sm: 5 },
-            px: { xs: 1, sm: 2 },
             color: "primary.main",
           }}
         >
@@ -87,7 +86,6 @@ export const Wizard = ({
         sx={{
           py: { xs: 1.5, sm: 2 },
           mb: { xs: 3, sm: 5 },
-          px: { xs: 1, sm: 3 },
           overflowX: "auto",
         }}
       >
@@ -134,7 +132,7 @@ export const Wizard = ({
       {/* Step Content */}
       <Box
         sx={{
-          p: { xs: 2, sm: 3, md: 4 },
+          py: { xs: 2, sm: 3, md: 4 },
           minHeight,
         }}
       >

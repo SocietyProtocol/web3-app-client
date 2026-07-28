@@ -1,8 +1,9 @@
-import { Avatar as MUIAvatar, Skeleton, SxProps } from "@mui/material";
+import { Avatar as MUIAvatar, Skeleton, SxProps, Theme } from "@mui/material";
+import { mergeSx } from "@/utils/sx";
 
 export interface ImageDisplayProps {
   size?: number | { xs?: number; sm?: number; md?: number; lg?: number };
-  sx?: SxProps;
+  sx?: SxProps<Theme>;
   loading?: boolean;
   src?: string | null;
   ariaLabel?: string;
@@ -19,13 +20,10 @@ export const ImageDisplay = ({
     return (
       <Skeleton
         variant="circular"
-        sx={[
-          ...(Array.isArray(sx) ? sx : [sx]),
-          {
-            width: size,
-            height: size,
-          },
-        ]}
+        sx={mergeSx(sx, {
+          width: size,
+          height: size,
+        })}
       />
     );
   }
@@ -34,17 +32,14 @@ export const ImageDisplay = ({
     <MUIAvatar
       {...(src && { src: src })}
       aria-label={ariaLabel}
-      sx={[
-        ...(Array.isArray(sx) ? sx : [sx]),
-        {
-          width: size,
-          height: size,
+      sx={mergeSx(sx, {
+        width: size,
+        height: size,
 
-          "& .MuiAvatar-fallback": {
-            display: "none",
-          },
+        "& .MuiAvatar-fallback": {
+          display: "none",
         },
-      ]}
+      })}
     />
   );
 };

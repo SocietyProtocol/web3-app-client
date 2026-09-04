@@ -20,6 +20,8 @@ enum Status {
   Timeout = "timeout",
 }
 
+export const fetchSubgraphStatus = () => execute(StatusDocument, {});
+
 export const useWaitForSubgraphSync = (
   targetBlock?: bigint,
   options?: WaitForSubgraphSyncOptions,
@@ -45,9 +47,12 @@ export const useWaitForSubgraphSync = (
 
       while (!signal.aborted && enabled && targetBlock) {
         try {
-          const res = await execute(StatusDocument, {
-            signal,
-          });
+          // `signal` belongs to the transport request, not GraphQL variables.
+          // The generated execute API does not expose a request-signal option,
+          // so keep Status' variable payload empty and stop using the result
+          // after cancellation.
+          const res = await fetchSubgraphStatus();
+          if (signal.aborted) return;
 
           const currentIndexedBlock = BigInt(res.data._meta.block.number);
           setIndexedBlock(currentIndexedBlock);

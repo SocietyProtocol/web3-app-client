@@ -38,6 +38,8 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_WC_PROJECT_ID`         | ✅       | WalletConnect project ID                                                                                                                                   | [cloud.walletconnect.com](https://cloud.walletconnect.com/) |
 | `NEXT_PUBLIC_ALCHEMY_API_KEY`       | ✅       | Alchemy API key for Ethereum RPC                                                                                                                           | [alchemy.com](https://www.alchemy.com/)                     |
 | `NEXT_PUBLIC_GRAPH_URL`             | ✅       | Unified subgraph URL used for this deployment (mainnet for production and testnet for development & staging) — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
+| `GRAPH_QUERY_GATEWAY_URL`           | ✅       | Server-only protected Graph query gateway; browser traffic uses `/api/graphql`                                                | Railway query gateway                                      |
+| `GRAPH_QUERY_GATEWAY_TOKEN`         | ✅       | Server-only credential for the protected Graph query gateway                                                                  | Railway secret manager                                     |
 | `NEXT_PUBLIC_PINATA_GATEWAY_URL`    | ✅       | Pinata IPFS gateway URL                                                                                                                                    | [pinata.cloud](https://pinata.cloud/)                       |
 | `PINATA_JWT`                        | ✅       | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser                                                                                 | [pinata.cloud](https://pinata.cloud/)                       |
 | `NEXT_PUBLIC_SNAPSHOT_URL`          | ✅       | Snapshot governance space URL                                                                                                                              | [snapshot.box](https://snapshot.box/)                       |
@@ -47,12 +49,12 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | —        | PostHog project token used to enable client-side analytics, pageviews, and event tracking                                                                  | Your PostHog project settings                               |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | —        | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com`; leave unset to use the SDK default                       | Your PostHog deployment or region                           |
 
-> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT`) in a `NEXT_PUBLIC_` variable. PostHog analytics remain disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
+> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT` or `GRAPH_QUERY_GATEWAY_TOKEN`) in a `NEXT_PUBLIC_` variable. PostHog analytics remain disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 
 ### 3. Install & Run
 
 ```bash
-# Install dependencies (also runs graphclient code-gen via postinstall)
+# Install dependencies
 yarn install
 
 # Start the development server
@@ -65,8 +67,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Script            | Description                                           |
 | ----------------- | ----------------------------------------------------- |
-| `yarn dev`        | GraphQL code-gen + Next.js dev server with hot reload |
-| `yarn build`      | GraphQL code-gen + production build                   |
+| `yarn dev`        | Explicit GraphQL code-gen + Next.js dev server with hot reload |
+| `yarn build`      | Explicit GraphQL code-gen + production build                   |
 | `yarn start`      | Start the production server                           |
 | `yarn codegen`    | Regenerate the GraphQL client from subgraph schema    |
 | `yarn type-check` | TypeScript type check without emitting                |

@@ -25,4 +25,5 @@ export const defaultOptions: BadgeQueryOptions & {
   orderBy: "id",
   orderDirection: "desc",
   pageSize: 1000,
+  skip: 0,
 };

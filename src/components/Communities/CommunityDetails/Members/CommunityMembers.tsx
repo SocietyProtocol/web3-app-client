@@ -19,6 +19,7 @@ import { communityMemberSortOptions } from "@/data/community-members/consts";
 import { useMemo } from "react";
 import { SearchBox } from "@/components/Common/SearchBox";
 import { CommunityMembersSortOption } from "@/data/community-members/types";
+import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
 
 export function CommunityMembers() {
   const { id, isManager, community } = useCommunityDetailsContext();
@@ -49,6 +50,20 @@ export function CommunityMembers() {
     }
     return pageQuery.data?.communityMemberships ?? [];
   }, [isSearching, searchQuery.data, pageQuery.data]);
+
+  const activeQuery = isSearching ? searchQuery : pageQuery;
+  if (activeQuery.isError) {
+    return (
+      <ErrorDisplay
+        error={activeQuery.error}
+        action={
+          <Button onClick={() => activeQuery.refetch()} variant="contained">
+            Retry
+          </Button>
+        }
+      />
+    );
+  }
 
   const handleSearch = (value: string) => {
     setSearch(value);

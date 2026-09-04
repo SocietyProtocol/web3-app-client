@@ -3,6 +3,7 @@ sources:
     handler:
       graphql:
         endpoint: ${NEXT_PUBLIC_GRAPH_URL}
+customFetch: ./src/lib/graph-fetch.ts
 documents:
   - ./src/queries/badges.graphql
   - ./src/queries/badge.graphql

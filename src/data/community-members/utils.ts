@@ -5,6 +5,7 @@ import {
   CommunityMembership_orderBy,
   execute,
 } from "../../../.graphclient";
+import { requireGraphData } from "@/lib/graph-response";
 import { defaultOptions } from "./consts";
 import {
   CommunityMembersQueryOptions,
@@ -97,5 +98,8 @@ export const fetchCommunityMembers = async (
     where,
   });
 
-  return res.data as CommunityMembersQuery;
+  return requireGraphData(
+    res.data as CommunityMembersQuery | undefined,
+    "CommunityMembers",
+  );
 };

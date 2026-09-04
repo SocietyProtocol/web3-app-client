@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Chip, Stack, Tab, Tabs } from "@mui/material";
+import { Box, Button, Chip, Stack, Tab, Tabs } from "@mui/material";
 import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
 import { OverviewTab } from "./OverviewTab";
 import { CommunityDetailHeader } from "./CommunityDetailHeader";
@@ -12,11 +12,20 @@ import { CommunityDetailsTab } from "./CommunityDetail.types";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
 export function CommunityDetails() {
-  const { isError, error, tab, setTab, isManager } =
+  const { isError, error, refetch, tab, setTab, isManager } =
     useCommunityDetailsContext();
 
   if (isError) {
-    return <ErrorDisplay error={error} />;
+    return (
+      <ErrorDisplay
+        error={error}
+        action={
+          <Button onClick={() => refetch()} variant="contained">
+            Retry
+          </Button>
+        }
+      />
+    );
   }
 
   return (

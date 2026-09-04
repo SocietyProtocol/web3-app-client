@@ -8,6 +8,7 @@ import {
   execute,
   InputMaybe,
 } from "../../../.graphclient";
+import { requireGraphData } from "@/lib/graph-response";
 import { defaultOptions } from "./consts";
 import { CommunityQueryOptions, CommunityTier } from "./types";
 
@@ -164,7 +165,10 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
     where,
   });
 
-  return res.data as CommunitiesQuery;
+  return requireGraphData(
+    res.data as CommunitiesQuery | undefined,
+    "Communities",
+  );
 };
 
 /**
@@ -175,5 +179,8 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
  */
 export const fetchCommunity = async (id: string): Promise<CommunityQuery> => {
   const res = await execute(CommunityDocument, { id });
-  return res.data as CommunityQuery;
+  return requireGraphData(
+    res.data as CommunityQuery | undefined,
+    "Community",
+  );
 };

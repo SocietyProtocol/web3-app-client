@@ -16,6 +16,7 @@ interface CommunityDetailsContextValue {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
+  refetch: () => Promise<unknown>;
   tierName: CommunityTier;
   tierColor: string;
   badgeCount: number;
@@ -45,6 +46,7 @@ export function CommunityDetailsProvider({
     isLoading,
     isError,
     error,
+    refetch,
     tierName,
     tierColor,
     badgeCount,
@@ -76,6 +78,7 @@ export function CommunityDetailsProvider({
       isLoading,
       isError,
       error,
+      refetch,
       tierName,
       tierColor,
       badgeCount,
@@ -98,6 +101,7 @@ export function CommunityDetailsProvider({
     tab,
     tierColor,
     tierName,
+    refetch,
   ]);
 
   return (

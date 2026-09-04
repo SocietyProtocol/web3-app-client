@@ -6,7 +6,7 @@ import { useNow } from "@/hooks/useNow";
 
 export function useCommunityDetail(id: string) {
   const theme = useTheme();
-  const { data, isLoading, isError, error } = useCommunity(id);
+  const { data, isLoading, isError, error, refetch } = useCommunity(id);
 
   const now = useNow({
     updateAt: data?.community?.tierExpiresAt
@@ -36,6 +36,7 @@ export function useCommunityDetail(id: string) {
     isLoading,
     isError,
     error,
+    refetch,
     tierName,
     tierColor,
     badgeCount,

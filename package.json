@@ -6,12 +6,12 @@
   "author": "Society Protocol Foundation",
   "license": "MIT",
   "scripts": {
-    "dev": "graphclient build && next dev",
-    "build": "graphclient build && next build",
+    "dev": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next dev",
+    "build": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next build",
     "start": "next start",
     "lint": "next lint",
-    "codegen": "graphclient build",
-    "postinstall": "graphclient build",
+    "codegen": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build",
+    "generate:persisted-graphql": "node scripts/generate-persisted-graphql.mjs",
     "type-check": "tsc --noEmit",
     "test": "vitest"
   },

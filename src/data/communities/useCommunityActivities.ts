@@ -4,6 +4,7 @@ import {
   CommunityActivitiesDocument,
   CommunityActivitiesQuery,
 } from "../../../.graphclient";
+import { requireGraphData } from "@/lib/graph-response";
 
 const DEFAULT_PAGE_SIZE = 7;
 
@@ -20,7 +21,10 @@ export const useCommunityActivities = (
         first: pageSize,
         skip: pageParam * pageSize,
       });
-      return res.data as CommunityActivitiesQuery;
+      return requireGraphData(
+        res.data as CommunityActivitiesQuery | undefined,
+        "CommunityActivities",
+      );
     },
     getNextPageParam: (lastPage, pages) => {
       const count = lastPage?.communityActivityEvents?.length ?? 0;

@@ -49,6 +49,8 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_WC_PROJECT_ID`      | WalletConnect project ID for wallet connection                                                                        | `abc123...`                                 |
 | `NEXT_PUBLIC_ALCHEMY_API_KEY`    | Alchemy API key for Ethereum JSON-RPC                                                                                 | `abc123...`                                 |
 | `NEXT_PUBLIC_GRAPH_URL`          | Subgraph URL for the **active** network (Sepolia in development/staging, Mainnet in production); used by code-gen too | `https://api.studio.thegraph.com/query/...` |
+| `GRAPH_QUERY_GATEWAY_URL`        | Server-only protected Graph query gateway; browser traffic uses `/api/graphql`                              | `https://query-gateway.example/graphql`    |
+| `GRAPH_QUERY_GATEWAY_TOKEN`      | Server-only credential for the protected Graph query gateway                                                | `...`                                      |
 | `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata IPFS gateway URL                                                                                               | `https://your-gateway.mypinata.cloud`       |
 | `PINATA_JWT`                     | Pinata JWT for **server-side** IPFS uploads (never exposed to the browser)                                            | `eyJhb...`                                  |
 | `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot governance space URL                                                                                         | `https://snapshot.box/#/s:your-space.eth`   |
@@ -97,6 +99,7 @@ The application uses a **single unified subgraph per network** (badges and aucti
 - Deploy your Sepolia and Mainnet subgraphs separately to [The Graph Studio](https://thegraph.com/studio/) and copy the **network-specific** query URL for each.
 - For a Sepolia deployment, set `NEXT_PUBLIC_GRAPH_URL` to the Sepolia subgraph query URL; for a Mainnet deployment, set it to the Mainnet subgraph query URL. A single URL **cannot** serve both networks at once.
 - `NEXT_PUBLIC_GRAPH_URL` is consumed by GraphQL code-gen (`graphclient build`) at build time and by the runtime client in the corresponding deployment environment.
+- Runtime browser queries go to the same-origin `/api/graphql` route. SSR queries go directly to `GRAPH_QUERY_GATEWAY_URL`; the gateway token is never sent to browsers.
 
 ### 3.5 Snapshot (Governance)
 

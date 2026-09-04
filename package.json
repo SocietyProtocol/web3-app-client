@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "next lint",
     "codegen": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build",
+    "export:schema": "node scripts/export-schema.mjs",
     "generate:persisted-graphql": "node scripts/generate-persisted-graphql.mjs",
     "type-check": "tsc --noEmit",
     "test": "vitest"

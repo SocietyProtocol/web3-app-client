@@ -344,6 +344,29 @@ npm run codegen
 
 The configuration is in [.graphclientrc.yml](.graphclientrc.yml). GraphQL queries are located in [src/queries/](src/queries/).
 
+### 10.1 Exporting a canonical schema
+
+To capture the full schema from a reachable Graph Node endpoint, run the
+dependency-free schema exporter from a server-only or transient service:
+
+```bash
+GRAPH_SCHEMA_SOURCE_URL='<graph-node-query-url>' yarn export:schema -- --output schema.graphql
+```
+
+The command sends the standard GraphQL introspection query, sorts the resulting
+schema lexicographically, and prints canonical SDL. It writes to stdout by
+default; `--output <path>` performs an atomic replacement. The source URL must
+be provided through the server-only `GRAPH_SCHEMA_SOURCE_URL` variable and is
+never included in command output. Use `--check` with `--output <path>` to fetch
+the schema and verify an existing file without replacing it:
+
+```bash
+GRAPH_SCHEMA_SOURCE_URL='<graph-node-query-url>' yarn export:schema -- --output schema.graphql --check
+```
+
+The exporter fails for unsuccessful HTTP responses, malformed responses,
+GraphQL errors, or introspection responses without `data.__schema`.
+
 ---
 
 ## 11. CI/CD Pipeline

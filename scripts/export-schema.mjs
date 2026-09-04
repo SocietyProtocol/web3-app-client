@@ -10,6 +10,16 @@ import {
 } from "graphql";
 
 const SOURCE_ENV = "GRAPH_SCHEMA_SOURCE_URL";
+const LEGACY_INTROSPECTION_OPTIONS = Object.freeze({
+  descriptions: true,
+  directiveIsRepeatable: false,
+  specifiedByUrl: false,
+  inputValueDeprecation: false,
+  schemaDescription: false,
+  experimentalDirectiveDeprecation: false,
+  oneOf: false,
+  typeDepth: 9,
+});
 
 const DIAGNOSTICS = Object.freeze({
   missingSource: ["missing source variable", `${SOURCE_ENV} is required`],
@@ -71,17 +81,7 @@ const canonicalSDL = (introspection) => {
   return `${printed.replace(/\n+$/, "")}\n`;
 };
 
-export const fetchCanonicalSDL = async (
-  sourceUrl,
-  fetchImpl = globalThis.fetch,
-) => {
-  if (!sourceUrl) {
-    throw new SchemaExportError("missingSource");
-  }
-  if (typeof fetchImpl !== "function") {
-    throw new SchemaExportError("runtimeFailure");
-  }
-
+const requestIntrospection = async (sourceUrl, fetchImpl, query) => {
   let response;
   try {
     response = await fetchImpl(sourceUrl, {
@@ -90,7 +90,7 @@ export const fetchCanonicalSDL = async (
         accept: "application/json",
         "content-type": "application/json",
       },
-      body: JSON.stringify({ query: getIntrospectionQuery() }),
+      body: JSON.stringify({ query }),
     });
   } catch {
     // Do not expose fetch's error, which can contain the configured URL.
@@ -117,14 +117,44 @@ export const fetchCanonicalSDL = async (
       payload.errors !== null &&
       !Array.isArray(payload.errors))
   ) {
-    throw new SchemaExportError("graphqlErrors");
+    return { hasGraphQLErrors: true };
   }
   if (!isRecord(payload.data) || !isRecord(payload.data.__schema)) {
     throw new SchemaExportError("invalidIntrospection");
   }
 
+  return { hasGraphQLErrors: false, payload };
+};
+
+export const fetchCanonicalSDL = async (
+  sourceUrl,
+  fetchImpl = globalThis.fetch,
+) => {
+  if (!sourceUrl) {
+    throw new SchemaExportError("missingSource");
+  }
+  if (typeof fetchImpl !== "function") {
+    throw new SchemaExportError("runtimeFailure");
+  }
+
+  const primaryResult = await requestIntrospection(
+    sourceUrl,
+    fetchImpl,
+    getIntrospectionQuery(),
+  );
+  const result = primaryResult.hasGraphQLErrors
+    ? await requestIntrospection(
+        sourceUrl,
+        fetchImpl,
+        getIntrospectionQuery(LEGACY_INTROSPECTION_OPTIONS),
+      )
+    : primaryResult;
+
+  if (result.hasGraphQLErrors) {
+    throw new SchemaExportError("graphqlErrors");
+  }
   try {
-    return canonicalSDL({ __schema: payload.data.__schema });
+    return canonicalSDL({ __schema: result.payload.data.__schema });
   } catch {
     throw new SchemaExportError("invalidIntrospection");
   }

@@ -69,6 +69,80 @@ describe("schema exporter", () => {
     expect(sdl.endsWith("\n\n")).toBe(false);
   });
 
+  it("retries GraphQL errors with a legacy-compatible introspection query", async () => {
+    const requests = [];
+    let attempt = 0;
+    const sdl = await fetchCanonicalSDL(
+      "https://private.example/graphql",
+      async (_url, options) => {
+        requests.push(JSON.parse(options.body).query);
+        attempt += 1;
+        return attempt === 1
+          ? {
+              ok: true,
+              json: async () => ({
+                errors: [{ message: "unsupported field secret" }],
+              }),
+            }
+          : { ok: true, json: async () => introspectionPayload() };
+      },
+    );
+
+    expect(requests).toHaveLength(2);
+    expect(requests[0]).toBe(getIntrospectionQuery());
+    expect(requests[1]).toBe(
+      getIntrospectionQuery({
+        descriptions: true,
+        directiveIsRepeatable: false,
+        specifiedByUrl: false,
+        inputValueDeprecation: false,
+        schemaDescription: false,
+        experimentalDirectiveDeprecation: false,
+        oneOf: false,
+        typeDepth: 9,
+      }),
+    );
+    expect(requests[1]).not.toContain("isRepeatable");
+    expect(requests[1]).not.toContain("specifiedByURL");
+    expect(requests[1]).toContain("description");
+    expect(requests[1]).toContain("ofType");
+    expect(sdl).toContain("type Query");
+  });
+
+  it("keeps the GraphQL error diagnostic sanitized when the fallback fails", async () => {
+    const requests = [];
+    let error;
+    try {
+      await fetchCanonicalSDL(
+        "https://private.example/graphql",
+        async (_url, options) => {
+          requests.push(JSON.parse(options.body).query);
+          return {
+            ok: true,
+            json: async () => ({
+              errors: [
+                {
+                  message:
+                    "https://private.example/graphql Authorization: Bearer secret",
+                },
+              ],
+            }),
+          };
+        },
+      );
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(requests).toHaveLength(2);
+    expect(formatDiagnostic(error)).toBe(
+      "GraphQL errors: the GraphQL schema source returned GraphQL errors",
+    );
+    expect(error.message).not.toContain("private.example");
+    expect(error.message).not.toContain("Authorization");
+    expect(error.message).not.toContain("secret");
+  });
+
   it.each([
     [
       "an unreachable source",

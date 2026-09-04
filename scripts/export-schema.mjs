@@ -11,6 +11,55 @@ import {
 
 const SOURCE_ENV = "GRAPH_SCHEMA_SOURCE_URL";
 
+const DIAGNOSTICS = Object.freeze({
+  missingSource: ["missing source variable", `${SOURCE_ENV} is required`],
+  unreachableSource: ["unreachable source", "unable to reach the GraphQL schema source"],
+  unsuccessfulHttp: [
+    "unsuccessful HTTP response",
+    "the GraphQL schema source returned an unsuccessful HTTP response",
+  ],
+  invalidJson: [
+    "invalid JSON",
+    "the GraphQL schema source returned invalid JSON",
+  ],
+  graphqlErrors: [
+    "GraphQL errors",
+    "the GraphQL schema source returned GraphQL errors",
+  ],
+  invalidIntrospection: [
+    "invalid introspection",
+    "the GraphQL introspection schema was invalid",
+  ],
+  malformedResponse: [
+    "invalid introspection",
+    "the GraphQL schema response was malformed",
+  ],
+  invalidArguments: ["invalid arguments", "invalid command-line arguments"],
+  outputFailure: ["output failure", "unable to write the schema output"],
+  checkFailure: [
+    "schema check failed",
+    "the schema output does not match the canonical schema",
+  ],
+  runtimeFailure: ["internal failure", "an unexpected error occurred"],
+});
+
+class SchemaExportError extends Error {
+  constructor(code) {
+    super(DIAGNOSTICS[code]?.[1] ?? DIAGNOSTICS.runtimeFailure[1]);
+    this.name = "SchemaExportError";
+    this.code = code;
+  }
+}
+
+export const formatDiagnostic = (error) => {
+  const diagnostic =
+    error instanceof SchemaExportError
+      ? DIAGNOSTICS[error.code]
+      : undefined;
+  const [category, message] = diagnostic ?? DIAGNOSTICS.runtimeFailure;
+  return `${category}: ${message}`;
+};
+
 const isRecord = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -27,10 +76,10 @@ export const fetchCanonicalSDL = async (
   fetchImpl = globalThis.fetch,
 ) => {
   if (!sourceUrl) {
-    throw new Error(`${SOURCE_ENV} is required`);
+    throw new SchemaExportError("missingSource");
   }
   if (typeof fetchImpl !== "function") {
-    throw new Error("This Node.js runtime does not provide fetch");
+    throw new SchemaExportError("runtimeFailure");
   }
 
   let response;
@@ -45,22 +94,22 @@ export const fetchCanonicalSDL = async (
     });
   } catch {
     // Do not expose fetch's error, which can contain the configured URL.
-    throw new Error("Unable to reach the GraphQL schema source");
+    throw new SchemaExportError("unreachableSource");
   }
 
   if (!response?.ok) {
-    throw new Error("The GraphQL schema source returned an unsuccessful HTTP response");
+    throw new SchemaExportError("unsuccessfulHttp");
   }
 
   let payload;
   try {
     payload = await response.json();
   } catch {
-    throw new Error("The GraphQL schema source returned invalid JSON");
+    throw new SchemaExportError("invalidJson");
   }
 
   if (!isRecord(payload)) {
-    throw new Error("The GraphQL schema response was malformed");
+    throw new SchemaExportError("malformedResponse");
   }
   if (
     (Array.isArray(payload.errors) && payload.errors.length > 0) ||
@@ -68,16 +117,16 @@ export const fetchCanonicalSDL = async (
       payload.errors !== null &&
       !Array.isArray(payload.errors))
   ) {
-    throw new Error("The GraphQL schema source returned GraphQL errors");
+    throw new SchemaExportError("graphqlErrors");
   }
   if (!isRecord(payload.data) || !isRecord(payload.data.__schema)) {
-    throw new Error("The GraphQL schema response did not contain data.__schema");
+    throw new SchemaExportError("invalidIntrospection");
   }
 
   try {
     return canonicalSDL({ __schema: payload.data.__schema });
   } catch {
-    throw new Error("The GraphQL introspection schema was invalid");
+    throw new SchemaExportError("invalidIntrospection");
   }
 };
 
@@ -96,7 +145,7 @@ export const writeSDLAtomically = async (outputPath, sdl) => {
     });
     await rename(temporaryPath, outputPath);
   } catch {
-    throw new Error("Unable to write the schema output");
+    throw new SchemaExportError("outputFailure");
   } finally {
     await unlink(temporaryPath).catch(() => {});
   }
@@ -114,22 +163,22 @@ const parseArgs = (args) => {
       outputPath = args[index + 1];
       index += 1;
       if (!outputPath || outputPath.startsWith("--")) {
-        throw new Error("--output requires a path");
+        throw new SchemaExportError("invalidArguments");
       }
     } else if (argument.startsWith("--output=")) {
       outputPath = argument.slice("--output=".length);
       if (!outputPath) {
-        throw new Error("--output requires a path");
+        throw new SchemaExportError("invalidArguments");
       }
     } else if (argument === "--help" || argument === "-h") {
       return { help: true };
     } else {
-      throw new Error("Unknown command-line option");
+      throw new SchemaExportError("invalidArguments");
     }
   }
 
   if (check && !outputPath) {
-    throw new Error("--check requires --output");
+    throw new SchemaExportError("invalidArguments");
   }
 
   return { check, outputPath };
@@ -154,10 +203,10 @@ export const main = async (args = process.argv.slice(2), env = process.env) => {
     try {
       existing = await readFile(resolve(process.cwd(), options.outputPath), "utf8");
     } catch {
-      throw new Error("The schema output does not match the canonical schema");
+      throw new SchemaExportError("checkFailure");
     }
     if (existing !== sdl) {
-      throw new Error("The schema output does not match the canonical schema");
+      throw new SchemaExportError("checkFailure");
     }
     return;
   }
@@ -173,8 +222,8 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  main().catch(() => {
-    process.stderr.write("Schema export failed\n");
+  main().catch((error) => {
+    process.stderr.write(`Schema export failed: ${formatDiagnostic(error)}\n`);
     process.exitCode = 1;
   });
 }

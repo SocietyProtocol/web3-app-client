@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next dev",
-    "build": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next build",
+    "build": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "codegen": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build",

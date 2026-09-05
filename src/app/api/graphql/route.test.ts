@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { ALLOWED_GRAPH_OPERATIONS, GET, POST } from "./route";
+import { PERSISTED_GRAPH_DOCUMENTS } from "@/lib/persisted-graphql.generated";
+import { GET, POST } from "./route";
 
 const gatewayUrl = "https://gateway.example/graphql";
 const communitiesQuery = readFileSync(
@@ -30,7 +31,7 @@ describe("/api/graphql", () => {
   });
 
   it("loads exactly the checked-in query operation set", () => {
-    expect(ALLOWED_GRAPH_OPERATIONS.size).toBe(13);
+    expect(PERSISTED_GRAPH_DOCUMENTS.size).toBe(13);
   });
 
   it("accepts an allowlisted query and forwards only safe headers", async () => {

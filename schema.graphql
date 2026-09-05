@@ -1,0 +1,4227 @@
+"""
+creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API.
+"""
+directive @derivedFrom(field: String!) on FIELD_DEFINITION
+
+"""
+Marks the GraphQL type as indexable entity.  Each type that should be an entity is required to be annotated with this directive.
+"""
+directive @entity on OBJECT
+
+"""Defined a Subgraph ID for an object type"""
+directive @subgraphId(id: String!) on OBJECT
+
+"""
+Indicates whether the current, partially filled bucket should be included in the response. Defaults to `exclude`
+"""
+enum Aggregation_current {
+  """Exclude the current, partially filled bucket from the response"""
+  exclude
+
+  """Include the current, partially filled bucket in the response"""
+  include
+}
+
+enum Aggregation_interval {
+  day
+  hour
+}
+
+type AuctionDetail {
+  addressAuctioningToken: Bytes!
+  addressBiddingToken: Bytes!
+  allowListManager: Bytes!
+  allowListSigner: Bytes!
+  auctionId: BigInt!
+  chainId: String!
+  currentBiddingAmount: BigInt!
+  currentClearingOrderBuyAmount: BigInt!
+  currentClearingOrderSellAmount: BigInt!
+  currentClearingPrice: BigDecimal!
+  currentVolume: BigDecimal!
+  decimalsAuctioningToken: BigInt!
+  decimalsBiddingToken: BigInt!
+  endTimeTimestamp: BigInt!
+  exactOrder: Order!
+  id: ID!
+  interestScore: BigDecimal!
+  isAtomicClosureAllowed: Boolean!
+  isPrivateAuction: Boolean!
+  minFundingThreshold: BigInt!
+  minimumBiddingAmountPerOrder: BigInt!
+  orderCancellationEndDate: BigInt!
+  orders(first: Int = 100, orderBy: Order_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Order_filter): [Order!]
+  ordersWithoutClaimed(first: Int = 100, orderBy: Order_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Order_filter): [Order!]
+  startingTimeStamp: BigInt!
+  symbolAuctioningToken: String!
+  symbolBiddingToken: String!
+  usdAmountTraded: BigDecimal!
+}
+
+input AuctionDetail_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  addressAuctioningToken: Bytes
+  addressAuctioningToken_contains: Bytes
+  addressAuctioningToken_gt: Bytes
+  addressAuctioningToken_gte: Bytes
+  addressAuctioningToken_in: [Bytes!]
+  addressAuctioningToken_lt: Bytes
+  addressAuctioningToken_lte: Bytes
+  addressAuctioningToken_not: Bytes
+  addressAuctioningToken_not_contains: Bytes
+  addressAuctioningToken_not_in: [Bytes!]
+  addressBiddingToken: Bytes
+  addressBiddingToken_contains: Bytes
+  addressBiddingToken_gt: Bytes
+  addressBiddingToken_gte: Bytes
+  addressBiddingToken_in: [Bytes!]
+  addressBiddingToken_lt: Bytes
+  addressBiddingToken_lte: Bytes
+  addressBiddingToken_not: Bytes
+  addressBiddingToken_not_contains: Bytes
+  addressBiddingToken_not_in: [Bytes!]
+  allowListManager: Bytes
+  allowListManager_contains: Bytes
+  allowListManager_gt: Bytes
+  allowListManager_gte: Bytes
+  allowListManager_in: [Bytes!]
+  allowListManager_lt: Bytes
+  allowListManager_lte: Bytes
+  allowListManager_not: Bytes
+  allowListManager_not_contains: Bytes
+  allowListManager_not_in: [Bytes!]
+  allowListSigner: Bytes
+  allowListSigner_contains: Bytes
+  allowListSigner_gt: Bytes
+  allowListSigner_gte: Bytes
+  allowListSigner_in: [Bytes!]
+  allowListSigner_lt: Bytes
+  allowListSigner_lte: Bytes
+  allowListSigner_not: Bytes
+  allowListSigner_not_contains: Bytes
+  allowListSigner_not_in: [Bytes!]
+  and: [AuctionDetail_filter]
+  auctionId: BigInt
+  auctionId_gt: BigInt
+  auctionId_gte: BigInt
+  auctionId_in: [BigInt!]
+  auctionId_lt: BigInt
+  auctionId_lte: BigInt
+  auctionId_not: BigInt
+  auctionId_not_in: [BigInt!]
+  chainId: String
+  chainId_contains: String
+  chainId_contains_nocase: String
+  chainId_ends_with: String
+  chainId_ends_with_nocase: String
+  chainId_gt: String
+  chainId_gte: String
+  chainId_in: [String!]
+  chainId_lt: String
+  chainId_lte: String
+  chainId_not: String
+  chainId_not_contains: String
+  chainId_not_contains_nocase: String
+  chainId_not_ends_with: String
+  chainId_not_ends_with_nocase: String
+  chainId_not_in: [String!]
+  chainId_not_starts_with: String
+  chainId_not_starts_with_nocase: String
+  chainId_starts_with: String
+  chainId_starts_with_nocase: String
+  currentBiddingAmount: BigInt
+  currentBiddingAmount_gt: BigInt
+  currentBiddingAmount_gte: BigInt
+  currentBiddingAmount_in: [BigInt!]
+  currentBiddingAmount_lt: BigInt
+  currentBiddingAmount_lte: BigInt
+  currentBiddingAmount_not: BigInt
+  currentBiddingAmount_not_in: [BigInt!]
+  currentClearingOrderBuyAmount: BigInt
+  currentClearingOrderBuyAmount_gt: BigInt
+  currentClearingOrderBuyAmount_gte: BigInt
+  currentClearingOrderBuyAmount_in: [BigInt!]
+  currentClearingOrderBuyAmount_lt: BigInt
+  currentClearingOrderBuyAmount_lte: BigInt
+  currentClearingOrderBuyAmount_not: BigInt
+  currentClearingOrderBuyAmount_not_in: [BigInt!]
+  currentClearingOrderSellAmount: BigInt
+  currentClearingOrderSellAmount_gt: BigInt
+  currentClearingOrderSellAmount_gte: BigInt
+  currentClearingOrderSellAmount_in: [BigInt!]
+  currentClearingOrderSellAmount_lt: BigInt
+  currentClearingOrderSellAmount_lte: BigInt
+  currentClearingOrderSellAmount_not: BigInt
+  currentClearingOrderSellAmount_not_in: [BigInt!]
+  currentClearingPrice: BigDecimal
+  currentClearingPrice_gt: BigDecimal
+  currentClearingPrice_gte: BigDecimal
+  currentClearingPrice_in: [BigDecimal!]
+  currentClearingPrice_lt: BigDecimal
+  currentClearingPrice_lte: BigDecimal
+  currentClearingPrice_not: BigDecimal
+  currentClearingPrice_not_in: [BigDecimal!]
+  currentVolume: BigDecimal
+  currentVolume_gt: BigDecimal
+  currentVolume_gte: BigDecimal
+  currentVolume_in: [BigDecimal!]
+  currentVolume_lt: BigDecimal
+  currentVolume_lte: BigDecimal
+  currentVolume_not: BigDecimal
+  currentVolume_not_in: [BigDecimal!]
+  decimalsAuctioningToken: BigInt
+  decimalsAuctioningToken_gt: BigInt
+  decimalsAuctioningToken_gte: BigInt
+  decimalsAuctioningToken_in: [BigInt!]
+  decimalsAuctioningToken_lt: BigInt
+  decimalsAuctioningToken_lte: BigInt
+  decimalsAuctioningToken_not: BigInt
+  decimalsAuctioningToken_not_in: [BigInt!]
+  decimalsBiddingToken: BigInt
+  decimalsBiddingToken_gt: BigInt
+  decimalsBiddingToken_gte: BigInt
+  decimalsBiddingToken_in: [BigInt!]
+  decimalsBiddingToken_lt: BigInt
+  decimalsBiddingToken_lte: BigInt
+  decimalsBiddingToken_not: BigInt
+  decimalsBiddingToken_not_in: [BigInt!]
+  endTimeTimestamp: BigInt
+  endTimeTimestamp_gt: BigInt
+  endTimeTimestamp_gte: BigInt
+  endTimeTimestamp_in: [BigInt!]
+  endTimeTimestamp_lt: BigInt
+  endTimeTimestamp_lte: BigInt
+  endTimeTimestamp_not: BigInt
+  endTimeTimestamp_not_in: [BigInt!]
+  exactOrder: String
+  exactOrder_: Order_filter
+  exactOrder_contains: String
+  exactOrder_contains_nocase: String
+  exactOrder_ends_with: String
+  exactOrder_ends_with_nocase: String
+  exactOrder_gt: String
+  exactOrder_gte: String
+  exactOrder_in: [String!]
+  exactOrder_lt: String
+  exactOrder_lte: String
+  exactOrder_not: String
+  exactOrder_not_contains: String
+  exactOrder_not_contains_nocase: String
+  exactOrder_not_ends_with: String
+  exactOrder_not_ends_with_nocase: String
+  exactOrder_not_in: [String!]
+  exactOrder_not_starts_with: String
+  exactOrder_not_starts_with_nocase: String
+  exactOrder_starts_with: String
+  exactOrder_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  interestScore: BigDecimal
+  interestScore_gt: BigDecimal
+  interestScore_gte: BigDecimal
+  interestScore_in: [BigDecimal!]
+  interestScore_lt: BigDecimal
+  interestScore_lte: BigDecimal
+  interestScore_not: BigDecimal
+  interestScore_not_in: [BigDecimal!]
+  isAtomicClosureAllowed: Boolean
+  isAtomicClosureAllowed_in: [Boolean!]
+  isAtomicClosureAllowed_not: Boolean
+  isAtomicClosureAllowed_not_in: [Boolean!]
+  isPrivateAuction: Boolean
+  isPrivateAuction_in: [Boolean!]
+  isPrivateAuction_not: Boolean
+  isPrivateAuction_not_in: [Boolean!]
+  minFundingThreshold: BigInt
+  minFundingThreshold_gt: BigInt
+  minFundingThreshold_gte: BigInt
+  minFundingThreshold_in: [BigInt!]
+  minFundingThreshold_lt: BigInt
+  minFundingThreshold_lte: BigInt
+  minFundingThreshold_not: BigInt
+  minFundingThreshold_not_in: [BigInt!]
+  minimumBiddingAmountPerOrder: BigInt
+  minimumBiddingAmountPerOrder_gt: BigInt
+  minimumBiddingAmountPerOrder_gte: BigInt
+  minimumBiddingAmountPerOrder_in: [BigInt!]
+  minimumBiddingAmountPerOrder_lt: BigInt
+  minimumBiddingAmountPerOrder_lte: BigInt
+  minimumBiddingAmountPerOrder_not: BigInt
+  minimumBiddingAmountPerOrder_not_in: [BigInt!]
+  or: [AuctionDetail_filter]
+  orderCancellationEndDate: BigInt
+  orderCancellationEndDate_gt: BigInt
+  orderCancellationEndDate_gte: BigInt
+  orderCancellationEndDate_in: [BigInt!]
+  orderCancellationEndDate_lt: BigInt
+  orderCancellationEndDate_lte: BigInt
+  orderCancellationEndDate_not: BigInt
+  orderCancellationEndDate_not_in: [BigInt!]
+  orders: [String!]
+  ordersWithoutClaimed: [String!]
+  ordersWithoutClaimed_: Order_filter
+  ordersWithoutClaimed_contains: [String!]
+  ordersWithoutClaimed_contains_nocase: [String!]
+  ordersWithoutClaimed_not: [String!]
+  ordersWithoutClaimed_not_contains: [String!]
+  ordersWithoutClaimed_not_contains_nocase: [String!]
+  orders_: Order_filter
+  orders_contains: [String!]
+  orders_contains_nocase: [String!]
+  orders_not: [String!]
+  orders_not_contains: [String!]
+  orders_not_contains_nocase: [String!]
+  startingTimeStamp: BigInt
+  startingTimeStamp_gt: BigInt
+  startingTimeStamp_gte: BigInt
+  startingTimeStamp_in: [BigInt!]
+  startingTimeStamp_lt: BigInt
+  startingTimeStamp_lte: BigInt
+  startingTimeStamp_not: BigInt
+  startingTimeStamp_not_in: [BigInt!]
+  symbolAuctioningToken: String
+  symbolAuctioningToken_contains: String
+  symbolAuctioningToken_contains_nocase: String
+  symbolAuctioningToken_ends_with: String
+  symbolAuctioningToken_ends_with_nocase: String
+  symbolAuctioningToken_gt: String
+  symbolAuctioningToken_gte: String
+  symbolAuctioningToken_in: [String!]
+  symbolAuctioningToken_lt: String
+  symbolAuctioningToken_lte: String
+  symbolAuctioningToken_not: String
+  symbolAuctioningToken_not_contains: String
+  symbolAuctioningToken_not_contains_nocase: String
+  symbolAuctioningToken_not_ends_with: String
+  symbolAuctioningToken_not_ends_with_nocase: String
+  symbolAuctioningToken_not_in: [String!]
+  symbolAuctioningToken_not_starts_with: String
+  symbolAuctioningToken_not_starts_with_nocase: String
+  symbolAuctioningToken_starts_with: String
+  symbolAuctioningToken_starts_with_nocase: String
+  symbolBiddingToken: String
+  symbolBiddingToken_contains: String
+  symbolBiddingToken_contains_nocase: String
+  symbolBiddingToken_ends_with: String
+  symbolBiddingToken_ends_with_nocase: String
+  symbolBiddingToken_gt: String
+  symbolBiddingToken_gte: String
+  symbolBiddingToken_in: [String!]
+  symbolBiddingToken_lt: String
+  symbolBiddingToken_lte: String
+  symbolBiddingToken_not: String
+  symbolBiddingToken_not_contains: String
+  symbolBiddingToken_not_contains_nocase: String
+  symbolBiddingToken_not_ends_with: String
+  symbolBiddingToken_not_ends_with_nocase: String
+  symbolBiddingToken_not_in: [String!]
+  symbolBiddingToken_not_starts_with: String
+  symbolBiddingToken_not_starts_with_nocase: String
+  symbolBiddingToken_starts_with: String
+  symbolBiddingToken_starts_with_nocase: String
+  usdAmountTraded: BigDecimal
+  usdAmountTraded_gt: BigDecimal
+  usdAmountTraded_gte: BigDecimal
+  usdAmountTraded_in: [BigDecimal!]
+  usdAmountTraded_lt: BigDecimal
+  usdAmountTraded_lte: BigDecimal
+  usdAmountTraded_not: BigDecimal
+  usdAmountTraded_not_in: [BigDecimal!]
+}
+
+enum AuctionDetail_orderBy {
+  addressAuctioningToken
+  addressBiddingToken
+  allowListManager
+  allowListSigner
+  auctionId
+  chainId
+  currentBiddingAmount
+  currentClearingOrderBuyAmount
+  currentClearingOrderSellAmount
+  currentClearingPrice
+  currentVolume
+  decimalsAuctioningToken
+  decimalsBiddingToken
+  endTimeTimestamp
+  exactOrder
+  exactOrder__auctionId
+  exactOrder__buyAmount
+  exactOrder__id
+  exactOrder__price
+  exactOrder__sellAmount
+  exactOrder__timestamp
+  exactOrder__userAddress
+  exactOrder__volume
+  id
+  interestScore
+  isAtomicClosureAllowed
+  isPrivateAuction
+  minFundingThreshold
+  minimumBiddingAmountPerOrder
+  orderCancellationEndDate
+  orders
+  ordersWithoutClaimed
+  startingTimeStamp
+  symbolAuctioningToken
+  symbolBiddingToken
+  usdAmountTraded
+}
+
+type AuctionUser {
+  address: Bytes!
+  auctions(first: Int = 100, orderBy: AuctionDetail_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: AuctionDetail_filter): [AuctionDetail!]!
+  id: ID!
+  orders(first: Int = 100, orderBy: Order_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Order_filter): [Order!]!
+  user: User
+}
+
+input AuctionUser_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  address: Bytes
+  address_contains: Bytes
+  address_gt: Bytes
+  address_gte: Bytes
+  address_in: [Bytes!]
+  address_lt: Bytes
+  address_lte: Bytes
+  address_not: Bytes
+  address_not_contains: Bytes
+  address_not_in: [Bytes!]
+  and: [AuctionUser_filter]
+  auctions: [String!]
+  auctions_: AuctionDetail_filter
+  auctions_contains: [String!]
+  auctions_contains_nocase: [String!]
+  auctions_not: [String!]
+  auctions_not_contains: [String!]
+  auctions_not_contains_nocase: [String!]
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [AuctionUser_filter]
+  orders_: Order_filter
+  user: String
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum AuctionUser_orderBy {
+  address
+  auctions
+  id
+  orders
+  user
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+type Badge {
+  burners(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
+  community: Community
+  createdAt: BigInt!
+  createdBy: User!
+  creatorAddress: String!
+  description: String
+  holders(first: Int = 100, orderBy: User_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: User_filter): [User!]!
+  holdersCount: BigInt!
+  hookAddress: Bytes!
+  id: ID!
+  imageUrl: String
+  isCommunity: Boolean!
+  isOfficial: Boolean!
+  isProfile: Boolean!
+  managers(first: Int = 100, orderBy: User_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: User_filter): [User!]!
+  metadata: Metadata
+  minters(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
+  name: String!
+  profileUser: User
+  transferers(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
+  uri: String
+}
+
+type BadgeBurnedActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+  user: User!
+}
+
+input BadgeBurnedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [BadgeBurnedActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [BadgeBurnedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+  user: String
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum BadgeBurnedActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+  user
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+type BadgeMintedActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+  user: User!
+}
+
+input BadgeMintedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [BadgeMintedActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [BadgeMintedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+  user: String
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum BadgeMintedActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+  user
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+input Badge_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [Badge_filter]
+  burners: [String!]
+  burners_: Badge_filter
+  burners_contains: [String!]
+  burners_contains_nocase: [String!]
+  burners_not: [String!]
+  burners_not_contains: [String!]
+  burners_not_contains_nocase: [String!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  createdAt: BigInt
+  createdAt_gt: BigInt
+  createdAt_gte: BigInt
+  createdAt_in: [BigInt!]
+  createdAt_lt: BigInt
+  createdAt_lte: BigInt
+  createdAt_not: BigInt
+  createdAt_not_in: [BigInt!]
+  createdBy: String
+  createdBy_: User_filter
+  createdBy_contains: String
+  createdBy_contains_nocase: String
+  createdBy_ends_with: String
+  createdBy_ends_with_nocase: String
+  createdBy_gt: String
+  createdBy_gte: String
+  createdBy_in: [String!]
+  createdBy_lt: String
+  createdBy_lte: String
+  createdBy_not: String
+  createdBy_not_contains: String
+  createdBy_not_contains_nocase: String
+  createdBy_not_ends_with: String
+  createdBy_not_ends_with_nocase: String
+  createdBy_not_in: [String!]
+  createdBy_not_starts_with: String
+  createdBy_not_starts_with_nocase: String
+  createdBy_starts_with: String
+  createdBy_starts_with_nocase: String
+  creatorAddress: String
+  creatorAddress_contains: String
+  creatorAddress_contains_nocase: String
+  creatorAddress_ends_with: String
+  creatorAddress_ends_with_nocase: String
+  creatorAddress_gt: String
+  creatorAddress_gte: String
+  creatorAddress_in: [String!]
+  creatorAddress_lt: String
+  creatorAddress_lte: String
+  creatorAddress_not: String
+  creatorAddress_not_contains: String
+  creatorAddress_not_contains_nocase: String
+  creatorAddress_not_ends_with: String
+  creatorAddress_not_ends_with_nocase: String
+  creatorAddress_not_in: [String!]
+  creatorAddress_not_starts_with: String
+  creatorAddress_not_starts_with_nocase: String
+  creatorAddress_starts_with: String
+  creatorAddress_starts_with_nocase: String
+  description: String
+  description_contains: String
+  description_contains_nocase: String
+  description_ends_with: String
+  description_ends_with_nocase: String
+  description_gt: String
+  description_gte: String
+  description_in: [String!]
+  description_lt: String
+  description_lte: String
+  description_not: String
+  description_not_contains: String
+  description_not_contains_nocase: String
+  description_not_ends_with: String
+  description_not_ends_with_nocase: String
+  description_not_in: [String!]
+  description_not_starts_with: String
+  description_not_starts_with_nocase: String
+  description_starts_with: String
+  description_starts_with_nocase: String
+  holdersCount: BigInt
+  holdersCount_gt: BigInt
+  holdersCount_gte: BigInt
+  holdersCount_in: [BigInt!]
+  holdersCount_lt: BigInt
+  holdersCount_lte: BigInt
+  holdersCount_not: BigInt
+  holdersCount_not_in: [BigInt!]
+  holders_: User_filter
+  hookAddress: Bytes
+  hookAddress_contains: Bytes
+  hookAddress_gt: Bytes
+  hookAddress_gte: Bytes
+  hookAddress_in: [Bytes!]
+  hookAddress_lt: Bytes
+  hookAddress_lte: Bytes
+  hookAddress_not: Bytes
+  hookAddress_not_contains: Bytes
+  hookAddress_not_in: [Bytes!]
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  imageUrl: String
+  imageUrl_contains: String
+  imageUrl_contains_nocase: String
+  imageUrl_ends_with: String
+  imageUrl_ends_with_nocase: String
+  imageUrl_gt: String
+  imageUrl_gte: String
+  imageUrl_in: [String!]
+  imageUrl_lt: String
+  imageUrl_lte: String
+  imageUrl_not: String
+  imageUrl_not_contains: String
+  imageUrl_not_contains_nocase: String
+  imageUrl_not_ends_with: String
+  imageUrl_not_ends_with_nocase: String
+  imageUrl_not_in: [String!]
+  imageUrl_not_starts_with: String
+  imageUrl_not_starts_with_nocase: String
+  imageUrl_starts_with: String
+  imageUrl_starts_with_nocase: String
+  isCommunity: Boolean
+  isCommunity_in: [Boolean!]
+  isCommunity_not: Boolean
+  isCommunity_not_in: [Boolean!]
+  isOfficial: Boolean
+  isOfficial_in: [Boolean!]
+  isOfficial_not: Boolean
+  isOfficial_not_in: [Boolean!]
+  isProfile: Boolean
+  isProfile_in: [Boolean!]
+  isProfile_not: Boolean
+  isProfile_not_in: [Boolean!]
+  managers_: User_filter
+  metadata: String
+  metadata_: Metadata_filter
+  metadata_contains: String
+  metadata_contains_nocase: String
+  metadata_ends_with: String
+  metadata_ends_with_nocase: String
+  metadata_gt: String
+  metadata_gte: String
+  metadata_in: [String!]
+  metadata_lt: String
+  metadata_lte: String
+  metadata_not: String
+  metadata_not_contains: String
+  metadata_not_contains_nocase: String
+  metadata_not_ends_with: String
+  metadata_not_ends_with_nocase: String
+  metadata_not_in: [String!]
+  metadata_not_starts_with: String
+  metadata_not_starts_with_nocase: String
+  metadata_starts_with: String
+  metadata_starts_with_nocase: String
+  minters: [String!]
+  minters_: Badge_filter
+  minters_contains: [String!]
+  minters_contains_nocase: [String!]
+  minters_not: [String!]
+  minters_not_contains: [String!]
+  minters_not_contains_nocase: [String!]
+  name: String
+  name_contains: String
+  name_contains_nocase: String
+  name_ends_with: String
+  name_ends_with_nocase: String
+  name_gt: String
+  name_gte: String
+  name_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_not: String
+  name_not_contains: String
+  name_not_contains_nocase: String
+  name_not_ends_with: String
+  name_not_ends_with_nocase: String
+  name_not_in: [String!]
+  name_not_starts_with: String
+  name_not_starts_with_nocase: String
+  name_starts_with: String
+  name_starts_with_nocase: String
+  or: [Badge_filter]
+  profileUser: String
+  profileUser_: User_filter
+  profileUser_contains: String
+  profileUser_contains_nocase: String
+  profileUser_ends_with: String
+  profileUser_ends_with_nocase: String
+  profileUser_gt: String
+  profileUser_gte: String
+  profileUser_in: [String!]
+  profileUser_lt: String
+  profileUser_lte: String
+  profileUser_not: String
+  profileUser_not_contains: String
+  profileUser_not_contains_nocase: String
+  profileUser_not_ends_with: String
+  profileUser_not_ends_with_nocase: String
+  profileUser_not_in: [String!]
+  profileUser_not_starts_with: String
+  profileUser_not_starts_with_nocase: String
+  profileUser_starts_with: String
+  profileUser_starts_with_nocase: String
+  transferers: [String!]
+  transferers_: Badge_filter
+  transferers_contains: [String!]
+  transferers_contains_nocase: [String!]
+  transferers_not: [String!]
+  transferers_not_contains: [String!]
+  transferers_not_contains_nocase: [String!]
+  uri: String
+  uri_contains: String
+  uri_contains_nocase: String
+  uri_ends_with: String
+  uri_ends_with_nocase: String
+  uri_gt: String
+  uri_gte: String
+  uri_in: [String!]
+  uri_lt: String
+  uri_lte: String
+  uri_not: String
+  uri_not_contains: String
+  uri_not_contains_nocase: String
+  uri_not_ends_with: String
+  uri_not_ends_with_nocase: String
+  uri_not_in: [String!]
+  uri_not_starts_with: String
+  uri_not_starts_with_nocase: String
+  uri_starts_with: String
+  uri_starts_with_nocase: String
+}
+
+enum Badge_orderBy {
+  burners
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  createdAt
+  createdBy
+  createdBy__bio
+  createdBy__id
+  createdBy__imageUrl
+  createdBy__name
+  creatorAddress
+  description
+  holders
+  holdersCount
+  hookAddress
+  id
+  imageUrl
+  isCommunity
+  isOfficial
+  isProfile
+  managers
+  metadata
+  metadata__bio
+  metadata__description
+  metadata__id
+  metadata__imageUrl
+  metadata__name
+  minters
+  name
+  profileUser
+  profileUser__bio
+  profileUser__id
+  profileUser__imageUrl
+  profileUser__name
+  transferers
+  uri
+}
+
+scalar BigDecimal
+
+scalar BigInt
+
+input BlockChangedFilter {
+  number_gte: Int!
+}
+
+input Block_height {
+  hash: Bytes
+  number: Int
+  number_gte: Int
+}
+
+scalar Bytes
+
+type Community {
+  assistantBadge: Badge
+  badgeCount: BigInt!
+  badges(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
+  createdAt: BigInt!
+  description: String
+  id: ID!
+  imageUrl: String
+  manager: User!
+  managerAddress: String!
+  managerBadge: Badge!
+  memberBadge: Badge
+  memberCount: BigInt!
+  members(first: Int = 100, orderBy: User_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: User_filter): [User!]!
+  metadata: Metadata
+  name: String!
+  tierExpiresAt: BigInt!
+  tierId: BigInt!
+  tierName: String!
+}
+
+interface CommunityActivityEvent {
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+input CommunityActivityEvent_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityActivityEvent_filter]
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [CommunityActivityEvent_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum CommunityActivityEvent_orderBy {
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+}
+
+type CommunityBadgeLinkedActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+input CommunityBadgeLinkedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityBadgeLinkedActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [CommunityBadgeLinkedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum CommunityBadgeLinkedActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+}
+
+type CommunityCreatedActivity implements CommunityActivityEvent {
+  blockNumber: BigInt!
+  community: Community!
+  creator: User!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+input CommunityCreatedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityCreatedActivity_filter]
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  creator: String
+  creator_: User_filter
+  creator_contains: String
+  creator_contains_nocase: String
+  creator_ends_with: String
+  creator_ends_with_nocase: String
+  creator_gt: String
+  creator_gte: String
+  creator_in: [String!]
+  creator_lt: String
+  creator_lte: String
+  creator_not: String
+  creator_not_contains: String
+  creator_not_contains_nocase: String
+  creator_not_ends_with: String
+  creator_not_ends_with_nocase: String
+  creator_not_in: [String!]
+  creator_not_starts_with: String
+  creator_not_starts_with_nocase: String
+  creator_starts_with: String
+  creator_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [CommunityCreatedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum CommunityCreatedActivity_orderBy {
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  creator
+  creator__bio
+  creator__id
+  creator__imageUrl
+  creator__name
+  id
+  timestamp
+  txHash
+}
+
+type CommunityDetailsUpdatedActivity implements CommunityActivityEvent {
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+input CommunityDetailsUpdatedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityDetailsUpdatedActivity_filter]
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [CommunityDetailsUpdatedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum CommunityDetailsUpdatedActivity_orderBy {
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+}
+
+type CommunityMembership {
+  community: Community!
+  id: ID!
+  joinActivity: MemberJoinedActivity!
+  user: User!
+}
+
+input CommunityMembership_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityMembership_filter]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  joinActivity: String
+  joinActivity_: MemberJoinedActivity_filter
+  joinActivity_contains: String
+  joinActivity_contains_nocase: String
+  joinActivity_ends_with: String
+  joinActivity_ends_with_nocase: String
+  joinActivity_gt: String
+  joinActivity_gte: String
+  joinActivity_in: [String!]
+  joinActivity_lt: String
+  joinActivity_lte: String
+  joinActivity_not: String
+  joinActivity_not_contains: String
+  joinActivity_not_contains_nocase: String
+  joinActivity_not_ends_with: String
+  joinActivity_not_ends_with_nocase: String
+  joinActivity_not_in: [String!]
+  joinActivity_not_starts_with: String
+  joinActivity_not_starts_with_nocase: String
+  joinActivity_starts_with: String
+  joinActivity_starts_with_nocase: String
+  or: [CommunityMembership_filter]
+  user: String
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum CommunityMembership_orderBy {
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  joinActivity
+  joinActivity__blockNumber
+  joinActivity__id
+  joinActivity__timestamp
+  joinActivity__txHash
+  user
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+type CommunityTierGrantedActivity implements CommunityActivityEvent {
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  tierExpiresAt: BigInt!
+  tierId: BigInt!
+  tierName: String!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+input CommunityTierGrantedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityTierGrantedActivity_filter]
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [CommunityTierGrantedActivity_filter]
+  tierExpiresAt: BigInt
+  tierExpiresAt_gt: BigInt
+  tierExpiresAt_gte: BigInt
+  tierExpiresAt_in: [BigInt!]
+  tierExpiresAt_lt: BigInt
+  tierExpiresAt_lte: BigInt
+  tierExpiresAt_not: BigInt
+  tierExpiresAt_not_in: [BigInt!]
+  tierId: BigInt
+  tierId_gt: BigInt
+  tierId_gte: BigInt
+  tierId_in: [BigInt!]
+  tierId_lt: BigInt
+  tierId_lte: BigInt
+  tierId_not: BigInt
+  tierId_not_in: [BigInt!]
+  tierName: String
+  tierName_contains: String
+  tierName_contains_nocase: String
+  tierName_ends_with: String
+  tierName_ends_with_nocase: String
+  tierName_gt: String
+  tierName_gte: String
+  tierName_in: [String!]
+  tierName_lt: String
+  tierName_lte: String
+  tierName_not: String
+  tierName_not_contains: String
+  tierName_not_contains_nocase: String
+  tierName_not_ends_with: String
+  tierName_not_ends_with_nocase: String
+  tierName_not_in: [String!]
+  tierName_not_starts_with: String
+  tierName_not_starts_with_nocase: String
+  tierName_starts_with: String
+  tierName_starts_with_nocase: String
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum CommunityTierGrantedActivity_orderBy {
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  tierExpiresAt
+  tierId
+  tierName
+  timestamp
+  txHash
+}
+
+type CommunityTierRevokedActivity implements CommunityActivityEvent {
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  previousTierId: BigInt!
+  previousTierName: String!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+input CommunityTierRevokedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [CommunityTierRevokedActivity_filter]
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [CommunityTierRevokedActivity_filter]
+  previousTierId: BigInt
+  previousTierId_gt: BigInt
+  previousTierId_gte: BigInt
+  previousTierId_in: [BigInt!]
+  previousTierId_lt: BigInt
+  previousTierId_lte: BigInt
+  previousTierId_not: BigInt
+  previousTierId_not_in: [BigInt!]
+  previousTierName: String
+  previousTierName_contains: String
+  previousTierName_contains_nocase: String
+  previousTierName_ends_with: String
+  previousTierName_ends_with_nocase: String
+  previousTierName_gt: String
+  previousTierName_gte: String
+  previousTierName_in: [String!]
+  previousTierName_lt: String
+  previousTierName_lte: String
+  previousTierName_not: String
+  previousTierName_not_contains: String
+  previousTierName_not_contains_nocase: String
+  previousTierName_not_ends_with: String
+  previousTierName_not_ends_with_nocase: String
+  previousTierName_not_in: [String!]
+  previousTierName_not_starts_with: String
+  previousTierName_not_starts_with_nocase: String
+  previousTierName_starts_with: String
+  previousTierName_starts_with_nocase: String
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum CommunityTierRevokedActivity_orderBy {
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  previousTierId
+  previousTierName
+  timestamp
+  txHash
+}
+
+input Community_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [Community_filter]
+  assistantBadge: String
+  assistantBadge_: Badge_filter
+  assistantBadge_contains: String
+  assistantBadge_contains_nocase: String
+  assistantBadge_ends_with: String
+  assistantBadge_ends_with_nocase: String
+  assistantBadge_gt: String
+  assistantBadge_gte: String
+  assistantBadge_in: [String!]
+  assistantBadge_lt: String
+  assistantBadge_lte: String
+  assistantBadge_not: String
+  assistantBadge_not_contains: String
+  assistantBadge_not_contains_nocase: String
+  assistantBadge_not_ends_with: String
+  assistantBadge_not_ends_with_nocase: String
+  assistantBadge_not_in: [String!]
+  assistantBadge_not_starts_with: String
+  assistantBadge_not_starts_with_nocase: String
+  assistantBadge_starts_with: String
+  assistantBadge_starts_with_nocase: String
+  badgeCount: BigInt
+  badgeCount_gt: BigInt
+  badgeCount_gte: BigInt
+  badgeCount_in: [BigInt!]
+  badgeCount_lt: BigInt
+  badgeCount_lte: BigInt
+  badgeCount_not: BigInt
+  badgeCount_not_in: [BigInt!]
+  badges_: Badge_filter
+  createdAt: BigInt
+  createdAt_gt: BigInt
+  createdAt_gte: BigInt
+  createdAt_in: [BigInt!]
+  createdAt_lt: BigInt
+  createdAt_lte: BigInt
+  createdAt_not: BigInt
+  createdAt_not_in: [BigInt!]
+  description: String
+  description_contains: String
+  description_contains_nocase: String
+  description_ends_with: String
+  description_ends_with_nocase: String
+  description_gt: String
+  description_gte: String
+  description_in: [String!]
+  description_lt: String
+  description_lte: String
+  description_not: String
+  description_not_contains: String
+  description_not_contains_nocase: String
+  description_not_ends_with: String
+  description_not_ends_with_nocase: String
+  description_not_in: [String!]
+  description_not_starts_with: String
+  description_not_starts_with_nocase: String
+  description_starts_with: String
+  description_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  imageUrl: String
+  imageUrl_contains: String
+  imageUrl_contains_nocase: String
+  imageUrl_ends_with: String
+  imageUrl_ends_with_nocase: String
+  imageUrl_gt: String
+  imageUrl_gte: String
+  imageUrl_in: [String!]
+  imageUrl_lt: String
+  imageUrl_lte: String
+  imageUrl_not: String
+  imageUrl_not_contains: String
+  imageUrl_not_contains_nocase: String
+  imageUrl_not_ends_with: String
+  imageUrl_not_ends_with_nocase: String
+  imageUrl_not_in: [String!]
+  imageUrl_not_starts_with: String
+  imageUrl_not_starts_with_nocase: String
+  imageUrl_starts_with: String
+  imageUrl_starts_with_nocase: String
+  manager: String
+  managerAddress: String
+  managerAddress_contains: String
+  managerAddress_contains_nocase: String
+  managerAddress_ends_with: String
+  managerAddress_ends_with_nocase: String
+  managerAddress_gt: String
+  managerAddress_gte: String
+  managerAddress_in: [String!]
+  managerAddress_lt: String
+  managerAddress_lte: String
+  managerAddress_not: String
+  managerAddress_not_contains: String
+  managerAddress_not_contains_nocase: String
+  managerAddress_not_ends_with: String
+  managerAddress_not_ends_with_nocase: String
+  managerAddress_not_in: [String!]
+  managerAddress_not_starts_with: String
+  managerAddress_not_starts_with_nocase: String
+  managerAddress_starts_with: String
+  managerAddress_starts_with_nocase: String
+  managerBadge: String
+  managerBadge_: Badge_filter
+  managerBadge_contains: String
+  managerBadge_contains_nocase: String
+  managerBadge_ends_with: String
+  managerBadge_ends_with_nocase: String
+  managerBadge_gt: String
+  managerBadge_gte: String
+  managerBadge_in: [String!]
+  managerBadge_lt: String
+  managerBadge_lte: String
+  managerBadge_not: String
+  managerBadge_not_contains: String
+  managerBadge_not_contains_nocase: String
+  managerBadge_not_ends_with: String
+  managerBadge_not_ends_with_nocase: String
+  managerBadge_not_in: [String!]
+  managerBadge_not_starts_with: String
+  managerBadge_not_starts_with_nocase: String
+  managerBadge_starts_with: String
+  managerBadge_starts_with_nocase: String
+  manager_: User_filter
+  manager_contains: String
+  manager_contains_nocase: String
+  manager_ends_with: String
+  manager_ends_with_nocase: String
+  manager_gt: String
+  manager_gte: String
+  manager_in: [String!]
+  manager_lt: String
+  manager_lte: String
+  manager_not: String
+  manager_not_contains: String
+  manager_not_contains_nocase: String
+  manager_not_ends_with: String
+  manager_not_ends_with_nocase: String
+  manager_not_in: [String!]
+  manager_not_starts_with: String
+  manager_not_starts_with_nocase: String
+  manager_starts_with: String
+  manager_starts_with_nocase: String
+  memberBadge: String
+  memberBadge_: Badge_filter
+  memberBadge_contains: String
+  memberBadge_contains_nocase: String
+  memberBadge_ends_with: String
+  memberBadge_ends_with_nocase: String
+  memberBadge_gt: String
+  memberBadge_gte: String
+  memberBadge_in: [String!]
+  memberBadge_lt: String
+  memberBadge_lte: String
+  memberBadge_not: String
+  memberBadge_not_contains: String
+  memberBadge_not_contains_nocase: String
+  memberBadge_not_ends_with: String
+  memberBadge_not_ends_with_nocase: String
+  memberBadge_not_in: [String!]
+  memberBadge_not_starts_with: String
+  memberBadge_not_starts_with_nocase: String
+  memberBadge_starts_with: String
+  memberBadge_starts_with_nocase: String
+  memberCount: BigInt
+  memberCount_gt: BigInt
+  memberCount_gte: BigInt
+  memberCount_in: [BigInt!]
+  memberCount_lt: BigInt
+  memberCount_lte: BigInt
+  memberCount_not: BigInt
+  memberCount_not_in: [BigInt!]
+  members_: User_filter
+  metadata: String
+  metadata_: Metadata_filter
+  metadata_contains: String
+  metadata_contains_nocase: String
+  metadata_ends_with: String
+  metadata_ends_with_nocase: String
+  metadata_gt: String
+  metadata_gte: String
+  metadata_in: [String!]
+  metadata_lt: String
+  metadata_lte: String
+  metadata_not: String
+  metadata_not_contains: String
+  metadata_not_contains_nocase: String
+  metadata_not_ends_with: String
+  metadata_not_ends_with_nocase: String
+  metadata_not_in: [String!]
+  metadata_not_starts_with: String
+  metadata_not_starts_with_nocase: String
+  metadata_starts_with: String
+  metadata_starts_with_nocase: String
+  name: String
+  name_contains: String
+  name_contains_nocase: String
+  name_ends_with: String
+  name_ends_with_nocase: String
+  name_gt: String
+  name_gte: String
+  name_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_not: String
+  name_not_contains: String
+  name_not_contains_nocase: String
+  name_not_ends_with: String
+  name_not_ends_with_nocase: String
+  name_not_in: [String!]
+  name_not_starts_with: String
+  name_not_starts_with_nocase: String
+  name_starts_with: String
+  name_starts_with_nocase: String
+  or: [Community_filter]
+  tierExpiresAt: BigInt
+  tierExpiresAt_gt: BigInt
+  tierExpiresAt_gte: BigInt
+  tierExpiresAt_in: [BigInt!]
+  tierExpiresAt_lt: BigInt
+  tierExpiresAt_lte: BigInt
+  tierExpiresAt_not: BigInt
+  tierExpiresAt_not_in: [BigInt!]
+  tierId: BigInt
+  tierId_gt: BigInt
+  tierId_gte: BigInt
+  tierId_in: [BigInt!]
+  tierId_lt: BigInt
+  tierId_lte: BigInt
+  tierId_not: BigInt
+  tierId_not_in: [BigInt!]
+  tierName: String
+  tierName_contains: String
+  tierName_contains_nocase: String
+  tierName_ends_with: String
+  tierName_ends_with_nocase: String
+  tierName_gt: String
+  tierName_gte: String
+  tierName_in: [String!]
+  tierName_lt: String
+  tierName_lte: String
+  tierName_not: String
+  tierName_not_contains: String
+  tierName_not_contains_nocase: String
+  tierName_not_ends_with: String
+  tierName_not_ends_with_nocase: String
+  tierName_not_in: [String!]
+  tierName_not_starts_with: String
+  tierName_not_starts_with_nocase: String
+  tierName_starts_with: String
+  tierName_starts_with_nocase: String
+}
+
+enum Community_orderBy {
+  assistantBadge
+  assistantBadge__createdAt
+  assistantBadge__creatorAddress
+  assistantBadge__description
+  assistantBadge__holdersCount
+  assistantBadge__hookAddress
+  assistantBadge__id
+  assistantBadge__imageUrl
+  assistantBadge__isCommunity
+  assistantBadge__isOfficial
+  assistantBadge__isProfile
+  assistantBadge__name
+  assistantBadge__uri
+  badgeCount
+  badges
+  createdAt
+  description
+  id
+  imageUrl
+  manager
+  managerAddress
+  managerBadge
+  managerBadge__createdAt
+  managerBadge__creatorAddress
+  managerBadge__description
+  managerBadge__holdersCount
+  managerBadge__hookAddress
+  managerBadge__id
+  managerBadge__imageUrl
+  managerBadge__isCommunity
+  managerBadge__isOfficial
+  managerBadge__isProfile
+  managerBadge__name
+  managerBadge__uri
+  manager__bio
+  manager__id
+  manager__imageUrl
+  manager__name
+  memberBadge
+  memberBadge__createdAt
+  memberBadge__creatorAddress
+  memberBadge__description
+  memberBadge__holdersCount
+  memberBadge__hookAddress
+  memberBadge__id
+  memberBadge__imageUrl
+  memberBadge__isCommunity
+  memberBadge__isOfficial
+  memberBadge__isProfile
+  memberBadge__name
+  memberBadge__uri
+  memberCount
+  members
+  metadata
+  metadata__bio
+  metadata__description
+  metadata__id
+  metadata__imageUrl
+  metadata__name
+  name
+  tierExpiresAt
+  tierId
+  tierName
+}
+
+"""8 bytes signed integer"""
+scalar Int8
+
+type LockTransaction {
+  amount: BigInt!
+  id: ID!
+  lockDate: BigInt
+  type: String!
+  unlockDate: BigInt!
+  user: User
+  userAddress: Bytes!
+}
+
+input LockTransaction_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  amount: BigInt
+  amount_gt: BigInt
+  amount_gte: BigInt
+  amount_in: [BigInt!]
+  amount_lt: BigInt
+  amount_lte: BigInt
+  amount_not: BigInt
+  amount_not_in: [BigInt!]
+  and: [LockTransaction_filter]
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  lockDate: BigInt
+  lockDate_gt: BigInt
+  lockDate_gte: BigInt
+  lockDate_in: [BigInt!]
+  lockDate_lt: BigInt
+  lockDate_lte: BigInt
+  lockDate_not: BigInt
+  lockDate_not_in: [BigInt!]
+  or: [LockTransaction_filter]
+  type: String
+  type_contains: String
+  type_contains_nocase: String
+  type_ends_with: String
+  type_ends_with_nocase: String
+  type_gt: String
+  type_gte: String
+  type_in: [String!]
+  type_lt: String
+  type_lte: String
+  type_not: String
+  type_not_contains: String
+  type_not_contains_nocase: String
+  type_not_ends_with: String
+  type_not_ends_with_nocase: String
+  type_not_in: [String!]
+  type_not_starts_with: String
+  type_not_starts_with_nocase: String
+  type_starts_with: String
+  type_starts_with_nocase: String
+  unlockDate: BigInt
+  unlockDate_gt: BigInt
+  unlockDate_gte: BigInt
+  unlockDate_in: [BigInt!]
+  unlockDate_lt: BigInt
+  unlockDate_lte: BigInt
+  unlockDate_not: BigInt
+  unlockDate_not_in: [BigInt!]
+  user: String
+  userAddress: Bytes
+  userAddress_contains: Bytes
+  userAddress_gt: Bytes
+  userAddress_gte: Bytes
+  userAddress_in: [Bytes!]
+  userAddress_lt: Bytes
+  userAddress_lte: Bytes
+  userAddress_not: Bytes
+  userAddress_not_contains: Bytes
+  userAddress_not_in: [Bytes!]
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum LockTransaction_orderBy {
+  amount
+  id
+  lockDate
+  type
+  unlockDate
+  user
+  userAddress
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+"""
+The severity level of a log entry.
+Log levels are ordered from most to least severe: CRITICAL > ERROR > WARNING > INFO > DEBUG
+"""
+enum LogLevel {
+  """Critical errors that require immediate attention"""
+  CRITICAL
+
+  """Detailed diagnostic information for debugging"""
+  DEBUG
+
+  """Error conditions that indicate a failure"""
+  ERROR
+
+  """Informational messages about normal operations"""
+  INFO
+
+  """Warning conditions that may require attention"""
+  WARNING
+}
+
+type ManagerChangedActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  fromManager: User!
+  id: ID!
+  timestamp: BigInt!
+  toManager: User!
+  txHash: Bytes!
+}
+
+input ManagerChangedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [ManagerChangedActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  fromManager: String
+  fromManager_: User_filter
+  fromManager_contains: String
+  fromManager_contains_nocase: String
+  fromManager_ends_with: String
+  fromManager_ends_with_nocase: String
+  fromManager_gt: String
+  fromManager_gte: String
+  fromManager_in: [String!]
+  fromManager_lt: String
+  fromManager_lte: String
+  fromManager_not: String
+  fromManager_not_contains: String
+  fromManager_not_contains_nocase: String
+  fromManager_not_ends_with: String
+  fromManager_not_ends_with_nocase: String
+  fromManager_not_in: [String!]
+  fromManager_not_starts_with: String
+  fromManager_not_starts_with_nocase: String
+  fromManager_starts_with: String
+  fromManager_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [ManagerChangedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  toManager: String
+  toManager_: User_filter
+  toManager_contains: String
+  toManager_contains_nocase: String
+  toManager_ends_with: String
+  toManager_ends_with_nocase: String
+  toManager_gt: String
+  toManager_gte: String
+  toManager_in: [String!]
+  toManager_lt: String
+  toManager_lte: String
+  toManager_not: String
+  toManager_not_contains: String
+  toManager_not_contains_nocase: String
+  toManager_not_ends_with: String
+  toManager_not_ends_with_nocase: String
+  toManager_not_in: [String!]
+  toManager_not_starts_with: String
+  toManager_not_starts_with_nocase: String
+  toManager_starts_with: String
+  toManager_starts_with_nocase: String
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum ManagerChangedActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  fromManager
+  fromManager__bio
+  fromManager__id
+  fromManager__imageUrl
+  fromManager__name
+  id
+  timestamp
+  toManager
+  toManager__bio
+  toManager__id
+  toManager__imageUrl
+  toManager__name
+  txHash
+}
+
+type MemberJoinedActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+  user: User!
+}
+
+input MemberJoinedActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [MemberJoinedActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [MemberJoinedActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+  user: String
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum MemberJoinedActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+  user
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+type MemberLeftActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  id: ID!
+  timestamp: BigInt!
+  txHash: Bytes!
+  user: User!
+}
+
+input MemberLeftActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [MemberLeftActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [MemberLeftActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+  user: String
+  user_: User_filter
+  user_contains: String
+  user_contains_nocase: String
+  user_ends_with: String
+  user_ends_with_nocase: String
+  user_gt: String
+  user_gte: String
+  user_in: [String!]
+  user_lt: String
+  user_lte: String
+  user_not: String
+  user_not_contains: String
+  user_not_contains_nocase: String
+  user_not_ends_with: String
+  user_not_ends_with_nocase: String
+  user_not_in: [String!]
+  user_not_starts_with: String
+  user_not_starts_with_nocase: String
+  user_starts_with: String
+  user_starts_with_nocase: String
+}
+
+enum MemberLeftActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  id
+  timestamp
+  txHash
+  user
+  user__bio
+  user__id
+  user__imageUrl
+  user__name
+}
+
+type MemberTransferredActivity implements CommunityActivityEvent {
+  badge: Badge!
+  blockNumber: BigInt!
+  community: Community!
+  fromUser: User!
+  id: ID!
+  timestamp: BigInt!
+  toUser: User!
+  txHash: Bytes!
+}
+
+input MemberTransferredActivity_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [MemberTransferredActivity_filter]
+  badge: String
+  badge_: Badge_filter
+  badge_contains: String
+  badge_contains_nocase: String
+  badge_ends_with: String
+  badge_ends_with_nocase: String
+  badge_gt: String
+  badge_gte: String
+  badge_in: [String!]
+  badge_lt: String
+  badge_lte: String
+  badge_not: String
+  badge_not_contains: String
+  badge_not_contains_nocase: String
+  badge_not_ends_with: String
+  badge_not_ends_with_nocase: String
+  badge_not_in: [String!]
+  badge_not_starts_with: String
+  badge_not_starts_with_nocase: String
+  badge_starts_with: String
+  badge_starts_with_nocase: String
+  blockNumber: BigInt
+  blockNumber_gt: BigInt
+  blockNumber_gte: BigInt
+  blockNumber_in: [BigInt!]
+  blockNumber_lt: BigInt
+  blockNumber_lte: BigInt
+  blockNumber_not: BigInt
+  blockNumber_not_in: [BigInt!]
+  community: String
+  community_: Community_filter
+  community_contains: String
+  community_contains_nocase: String
+  community_ends_with: String
+  community_ends_with_nocase: String
+  community_gt: String
+  community_gte: String
+  community_in: [String!]
+  community_lt: String
+  community_lte: String
+  community_not: String
+  community_not_contains: String
+  community_not_contains_nocase: String
+  community_not_ends_with: String
+  community_not_ends_with_nocase: String
+  community_not_in: [String!]
+  community_not_starts_with: String
+  community_not_starts_with_nocase: String
+  community_starts_with: String
+  community_starts_with_nocase: String
+  fromUser: String
+  fromUser_: User_filter
+  fromUser_contains: String
+  fromUser_contains_nocase: String
+  fromUser_ends_with: String
+  fromUser_ends_with_nocase: String
+  fromUser_gt: String
+  fromUser_gte: String
+  fromUser_in: [String!]
+  fromUser_lt: String
+  fromUser_lte: String
+  fromUser_not: String
+  fromUser_not_contains: String
+  fromUser_not_contains_nocase: String
+  fromUser_not_ends_with: String
+  fromUser_not_ends_with_nocase: String
+  fromUser_not_in: [String!]
+  fromUser_not_starts_with: String
+  fromUser_not_starts_with_nocase: String
+  fromUser_starts_with: String
+  fromUser_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [MemberTransferredActivity_filter]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  toUser: String
+  toUser_: User_filter
+  toUser_contains: String
+  toUser_contains_nocase: String
+  toUser_ends_with: String
+  toUser_ends_with_nocase: String
+  toUser_gt: String
+  toUser_gte: String
+  toUser_in: [String!]
+  toUser_lt: String
+  toUser_lte: String
+  toUser_not: String
+  toUser_not_contains: String
+  toUser_not_contains_nocase: String
+  toUser_not_ends_with: String
+  toUser_not_ends_with_nocase: String
+  toUser_not_in: [String!]
+  toUser_not_starts_with: String
+  toUser_not_starts_with_nocase: String
+  toUser_starts_with: String
+  toUser_starts_with_nocase: String
+  txHash: Bytes
+  txHash_contains: Bytes
+  txHash_gt: Bytes
+  txHash_gte: Bytes
+  txHash_in: [Bytes!]
+  txHash_lt: Bytes
+  txHash_lte: Bytes
+  txHash_not: Bytes
+  txHash_not_contains: Bytes
+  txHash_not_in: [Bytes!]
+}
+
+enum MemberTransferredActivity_orderBy {
+  badge
+  badge__createdAt
+  badge__creatorAddress
+  badge__description
+  badge__holdersCount
+  badge__hookAddress
+  badge__id
+  badge__imageUrl
+  badge__isCommunity
+  badge__isOfficial
+  badge__isProfile
+  badge__name
+  badge__uri
+  blockNumber
+  community
+  community__badgeCount
+  community__createdAt
+  community__description
+  community__id
+  community__imageUrl
+  community__managerAddress
+  community__memberCount
+  community__name
+  community__tierExpiresAt
+  community__tierId
+  community__tierName
+  fromUser
+  fromUser__bio
+  fromUser__id
+  fromUser__imageUrl
+  fromUser__name
+  id
+  timestamp
+  toUser
+  toUser__bio
+  toUser__id
+  toUser__imageUrl
+  toUser__name
+  txHash
+}
+
+type Metadata {
+  bio: String
+  description: String
+  id: ID!
+  imageUrl: String
+  name: String
+}
+
+input Metadata_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [Metadata_filter]
+  bio: String
+  bio_contains: String
+  bio_contains_nocase: String
+  bio_ends_with: String
+  bio_ends_with_nocase: String
+  bio_gt: String
+  bio_gte: String
+  bio_in: [String!]
+  bio_lt: String
+  bio_lte: String
+  bio_not: String
+  bio_not_contains: String
+  bio_not_contains_nocase: String
+  bio_not_ends_with: String
+  bio_not_ends_with_nocase: String
+  bio_not_in: [String!]
+  bio_not_starts_with: String
+  bio_not_starts_with_nocase: String
+  bio_starts_with: String
+  bio_starts_with_nocase: String
+  description: String
+  description_contains: String
+  description_contains_nocase: String
+  description_ends_with: String
+  description_ends_with_nocase: String
+  description_gt: String
+  description_gte: String
+  description_in: [String!]
+  description_lt: String
+  description_lte: String
+  description_not: String
+  description_not_contains: String
+  description_not_contains_nocase: String
+  description_not_ends_with: String
+  description_not_ends_with_nocase: String
+  description_not_in: [String!]
+  description_not_starts_with: String
+  description_not_starts_with_nocase: String
+  description_starts_with: String
+  description_starts_with_nocase: String
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  imageUrl: String
+  imageUrl_contains: String
+  imageUrl_contains_nocase: String
+  imageUrl_ends_with: String
+  imageUrl_ends_with_nocase: String
+  imageUrl_gt: String
+  imageUrl_gte: String
+  imageUrl_in: [String!]
+  imageUrl_lt: String
+  imageUrl_lte: String
+  imageUrl_not: String
+  imageUrl_not_contains: String
+  imageUrl_not_contains_nocase: String
+  imageUrl_not_ends_with: String
+  imageUrl_not_ends_with_nocase: String
+  imageUrl_not_in: [String!]
+  imageUrl_not_starts_with: String
+  imageUrl_not_starts_with_nocase: String
+  imageUrl_starts_with: String
+  imageUrl_starts_with_nocase: String
+  name: String
+  name_contains: String
+  name_contains_nocase: String
+  name_ends_with: String
+  name_ends_with_nocase: String
+  name_gt: String
+  name_gte: String
+  name_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_not: String
+  name_not_contains: String
+  name_not_contains_nocase: String
+  name_not_ends_with: String
+  name_not_ends_with_nocase: String
+  name_not_in: [String!]
+  name_not_starts_with: String
+  name_not_starts_with_nocase: String
+  name_starts_with: String
+  name_starts_with_nocase: String
+  or: [Metadata_filter]
+}
+
+enum Metadata_orderBy {
+  bio
+  description
+  id
+  imageUrl
+  name
+}
+
+type Order {
+  auctionId: BigInt!
+  auctionUser: AuctionUser!
+  buyAmount: BigInt!
+  id: ID!
+  price: BigDecimal!
+  sellAmount: BigInt!
+  timestamp: BigInt!
+  userAddress: Bytes!
+  volume: BigDecimal!
+}
+
+"""Defines the order direction, either ascending or descending"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+input Order_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [Order_filter]
+  auctionId: BigInt
+  auctionId_gt: BigInt
+  auctionId_gte: BigInt
+  auctionId_in: [BigInt!]
+  auctionId_lt: BigInt
+  auctionId_lte: BigInt
+  auctionId_not: BigInt
+  auctionId_not_in: [BigInt!]
+  auctionUser: String
+  auctionUser_: AuctionUser_filter
+  auctionUser_contains: String
+  auctionUser_contains_nocase: String
+  auctionUser_ends_with: String
+  auctionUser_ends_with_nocase: String
+  auctionUser_gt: String
+  auctionUser_gte: String
+  auctionUser_in: [String!]
+  auctionUser_lt: String
+  auctionUser_lte: String
+  auctionUser_not: String
+  auctionUser_not_contains: String
+  auctionUser_not_contains_nocase: String
+  auctionUser_not_ends_with: String
+  auctionUser_not_ends_with_nocase: String
+  auctionUser_not_in: [String!]
+  auctionUser_not_starts_with: String
+  auctionUser_not_starts_with_nocase: String
+  auctionUser_starts_with: String
+  auctionUser_starts_with_nocase: String
+  buyAmount: BigInt
+  buyAmount_gt: BigInt
+  buyAmount_gte: BigInt
+  buyAmount_in: [BigInt!]
+  buyAmount_lt: BigInt
+  buyAmount_lte: BigInt
+  buyAmount_not: BigInt
+  buyAmount_not_in: [BigInt!]
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  or: [Order_filter]
+  price: BigDecimal
+  price_gt: BigDecimal
+  price_gte: BigDecimal
+  price_in: [BigDecimal!]
+  price_lt: BigDecimal
+  price_lte: BigDecimal
+  price_not: BigDecimal
+  price_not_in: [BigDecimal!]
+  sellAmount: BigInt
+  sellAmount_gt: BigInt
+  sellAmount_gte: BigInt
+  sellAmount_in: [BigInt!]
+  sellAmount_lt: BigInt
+  sellAmount_lte: BigInt
+  sellAmount_not: BigInt
+  sellAmount_not_in: [BigInt!]
+  timestamp: BigInt
+  timestamp_gt: BigInt
+  timestamp_gte: BigInt
+  timestamp_in: [BigInt!]
+  timestamp_lt: BigInt
+  timestamp_lte: BigInt
+  timestamp_not: BigInt
+  timestamp_not_in: [BigInt!]
+  userAddress: Bytes
+  userAddress_contains: Bytes
+  userAddress_gt: Bytes
+  userAddress_gte: Bytes
+  userAddress_in: [Bytes!]
+  userAddress_lt: Bytes
+  userAddress_lte: Bytes
+  userAddress_not: Bytes
+  userAddress_not_contains: Bytes
+  userAddress_not_in: [Bytes!]
+  volume: BigDecimal
+  volume_gt: BigDecimal
+  volume_gte: BigDecimal
+  volume_in: [BigDecimal!]
+  volume_lt: BigDecimal
+  volume_lte: BigDecimal
+  volume_not: BigDecimal
+  volume_not_in: [BigDecimal!]
+}
+
+enum Order_orderBy {
+  auctionId
+  auctionUser
+  auctionUser__address
+  auctionUser__id
+  buyAmount
+  id
+  price
+  sellAmount
+  timestamp
+  userAddress
+  volume
+}
+
+type Query {
+  """
+  Query execution logs emitted by the subgraph during indexing. Results are sorted by timestamp in descending order (newest first).
+  """
+  _logs(
+    """Maximum number of logs to return. Default: 100, Maximum: 1000."""
+    first: Int = 100
+
+    """
+    Filter logs from this timestamp onwards (inclusive). Must be in RFC3339 format (e.g., '2024-01-15T10:30:00Z').
+    """
+    from: String
+
+    """
+    Filter logs by severity level. Only logs at this level will be returned.
+    """
+    level: LogLevel
+
+    """Sort direction for results. Default: desc (newest first)."""
+    orderDirection: OrderDirection = desc
+
+    """
+    Search for logs containing this text in the message. Case-insensitive substring match. Maximum length: 1000 characters.
+    """
+    search: String
+
+    """Number of logs to skip (for pagination). Default: 0, Maximum: 10000."""
+    skip: Int = 0
+
+    """
+    Filter logs until this timestamp (inclusive). Must be in RFC3339 format (e.g., '2024-01-15T23:59:59Z').
+    """
+    to: String
+  ): [_Log_!]!
+
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+  auctionDetail(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): AuctionDetail
+  auctionDetails(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: AuctionDetail_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: AuctionDetail_filter
+  ): [AuctionDetail!]!
+  auctionUser(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): AuctionUser
+  auctionUsers(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: AuctionUser_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: AuctionUser_filter
+  ): [AuctionUser!]!
+  badge(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Badge
+  badgeBurnedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: BadgeBurnedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: BadgeBurnedActivity_filter
+  ): [BadgeBurnedActivity!]!
+  badgeBurnedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): BadgeBurnedActivity
+  badgeMintedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: BadgeMintedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: BadgeMintedActivity_filter
+  ): [BadgeMintedActivity!]!
+  badgeMintedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): BadgeMintedActivity
+  badgeSearch(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    text: String!
+    where: Badge_filter
+  ): [Badge!]!
+  badges(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: Badge_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: Badge_filter
+  ): [Badge!]!
+  communities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: Community_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: Community_filter
+  ): [Community!]!
+  community(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Community
+  communityActivityEvent(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityActivityEvent
+  communityActivityEvents(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityActivityEvent_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityActivityEvent_filter
+  ): [CommunityActivityEvent!]!
+  communityBadgeLinkedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityBadgeLinkedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityBadgeLinkedActivity_filter
+  ): [CommunityBadgeLinkedActivity!]!
+  communityBadgeLinkedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityBadgeLinkedActivity
+  communityCreatedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityCreatedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityCreatedActivity_filter
+  ): [CommunityCreatedActivity!]!
+  communityCreatedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityCreatedActivity
+  communityDetailsUpdatedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityDetailsUpdatedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityDetailsUpdatedActivity_filter
+  ): [CommunityDetailsUpdatedActivity!]!
+  communityDetailsUpdatedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityDetailsUpdatedActivity
+  communityMembership(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityMembership
+  communityMemberships(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityMembership_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityMembership_filter
+  ): [CommunityMembership!]!
+  communityTierGrantedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityTierGrantedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityTierGrantedActivity_filter
+  ): [CommunityTierGrantedActivity!]!
+  communityTierGrantedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityTierGrantedActivity
+  communityTierRevokedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: CommunityTierRevokedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: CommunityTierRevokedActivity_filter
+  ): [CommunityTierRevokedActivity!]!
+  communityTierRevokedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): CommunityTierRevokedActivity
+  lockTransaction(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): LockTransaction
+  lockTransactions(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: LockTransaction_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: LockTransaction_filter
+  ): [LockTransaction!]!
+  managerChangedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: ManagerChangedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: ManagerChangedActivity_filter
+  ): [ManagerChangedActivity!]!
+  managerChangedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): ManagerChangedActivity
+  memberJoinedActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: MemberJoinedActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: MemberJoinedActivity_filter
+  ): [MemberJoinedActivity!]!
+  memberJoinedActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): MemberJoinedActivity
+  memberLeftActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: MemberLeftActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: MemberLeftActivity_filter
+  ): [MemberLeftActivity!]!
+  memberLeftActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): MemberLeftActivity
+  memberTransferredActivities(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: MemberTransferredActivity_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: MemberTransferredActivity_filter
+  ): [MemberTransferredActivity!]!
+  memberTransferredActivity(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): MemberTransferredActivity
+  metadata(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Metadata
+  metadata_collection(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: Metadata_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: Metadata_filter
+  ): [Metadata!]!
+  order(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Order
+  orders(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: Order_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: Order_filter
+  ): [Order!]!
+  user(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    id: ID!
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): User
+  users(
+    """
+    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+    first: Int = 100
+    orderBy: User_orderBy
+    orderDirection: OrderDirection
+    skip: Int = 0
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+    where: User_filter
+  ): [User!]!
+}
+
+"""A string representation of microseconds UNIX timestamp (16 digits)"""
+scalar Timestamp
+
+type User {
+  badges(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
+  bio: String
+  communities(first: Int = 100, orderBy: Community_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Community_filter): [Community!]!
+  id: ID!
+  imageUrl: String
+  invitedBy: User
+  invitedUsers(first: Int = 100, orderBy: User_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: User_filter): [User!]!
+  managedBadges(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
+  managedCommunities(first: Int = 100, orderBy: Community_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Community_filter): [Community!]!
+  metadata: Metadata
+  name: String
+  profile: Badge
+}
+
+input User_filter {
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [User_filter]
+  badges: [String!]
+  badges_: Badge_filter
+  badges_contains: [String!]
+  badges_contains_nocase: [String!]
+  badges_not: [String!]
+  badges_not_contains: [String!]
+  badges_not_contains_nocase: [String!]
+  bio: String
+  bio_contains: String
+  bio_contains_nocase: String
+  bio_ends_with: String
+  bio_ends_with_nocase: String
+  bio_gt: String
+  bio_gte: String
+  bio_in: [String!]
+  bio_lt: String
+  bio_lte: String
+  bio_not: String
+  bio_not_contains: String
+  bio_not_contains_nocase: String
+  bio_not_ends_with: String
+  bio_not_ends_with_nocase: String
+  bio_not_in: [String!]
+  bio_not_starts_with: String
+  bio_not_starts_with_nocase: String
+  bio_starts_with: String
+  bio_starts_with_nocase: String
+  communities: [String!]
+  communities_: Community_filter
+  communities_contains: [String!]
+  communities_contains_nocase: [String!]
+  communities_not: [String!]
+  communities_not_contains: [String!]
+  communities_not_contains_nocase: [String!]
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_not: ID
+  id_not_in: [ID!]
+  imageUrl: String
+  imageUrl_contains: String
+  imageUrl_contains_nocase: String
+  imageUrl_ends_with: String
+  imageUrl_ends_with_nocase: String
+  imageUrl_gt: String
+  imageUrl_gte: String
+  imageUrl_in: [String!]
+  imageUrl_lt: String
+  imageUrl_lte: String
+  imageUrl_not: String
+  imageUrl_not_contains: String
+  imageUrl_not_contains_nocase: String
+  imageUrl_not_ends_with: String
+  imageUrl_not_ends_with_nocase: String
+  imageUrl_not_in: [String!]
+  imageUrl_not_starts_with: String
+  imageUrl_not_starts_with_nocase: String
+  imageUrl_starts_with: String
+  imageUrl_starts_with_nocase: String
+  invitedBy: String
+  invitedBy_: User_filter
+  invitedBy_contains: String
+  invitedBy_contains_nocase: String
+  invitedBy_ends_with: String
+  invitedBy_ends_with_nocase: String
+  invitedBy_gt: String
+  invitedBy_gte: String
+  invitedBy_in: [String!]
+  invitedBy_lt: String
+  invitedBy_lte: String
+  invitedBy_not: String
+  invitedBy_not_contains: String
+  invitedBy_not_contains_nocase: String
+  invitedBy_not_ends_with: String
+  invitedBy_not_ends_with_nocase: String
+  invitedBy_not_in: [String!]
+  invitedBy_not_starts_with: String
+  invitedBy_not_starts_with_nocase: String
+  invitedBy_starts_with: String
+  invitedBy_starts_with_nocase: String
+  invitedUsers_: User_filter
+  managedBadges: [String!]
+  managedBadges_: Badge_filter
+  managedBadges_contains: [String!]
+  managedBadges_contains_nocase: [String!]
+  managedBadges_not: [String!]
+  managedBadges_not_contains: [String!]
+  managedBadges_not_contains_nocase: [String!]
+  managedCommunities: [String!]
+  managedCommunities_: Community_filter
+  managedCommunities_contains: [String!]
+  managedCommunities_contains_nocase: [String!]
+  managedCommunities_not: [String!]
+  managedCommunities_not_contains: [String!]
+  managedCommunities_not_contains_nocase: [String!]
+  metadata: String
+  metadata_: Metadata_filter
+  metadata_contains: String
+  metadata_contains_nocase: String
+  metadata_ends_with: String
+  metadata_ends_with_nocase: String
+  metadata_gt: String
+  metadata_gte: String
+  metadata_in: [String!]
+  metadata_lt: String
+  metadata_lte: String
+  metadata_not: String
+  metadata_not_contains: String
+  metadata_not_contains_nocase: String
+  metadata_not_ends_with: String
+  metadata_not_ends_with_nocase: String
+  metadata_not_in: [String!]
+  metadata_not_starts_with: String
+  metadata_not_starts_with_nocase: String
+  metadata_starts_with: String
+  metadata_starts_with_nocase: String
+  name: String
+  name_contains: String
+  name_contains_nocase: String
+  name_ends_with: String
+  name_ends_with_nocase: String
+  name_gt: String
+  name_gte: String
+  name_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_not: String
+  name_not_contains: String
+  name_not_contains_nocase: String
+  name_not_ends_with: String
+  name_not_ends_with_nocase: String
+  name_not_in: [String!]
+  name_not_starts_with: String
+  name_not_starts_with_nocase: String
+  name_starts_with: String
+  name_starts_with_nocase: String
+  or: [User_filter]
+  profile: String
+  profile_: Badge_filter
+  profile_contains: String
+  profile_contains_nocase: String
+  profile_ends_with: String
+  profile_ends_with_nocase: String
+  profile_gt: String
+  profile_gte: String
+  profile_in: [String!]
+  profile_lt: String
+  profile_lte: String
+  profile_not: String
+  profile_not_contains: String
+  profile_not_contains_nocase: String
+  profile_not_ends_with: String
+  profile_not_ends_with_nocase: String
+  profile_not_in: [String!]
+  profile_not_starts_with: String
+  profile_not_starts_with_nocase: String
+  profile_starts_with: String
+  profile_starts_with_nocase: String
+}
+
+enum User_orderBy {
+  badges
+  bio
+  communities
+  id
+  imageUrl
+  invitedBy
+  invitedBy__bio
+  invitedBy__id
+  invitedBy__imageUrl
+  invitedBy__name
+  invitedUsers
+  managedBadges
+  managedCommunities
+  metadata
+  metadata__bio
+  metadata__description
+  metadata__id
+  metadata__imageUrl
+  metadata__name
+  name
+  profile
+  profile__createdAt
+  profile__creatorAddress
+  profile__description
+  profile__holdersCount
+  profile__hookAddress
+  profile__id
+  profile__imageUrl
+  profile__isCommunity
+  profile__isOfficial
+  profile__isProfile
+  profile__name
+  profile__uri
+}
+
+type _Block_ {
+  """The hash of the block"""
+  hash: Bytes
+
+  """The block number"""
+  number: Int!
+
+  """The hash of the parent block"""
+  parentHash: Bytes
+
+  """Integer representation of the timestamp stored in blocks for the chain"""
+  timestamp: Int
+}
+
+"""
+A key-value pair of additional data associated with a log entry.
+These correspond to arguments passed to the log function in the subgraph code.
+"""
+type _LogArgument_ {
+  """The parameter name"""
+  key: String!
+
+  """The parameter value, serialized as a string"""
+  value: String!
+}
+
+"""
+Source code location metadata for a log entry.
+Indicates where in the subgraph's AssemblyScript code the log statement was executed.
+"""
+type _LogMeta_ {
+  """The column number in the source file"""
+  column: Int!
+
+  """The line number in the source file"""
+  line: Int!
+
+  """The module or file path where the log was emitted"""
+  module: String!
+}
+
+"""
+A log entry emitted by a subgraph during indexing.
+Logs can be generated by the subgraph's AssemblyScript code using the `log.*` functions.
+"""
+type _Log_ {
+  """
+  Additional structured data passed to the log function as key-value pairs
+  """
+  arguments: [_LogArgument_!]!
+
+  """Unique identifier for this log entry"""
+  id: String!
+
+  """The severity level of the log entry"""
+  level: LogLevel!
+
+  """
+  Metadata about the source location in the subgraph code where the log was emitted
+  """
+  meta: _LogMeta_!
+
+  """The deployment hash of the subgraph that emitted this log"""
+  subgraphId: String!
+
+  """The log message text"""
+  text: String!
+
+  """
+  The timestamp when the log was emitted, in RFC3339 format (e.g., '2024-01-15T10:30:00Z')
+  """
+  timestamp: String!
+}
+
+"""The type for the top-level _meta field"""
+type _Meta_ {
+  """
+  Information about a specific subgraph block. The hash of the block
+  will be null if the _meta field has a block constraint that asks for
+  a block number. It will be filled if the _meta field has no block constraint
+  and therefore asks for the latest  block
+  """
+  block: _Block_!
+
+  """The deployment ID"""
+  deployment: String!
+
+  """If `true`, the subgraph encountered indexing errors at some past block"""
+  hasIndexingErrors: Boolean!
+}
+
+enum _SubgraphErrorPolicy_ {
+  """Data will be returned even if the subgraph has indexing errors"""
+  allow
+
+  """
+  If the subgraph has indexing errors, data will be omitted. The default.
+  """
+  deny
+}

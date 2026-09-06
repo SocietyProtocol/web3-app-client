@@ -94,8 +94,11 @@ function validateRequestBody(value: unknown) {
   if (typeof body.query !== "string" || !body.query.trim()) {
     throw new Error("GraphQL request must include a query");
   }
-  if (typeof body.operationName !== "string") {
-    throw new Error("GraphQL request must include an operationName");
+  if (
+    body.operationName !== undefined &&
+    typeof body.operationName !== "string"
+  ) {
+    throw new Error("GraphQL operationName must be a string");
   }
   if (
     body.variables !== undefined &&
@@ -128,7 +131,8 @@ function validateRequestBody(value: unknown) {
   const operationName = operation.name?.value;
   if (
     !operationName ||
-    operationName !== body.operationName ||
+    (body.operationName !== undefined &&
+      operationName !== body.operationName) ||
     !ALLOWED_GRAPH_OPERATIONS.has(operationName) ||
     PERSISTED_GRAPH_DOCUMENTS.get(operationName) !== print(document)
   ) {

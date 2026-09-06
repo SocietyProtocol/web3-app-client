@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import graphFetch from "./graph-fetch";
+import { PERSISTED_GRAPH_DOCUMENTS } from "./persisted-graphql.generated";
+import graphFetch, { persistOutgoingGraphRequest } from "./graph-fetch";
 
 describe("Graph Client custom fetch", () => {
   afterEach(() => {
@@ -47,5 +48,23 @@ describe("Graph Client custom fetch", () => {
     expect(new Headers(init.headers).get("authorization")).toBe(
       "Bearer server-token",
     );
+  });
+
+  it("rewrites Graph Client Mesh bodies to the persisted document", () => {
+    const rewritten = persistOutgoingGraphRequest({
+      method: "POST",
+      body: JSON.stringify({
+        query:
+          "query Communities($first:Int!$skip:Int!$orderBy:Community_orderBy!$orderDirection:OrderDirection!$where:Community_filter){communities(first:$first skip:$skip orderBy:$orderBy orderDirection:$orderDirection where:$where){id name description imageUrl createdAt tierId tierName tierExpiresAt managerAddress manager{id name bio imageUrl}memberCount}}",
+        variables: { first: 50, skip: 0 },
+        extensions: { endpoint: "https://example/graphql" },
+      }),
+    });
+
+    expect(JSON.parse(String(rewritten?.body))).toEqual({
+      query: PERSISTED_GRAPH_DOCUMENTS.get("Communities"),
+      operationName: "Communities",
+      variables: { first: 50, skip: 0 },
+    });
   });
 });

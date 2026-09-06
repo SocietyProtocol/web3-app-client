@@ -34,6 +34,36 @@ describe("/api/graphql", () => {
     expect(PERSISTED_GRAPH_DOCUMENTS.size).toBe(13);
   });
 
+  it("accepts a minified Graph Client query without operationName", async () => {
+    const upstreamFetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ data: { communities: [] } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    const response = await POST(
+      request(
+        {
+          query:
+            "query Communities($first:Int!$skip:Int!$orderBy:Community_orderBy!$orderDirection:OrderDirection!$where:Community_filter){communities(first:$first skip:$skip orderBy:$orderBy orderDirection:$orderDirection where:$where){id name description imageUrl createdAt tierId tierName tierExpiresAt managerAddress manager{id name bio imageUrl}memberCount}}",
+          variables: { first: 50, skip: 0 },
+          extensions: { endpoint: "https://example/graphql" },
+        },
+        { "x-forwarded-for": "route-test-minified" },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ data: { communities: [] } });
+    const init = upstreamFetch.mock.calls[0]?.[1] as RequestInit;
+    expect(JSON.parse(String(init.body))).toEqual({
+      query: expect.stringContaining("query Communities"),
+      operationName: "Communities",
+      variables: { first: 50, skip: 0 },
+    });
+  });
+
   it("accepts an allowlisted query and forwards only safe headers", async () => {
     const upstreamFetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ data: { communities: [] } }), {

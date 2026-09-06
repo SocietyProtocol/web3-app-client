@@ -22,6 +22,11 @@ query CommunityMembers(
       name
       bio
       imageUrl
+      metadata {
+        name
+        bio
+        imageUrl
+      }
     }
   }
 }

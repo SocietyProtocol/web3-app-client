@@ -19,9 +19,16 @@ query Badges(
     isCommunity
     uri
     imageUrl
+    metadata {
+      description
+      imageUrl
+    }
     creatorAddress
     profileUser {
       name
+      metadata {
+        name
+      }
     }
     community {
       id
@@ -32,6 +39,11 @@ query Badges(
       name
       bio
       imageUrl
+      metadata {
+        name
+        bio
+        imageUrl
+      }
     }
   }
 }

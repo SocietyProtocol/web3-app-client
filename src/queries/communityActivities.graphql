@@ -15,6 +15,10 @@ query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
     }
     ... on MemberLeftActivity {
@@ -22,6 +26,10 @@ query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
     }
     ... on BadgeMintedActivity {
@@ -33,6 +41,10 @@ query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
     }
     ... on MemberTransferredActivity {
@@ -40,11 +52,19 @@ query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
       toUser {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
     }
     ... on ManagerChangedActivity {
@@ -52,11 +72,19 @@ query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
       toManager {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
     }
     ... on CommunityBadgeLinkedActivity {
@@ -74,6 +102,10 @@ query CommunityActivities($communityId: String!, $first: Int!, $skip: Int!) {
         id
         name
         imageUrl
+        metadata {
+          name
+          imageUrl
+        }
       }
     }
     ... on CommunityTierGrantedActivity {

@@ -16,6 +16,10 @@ query Communities(
     name
     description
     imageUrl
+    metadata {
+      imageUrl
+      description
+    }
     createdAt
     tierId
     tierName
@@ -26,6 +30,11 @@ query Communities(
       name
       bio
       imageUrl
+      metadata {
+        name
+        bio
+        imageUrl
+      }
     }
     memberCount
   }

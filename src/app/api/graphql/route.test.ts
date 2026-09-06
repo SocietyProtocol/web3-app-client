@@ -46,7 +46,7 @@ describe("/api/graphql", () => {
       request(
         {
           query:
-            "query Communities($first:Int!$skip:Int!$orderBy:Community_orderBy!$orderDirection:OrderDirection!$where:Community_filter){communities(first:$first skip:$skip orderBy:$orderBy orderDirection:$orderDirection where:$where){id name description imageUrl createdAt tierId tierName tierExpiresAt managerAddress manager{id name bio imageUrl}memberCount}}",
+            "query Communities($first:Int!$skip:Int!$orderBy:Community_orderBy!$orderDirection:OrderDirection!$where:Community_filter){communities(first:$first skip:$skip orderBy:$orderBy orderDirection:$orderDirection where:$where){id name description imageUrl metadata{imageUrl description}createdAt tierId tierName tierExpiresAt managerAddress manager{id name bio imageUrl metadata{name bio imageUrl}}memberCount}}",
           variables: { first: 50, skip: 0 },
           extensions: { endpoint: "https://example/graphql" },
         },

@@ -4,6 +4,10 @@ query Community($id: ID!) {
     name
     description
     imageUrl
+    metadata {
+      imageUrl
+      description
+    }
     createdAt
     tierId
     tierName
@@ -14,30 +18,47 @@ query Community($id: ID!) {
       name
       bio
       imageUrl
+      metadata {
+        name
+        bio
+        imageUrl
+      }
     }
     managerBadge {
       id
       name
       imageUrl
       uri
+      metadata {
+        imageUrl
+      }
     }
     assistantBadge {
       id
       name
       imageUrl
       uri
+      metadata {
+        imageUrl
+      }
     }
     memberBadge {
       id
       name
       imageUrl
       uri
+      metadata {
+        imageUrl
+      }
     }
     memberCount
     badges(first: 1000) {
       id
       name
       imageUrl
+      metadata {
+        imageUrl
+      }
       isOfficial
       isCommunity
       holdersCount

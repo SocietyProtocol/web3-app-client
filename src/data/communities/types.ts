@@ -37,7 +37,7 @@ export interface CommunityQueryOptions {
 
 export interface CommunityData extends Omit<
   Community,
-  "tier" | "tierExpiresAt" | "manager"
+  "tier" | "tierExpiresAt" | "manager" | "metadata"
 > {
   tierName: CommunityTier;
   tierExpiresAt: string;

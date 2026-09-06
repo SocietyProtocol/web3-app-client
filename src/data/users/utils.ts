@@ -59,6 +59,7 @@ export const buildWhereClause = (options: {
     whereClauses.push({
       or: [
         { name_contains_nocase: trimmedSearch },
+        { metadata_: { name_contains_nocase: trimmedSearch } },
         {
           id: trimmedSearch,
         },

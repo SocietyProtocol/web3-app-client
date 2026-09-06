@@ -16,6 +16,11 @@ query Users(
     name
     bio
     imageUrl
+    metadata {
+      name
+      bio
+      imageUrl
+    }
     profile {
       id
     }

@@ -5,8 +5,8 @@ import { PERSISTED_GRAPH_DOCUMENTS } from "@/lib/persisted-graphql.generated";
 export const runtime = "nodejs";
 
 const MAX_BODY_BYTES = 128 * 1024;
-const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
-const UPSTREAM_TIMEOUT_MS = 8_000;
+const MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
+const UPSTREAM_TIMEOUT_MS = 20_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 60;
 

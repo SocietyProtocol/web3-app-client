@@ -1,5 +1,5 @@
-import { pinata } from "@/lib/pinata";
 import { authenticateRequest } from "@/lib/auth";
+import { pinJson } from "@/lib/filebase";
 import { accountValidationSchema } from "@/validation/account";
 import { NextRequest, NextResponse } from "next/server";
 import { flattenError } from "zod";
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    const { cid } = await pinata.upload.public.json(metadata);
+    const cid = await pinJson(metadata);
 
     return NextResponse.json(
       { uri: `${URLS.IPFS_GATEWAY}/${cid}` } as ProfileResponse,

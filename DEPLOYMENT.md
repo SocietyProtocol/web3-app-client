@@ -51,8 +51,9 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_GRAPH_URL`          | Subgraph URL for the **active** network (Sepolia in development/staging, Mainnet in production); used by code-gen too | `https://api.studio.thegraph.com/query/...` |
 | `GRAPH_QUERY_GATEWAY_URL`        | Server-only protected Graph query gateway; browser traffic uses `/api/graphql`                              | `https://query-gateway.example/graphql`    |
 | `GRAPH_QUERY_GATEWAY_TOKEN`      | Server-only credential for the protected Graph query gateway                                                | `...`                                      |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Pinata IPFS gateway URL                                                                                               | `https://your-gateway.mypinata.cloud`       |
-| `PINATA_JWT`                     | Pinata JWT for **server-side** IPFS uploads (never exposed to the browser)                                            | `eyJhb...`                                  |
+| `FILEBASE_KEY`                   | Filebase S3 access key for **server-side** IPFS pins (never exposed to the browser)                                   | `...`                                       |
+| `FILEBASE_SECRET`                | Filebase S3 secret key                                                                                                | `...`                                       |
+| `FILEBASE_BUCKET`                | Filebase IPFS bucket name                                                                                             | `society-outpost`                           |
 | `NEXT_PUBLIC_SNAPSHOT_URL`       | Snapshot governance space URL                                                                                         | `https://snapshot.box/#/s:your-space.eth`   |
 
 ### Optional Variables
@@ -63,7 +64,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project token used to enable client-side analytics, pageviews, and custom event tracking | `phc_abc123...`            |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com` | `https://us.i.posthog.com` |
 
-> **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `PINATA_JWT`) in a `NEXT_PUBLIC_` variable. PostHog analytics stay disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
+> **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `FILEBASE_SECRET`) in a `NEXT_PUBLIC_` variable. PostHog analytics stay disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 
 ---
 
@@ -80,12 +81,11 @@ cp .env.example .env.local
 2. Copy the **API Key** and set it as `NEXT_PUBLIC_ALCHEMY_API_KEY`.
    - The app uses Alchemy for both Mainnet and Sepolia RPC endpoints automatically based on the `NEXT_PUBLIC_ENVIRONMENT` value.
 
-### 3.3 Pinata (IPFS)
+### 3.3 Filebase (IPFS)
 
-1. Go to [https://pinata.cloud/](https://pinata.cloud/) and create an account.
-2. Generate an **API Key** with pinning permissions → copy the **JWT**.
-3. Set it as `PINATA_JWT`.
-4. In **Gateways**, create a dedicated gateway (or use the default) and set its URL as `NEXT_PUBLIC_PINATA_GATEWAY_URL`.
+1. Go to [https://filebase.com/](https://filebase.com/) and create an account.
+2. Create an **IPFS** bucket (not a standard S3 bucket). Prefer a dedicated outpost bucket.
+3. Create an access key. Set `FILEBASE_KEY`, `FILEBASE_SECRET`, and `FILEBASE_BUCKET`.
 
 ### 3.4 The Graph — Subgraph Endpoints
 
@@ -258,7 +258,6 @@ ARG NEXT_PUBLIC_ENVIRONMENT
 ARG NEXT_PUBLIC_WC_PROJECT_ID
 ARG NEXT_PUBLIC_ALCHEMY_API_KEY
 ARG NEXT_PUBLIC_GRAPH_URL
-ARG NEXT_PUBLIC_PINATA_GATEWAY_URL
 ARG NEXT_PUBLIC_SNAPSHOT_URL
 ARG NEXT_PUBLIC_AUCTION_ID
 ARG NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
@@ -295,14 +294,15 @@ docker build \
   --build-arg NEXT_PUBLIC_WC_PROJECT_ID=xxx \
   --build-arg NEXT_PUBLIC_ALCHEMY_API_KEY=xxx \
   --build-arg NEXT_PUBLIC_GRAPH_URL=xxx \
-  --build-arg NEXT_PUBLIC_PINATA_GATEWAY_URL=xxx \
   --build-arg NEXT_PUBLIC_SNAPSHOT_URL=xxx \
   --build-arg NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=xxx \
   --build-arg NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com \
   -t society-protocol-client .
 
 docker run -p 3000:3000 \
-  -e PINATA_JWT=your_pinata_jwt \
+  -e FILEBASE_KEY=your_filebase_key \
+  -e FILEBASE_SECRET=your_filebase_secret \
+  -e FILEBASE_BUCKET=your_ipfs_bucket \
   society-protocol-client
 ```
 
@@ -412,11 +412,10 @@ jobs:
           NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
           NEXT_PUBLIC_ALCHEMY_API_KEY: ${{ secrets.NEXT_PUBLIC_ALCHEMY_API_KEY }}
           NEXT_PUBLIC_GRAPH_URL: ${{ secrets.NEXT_PUBLIC_GRAPH_URL }}
-          NEXT_PUBLIC_PINATA_GATEWAY_URL: ${{ secrets.NEXT_PUBLIC_PINATA_GATEWAY_URL }}
           NEXT_PUBLIC_SNAPSHOT_URL: ${{ secrets.NEXT_PUBLIC_SNAPSHOT_URL }}
 ```
 
-Store sensitive values (including `PINATA_JWT`) as **GitHub Actions Secrets** and inject them only at runtime, not at build time.
+Store sensitive values (including `FILEBASE_SECRET`) as **GitHub Actions Secrets** and inject them only at runtime, not at build time.
 
 ---
 
@@ -439,8 +438,8 @@ All required `NEXT_PUBLIC_*` variables must be present **at build time**. Ensure
 
 ### IPFS uploads fail
 
-- Check that `PINATA_JWT` is valid and has **pinning** permissions.
-- Confirm the `NEXT_PUBLIC_PINATA_GATEWAY_URL` matches the gateway configured in your Pinata account.
+- Check that `FILEBASE_KEY`, `FILEBASE_SECRET`, and `FILEBASE_BUCKET` are set.
+- Confirm the bucket network type is **IPFS**, not standard S3.
 
 ### Wrong network errors
 

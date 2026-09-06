@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
     "pino",
     "thread-stream",
     "@walletconnect/ethereum-provider",
-    "pinata",
+    "@aws-sdk/client-s3",
     "node-libcurl",
     "@whatwg-node/fetch",
   ],

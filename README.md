@@ -12,7 +12,7 @@ A web client for [Society Protocol](https://society.finance) — a framework for
 | Web3      | wagmi v2 · viem v2 · RainbowKit v2        |
 | State     | Jotai v2 · TanStack Query v5              |
 | GraphQL   | `@graphprotocol/client-cli` (graphclient) |
-| IPFS      | Pinata SDK v2                             |
+| IPFS      | Filebase S3 (`@aws-sdk/client-s3`)        |
 | Forms     | React Hook Form v7 · Zod v4               |
 
 ---
@@ -40,8 +40,9 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_GRAPH_URL`             | ✅       | Unified subgraph URL used for this deployment (mainnet for production and testnet for development & staging) — also used by GraphQL code-gen at build time | Your Graph Studio deployment                                |
 | `GRAPH_QUERY_GATEWAY_URL`           | ✅       | Server-only protected Graph query gateway; browser traffic uses `/api/graphql`                                                | Railway query gateway                                      |
 | `GRAPH_QUERY_GATEWAY_TOKEN`         | ✅       | Server-only credential for the protected Graph query gateway                                                                  | Railway secret manager                                     |
-| `NEXT_PUBLIC_PINATA_GATEWAY_URL`    | ✅       | Pinata IPFS gateway URL                                                                                                                                    | [pinata.cloud](https://pinata.cloud/)                       |
-| `PINATA_JWT`                        | ✅       | Pinata JWT for **server-side** IPFS uploads — never exposed to the browser                                                                                 | [pinata.cloud](https://pinata.cloud/)                       |
+| `FILEBASE_KEY`                      | ✅       | Filebase S3 access key for **server-side** IPFS pins — never exposed to the browser                                                                        | [filebase.com](https://filebase.com)                        |
+| `FILEBASE_SECRET`                   | ✅       | Filebase S3 secret key                                                                                                                                     | [filebase.com](https://filebase.com)                        |
+| `FILEBASE_BUCKET`                   | ✅       | Filebase IPFS bucket name (use a dedicated outpost bucket or an `outpost/` prefix)                                                                         | [filebase.com](https://filebase.com)                        |
 | `NEXT_PUBLIC_SNAPSHOT_URL`          | ✅       | Snapshot governance space URL                                                                                                                              | [snapshot.box](https://snapshot.box/)                       |
 | `NEXT_PUBLIC_SNAPSHOT_SPEC_URL`     | ✅       | Snapshot space URL for the SPEC expression-of-feedback votes (parallel to the main governance space)                                                       | [snapshot.box](https://snapshot.box/)                       |
 | `NEXT_PUBLIC_AUCTION_ID`            | —        | ID of the auction to interact with                                                                                                                         | Smart contract deployment                                   |
@@ -49,7 +50,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | —        | PostHog project token used to enable client-side analytics, pageviews, and event tracking                                                                  | Your PostHog project settings                               |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | —        | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com`; leave unset to use the SDK default                       | Your PostHog deployment or region                           |
 
-> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `PINATA_JWT` or `GRAPH_QUERY_GATEWAY_TOKEN`) in a `NEXT_PUBLIC_` variable. PostHog analytics remain disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
+> **Note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle. Never place secrets (e.g. `FILEBASE_SECRET` or `GRAPH_QUERY_GATEWAY_TOKEN`) in a `NEXT_PUBLIC_` variable. PostHog analytics remain disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 
 ### 3. Install & Run
 
@@ -89,7 +90,7 @@ src/
 ├── data/          # Data-fetching hooks & utilities (per domain)
 ├── errors/        # Custom error classes
 ├── hooks/         # Shared custom hooks
-├── lib/           # Library setup (wagmi, env, pinata, tanstack-query…)
+├── lib/           # Library setup (wagmi, env, filebase, tanstack-query…)
 ├── queries/       # GraphQL query documents
 ├── theme/         # MUI theme configuration
 ├── types/         # Shared TypeScript types

@@ -1,5 +1,5 @@
-import { pinata } from "@/lib/pinata";
 import { authenticateRequest } from "@/lib/auth";
+import { pinJson } from "@/lib/filebase";
 import { NextRequest, NextResponse } from "next/server";
 import { URLS } from "@/consts/urls";
 
@@ -54,13 +54,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const results = await Promise.all(
-      items.map((item) =>
-        pinata.upload.public.json(item as Record<string, unknown>),
-      ),
+    const cids = await Promise.all(
+      items.map((item) => pinJson(item as Record<string, unknown>)),
     );
 
-    const uris = results.map(({ cid }) => `${URLS.IPFS_GATEWAY}/${cid}`);
+    const uris = cids.map((cid) => `${URLS.IPFS_GATEWAY}/${cid}`);
 
     return NextResponse.json<UploadMetadataResponse>({ uris }, { status: 200 });
   } catch (error) {

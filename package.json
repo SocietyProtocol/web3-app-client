@@ -17,6 +17,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1127.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.2.2",
@@ -31,7 +32,6 @@
     "next": "16.0.11",
     "notistack": "^3.0.2",
     "nuqs": "^2.8.6",
-    "pinata": "^2.5.2",
     "posthog-js": "^1.364.7",
     "react": "19.2.1",
     "react-dom": "19.2.0",

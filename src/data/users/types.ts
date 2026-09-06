@@ -32,8 +32,6 @@ export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {
       | "createdAt"
       | "holdersCount"
     > & {
-      holders: Array<Pick<User, "id">>;
-      managers: Array<Pick<User, "id">>;
       community?: Pick<Community, "id" | "name"> | null;
     }
   >;
@@ -50,9 +48,6 @@ export type UserData = Pick<User, "id" | "name" | "imageUrl" | "bio"> & {
       | "creatorAddress"
       | "createdAt"
       | "holdersCount"
-    > & {
-      holders: Array<Pick<User, "id">>;
-      managers: Array<Pick<User, "id">>;
-    }
+    >
   >;
 };

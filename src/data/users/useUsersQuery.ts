@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchUsers, mergeOptions } from "./utils";
 import { UserQueryOptions } from "./types";
 import { TEN_MINUTES_IN_MS } from "@/consts/time";
@@ -7,8 +7,6 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
   const { onSuccess, ...restOptions } = options || {};
   const mergedOptions = mergeOptions(restOptions);
 
-  const queryClient = useQueryClient();
-
   return useInfiniteQuery({
     queryKey: ["users", mergedOptions],
     initialPageParam: 0,
@@ -16,10 +14,6 @@ export const useUsersQuery = (options?: UserQueryOptions) => {
       const result = await fetchUsers({
         ...mergedOptions,
         skip: pageParam * mergedOptions.pageSize,
-      });
-
-      result.users.forEach((user) => {
-        queryClient.setQueryData(["user", user.id.toLowerCase()], user);
       });
 
       if (onSuccess) {

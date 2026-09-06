@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Address, isAddress } from "viem";
 import { execute, UserDocument, UserQuery } from "../../../.graphclient";
+import { requireGraphData } from "@/lib/graph-response";
 
 export const useUserQuery = (address?: Address) =>
   useQuery({
@@ -14,7 +15,7 @@ export const useUserQuery = (address?: Address) =>
         id: address.toLowerCase(),
       });
 
-      return res.data.user as UserQuery["user"];
+      return requireGraphData(res.data as UserQuery | undefined, "User").user;
     },
     enabled: !!address && isAddress(address),
   });

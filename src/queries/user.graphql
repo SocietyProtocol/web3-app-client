@@ -4,7 +4,7 @@ query User($id: ID!) {
     name
     bio
     imageUrl
-    communities {
+    communities(first: 1000) {
       id
     }
     profile {
@@ -16,7 +16,7 @@ query User($id: ID!) {
       bio
       imageUrl
     }
-    badges(where: { isProfile: false }) {
+    badges(first: 1000, where: { isProfile: false }) {
       id
       name
       description
@@ -38,41 +38,8 @@ query User($id: ID!) {
         bio
         imageUrl
       }
-      holders {
-        id
-        name
-        bio
-        imageUrl
-      }
-      managers {
-        id
-        name
-        bio
-        imageUrl
-      }
-      minters {
-        id
-        name
-        holders {
-          id
-        }
-      }
-      burners {
-        id
-        name
-        holders {
-          id
-        }
-      }
-      transferers {
-        id
-        name
-        holders {
-          id
-        }
-      }
     }
-    managedBadges(where: { isProfile: false }) {
+    managedBadges(first: 1000, where: { isProfile: false }) {
       id
       name
       description
@@ -89,39 +56,6 @@ query User($id: ID!) {
         name
         bio
         imageUrl
-      }
-      holders {
-        id
-        name
-        bio
-        imageUrl
-      }
-      managers {
-        id
-        name
-        bio
-        imageUrl
-      }
-      minters {
-        id
-        name
-        holders {
-          id
-        }
-      }
-      burners {
-        id
-        name
-        holders {
-          id
-        }
-      }
-      transferers {
-        id
-        name
-        holders {
-          id
-        }
       }
     }
   }

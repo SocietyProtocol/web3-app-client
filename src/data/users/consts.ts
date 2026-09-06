@@ -13,6 +13,6 @@ export const defaultOptions: Omit<
   searchText: "",
   orderBy: AccountSortOption.Newest,
   orderDirection: "desc",
-  pageSize: 1000,
+  pageSize: 50,
   includeUnregistered: false,
 };

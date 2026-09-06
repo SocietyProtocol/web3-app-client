@@ -5,6 +5,7 @@ import {
   UsersDocument,
   UsersQuery,
 } from "../../../.graphclient";
+import { requireGraphData } from "@/lib/graph-response";
 import { AccountSortOption } from "../accounts/types";
 import { defaultOptions } from "./consts";
 import { UserQueryOptions } from "./types";
@@ -94,5 +95,5 @@ export const fetchUsers = async (options?: UserQueryOptions) => {
     where,
   });
 
-  return res.data as UsersQuery;
+  return requireGraphData(res.data as UsersQuery | undefined, "Users");
 };

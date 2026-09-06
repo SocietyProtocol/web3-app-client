@@ -68,8 +68,8 @@ export type BadgeData = Pick<
   | "createdAt"
 > & {
   createdBy?: Pick<User, "id" | "name" | "bio" | "imageUrl"> | null;
-  holders: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
-  managers: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+  holders?: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
+  managers?: Array<Pick<User, "id" | "name" | "bio" | "imageUrl">>;
   community?: Pick<Community, "id" | "name"> | null;
 };
 

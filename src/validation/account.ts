@@ -19,13 +19,17 @@ export const accountValidationSchema = z.object({
     .refine(
       (value) => {
         if (!value) return true;
+        if (value.startsWith("ipfs://")) return true;
+        if (value.startsWith("https://") || value.startsWith("http://")) {
+          return value.includes("/ipfs/");
+        }
         return value.startsWith("data:image/");
       },
       { message: "Avatar must be a valid image" },
     )
     .refine(
       (value) => {
-        if (!value) return true;
+        if (!value || !value.startsWith("data:image/")) return true;
         const mimeMatch = value.match(
           /^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/i,
         );
@@ -37,7 +41,7 @@ export const accountValidationSchema = z.object({
     )
     .refine(
       (value) => {
-        if (!value) return true;
+        if (!value || !value.startsWith("data:image/")) return true;
         const base64Match = value.match(/^data:image\/[a-z+]+;base64,(.+)$/);
         if (!base64Match) return false;
         const base64String = base64Match[1];

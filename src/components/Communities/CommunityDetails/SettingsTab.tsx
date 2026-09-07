@@ -13,6 +13,7 @@ import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined
 import { useMemo, useState } from "react";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
 import { EditCommunityInfoDialog } from "./Settings/EditCommunityInfoDialog";
+import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
 import { TransferOwnershipDialog } from "./Settings/TransferOwnershipDialog";
 import { EditBadgeDialog } from "./Settings/EditBadgeDialog";
 import { BadgeSettingsCard } from "./Settings/BadgeSettingsCard";
@@ -67,7 +68,7 @@ export function SettingsTab() {
         >
           {/* Logo */}
           <Avatar
-            src={community?.imageUrl ?? "/images/community.png"}
+            src={resolveImageSrc(community?.imageUrl) ?? "/images/community.png"}
             alt={community?.name ?? "Community Logo"}
             sx={{ width: 72, height: 72, flexShrink: 0 }}
             slotProps={{

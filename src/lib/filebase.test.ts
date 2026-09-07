@@ -85,4 +85,37 @@ describe("pinJson", () => {
     await expect(pinJson({ name: "Retry" }, { send })).resolves.toBe("QmRetry");
     expect(heads).toBe(3);
   });
+
+  it("pins data-URI photos as files and stores a gateway URL in JSON", async () => {
+    setFilebaseEnv();
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]).toString("base64");
+
+    const send = vi.fn(async (command: unknown) => {
+      if (!(command instanceof PutObjectCommand)) {
+        throw new Error("unexpected command");
+      }
+      if (command.input.ContentType === "image/png") {
+        return {
+          $metadata: { httpHeaders: { "x-amz-meta-cid": "bafkreiimagecid" } },
+        };
+      }
+      if (command.input.ContentType === "application/json") {
+        const body = JSON.parse(String(command.input.Body));
+        expect(body.imageUrl).toBe("https://ipfs.io/ipfs/bafkreiimagecid");
+        expect(body.name).toBe("Ada");
+        return {
+          $metadata: { httpHeaders: { "x-amz-meta-cid": "bafyjsoncid" } },
+        };
+      }
+      throw new Error("unexpected content type");
+    });
+
+    await expect(
+      pinJson(
+        { name: "Ada", imageUrl: `data:image/png;base64,${png}` },
+        { send },
+      ),
+    ).resolves.toBe("bafyjsoncid");
+    expect(send).toHaveBeenCalledTimes(2);
+  });
 });

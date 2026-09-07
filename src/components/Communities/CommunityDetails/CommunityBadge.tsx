@@ -2,6 +2,7 @@
 
 import { Avatar, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import NextLink from "next/link";
+import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
 
 export interface CommunityBadgeProps {
   id?: string;
@@ -22,7 +23,10 @@ export function CommunityBadge({
 }: CommunityBadgeProps) {
   const avatar = (
     <Avatar
-      src={imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")}
+      src={
+        resolveImageSrc(imageUrl) ??
+        (isOfficial ? "/official-badge.svg" : "/badge.svg")
+      }
       alt={name}
       sx={{ width: 52, height: 52 }}
       onError={(e) => {

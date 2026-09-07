@@ -14,6 +14,7 @@ import { CommunityTierChip } from "./Tier/CommunityTierChip";
 import { resolveTierName } from "./utils";
 import { useMemo } from "react";
 import { useNow } from "@/hooks/useNow";
+import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
 
 export interface CommunityCardProps extends Partial<CommunityData> {
   loading?: boolean;
@@ -129,7 +130,7 @@ export const CommunityCard = ({
       ) : (
         <OptionalLink href={readonly ? undefined : `/communities/${id}`}>
           <Avatar
-            src={imageUrl ?? "/images/community.png"}
+            src={resolveImageSrc(imageUrl) ?? "/images/community.png"}
             alt={name}
             sx={{ width: 52, height: 52 }}
             slotProps={{

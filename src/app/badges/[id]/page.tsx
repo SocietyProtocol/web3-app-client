@@ -1,6 +1,3 @@
-import { getQueryClient } from "@/lib/tanstack-query";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { BadgeDetails } from "@/components/Badges/BadgeDetails";
 import { fetchBadge } from "@/data/badges/utils";
 import { BadgePageLayout } from "./BadgePageLayout";
 import { Metadata } from "next";
@@ -29,14 +26,9 @@ export default async function BadgePage({
   const { id } = await params;
   const { edit } = await searchParams;
 
-  const queryClient = getQueryClient();
-
   let badgeExists = false;
   try {
-    const data = await queryClient.fetchQuery({
-      queryKey: ["badge", id],
-      queryFn: () => fetchBadge(id),
-    });
+    const data = await fetchBadge(id);
     badgeExists = !!data?.badge;
   } catch (error) {
     console.error("Error prefetching badge:", error);
@@ -47,8 +39,6 @@ export default async function BadgePage({
   }
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <BadgePageLayout id={id} initiallyEditing={edit === "true"} />
-    </HydrationBoundary>
+    <BadgePageLayout id={id} initiallyEditing={edit === "true"} />
   );
 }

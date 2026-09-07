@@ -23,6 +23,7 @@ import { BadgePermissions } from "./BadgePermissions";
 import { BadgeManagers } from "./BadgeManagers";
 import { getBadgePermissions } from "../../data/badges/utils";
 import { BadgeActions } from "./BadgeActions";
+import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
 import { BadgeEditProvider } from "./BadgeEdit/BadgeEditContext";
 import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
@@ -127,7 +128,7 @@ export const BadgeDetails = ({
         ) : (
           <Avatar
             src={
-              data?.badge?.imageUrl ??
+              resolveImageSrc(data?.badge?.imageUrl) ??
               (data?.badge?.isOfficial ? "/official-badge.svg" : "/badge.svg")
             }
             alt={data?.badge?.name ?? "Badge Image"}

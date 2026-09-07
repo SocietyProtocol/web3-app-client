@@ -17,6 +17,7 @@ import { OfficialChip } from "./OfficialChip";
 import { CommunityChip } from "./CommunityChip";
 import { IndividualChip } from "./IndividualChip";
 import { UserHandle } from "../User/UserHandle";
+import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
@@ -164,7 +165,8 @@ export const BadgeCard = ({
         <OptionalLink href={readonly ? undefined : `/badges/${id}`}>
           <Avatar
             src={
-              imageUrl ?? (isOfficial ? "/official-badge.svg" : "/badge.svg")
+              resolveImageSrc(imageUrl) ??
+              (isOfficial ? "/official-badge.svg" : "/badge.svg")
             }
             alt={name}
             sx={{ width: 52, height: 52 }}

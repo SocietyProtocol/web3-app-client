@@ -1,5 +1,17 @@
 import { Avatar as MUIAvatar, Skeleton, SxProps, Theme } from "@mui/material";
+import { URLS } from "@/consts/urls";
 import { mergeSx } from "@/utils/sx";
+
+export function resolveImageSrc(src?: string | null): string | undefined {
+  if (!src) return undefined;
+  if (src.startsWith("ipfs://")) {
+    return `${URLS.IPFS_GATEWAY}/${src.slice("ipfs://".length)}`;
+  }
+  if (src.startsWith("data:image/")) {
+    return undefined;
+  }
+  return src;
+}
 
 export interface ImageDisplayProps {
   size?: number | { xs?: number; sm?: number; md?: number; lg?: number };
@@ -28,9 +40,11 @@ export const ImageDisplay = ({
     );
   }
 
+  const resolved = resolveImageSrc(src);
+
   return (
     <MUIAvatar
-      {...(src && { src: src })}
+      {...(resolved && { src: resolved })}
       aria-label={ariaLabel}
       sx={mergeSx(sx, {
         width: size,

@@ -1,6 +1,7 @@
 import { parse, print, type DocumentNode } from "graphql";
 import { getGraphGatewayEnv } from "@/lib/server-env";
 import { PERSISTED_GRAPH_DOCUMENTS } from "@/lib/persisted-graphql.generated";
+import { stripDataUriImages } from "@/lib/strip-data-uri";
 
 export const runtime = "nodejs";
 
@@ -210,7 +211,7 @@ function sanitizeResponse(value: unknown) {
   const source = value as Record<string, unknown>;
   const result: Record<string, unknown> = {};
   if (Object.prototype.hasOwnProperty.call(source, "data")) {
-    result.data = source.data;
+    result.data = stripDataUriImages(source.data);
   }
   if (Array.isArray(source.errors)) {
     result.errors = source.errors.map(sanitizeError);

@@ -1,5 +1,3 @@
-import { getQueryClient } from "@/lib/tanstack-query";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { fetchCommunity } from "@/data/communities/utils";
 import { Page } from "@/components/Page/Page";
 import { Metadata } from "next";
@@ -27,14 +25,9 @@ export default async function CommunityPage({
 }) {
   const { id } = await params;
 
-  const queryClient = getQueryClient();
-
   let communityExists = false;
   try {
-    const data = await queryClient.fetchQuery({
-      queryKey: ["community", id],
-      queryFn: () => fetchCommunity(id),
-    });
+    const data = await fetchCommunity(id);
     communityExists = !!data?.community;
   } catch (error) {
     console.error("Error fetching community", {
@@ -48,16 +41,14 @@ export default async function CommunityPage({
   }
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Page backButton defaultBackPath="/communities">
-        <Box
-          sx={{
-            py: 3,
-          }}
-        >
-          <CommunityDetailsPage id={id} />
-        </Box>
-      </Page>
-    </HydrationBoundary>
+    <Page backButton defaultBackPath="/communities">
+      <Box
+        sx={{
+          py: 3,
+        }}
+      >
+        <CommunityDetailsPage id={id} />
+      </Box>
+    </Page>
   );
 }

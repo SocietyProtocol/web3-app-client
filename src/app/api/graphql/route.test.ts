@@ -98,6 +98,48 @@ describe("/api/graphql", () => {
     expect(response.headers.get("set-cookie")).toBeNull();
   });
 
+  it("strips data-URI photos from GraphQL data", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: {
+            users: [
+              {
+                name: "Ada",
+                imageUrl: "data:image/png;base64,abc",
+                metadata: { imageUrl: "https://ipfs.io/ipfs/bafy" },
+              },
+            ],
+          },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+
+    const response = await POST(
+      request(
+        {
+          query: communitiesQuery,
+          operationName: "Communities",
+        },
+        { "x-forwarded-for": "route-test-strip" },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      data: {
+        users: [
+          {
+            name: "Ada",
+            imageUrl: null,
+            metadata: { imageUrl: "https://ipfs.io/ipfs/bafy" },
+          },
+        ],
+      },
+    });
+  });
+
   it("rejects unallowlisted operations and mutations", async () => {
     const upstreamFetch = vi.spyOn(globalThis, "fetch");
 

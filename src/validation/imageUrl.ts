@@ -19,7 +19,12 @@ export const imageUrlSchema = z.custom<string | null>(
     // Allow empty string
     if (!val) return true;
 
-    // Validate base64 data URL format
+    if (val.startsWith("ipfs://")) return true;
+    if (val.startsWith("https://") || val.startsWith("http://")) {
+      return val.includes("/ipfs/");
+    }
+
+    // Validate base64 data URL format from the file picker
     const mimeMatch = val.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/i);
 
     if (!mimeMatch) return false;

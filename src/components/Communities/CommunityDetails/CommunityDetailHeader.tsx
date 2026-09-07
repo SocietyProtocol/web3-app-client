@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
+import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
 import { TierStatusDisplay } from "./TierStatusDisplay";
 import { useCommunityDetailsContext } from "./CommunityDetails.context";
 
@@ -20,7 +21,7 @@ export function CommunityDetailHeader() {
         />
       ) : (
         <Avatar
-          src={community?.imageUrl ?? "/images/community.png"}
+          src={resolveImageSrc(community?.imageUrl) ?? "/images/community.png"}
           alt={community?.name ?? "Community Logo"}
           sx={{ width: 70, height: 70, flexShrink: 0 }}
           slotProps={{

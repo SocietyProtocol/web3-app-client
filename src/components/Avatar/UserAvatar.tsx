@@ -2,7 +2,7 @@ import { SxProps, Theme } from "@mui/material";
 import { useMemo } from "react";
 import { generateColorsFromAddress } from "@/lib/color";
 import { mergeSx } from "@/utils/sx";
-import { ImageDisplay } from "./ImageDisplay";
+import { ImageDisplay, resolveImageSrc } from "./ImageDisplay";
 
 export interface UserAvatarProps {
   address?: string;
@@ -19,25 +19,27 @@ export const UserAvatar = ({
   sx,
   loading,
 }: UserAvatarProps) => {
+  const resolved = resolveImageSrc(imageUrl);
+
   const colors = useMemo(
-    () => (!imageUrl && address ? generateColorsFromAddress(address) : []),
-    [address, imageUrl],
+    () => (!resolved && address ? generateColorsFromAddress(address) : []),
+    [address, resolved],
   );
 
   const gradientStyle = useMemo(
     () =>
-      !imageUrl
+      !resolved
         ? ({
             background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
           } as SxProps)
         : {},
-    [imageUrl, colors],
+    [resolved, colors],
   );
 
   return (
     <ImageDisplay
       loading={loading}
-      {...(imageUrl && { src: imageUrl })}
+      {...(resolved && { src: resolved })}
       ariaLabel={address ? `Avatar for ${address}` : "User Avatar"}
       size={size}
       sx={mergeSx(sx, gradientStyle)}

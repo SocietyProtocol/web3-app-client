@@ -1,6 +1,6 @@
 "use client";
 
-import { SxProps, Theme } from "@mui/material";
+import { Skeleton, SxProps, Theme } from "@mui/material";
 import { truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { UserCard } from "../User/UserCard";
@@ -50,7 +50,21 @@ export const UserList = ({
           },
           sx,
         )}
-        title={title}
+        title={
+          <>
+            {title} (
+            {loading ? (
+              <Skeleton
+                variant="text"
+                width={20}
+                sx={{ display: "inline-block" }}
+              />
+            ) : (
+              users.length
+            )}
+            )
+          </>
+        }
         loading={loading}
         items={users}
         minItemWidth={140}

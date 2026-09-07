@@ -9,6 +9,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+function isBlank(value: unknown): boolean {
+  return value == null || value === "";
+}
+
 /** Copy Metadata fields onto User/Badge/Community when the chain fields are empty. */
 export function hydrateMetadata<T>(value: T): T {
   if (Array.isArray(value)) {
@@ -26,12 +30,12 @@ export function hydrateMetadata<T>(value: T): T {
   const metadata = next.metadata;
   if (isPlainObject(metadata)) {
     const fields = metadata as MetadataFields;
-    if (next.name == null && fields.name != null) next.name = fields.name;
-    if (next.bio == null && fields.bio != null) next.bio = fields.bio;
-    if (next.imageUrl == null && fields.imageUrl != null) {
+    if (isBlank(next.name) && !isBlank(fields.name)) next.name = fields.name;
+    if (isBlank(next.bio) && !isBlank(fields.bio)) next.bio = fields.bio;
+    if (isBlank(next.imageUrl) && !isBlank(fields.imageUrl)) {
       next.imageUrl = fields.imageUrl;
     }
-    if (next.description == null && fields.description != null) {
+    if (isBlank(next.description) && !isBlank(fields.description)) {
       next.description = fields.description;
     }
   }

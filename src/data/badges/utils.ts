@@ -11,6 +11,7 @@ import {
 import { defaultOptions } from "./consts";
 import { BadgeCategory, BadgeQueryOptions, FullBadgeData } from "./types";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+import { requireGraphData } from "@/lib/graph-response";
 
 /**
  * Merges the provided options with the default options.
@@ -147,7 +148,7 @@ export const fetchBadge = async (id: string) => {
     id,
   });
 
-  return res.data as BadgeQuery;
+  return requireGraphData(res.data as BadgeQuery | undefined, "Badge");
 };
 
 /**
@@ -177,7 +178,7 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
     where,
   });
 
-  return res.data as BadgesQuery;
+  return requireGraphData(res.data as BadgesQuery | undefined, "Badges");
 };
 
 /**

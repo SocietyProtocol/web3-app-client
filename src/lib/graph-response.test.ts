@@ -30,6 +30,20 @@ describe("hydrateMetadata", () => {
     expect(hydrated.name).toBe("On-chain");
     expect(hydrated.imageUrl).toBe("/badge.svg");
   });
+
+  it("copies Metadata when User display fields are empty strings", () => {
+    const hydrated = hydrateMetadata({
+      id: "0x1",
+      name: "",
+      bio: "",
+      imageUrl: "",
+      metadata: { name: "Ada", bio: "Builder", imageUrl: "data:image/png;base64,abc" },
+    });
+
+    expect(hydrated.name).toBe("Ada");
+    expect(hydrated.bio).toBe("Builder");
+    expect(hydrated.imageUrl).toBe("data:image/png;base64,abc");
+  });
 });
 
 describe("requireGraphData", () => {

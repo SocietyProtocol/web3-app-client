@@ -29,6 +29,10 @@ export type FilebaseClient = {
   send: (command: unknown) => Promise<unknown>;
 };
 
+function resolveClient(client?: FilebaseClient): FilebaseClient {
+  return client ?? (createFilebaseClient() as unknown as FilebaseClient);
+}
+
 export function getFilebaseEnv() {
   const key = process.env.FILEBASE_KEY;
   const secret = process.env.FILEBASE_SECRET;
@@ -142,7 +146,7 @@ export async function pinBytes(
   client?: FilebaseClient,
 ): Promise<string> {
   const { bucket } = getFilebaseEnv();
-  const s3 = client ?? createFilebaseClient();
+  const s3 = resolveClient(client);
   return putAndReadCid(s3, {
     Bucket: bucket,
     Key: objectKey(extension),
@@ -183,7 +187,7 @@ export async function rewriteDataUriImages(
     if (!value.startsWith("data:image/")) {
       return value;
     }
-    const s3 = client ?? createFilebaseClient();
+    const s3 = resolveClient(client);
     return pinDataUriImage(value, s3);
   }
   if (Array.isArray(value)) {
@@ -208,7 +212,7 @@ export async function pinJson(
   client?: FilebaseClient,
 ): Promise<string> {
   const { bucket } = getFilebaseEnv();
-  const s3 = client ?? createFilebaseClient();
+  const s3 = resolveClient(client);
   const rewritten = (await rewriteDataUriImages(data, s3)) as Record<
     string,
     unknown

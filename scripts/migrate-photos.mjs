@@ -4,7 +4,7 @@
  * sha256(dataUri) -> gateway URL mapping for the query gateway.
  */
 import { createHash } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   GetObjectCommand,
@@ -16,9 +16,13 @@ import {
 
 const FILEBASE_ENDPOINT = "https://s3.filebase.com";
 const IPFS_GATEWAY = "https://ipfs.io/ipfs";
+const GRAPHQL_URL =
+  process.env.GRAPHQL_URL || "https://app.societyprotocol.io/api/graphql";
 const CID_ATTEMPTS = 8;
 const CID_RETRY_MS = 250;
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+const BADGES_QUERY =
+  "query Badges($first: Int!, $skip: Int!, $orderBy: Badge_orderBy!, $orderDirection: OrderDirection!, $where: Badge_filter) {\n  badges(\n    first: $first\n    skip: $skip\n    orderBy: $orderBy\n    orderDirection: $orderDirection\n    where: $where\n  ) {\n    id\n    name\n    description\n    isOfficial\n    isCommunity\n    uri\n    imageUrl\n    metadata {\n      description\n      imageUrl\n    }\n    creatorAddress\n    profileUser {\n      name\n      metadata {\n        name\n      }\n    }\n    community {\n      id\n      name\n    }\n    createdBy {\n      id\n      name\n      bio\n      imageUrl\n      metadata {\n        name\n        bio\n        imageUrl\n      }\n    }\n  }\n}\n";
 const DATA_URI_PATTERN =
   /^data:(image\/[a-zA-Z0-9+.-]+)(?:;charset=[^;,]+)?;base64,([A-Za-z0-9+/]+=*)$/i;
 const MIME_EXTENSION = {
@@ -124,6 +128,75 @@ async function readObjectString(s3, bucket, key) {
   return obj.Body.transformToString();
 }
 
+function cidFromUri(uri) {
+  const match = String(uri).match(/\/ipfs\/([^/?#]+)/);
+  if (match) return match[1];
+  if (String(uri).startsWith("ipfs://")) return String(uri).slice(7);
+  return null;
+}
+
+async function fetchIpfsJson(uri) {
+  const cid = cidFromUri(uri);
+  if (!cid) return null;
+  const urls = [
+    `${IPFS_GATEWAY}/${cid}`,
+    `https://dweb.link/ipfs/${cid}`,
+  ];
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
+      if (!response.ok) continue;
+      const text = await response.text();
+      const trimmed = text.trim();
+      if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) continue;
+      return JSON.parse(trimmed);
+    } catch {
+      // try the next gateway
+    }
+  }
+  return null;
+}
+
+async function collectGraphqlUris() {
+  const uris = new Set();
+  const response = await fetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      query: BADGES_QUERY,
+      operationName: "Badges",
+      variables: {
+        first: 200,
+        skip: 0,
+        orderBy: "id",
+        orderDirection: "asc",
+        where: {},
+      },
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+  const body = await response.json();
+  for (const badge of body.data?.badges ?? []) {
+    if (typeof badge.uri === "string" && badge.uri) uris.add(badge.uri);
+  }
+  return uris;
+}
+
+function loadExistingMapping(path) {
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf8"));
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // start from an empty mapping
+  }
+  return {};
+}
+
 async function main() {
   const key = requireEnv("FILEBASE_KEY");
   const secret = requireEnv("FILEBASE_SECRET");
@@ -140,6 +213,8 @@ async function main() {
   const uris = new Set();
   let jsonFiles = 0;
   let unreadable = 0;
+  let ipfsJson = 0;
+  let ipfsFailed = 0;
   for (const objectKey of keys) {
     let text;
     try {
@@ -174,11 +249,35 @@ async function main() {
     }
   }
 
-  const mapping = {};
+  const metadataUris = await collectGraphqlUris();
+  for (const metadataUri of metadataUris) {
+    const parsed = await fetchIpfsJson(metadataUri);
+    if (!parsed) {
+      ipfsFailed += 1;
+      continue;
+    }
+    collectDataUris(parsed, uris);
+    ipfsJson += 1;
+  }
+
+  const clientPath = resolve(
+    process.cwd(),
+    "src/lib/image-cids.generated.json",
+  );
+  const gatewayPath = resolve(
+    process.cwd(),
+    "../web3-app-subgraph/infra/query-gateway/generated/image-cids.json",
+  );
+  const mapping = loadExistingMapping(clientPath);
   let pinned = 0;
+  let reused = 0;
   let skipped = 0;
   for (const uri of uris) {
     const hash = dataUriKey(uri);
+    if (mapping[hash]) {
+      reused += 1;
+      continue;
+    }
     const match = uri.match(DATA_URI_PATTERN);
     if (!match) {
       skipped += 1;
@@ -204,17 +303,17 @@ async function main() {
     );
     mapping[hash] = `${IPFS_GATEWAY}/${cid}`;
     pinned += 1;
+    console.log(
+      JSON.stringify({
+        pinned,
+        hash: hash.slice(0, 12),
+        mime,
+        bytes: bytes.byteLength,
+      }),
+    );
   }
 
   const serialized = `${JSON.stringify(mapping, null, 2)}\n`;
-  const clientPath = resolve(
-    process.cwd(),
-    "src/lib/image-cids.generated.json",
-  );
-  const gatewayPath = resolve(
-    process.cwd(),
-    "../web3-app-subgraph/infra/query-gateway/generated/image-cids.json",
-  );
   writeFileSync(clientPath, serialized);
   writeFileSync(gatewayPath, serialized);
 
@@ -223,8 +322,12 @@ async function main() {
       objects: keys.length,
       jsonFiles,
       unreadable,
+      metadataUris: metadataUris.size,
+      ipfsJson,
+      ipfsFailed,
       dataUris: uris.size,
       pinned,
+      reused,
       skipped,
       mapped: Object.keys(mapping).length,
     }),

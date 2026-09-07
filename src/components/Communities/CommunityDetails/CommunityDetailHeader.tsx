@@ -26,6 +26,7 @@ export function CommunityDetailHeader() {
           sx={{ width: 70, height: 70, flexShrink: 0 }}
           slotProps={{
             img: {
+              referrerPolicy: "no-referrer",
               onError: (e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = "/images/community.png";

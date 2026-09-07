@@ -132,6 +132,9 @@ export const BadgeDetails = ({
               (data?.badge?.isOfficial ? "/official-badge.svg" : "/badge.svg")
             }
             alt={data?.badge?.name ?? "Badge Image"}
+            slotProps={{
+              img: { referrerPolicy: "no-referrer" },
+            }}
             sx={{
               width: { xs: 80, sm: 100, md: 120 },
               height: { xs: 80, sm: 100, md: 120 },

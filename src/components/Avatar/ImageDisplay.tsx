@@ -2,13 +2,19 @@ import { Avatar as MUIAvatar, Skeleton, SxProps, Theme } from "@mui/material";
 import { URLS } from "@/consts/urls";
 import { mergeSx } from "@/utils/sx";
 
+const IPFS_CID_IN_URL = /\/ipfs\/([^/?#]+)/;
+
 export function resolveImageSrc(src?: string | null): string | undefined {
   if (!src) return undefined;
+  if (src.startsWith("data:image/")) {
+    return undefined;
+  }
   if (src.startsWith("ipfs://")) {
     return `${URLS.IPFS_GATEWAY}/${src.slice("ipfs://".length)}`;
   }
-  if (src.startsWith("data:image/")) {
-    return undefined;
+  const match = src.match(IPFS_CID_IN_URL);
+  if (match) {
+    return `${URLS.IPFS_GATEWAY}/${match[1]}`;
   }
   return src;
 }
@@ -46,6 +52,9 @@ export const ImageDisplay = ({
     <MUIAvatar
       {...(resolved && { src: resolved })}
       aria-label={ariaLabel}
+      slotProps={{
+        img: { referrerPolicy: "no-referrer" },
+      }}
       sx={mergeSx(sx, {
         width: size,
         height: size,

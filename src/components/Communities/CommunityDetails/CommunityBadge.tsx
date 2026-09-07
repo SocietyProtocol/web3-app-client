@@ -29,6 +29,9 @@ export function CommunityBadge({
       }
       alt={name}
       sx={{ width: 52, height: 52 }}
+      slotProps={{
+        img: { referrerPolicy: "no-referrer" },
+      }}
       onError={(e) => {
         (e.currentTarget as HTMLImageElement).src = isOfficial
           ? "/official-badge.svg"

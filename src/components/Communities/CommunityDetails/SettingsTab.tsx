@@ -73,6 +73,7 @@ export function SettingsTab() {
             sx={{ width: 72, height: 72, flexShrink: 0 }}
             slotProps={{
               img: {
+                referrerPolicy: "no-referrer",
                 onError: (e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = "/images/community.png";

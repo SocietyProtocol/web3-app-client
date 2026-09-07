@@ -101,7 +101,9 @@ describe("pinJson", () => {
       }
       if (command.input.ContentType === "application/json") {
         const body = JSON.parse(String(command.input.Body));
-        expect(body.imageUrl).toBe("https://ipfs.io/ipfs/bafkreiimagecid");
+        expect(body.imageUrl).toBe(
+          "https://ipfs.filebase.io/ipfs/bafkreiimagecid",
+        );
         expect(body.name).toBe("Ada");
         return {
           $metadata: { httpHeaders: { "x-amz-meta-cid": "bafyjsoncid" } },

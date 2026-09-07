@@ -8,7 +8,7 @@ export const URLS = {
   ETHERSCAN_SEPOLIA: "https://sepolia.etherscan.io",
 
   // IPFS gateways
-  IPFS_GATEWAY: `https://ipfs.io/ipfs`,
+  IPFS_GATEWAY: `https://ipfs.filebase.io/ipfs`,
 
   // Social
   TWITTER: "https://x.com/ProtocolSociety",

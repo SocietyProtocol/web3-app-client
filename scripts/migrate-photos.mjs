@@ -15,7 +15,7 @@ import {
 } from "@aws-sdk/client-s3";
 
 const FILEBASE_ENDPOINT = "https://s3.filebase.com";
-const IPFS_GATEWAY = "https://ipfs.io/ipfs";
+const IPFS_GATEWAY = "https://ipfs.filebase.io/ipfs";
 const GRAPHQL_URL =
   process.env.GRAPHQL_URL || "https://app.societyprotocol.io/api/graphql";
 const CID_ATTEMPTS = 8;

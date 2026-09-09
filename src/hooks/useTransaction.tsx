@@ -182,7 +182,7 @@ export const useTransaction = ({
     hash: txHash,
   });
 
-  const { isSynced, isWaiting } = useWaitForSubgraphSync(
+  const { isSynced, isWaiting, isTimeout } = useWaitForSubgraphSync(
     txReceipt.data?.blockNumber,
   );
 
@@ -281,7 +281,7 @@ export const useTransaction = ({
   // Handle transaction success/error
   useEffect(() => {
     if (status === "executing" && txReceipt.isFetched) {
-      const shouldWait = waitForSync ? isSynced : true;
+      const shouldWait = waitForSync ? isSynced || isTimeout : true;
 
       if (txReceipt.status === "error") {
         if (handledTxHashRef.current === txHash) return;
@@ -333,6 +333,7 @@ export const useTransaction = ({
     txReceipt.error,
     txReceipt.data,
     isSynced,
+    isTimeout,
     waitForSync,
     enqueueSnackbar,
     successMessage,

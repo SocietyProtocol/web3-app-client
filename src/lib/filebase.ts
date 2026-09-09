@@ -6,8 +6,18 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
+import { CID } from "multiformats/cid";
 
 import { URLS } from "@/consts/urls";
+
+/** Subgraph MetadataFile only accepts CIDv1 bafybei/bafkrei or CIDv0 Qm. */
+export function toIndexedCid(cid: string): string {
+  const parsed = CID.parse(cid);
+  if (parsed.version === 0) {
+    return parsed.toV1().toString();
+  }
+  return parsed.toString();
+}
 
 const FILEBASE_ENDPOINT = "https://s3.filebase.com";
 const FILEBASE_REGION = "us-east-1";
@@ -114,7 +124,7 @@ async function putAndReadCid(
   const put = await s3.send(new PutObjectCommand(input));
   const putCid = cidFromResponse(put);
   if (putCid) {
-    return putCid;
+    return toIndexedCid(putCid);
   }
 
   for (let attempt = 0; attempt < CID_ATTEMPTS; attempt += 1) {
@@ -126,7 +136,7 @@ async function putAndReadCid(
     );
     const cid = cidFromResponse(head);
     if (cid) {
-      return cid;
+      return toIndexedCid(cid);
     }
     await sleep(CID_RETRY_MS);
   }

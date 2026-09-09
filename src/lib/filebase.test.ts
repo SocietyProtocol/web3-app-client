@@ -3,13 +3,26 @@ import { HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 vi.mock("server-only", () => ({}));
 
-import { pinJson } from "./filebase";
+import { pinJson, toIndexedCid } from "./filebase";
 
 function setFilebaseEnv() {
   process.env.FILEBASE_KEY = "key";
   process.env.FILEBASE_SECRET = "secret";
   process.env.FILEBASE_BUCKET = "society-outpost";
 }
+
+describe("toIndexedCid", () => {
+  it("converts Filebase CIDv0 Qm roots to CIDv1 base32", () => {
+    const v1 = toIndexedCid("QmbkEAHqF82urRidwJZCScB8hrvi21dMJYHwhrZUqZ74Vc");
+    expect(v1.startsWith("bafybei")).toBe(true);
+    expect(v1).toHaveLength(59);
+  });
+
+  it("keeps CIDv1 Filebase roots", () => {
+    const cid = "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy";
+    expect(toIndexedCid(cid)).toBe(cid);
+  });
+});
 
 describe("pinJson", () => {
   afterEach(() => {
@@ -30,14 +43,19 @@ describe("pinJson", () => {
     const send = vi.fn(async (command: unknown) => {
       if (command instanceof PutObjectCommand) {
         return {
-          $metadata: { httpHeaders: { "x-amz-meta-cid": "bafyfromput" } },
+          $metadata: {
+            httpHeaders: {
+              "x-amz-meta-cid":
+                "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
+            },
+          },
         };
       }
       throw new Error("unexpected command");
     });
 
     await expect(pinJson({ name: "Test" }, { send })).resolves.toBe(
-      "bafyfromput",
+      "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
     );
     expect(send).toHaveBeenCalledTimes(1);
   });
@@ -50,14 +68,20 @@ describe("pinJson", () => {
         return {};
       }
       if (command instanceof HeadObjectCommand) {
-        return { Metadata: { cid: "bafytestcid" } };
+        return {
+          Metadata: {
+            cid: "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
+          },
+        };
       }
       throw new Error("unexpected command");
     });
 
     const cid = await pinJson({ name: "Test" }, { send });
 
-    expect(cid).toBe("bafytestcid");
+    expect(cid).toBe(
+      "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
+    );
     expect(send).toHaveBeenCalledTimes(2);
     const put = send.mock.calls[0]?.[0] as PutObjectCommand;
     expect(put).toBeInstanceOf(PutObjectCommand);
@@ -79,10 +103,15 @@ describe("pinJson", () => {
       if (heads < 3) {
         return { Metadata: {} };
       }
-      return { Metadata: { cid: "QmRetry" } };
+      return {
+        Metadata: { cid: "QmbkEAHqF82urRidwJZCScB8hrvi21dMJYHwhrZUqZ74Vc" },
+      };
     });
 
-    await expect(pinJson({ name: "Retry" }, { send })).resolves.toBe("QmRetry");
+    const cid = await pinJson({ name: "Retry" }, { send });
+    expect(cid).toBe(
+      toIndexedCid("QmbkEAHqF82urRidwJZCScB8hrvi21dMJYHwhrZUqZ74Vc"),
+    );
     expect(heads).toBe(3);
   });
 
@@ -96,17 +125,27 @@ describe("pinJson", () => {
       }
       if (command.input.ContentType === "image/png") {
         return {
-          $metadata: { httpHeaders: { "x-amz-meta-cid": "bafkreiimagecid" } },
+          $metadata: {
+            httpHeaders: {
+              "x-amz-meta-cid":
+                "bafkreibj4mwlrvpxohmetqmvneqv35psx2opteabp3q7t5rfvrp4ve2gle",
+            },
+          },
         };
       }
       if (command.input.ContentType === "application/json") {
         const body = JSON.parse(String(command.input.Body));
         expect(body.imageUrl).toBe(
-          "https://ipfs.filebase.io/ipfs/bafkreiimagecid",
+          "https://ipfs.filebase.io/ipfs/bafkreibj4mwlrvpxohmetqmvneqv35psx2opteabp3q7t5rfvrp4ve2gle",
         );
         expect(body.name).toBe("Ada");
         return {
-          $metadata: { httpHeaders: { "x-amz-meta-cid": "bafyjsoncid" } },
+          $metadata: {
+            httpHeaders: {
+              "x-amz-meta-cid":
+                "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
+            },
+          },
         };
       }
       throw new Error("unexpected content type");
@@ -117,7 +156,9 @@ describe("pinJson", () => {
         { name: "Ada", imageUrl: `data:image/png;base64,${png}` },
         { send },
       ),
-    ).resolves.toBe("bafyjsoncid");
+    ).resolves.toBe(
+      "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
+    );
     expect(send).toHaveBeenCalledTimes(2);
   });
 });

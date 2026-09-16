@@ -32,8 +32,10 @@ export const Accounts = () => {
     isFetchingNextPage,
     searchQuery,
     orderBy,
+    roles,
     setSearchQuery,
     setSortBy,
+    setRoles,
   } = useAccounts();
 
   const { start, complete } = useLoadingBar();
@@ -131,8 +133,7 @@ export const Accounts = () => {
           )}
         </Box>
 
-        {/* Role filters (UI-only) */}
-        <AccountsRoleFilter />
+        <AccountsRoleFilter value={roles} onChange={setRoles} />
 
         {/* Accounts Grid */}
         <Box

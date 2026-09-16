@@ -1,6 +1,11 @@
-import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
+import {
+  parseAsArrayOf,
+  parseAsString,
+  parseAsStringEnum,
+  useQueryState,
+} from "nuqs";
 import { useDebounceValue } from "../../hooks/useDebounceValue";
-import { AccountSortOption } from "./types";
+import { ALL_ACCOUNT_ROLES, AccountRole, AccountSortOption } from "./types";
 import { useMemo } from "react";
 import { useUsersQuery } from "../users/useUsersQuery";
 import { mergeOptions } from "../users/utils";
@@ -19,6 +24,20 @@ export const useAccounts = () => {
     parseAsString.withDefault(""),
   );
 
+  const [roles, setRoles] = useQueryState<AccountRole[]>(
+    "roles",
+    parseAsArrayOf(
+      parseAsStringEnum([
+        AccountRole.Governors,
+        AccountRole.Contributors,
+        AccountRole.CoreTeam,
+        AccountRole.Advisors,
+        AccountRole.Moderators,
+        AccountRole.Basic,
+      ]),
+    ).withDefault(ALL_ACCOUNT_ROLES),
+  );
+
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);
 
   const options = useMemo(
@@ -27,8 +46,9 @@ export const useAccounts = () => {
         searchText: debouncedSearchQuery,
         orderBy,
         orderDirection: orderBy === AccountSortOption.Name ? "asc" : "desc",
+        roles,
       }),
-    [debouncedSearchQuery, orderBy],
+    [debouncedSearchQuery, orderBy, roles],
   );
 
   const query = useUsersQuery(options);
@@ -38,7 +58,9 @@ export const useAccounts = () => {
     options,
     searchQuery,
     orderBy,
+    roles,
     setSortBy,
     setSearchQuery,
+    setRoles,
   };
 };

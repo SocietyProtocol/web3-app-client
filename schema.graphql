@@ -27,6 +27,15 @@ enum Aggregation_interval {
   hour
 }
 
+enum ProtocolRole {
+  ADVISOR
+  CONTRIBUTOR
+  CORE_TEAM
+  GOVERNOR
+  MODERATOR
+  NONE
+}
+
 type AuctionDetail {
   addressAuctioningToken: Bytes!
   addressBiddingToken: Bytes!
@@ -469,6 +478,7 @@ type Badge {
   minters(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
   name: String!
   profileUser: User
+  protocolRole: ProtocolRole!
   transferers(first: Int = 100, orderBy: Badge_orderBy, orderDirection: OrderDirection, skip: Int = 0, where: Badge_filter): [Badge!]!
   uri: String
 }
@@ -1006,6 +1016,10 @@ input Badge_filter {
   profileUser_not_starts_with_nocase: String
   profileUser_starts_with: String
   profileUser_starts_with_nocase: String
+  protocolRole: ProtocolRole
+  protocolRole_in: [ProtocolRole!]
+  protocolRole_not: ProtocolRole
+  protocolRole_not_in: [ProtocolRole!]
   transferers: [String!]
   transferers_: Badge_filter
   transferers_contains: [String!]
@@ -1079,6 +1093,7 @@ enum Badge_orderBy {
   profileUser__id
   profileUser__imageUrl
   profileUser__name
+  protocolRole
   transferers
   uri
 }
@@ -3920,6 +3935,8 @@ type User {
   metadata: Metadata
   name: String
   profile: Badge
+  protocolRoleCount: Int!
+  protocolRoles: [ProtocolRole!]!
 }
 
 input User_filter {
@@ -4087,6 +4104,20 @@ input User_filter {
   profile_not_starts_with_nocase: String
   profile_starts_with: String
   profile_starts_with_nocase: String
+  protocolRoleCount: Int
+  protocolRoleCount_gt: Int
+  protocolRoleCount_gte: Int
+  protocolRoleCount_in: [Int!]
+  protocolRoleCount_lt: Int
+  protocolRoleCount_lte: Int
+  protocolRoleCount_not: Int
+  protocolRoleCount_not_in: [Int!]
+  protocolRoles: [ProtocolRole!]
+  protocolRoles_contains: [ProtocolRole!]
+  protocolRoles_contains_nocase: [ProtocolRole!]
+  protocolRoles_not: [ProtocolRole!]
+  protocolRoles_not_contains: [ProtocolRole!]
+  protocolRoles_not_contains_nocase: [ProtocolRole!]
 }
 
 enum User_orderBy {
@@ -4123,6 +4154,8 @@ enum User_orderBy {
   profile__isProfile
   profile__name
   profile__uri
+  protocolRoleCount
+  protocolRoles
 }
 
 type _Block_ {

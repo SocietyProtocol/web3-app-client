@@ -1,14 +1,42 @@
 import {
   execute,
   InputMaybe,
+  ProtocolRole,
   User_filter,
   UsersDocument,
   UsersQuery,
 } from "../../../.graphclient";
 import { requireGraphData } from "@/lib/graph-response";
-import { AccountSortOption } from "../accounts/types";
+import {
+  ALL_ACCOUNT_ROLES,
+  AccountRole,
+  AccountSortOption,
+} from "../accounts/types";
 import { defaultOptions } from "./consts";
 import { UserQueryOptions } from "./types";
+
+const ACCOUNT_ROLE_TO_PROTOCOL: Record<
+  Exclude<AccountRole, AccountRole.Basic>,
+  ProtocolRole
+> = {
+  [AccountRole.Governors]: "GOVERNOR" as ProtocolRole,
+  [AccountRole.Contributors]: "CONTRIBUTOR" as ProtocolRole,
+  [AccountRole.CoreTeam]: "CORE_TEAM" as ProtocolRole,
+  [AccountRole.Advisors]: "ADVISOR" as ProtocolRole,
+  [AccountRole.Moderators]: "MODERATOR" as ProtocolRole,
+};
+
+export const isUnfilteredAccountRoles = (
+  roles?: AccountRole[] | null,
+): boolean => {
+  if (!roles || roles.length === 0) {
+    return true;
+  }
+  if (roles.length !== ALL_ACCOUNT_ROLES.length) {
+    return false;
+  }
+  return ALL_ACCOUNT_ROLES.every((role) => roles.includes(role));
+};
 
 /**
  * Merges the provided options with the default options.
@@ -49,8 +77,9 @@ export const mergeOptions = (
 export const buildWhereClause = (options: {
   searchText?: string | null;
   includeUnregistered?: boolean;
+  roles?: AccountRole[] | null;
 }) => {
-  const { searchText, includeUnregistered } = options;
+  const { searchText, includeUnregistered, roles } = options;
 
   const whereClauses: InputMaybe<InputMaybe<User_filter>[]> = [];
 
@@ -71,6 +100,24 @@ export const buildWhereClause = (options: {
     whereClauses.push({ profile_not: null });
   }
 
+  if (!isUnfilteredAccountRoles(roles)) {
+    const roleClauses: User_filter[] = [];
+    for (const role of roles ?? []) {
+      if (role === AccountRole.Basic) {
+        roleClauses.push({ protocolRoleCount: 0 });
+        continue;
+      }
+      roleClauses.push({
+        protocolRoles_contains: [ACCOUNT_ROLE_TO_PROTOCOL[role]],
+      });
+    }
+    if (roleClauses.length === 1) {
+      whereClauses.push(roleClauses[0]);
+    } else if (roleClauses.length > 1) {
+      whereClauses.push({ or: roleClauses });
+    }
+  }
+
   return { and: whereClauses };
 };
 
@@ -86,6 +133,7 @@ export const fetchUsers = async (options?: UserQueryOptions) => {
   const where = buildWhereClause({
     searchText: mergedOptions.searchText,
     includeUnregistered: mergedOptions.includeUnregistered,
+    roles: mergedOptions.roles,
   });
 
   const res = await execute(UsersDocument, {

@@ -1,5 +1,5 @@
 import { OrderDirection } from "../../../.graphclient";
-import { AccountSortOption } from "../accounts/types";
+import { ALL_ACCOUNT_ROLES, AccountSortOption } from "../accounts/types";
 import { UserQueryOptions } from "./types";
 
 export const defaultOptions: Omit<
@@ -11,6 +11,7 @@ export const defaultOptions: Omit<
   pageSize: number;
 } = {
   searchText: "",
+  roles: ALL_ACCOUNT_ROLES,
   orderBy: AccountSortOption.Newest,
   orderDirection: "desc",
   pageSize: 50,

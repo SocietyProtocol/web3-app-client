@@ -5,10 +5,11 @@ import {
   User,
   UsersQuery,
 } from "../../../.graphclient";
-import { AccountSortOption } from "../accounts/types";
+import { AccountRole, AccountSortOption } from "../accounts/types";
 
 export interface UserQueryOptions {
   searchText?: string | null;
+  roles?: AccountRole[] | null;
   orderBy?: AccountSortOption;
   orderDirection?: OrderDirection;
   pageSize?: number;

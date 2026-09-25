@@ -3,7 +3,6 @@ import {
   getAddress,
   hashMessage,
   http,
-  recoverMessage,
   verifyMessage,
 } from "viem";
 import { mainnet, sepolia } from "viem/chains";
@@ -33,16 +32,6 @@ const isValidSignatureAbi = [
   },
 ] as const;
 
-const safeOwnersAbi = [
-  {
-    type: "function",
-    name: "getOwners",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ name: "owners", type: "address[]" }],
-  },
-] as const;
-
 function authPublicClient() {
   const chain = env.environment === "production" ? mainnet : sepolia;
   return createPublicClient({
@@ -52,9 +41,8 @@ function authPublicClient() {
 }
 
 /**
- * Safe WalletConnect signs personal messages with an owner key.
- * ecrecover then does not match the Safe address. Accept EIP-1271
- * or a signature from a current Safe owner.
+ * Contract accounts prove a signature with EIP-1271.
+ * One read. No owner list. EOAs never reach this.
  */
 export async function isContractWalletSignature(payload: AuthPayload) {
   const address = getAddress(payload.address);
@@ -69,24 +57,7 @@ export async function isContractWalletSignature(payload: AuthPayload) {
       functionName: "isValidSignature",
       args: [hashMessage(payload.message), payload.signature],
     });
-    if (magic.toLowerCase() === EIP1271_MAGIC) return true;
-  } catch {
-    // Not every contract wallet implements EIP-1271 the same way.
-  }
-
-  try {
-    const signer = await recoverMessage({
-      message: payload.message,
-      signature: payload.signature,
-    });
-    const owners = await client.readContract({
-      address,
-      abi: safeOwnersAbi,
-      functionName: "getOwners",
-    });
-    return owners.some(
-      (owner) => owner.toLowerCase() === signer.toLowerCase(),
-    );
+    return magic.toLowerCase() === EIP1271_MAGIC;
   } catch {
     return false;
   }

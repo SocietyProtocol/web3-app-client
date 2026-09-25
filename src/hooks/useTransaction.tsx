@@ -25,7 +25,10 @@ import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { IconButton, Link, Tooltip } from "@mui/material";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { useStableArray } from "./useStableArray";
-import { resolveExecutedTransactionHash } from "@/lib/safe-tx";
+import {
+  sendContractCall,
+  walletSupportsSendCalls,
+} from "@/lib/account-executor";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -223,23 +226,31 @@ export const useTransaction = ({
           variant: "info",
         });
 
-        const proposedHash = await writeContractAsync({
-          address: finalAddress,
-          abi: finalAbi,
-          functionName: finalFunctionName,
-          args: finalArgs,
-          ...(finalValue !== undefined && { value: finalValue }),
-        } as Parameters<typeof writeContractAsync>[0]);
+        const useWalletCalls = await walletSupportsSendCalls(chainId);
+        let hash: Hex;
 
-        enqueueSnackbar("Waiting for the transaction to execute", {
-          key: `${snackbarKeyPrefixFinal}-pending`,
-          variant: "info",
-        });
-
-        const hash = await resolveExecutedTransactionHash(
-          proposedHash,
-          chainId,
-        );
+        if (useWalletCalls) {
+          enqueueSnackbar("Waiting for the transaction to execute", {
+            key: `${snackbarKeyPrefixFinal}-pending`,
+            variant: "info",
+          });
+          hash = await sendContractCall({
+            chainId,
+            address: finalAddress,
+            abi: finalAbi as readonly unknown[],
+            functionName: finalFunctionName,
+            args: finalArgs,
+            value: finalValue,
+          });
+        } else {
+          hash = await writeContractAsync({
+            address: finalAddress,
+            abi: finalAbi,
+            functionName: finalFunctionName,
+            args: finalArgs,
+            ...(finalValue !== undefined && { value: finalValue }),
+          } as Parameters<typeof writeContractAsync>[0]);
+        }
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);

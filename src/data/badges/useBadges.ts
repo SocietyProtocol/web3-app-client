@@ -60,12 +60,7 @@ export const useBadges = () => {
         BadgeCategory.Individual,
         BadgeCategory.NonAffiliated,
       ]),
-    ).withDefault([
-      BadgeCategory.Official,
-      BadgeCategory.Community,
-      BadgeCategory.Individual,
-      BadgeCategory.NonAffiliated,
-    ]),
+    ).withDefault([BadgeCategory.Official]),
   );
 
   const [searchQuery, setSearchQuery] = useQueryState(

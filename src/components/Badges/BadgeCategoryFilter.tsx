@@ -66,9 +66,7 @@ export const BadgeCategoryFilter = ({
   return (
     <ToggleButtonGroup
       value={value ?? []}
-      onChange={(_, next) =>
-        onChange(next?.length ? (next as BadgeCategory[]) : null)
-      }
+      onChange={(_, next) => onChange((next as BadgeCategory[]) ?? [])}
       aria-label="Filter by badge category"
       sx={{ flexWrap: "wrap", gap: 2 }}
     >

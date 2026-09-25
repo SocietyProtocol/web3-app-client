@@ -5,7 +5,7 @@ import {
   useQueryState,
 } from "nuqs";
 import { useDebounceValue } from "../../hooks/useDebounceValue";
-import { ALL_ACCOUNT_ROLES, AccountRole, AccountSortOption } from "./types";
+import { AccountRole, AccountSortOption } from "./types";
 import { useMemo } from "react";
 import { useUsersQuery } from "../users/useUsersQuery";
 import { mergeOptions } from "../users/utils";
@@ -35,7 +35,7 @@ export const useAccounts = () => {
         AccountRole.Moderators,
         AccountRole.Basic,
       ]),
-    ).withDefault(ALL_ACCOUNT_ROLES),
+    ).withDefault([]),
   );
 
   const debouncedSearchQuery = useDebounceValue(searchQuery, 500);

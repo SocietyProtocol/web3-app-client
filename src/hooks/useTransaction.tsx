@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import {
+  useChainId,
   useSimulateContract,
   useWaitForTransactionReceipt,
   useWriteContract,
@@ -24,6 +25,7 @@ import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import { IconButton, Link, Tooltip } from "@mui/material";
 import { QueryKey, useQueryClient } from "@tanstack/react-query";
 import { useStableArray } from "./useStableArray";
+import { resolveExecutedTransactionHash } from "@/lib/safe-tx";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -159,6 +161,7 @@ export const useTransaction = ({
   const queryClient = useQueryClient();
 
   const { writeContractAsync, isPending } = useWriteContract();
+  const chainId = useChainId();
 
   // Simulate the transaction
   const simulation = useSimulateContract(
@@ -220,13 +223,23 @@ export const useTransaction = ({
           variant: "info",
         });
 
-        const hash = await writeContractAsync({
+        const proposedHash = await writeContractAsync({
           address: finalAddress,
           abi: finalAbi,
           functionName: finalFunctionName,
           args: finalArgs,
           ...(finalValue !== undefined && { value: finalValue }),
         } as Parameters<typeof writeContractAsync>[0]);
+
+        enqueueSnackbar("Waiting for the transaction to execute", {
+          key: `${snackbarKeyPrefixFinal}-pending`,
+          variant: "info",
+        });
+
+        const hash = await resolveExecutedTransactionHash(
+          proposedHash,
+          chainId,
+        );
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
@@ -266,6 +279,7 @@ export const useTransaction = ({
       enqueueSnackbar,
       pendingMessage,
       writeContractAsync,
+      chainId,
       submittedMessage,
       suppressErrorSnackbar,
       onError,

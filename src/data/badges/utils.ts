@@ -110,6 +110,10 @@ export const buildWhereClause = (options: {
     whereClauses.push({ isCommunity });
   }
 
+  if (categories && categories.length === 0) {
+    whereClauses.push({ id: "0x" });
+  }
+
   if (categories && categories.length > 0) {
     const showOfficial = categories.includes(BadgeCategory.Official);
     const showCommunity = categories.includes(BadgeCategory.Community);

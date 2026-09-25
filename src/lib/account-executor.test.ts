@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   hasSendCallsCapability,
+  submitAccountWrite,
   waitForCallTransactionHash,
 } from "./account-capabilities";
 
@@ -24,6 +25,38 @@ describe("hasSendCallsCapability", () => {
     expect(hasSendCallsCapability({ 1: { atomicBatch: { status: "ready" } } }, 11155111)).toBe(
       false,
     );
+  });
+});
+
+describe("submitAccountWrite", () => {
+  it("uses one normal transaction for an EOA wallet", async () => {
+    const write = vi.fn(async () => "0x1111" as const);
+    const send = vi.fn(async () => "0x2222" as const);
+
+    await expect(
+      submitAccountWrite({
+        supportsSendCalls: false,
+        write,
+        send,
+      }),
+    ).resolves.toBe("0x1111");
+    expect(write).toHaveBeenCalledOnce();
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("uses one wallet call batch for a contract wallet", async () => {
+    const write = vi.fn(async () => "0x1111" as const);
+    const send = vi.fn(async () => "0x2222" as const);
+
+    await expect(
+      submitAccountWrite({
+        supportsSendCalls: true,
+        write,
+        send,
+      }),
+    ).resolves.toBe("0x2222");
+    expect(send).toHaveBeenCalledOnce();
+    expect(write).not.toHaveBeenCalled();
   });
 });
 

@@ -1,13 +1,8 @@
-import {
-  createPublicClient,
-  getAddress,
-  hashMessage,
-  http,
-  verifyMessage,
-} from "viem";
+import { createPublicClient, http, verifyMessage } from "viem";
 import { mainnet, sepolia } from "viem/chains";
 import { NextRequest } from "next/server";
 import { env } from "@/lib/env";
+import { isContractWalletSignature } from "@/lib/contract-signature";
 
 export interface AuthPayload {
   address: string;
@@ -17,50 +12,12 @@ export interface AuthPayload {
 }
 
 const MESSAGE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-const EIP1271_MAGIC = "0x1626ba7e";
-
-const isValidSignatureAbi = [
-  {
-    type: "function",
-    name: "isValidSignature",
-    stateMutability: "view",
-    inputs: [
-      { name: "hash", type: "bytes32" },
-      { name: "signature", type: "bytes" },
-    ],
-    outputs: [{ name: "magicValue", type: "bytes4" }],
-  },
-] as const;
-
 function authPublicClient() {
   const chain = env.environment === "production" ? mainnet : sepolia;
   return createPublicClient({
     chain,
     transport: http(`https://${chain.id === mainnet.id ? "eth-mainnet" : "eth-sepolia"}.g.alchemy.com/v2/${env.alchemyApiKey}`),
   });
-}
-
-/**
- * Contract accounts prove a signature with EIP-1271.
- * One read. No owner list. EOAs never reach this.
- */
-export async function isContractWalletSignature(payload: AuthPayload) {
-  const address = getAddress(payload.address);
-  const client = authPublicClient();
-  const code = await client.getCode({ address });
-  if (!code || code === "0x") return false;
-
-  try {
-    const magic = await client.readContract({
-      address,
-      abi: isValidSignatureAbi,
-      functionName: "isValidSignature",
-      args: [hashMessage(payload.message), payload.signature],
-    });
-    return magic.toLowerCase() === EIP1271_MAGIC;
-  } catch {
-    return false;
-  }
 }
 
 export function generateAuthMessage(
@@ -107,7 +64,7 @@ export async function verifyAuth(
 
     if (isValid) return { valid: true };
 
-    if (await isContractWalletSignature(payload)) {
+    if (await isContractWalletSignature(payload, authPublicClient())) {
       return { valid: true };
     }
 

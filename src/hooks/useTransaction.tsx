@@ -29,6 +29,7 @@ import {
   sendContractCall,
   walletSupportsSendCalls,
 } from "@/lib/account-executor";
+import { submitAccountWrite } from "@/lib/account-capabilities";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -226,31 +227,31 @@ export const useTransaction = ({
           variant: "info",
         });
 
-        const useWalletCalls = await walletSupportsSendCalls(chainId);
-        let hash: Hex;
-
-        if (useWalletCalls) {
-          enqueueSnackbar("Waiting for the transaction to execute", {
-            key: `${snackbarKeyPrefixFinal}-pending`,
-            variant: "info",
-          });
-          hash = await sendContractCall({
-            chainId,
-            address: finalAddress,
-            abi: finalAbi as readonly unknown[],
-            functionName: finalFunctionName,
-            args: finalArgs,
-            value: finalValue,
-          });
-        } else {
-          hash = await writeContractAsync({
-            address: finalAddress,
-            abi: finalAbi,
-            functionName: finalFunctionName,
-            args: finalArgs,
-            ...(finalValue !== undefined && { value: finalValue }),
-          } as Parameters<typeof writeContractAsync>[0]);
-        }
+        const hash = await submitAccountWrite({
+          supportsSendCalls: await walletSupportsSendCalls(chainId),
+          write: () =>
+            writeContractAsync({
+              address: finalAddress,
+              abi: finalAbi,
+              functionName: finalFunctionName,
+              args: finalArgs,
+              ...(finalValue !== undefined && { value: finalValue }),
+            } as Parameters<typeof writeContractAsync>[0]),
+          send: async () => {
+            enqueueSnackbar("Waiting for the transaction to execute", {
+              key: `${snackbarKeyPrefixFinal}-pending`,
+              variant: "info",
+            });
+            return sendContractCall({
+              chainId,
+              address: finalAddress,
+              abi: finalAbi as readonly unknown[],
+              functionName: finalFunctionName,
+              args: finalArgs,
+              value: finalValue,
+            });
+          },
+        });
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);

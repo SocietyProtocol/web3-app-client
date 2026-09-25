@@ -25,6 +25,15 @@ type CallStatus = {
   receipts?: { transactionHash?: Hex }[];
 };
 
+export async function submitAccountWrite<T>(options: {
+  supportsSendCalls: boolean;
+  write: () => Promise<T>;
+  send: () => Promise<T>;
+}): Promise<T> {
+  if (options.supportsSendCalls) return options.send();
+  return options.write();
+}
+
 export async function waitForCallTransactionHash(
   readStatus: () => Promise<CallStatus>,
   options?: { intervalMs?: number; timeoutMs?: number },

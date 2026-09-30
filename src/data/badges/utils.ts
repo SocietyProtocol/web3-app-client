@@ -119,8 +119,6 @@ export const buildWhereClause = (options: {
     const showCommunity = categories.includes(BadgeCategory.Community);
     const showIndividual = categories.includes(BadgeCategory.Individual);
 
-    // NonAffiliated has no on-chain selector under the current subgraph
-    // schema, so it can never widen the result set on its own.
     if (!(showOfficial && showCommunity && showIndividual)) {
       const orClauses: InputMaybe<Badge_filter>[] = [];
       if (showOfficial) orClauses.push({ isOfficial: true });
@@ -129,12 +127,7 @@ export const buildWhereClause = (options: {
       if (showIndividual)
         orClauses.push({ isOfficial: false, isCommunity: false });
 
-      if (orClauses.length === 0) {
-        // User left only NonAffiliated selected — force empty result.
-        whereClauses.push({ id: "0x" });
-      } else {
-        whereClauses.push({ or: orClauses });
-      }
+      whereClauses.push({ or: orClauses });
     }
   }
 

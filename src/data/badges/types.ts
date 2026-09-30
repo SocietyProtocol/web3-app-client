@@ -27,17 +27,12 @@ export enum TabOption {
  * Visual categories surfaced as toggle filters on the Badges page.
  *
  * `Official`, `Community` and `Individual` map directly to on-chain flags
- * (`isOfficial`, `isCommunity`). `NonAffiliated` is reserved for badges
- * issued by parties not affiliated with Society Protocol; under the
- * current subgraph schema no badge classifies into it (every badge is
- * Official, Community or Individual), so the filter currently returns no
- * additional results.
+ * (`isOfficial`, `isCommunity`).
  */
 export enum BadgeCategory {
   Official = "official",
   Community = "community",
   Individual = "individual",
-  NonAffiliated = "non-affiliated",
 }
 
 export interface BadgeQueryOptions {

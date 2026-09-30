@@ -9,7 +9,6 @@ import {
 import VerifiedIcon from "@mui/icons-material/Verified";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import HideSourceOutlinedIcon from "@mui/icons-material/HideSourceOutlined";
 import { BadgeCategory } from "@/data/badges/types";
 import { TierToggleButton } from "../Communities/Tier/TierToggleButton";
 
@@ -17,21 +16,18 @@ const CATEGORY_ORDER: BadgeCategory[] = [
   BadgeCategory.Official,
   BadgeCategory.Community,
   BadgeCategory.Individual,
-  BadgeCategory.NonAffiliated,
 ];
 
 const CATEGORY_LABELS: Record<BadgeCategory, string> = {
   [BadgeCategory.Official]: "Official",
   [BadgeCategory.Community]: "Community",
   [BadgeCategory.Individual]: "Individual",
-  [BadgeCategory.NonAffiliated]: "Non-Affiliated",
 };
 
 const CATEGORY_ICONS: Record<BadgeCategory, typeof VerifiedIcon> = {
   [BadgeCategory.Official]: VerifiedIcon,
   [BadgeCategory.Community]: GroupsOutlinedIcon,
   [BadgeCategory.Individual]: PersonOutlineIcon,
-  [BadgeCategory.NonAffiliated]: HideSourceOutlinedIcon,
 };
 
 export interface BadgeCategoryFilterProps {
@@ -56,8 +52,6 @@ export const BadgeCategoryFilter = ({
         return theme.palette.success.main;
       case BadgeCategory.Individual:
         return theme.palette.silver.light;
-      case BadgeCategory.NonAffiliated:
-        return theme.palette.error.main;
       default:
         return theme.palette.text.primary;
     }

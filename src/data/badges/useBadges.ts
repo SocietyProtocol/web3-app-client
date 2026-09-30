@@ -58,7 +58,6 @@ export const useBadges = () => {
         BadgeCategory.Official,
         BadgeCategory.Community,
         BadgeCategory.Individual,
-        BadgeCategory.NonAffiliated,
       ]),
     ).withDefault([BadgeCategory.Official]),
   );

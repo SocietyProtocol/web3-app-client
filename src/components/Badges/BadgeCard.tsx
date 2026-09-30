@@ -31,7 +31,7 @@ export interface BadgeCardProps extends Partial<BadgeData> {
   governorMaxCount?: number;
 }
 
-type BadgeOutline = "official" | "community" | "individual" | "non-affiliated";
+type BadgeOutline = "official" | "community" | "individual";
 
 const StyledBadgeCard = styled(Paper, {
   shouldForwardProp: (prop) => prop !== "outline",
@@ -65,10 +65,6 @@ const StyledBadgeCard = styled(Paper, {
   ...(outline === "individual" && {
     border: `1px solid ${theme.palette.silver.light}`,
   }),
-
-  ...(outline === "non-affiliated" && {
-    border: `1px solid ${theme.palette.error.main}`,
-  }),
 }));
 
 export const BadgeCard = ({
@@ -94,9 +90,7 @@ export const BadgeCard = ({
       ? "official"
       : isCommunity
         ? "community"
-        : isIndividual
-          ? "individual"
-          : "non-affiliated";
+        : "individual";
   return (
     <StyledBadgeCard outline={outline}>
       {/* Badge ID and Official Label */}

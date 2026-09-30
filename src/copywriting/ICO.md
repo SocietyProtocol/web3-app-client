@@ -1,6 +1,6 @@
 The ICO will come alive after we've raised sufficient awareness around the project.
 
-We're aiming to move fast, and expecting to launch the ICO around ~October 1st, 2026.
+We're aiming to move fast, and expecting to launch the ICO around ~Q1 2027.
 
 The ICO will sell 31% of the entire SPEC token supply.
 

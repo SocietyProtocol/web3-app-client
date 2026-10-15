@@ -1,4 +1,4 @@
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import {
   parseAsArrayOf,
   parseAsString,
@@ -18,7 +18,7 @@ import { useBadgesQuery } from "./useBadgesQuery";
 import { useMemo } from "react";
 
 export const useBadges = () => {
-  const { address: userAddress } = useAccount();
+  const { address: userAddress } = useOutpostAccount();
   const [activeTab, setActiveTab] = useQueryState<TabOption>(
     "tab",
     parseAsStringEnum([

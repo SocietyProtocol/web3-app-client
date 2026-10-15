@@ -7,16 +7,17 @@ import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { isAddress } from "viem";
 import { use, useMemo, useEffect } from "react";
 import { notFound, redirect } from "next/navigation";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import legacyAccounts from "@/consts/legacy-account-map.json";
 
 export default function UserProfilePage({
   params,
 }: {
   params: Promise<{ address: string }>;
 }) {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useOutpostAccount();
   const { address } = use(params);
 
   const wagmiReady = useWagmiReady();
@@ -34,6 +35,12 @@ export default function UserProfilePage({
 
   if (concreteAddress === undefined) {
     return notFound();
+  }
+
+  const smartAccount =
+    legacyAccounts[concreteAddress.toLowerCase() as keyof typeof legacyAccounts];
+  if (smartAccount) {
+    return redirect(`/user/${smartAccount}`);
   }
 
   if (connectedAddress && isEqualCaseInsensitive(connectedAddress, address)) {

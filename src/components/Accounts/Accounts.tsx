@@ -12,13 +12,13 @@ import { truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { useRouter } from "next/navigation";
 import { useUserQuery } from "@/data/users/useUserQuery";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { SearchBox } from "@/components/Common/SearchBox";
 import { AccountsRoleFilter } from "./AccountsRoleFilter";
 
 export const Accounts = () => {
   const router = useRouter();
-  const user = useUserQuery(useAccount().address);
+  const user = useUserQuery(useOutpostAccount().address);
 
   const {
     data,

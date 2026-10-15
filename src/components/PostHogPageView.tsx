@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import posthog from "posthog-js";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { expectedNetwork } from "@/lib/wagmi";
 import { capturePostHogEvent, isPostHogEnabled } from "@/lib/posthog";
 import { isEqualCaseInsensitive } from "@/utils/string";
@@ -11,7 +11,7 @@ import { isEqualCaseInsensitive } from "@/utils/string";
 export default function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { address, chainId, connector } = useAccount();
+  const { address, chainId, connector } = useOutpostAccount();
   const previousAddressRef = useRef<typeof address>(undefined);
   const trackedWrongNetworkChainIdRef = useRef<number | undefined>(undefined);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, createContext, useContext, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { useCommunityDetail } from "./useCommunityDetail";
 import { CommunityQuery } from "../../../../.graphclient";
@@ -39,7 +39,7 @@ export function CommunityDetailsProvider({
   id,
   children,
 }: CommunityDetailsProviderProps) {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const {
     community,

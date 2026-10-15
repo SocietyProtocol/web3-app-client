@@ -2,7 +2,7 @@
 
 import { Box } from "@mui/material";
 import { useCallback, useMemo, useState } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Address } from "viem";
 import { BadgeActions } from "@/components/Badges/BadgeActions";
 import { BadgeAutocomplete } from "@/components/Badges/BadgeAutocomplete/BadgeAutocomplete";
@@ -14,7 +14,7 @@ import { useCommunityDetailsContext } from "../CommunityDetails.context";
 import { uniqueBy } from "@/utils/collection";
 
 export function CommunityBadgesActions() {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { community } = useCommunityDetailsContext();
 
   const eligibleBadges = useMemo(() => {

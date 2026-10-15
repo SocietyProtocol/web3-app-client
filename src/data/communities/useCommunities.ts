@@ -14,12 +14,12 @@ import {
   CommunityTier,
 } from "./types";
 import { useCallback, useEffect, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useCommunitiesQuery } from "./useCommunitiesQuery";
 import { mergeOptions } from "./utils";
 
 export const useCommunities = () => {
-  const { address: userAddress } = useAccount();
+  const { address: userAddress } = useOutpostAccount();
 
   const [activeTab, setActiveTab] = useQueryState<CommunityTabOption>(
     "tab",

@@ -11,7 +11,7 @@ import ErrorIcon from "@mui/icons-material/Error";
 import { Avatar } from "../Avatar/Avatar";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { mergeSx } from "@/utils/sx";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 
 interface ConnectButtonProps {
   sx?: SxProps<Theme>;
@@ -27,7 +27,8 @@ export const ConnectButton = ({
   fullWidth,
   variant,
 }: ConnectButtonProps) => {
-  const { data, isLoading } = useUserQuery(useAccount().address);
+  const outpost = useOutpostAccount();
+  const { data, isLoading } = useUserQuery(outpost.address);
 
   return (
     <RainbowConnectButton.Custom>
@@ -71,7 +72,11 @@ export const ConnectButton = ({
         return (
           <Tooltip
             title={
-              chain?.unsupported ? "Wrong network — click to switch" : undefined
+              chain?.unsupported
+                ? "Wrong network — click to switch"
+                : outpost.smartAccountsEnabled && outpost.address
+                  ? `Society address ${outpost.address}`
+                  : undefined
             }
             arrow
           >
@@ -93,7 +98,7 @@ export const ConnectButton = ({
                 spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
               >
                 <Avatar
-                  address={account.address}
+                  address={outpost.address ?? account.address}
                   ensImage={data?.imageUrl}
                   size={24}
                   loading={isLoading}

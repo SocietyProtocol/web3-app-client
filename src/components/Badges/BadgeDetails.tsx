@@ -10,7 +10,7 @@ import {
   Skeleton,
   Link,
 } from "@mui/material";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
@@ -44,7 +44,7 @@ export const BadgeDetails = ({
   setIsEditing,
 }: BadgeDetailsProps) => {
   const wagmiReady = useWagmiReady();
-  const { address: userAddress } = useAccount();
+  const { address: userAddress } = useOutpostAccount();
 
   const { data, isLoading } = useBadge(id);
 

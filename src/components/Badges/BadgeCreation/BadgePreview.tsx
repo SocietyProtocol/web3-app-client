@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { BadgeCard } from "../BadgeCard";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 
 interface BadgePreviewProps {
   name?: string;
@@ -15,7 +15,7 @@ export const BadgePreview = ({
   isOfficial,
   isCommunity,
 }: BadgePreviewProps) => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   return (
     <Box>

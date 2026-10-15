@@ -1,12 +1,12 @@
 import { Stack, Typography } from "@mui/material";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { UserCard } from "../User/UserCard";
 import { useAccountSetup } from "./AccountSetupContext";
 import { useWatch } from "react-hook-form";
 
 export const ReviewStep = () => {
   const { form, username } = useAccountSetup();
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const formValues = useWatch({ control: form.control });
 

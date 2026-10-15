@@ -1,10 +1,20 @@
 import { createContext, useContext, ReactNode, useEffect } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Address } from "viem";
 import { useProfileMutation } from "./useProfileMutation";
 import { ValidationError } from "@/errors/ValidationError";
 import { AccountData, accountValidationSchema } from "@/validation/account";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
+import legacyAccounts from "@/consts/legacy-account-map.json";
+
+const legacyOwners = legacyAccounts as Record<string, string>;
+
+function previousWallet(owner?: Address): Address | undefined {
+  if (!owner || !legacyOwners[owner.toLowerCase()]) return undefined;
+  return owner;
+}
 
 interface AccountSetupContextType {
   form: UseFormReturn<AccountData>;
@@ -46,6 +56,12 @@ export const AccountSetupProvider = ({
     error: serverError,
     reset,
   } = useProfileMutation();
+  const { ownerAddress } = useOutpostAccount();
+  const smartProfileMissing =
+    user.isFetched && user.data?.profile?.id === undefined;
+  const previousUser = useUserQuery(
+    smartProfileMissing ? previousWallet(ownerAddress) : undefined,
+  );
 
   const form = useForm<AccountData>({
     resolver: zodResolver(accountValidationSchema),
@@ -69,17 +85,27 @@ export const AccountSetupProvider = ({
     return undefined;
   };
 
-  // Prefill form from profile data if available
+  // Prefill from the smart-account profile, or from the old wallet the first time.
   useEffect(() => {
-    if (user.isFetched && user.data) {
-      const data = user.data;
+    if (!user.isFetched) return;
+
+    if (user.data?.profile?.id !== undefined) {
       form.reset({
-        name: data.name || "",
-        bio: data.bio || "",
-        imageUrl: data.imageUrl || null,
+        name: user.data.name || "",
+        bio: user.data.bio || "",
+        imageUrl: user.data.imageUrl || null,
       });
+      return;
     }
-  }, [user.isFetched, user.data, form]);
+
+    if (!previousUser.isFetched || !previousUser.data?.profile?.id) return;
+    const previous = previousUser.data;
+    form.reset({
+      name: previous.name || previous.metadata?.name || "",
+      bio: previous.bio || previous.metadata?.bio || "",
+      imageUrl: previous.imageUrl || previous.metadata?.imageUrl || null,
+    });
+  }, [user.isFetched, user.data, previousUser.isFetched, previousUser.data, form]);
 
   return (
     <AccountSetupContext.Provider

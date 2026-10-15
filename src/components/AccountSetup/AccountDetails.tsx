@@ -1,5 +1,5 @@
 import { Stack, Button, Grid, Skeleton } from "@mui/material";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useMemo, useState } from "react";
 import { AccountDetailsEdit } from "./AccountDetailsEdit";
 import { AccountSkeleton } from "./AccountSkeleton";
@@ -33,7 +33,7 @@ interface AccountDetailsProps {
 }
 
 export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
-  const { address: accountAddress } = useAccount();
+  const { address: accountAddress } = useOutpostAccount();
   const overrideAddress = address || accountAddress;
 
   const { data, isLoading } = useUserQuery(overrideAddress);

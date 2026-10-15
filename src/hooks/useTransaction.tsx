@@ -14,7 +14,7 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { Hex, TransactionReceipt } from "viem";
+import { Abi, Hex, TransactionReceipt, encodeFunctionData } from "viem";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { useEstimateGas } from "@/hooks/useEstimateGas";
@@ -30,6 +30,13 @@ import {
   walletSupportsSendCalls,
 } from "@/lib/account-executor";
 import { submitAccountWrite } from "@/lib/account-capabilities";
+import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation";
+import {
+  encodeExecute,
+  isSponsoredBadgesCall,
+  userOperationMayRelay,
+} from "@/lib/smart-account";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -166,8 +173,32 @@ export const useTransaction = ({
 
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
+  const outpost = useOutpostAccount();
 
-  // Simulate the transaction
+  const callPreview = useMemo(() => {
+    if (!address || !abi || !functionName || !args) {
+      return { relay: false, sponsor: false };
+    }
+    if (value !== undefined && value !== BigInt(0)) {
+      return { relay: false, sponsor: false };
+    }
+    try {
+      const data = encodeFunctionData({
+        abi: abi as Abi,
+        functionName,
+        args,
+      });
+      const wrapped = encodeExecute({ to: address, value: BigInt(0), data });
+      return {
+        relay: userOperationMayRelay({ callData: wrapped }, chainId).ok,
+        sponsor: isSponsoredBadgesCall({ chainId, to: address, data }),
+      };
+    } catch {
+      return { relay: false, sponsor: false };
+    }
+  }, [address, abi, functionName, args, value, chainId]);
+
+  // Simulate the transaction. Sponsored calls execute as the Light Account.
   const simulation = useSimulateContract(
     simulate && address && abi && functionName && args && enabled
       ? ({
@@ -175,6 +206,9 @@ export const useTransaction = ({
           abi,
           functionName,
           args,
+          ...(callPreview.relay && outpost.address
+            ? { account: outpost.address }
+            : {}),
 
           ...(value !== undefined && { value }),
 
@@ -200,7 +234,7 @@ export const useTransaction = ({
     functionName,
     args,
     value,
-    enabled: enabled && simulate,
+    enabled: enabled && simulate && !callPreview.relay,
   });
 
   const execute = useCallback(
@@ -227,31 +261,69 @@ export const useTransaction = ({
           variant: "info",
         });
 
-        const hash = await submitAccountWrite({
-          supportsSendCalls: await walletSupportsSendCalls(chainId),
-          write: () =>
-            writeContractAsync({
-              address: finalAddress,
+        const smartCall = (() => {
+          if (finalValue !== undefined && finalValue !== BigInt(0)) {
+            return { relay: false, sponsor: false };
+          }
+          try {
+            const data = encodeFunctionData({
+              abi: finalAbi as Abi,
+              functionName: finalFunctionName,
+              args: finalArgs ?? [],
+            });
+            const wrapped = encodeExecute({
+              to: finalAddress,
+              value: BigInt(0),
+              data,
+            });
+            return {
+              relay: userOperationMayRelay({ callData: wrapped }, chainId).ok,
+              sponsor: isSponsoredBadgesCall({
+                chainId,
+                to: finalAddress,
+                data,
+              }),
+            };
+          } catch {
+            return { relay: false, sponsor: false };
+          }
+        })();
+
+        const hash = smartCall.relay
+          ? await sendSponsoredUserOperation({
+              chainId,
+              to: finalAddress,
               abi: finalAbi,
               functionName: finalFunctionName,
               args: finalArgs,
-              ...(finalValue !== undefined && { value: finalValue }),
-            } as Parameters<typeof writeContractAsync>[0]),
-          send: async () => {
-            enqueueSnackbar("Waiting for the transaction to execute", {
-              key: `${snackbarKeyPrefixFinal}-pending`,
-              variant: "info",
-            });
-            return sendContractCall({
-              chainId,
-              address: finalAddress,
-              abi: finalAbi as readonly unknown[],
-              functionName: finalFunctionName,
-              args: finalArgs,
               value: finalValue,
+              sponsor: smartCall.sponsor,
+            })
+          : await submitAccountWrite({
+              supportsSendCalls: await walletSupportsSendCalls(chainId),
+              write: () =>
+                writeContractAsync({
+                  address: finalAddress,
+                  abi: finalAbi,
+                  functionName: finalFunctionName,
+                  args: finalArgs,
+                  ...(finalValue !== undefined && { value: finalValue }),
+                } as Parameters<typeof writeContractAsync>[0]),
+              send: async () => {
+                enqueueSnackbar("Waiting for the transaction to execute", {
+                  key: `${snackbarKeyPrefixFinal}-pending`,
+                  variant: "info",
+                });
+                return sendContractCall({
+                  chainId,
+                  address: finalAddress,
+                  abi: finalAbi as readonly unknown[],
+                  functionName: finalFunctionName,
+                  args: finalArgs,
+                  value: finalValue,
+                });
+              },
             });
-          },
-        });
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
@@ -402,7 +474,7 @@ export const useTransaction = ({
     },
 
     // Gas estimation
-    gas: gasEstimation.totalUsd,
+    gas: callPreview.sponsor ? BigInt(0) : gasEstimation.totalUsd,
     gasLoading: gasEstimation.isLoading,
     gasError: gasEstimation.isError,
     txReceipt,

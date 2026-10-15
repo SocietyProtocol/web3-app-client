@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Hex, TransactionReceipt } from "viem";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
@@ -24,7 +24,7 @@ export function useTransferOwnership({
   onSuccess,
   onError,
 }: UseTransferOwnershipProps) {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const badgesAddress = useChainVar(contracts.badges);
 
   const hasArgs = !!address && !!managerBadgeId && !!newOwner;

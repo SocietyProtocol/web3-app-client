@@ -14,6 +14,9 @@ import {
 } from "../accounts/types";
 import { defaultOptions } from "./consts";
 import { UserQueryOptions } from "./types";
+import legacyAccounts from "@/consts/legacy-account-map.json";
+
+const LEGACY_ACCOUNT_IDS = Object.keys(legacyAccounts);
 
 const ACCOUNT_ROLE_TO_PROTOCOL: Record<
   Exclude<AccountRole, AccountRole.Basic>,
@@ -98,6 +101,10 @@ export const buildWhereClause = (options: {
 
   if (!includeUnregistered) {
     whereClauses.push({ profile_not: null });
+  }
+
+  if (LEGACY_ACCOUNT_IDS.length > 0) {
+    whereClauses.push({ id_not_in: LEGACY_ACCOUNT_IDS });
   }
 
   if (!isUnfilteredAccountRoles(roles)) {

@@ -20,7 +20,7 @@ import { TransactionReceipt } from "viem";
 import { decodeBadgeId } from "@/data/badges/utils";
 import { useRouter } from "next/navigation";
 import { ValidationError } from "@/errors/ValidationError";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
 
 interface BadgeCreationContextType {
@@ -61,7 +61,7 @@ export const BadgeCreationProvider = ({
   communityId,
 }: BadgeCreationProviderProps) => {
   const router = useRouter();
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
 
   const form = useForm<BadgeInputData, unknown, BadgeTransformedData>({

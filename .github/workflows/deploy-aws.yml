@@ -1,0 +1,29 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main, staging]
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: aws-outpost-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::019141478782:role/society-github-deploy
+          aws-region: us-east-1
+      - name: Deploy the web app
+        env:
+          IMAGE: ${{ github.ref_name == 'staging' && 'society-web:staging' || 'society-web:prod' }}
+          SERVICE: ${{ github.ref_name == 'staging' && 'staging-web' || 'prod-web' }}
+          ENVFILE: ${{ github.ref_name == 'staging' && '/opt/society/env/web-staging.build.env' || '/opt/society/env/web-prod.build.env' }}
+        run: bash .github/scripts/deploy-outpost.sh

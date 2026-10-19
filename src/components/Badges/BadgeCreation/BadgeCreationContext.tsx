@@ -61,8 +61,11 @@ export const BadgeCreationProvider = ({
   communityId,
 }: BadgeCreationProviderProps) => {
   const router = useRouter();
-  const { address } = useOutpostAccount();
-  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
+  const { address, ownerAddress } = useOutpostAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(
+    address,
+    ownerAddress,
+  );
 
   const form = useForm<BadgeInputData, unknown, BadgeTransformedData>({
     resolver: zodResolver(badgeValidationSchema),

@@ -14,6 +14,7 @@ import {
   toHex,
 } from "viem";
 import { contracts } from "@/consts/contracts";
+import { URLS } from "@/consts/urls";
 
 /**
  * Path C. MetaMask stays the owner. The Outpost identity is a new
@@ -28,6 +29,9 @@ export const ENTRY_POINT_V07: Address =
   "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 export const SPONSORSHIP_POLICY_ID = "sp_eager_ricochet";
 export const LIGHT_ACCOUNT_SALT = BigInt(0);
+/** EIP-1967 implementation slot: keccak256("eip1967.proxy.implementation") - 1. */
+export const ERC1967_IMPLEMENTATION_SLOT: Hex =
+  "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
 
 const ETHEREUM = 1;
 const SEPOLIA = 11155111;
@@ -41,6 +45,21 @@ export const SPONSORED_MINT_BADGE_IDS: readonly bigint[] = [];
 
 const MAX_BATCH_CALLS = 4;
 const MAX_MINT_RECIPIENTS = 20;
+export const MAX_PROFILE_URI_LENGTH = 256;
+
+/**
+ * /api/profile pins metadata and returns `${URLS.IPFS_GATEWAY}/${cid}`.
+ * Sponsored profile writes may only carry that shape or ipfs://cid.
+ * CIDv0 (Qm + base58btc) or CIDv1 in base32 (b + [a-z2-7]).
+ */
+const CID_PATTERN = "(?:Qm[1-9A-HJ-NP-Za-km-z]{44}|b[a-z2-7]{50,200})";
+const PROFILE_URI_PATTERN = new RegExp(
+  `^(?:ipfs://|${URLS.IPFS_GATEWAY.replace(/\./g, "\\.")}/)${CID_PATTERN}$`,
+);
+
+export function profileMetadataUriAllowed(uri: string) {
+  return uri.length <= MAX_PROFILE_URI_LENGTH && PROFILE_URI_PATTERN.test(uri);
+}
 
 const badgesAbi = [
   {
@@ -146,11 +165,6 @@ const createAccountAbi = [
   },
 ] as const;
 
-/** Smart accounts are the Outpost identity. There is no off switch. */
-export function smartAccountsEnabled() {
-  return true;
-}
-
 export function supportedAaChainId(
   chainId: number,
 ): chainId is typeof ETHEREUM | typeof SEPOLIA {
@@ -200,6 +214,13 @@ export function lightAccountInitCode(implementation: Address = LIGHT_ACCOUNT_IMP
   return toHex(mem.slice(0x21, 0x21 + 0x5f));
 }
 
+/**
+ * Runtime code the factory leaves at S: the init code minus its 34-byte
+ * constructor prefix. It does not embed the implementation, so the
+ * implementation slot must be read separately.
+ */
+export const LIGHT_ACCOUNT_PROXY_RUNTIME_CODE: Hex = `0x${lightAccountInitCode().slice(2 + 34 * 2)}`;
+
 export function lightAccountAddress(
   owner: Address,
   salt: bigint = LIGHT_ACCOUNT_SALT,
@@ -241,8 +262,12 @@ function innerCallIsSponsored(
 
   try {
     const decoded = decodeFunctionData({ abi: badgesAbi, data: call.data });
-    if (decoded.functionName === "createProfile") return true;
-    if (decoded.functionName === "updateProfileURI") return true;
+    if (decoded.functionName === "createProfile") {
+      return profileMetadataUriAllowed(decoded.args[0]);
+    }
+    if (decoded.functionName === "updateProfileURI") {
+      return profileMetadataUriAllowed(decoded.args[1]);
+    }
     if (decoded.functionName === "acceptInvite") return true;
     if (decoded.functionName === "mint") {
       const [, id, amount] = decoded.args;
@@ -334,11 +359,33 @@ export type UserOperationShape = {
   callData?: string;
   factory?: string;
   factoryData?: string;
+  callGasLimit?: string;
+  verificationGasLimit?: string;
+  preVerificationGas?: string;
+  paymaster?: string;
+  paymasterVerificationGasLimit?: string;
+  paymasterPostOpGasLimit?: string;
+  maxPriorityFeePerGas?: string;
+  maxFeePerGas?: string;
 };
 
-function readUserOperation(value: unknown): UserOperationShape | undefined {
-  if (!value || typeof value !== "object") return undefined;
-  return value as UserOperationShape;
+/** Names of the badges functions a Light Account execute call reaches. */
+export function badgesFunctionNames(callData: Hex, chainId: number): string[] {
+  const calls = accountCallsFromCallData(callData) ?? [];
+  const badges = badgesAddress(chainId);
+  return calls.flatMap((call) => {
+    if (!badges || !sameAddress(call.to, badges)) return [];
+    try {
+      return [decodeFunctionData({ abi: badgesAbi, data: call.data }).functionName];
+    } catch {
+      return [];
+    }
+  });
+}
+
+export function userOperationHasFactory(userOp: UserOperationShape) {
+  const factory = userOp.factory;
+  return !!factory && factory !== "0x" && factory !== "0x0";
 }
 
 /**
@@ -405,8 +452,8 @@ function canonicalFactory(
   userOp: UserOperationShape,
 ): { ok: true } | { ok: false; reason: string } {
   const factory = userOp.factory;
-  const hasFactory = !!factory && factory !== "0x" && factory !== "0x0";
-  if (!hasFactory) return { ok: true };
+  // No factory: the proxy checks the deployed sender on-chain (pimlico-proxy).
+  if (!factory || !userOperationHasFactory(userOp)) return { ok: true };
 
   if (!isAddress(factory) || !sameAddress(factory, LIGHT_ACCOUNT_FACTORY)) {
     return { ok: false, reason: "User operation deploys an unsupported account" };

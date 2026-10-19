@@ -17,9 +17,15 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useCommunitiesQuery } from "./useCommunitiesQuery";
 import { mergeOptions } from "./utils";
+import { identityAddresses } from "@/components/shared/accountIdentity";
 
 export const useCommunities = () => {
-  const { address: userAddress } = useOutpostAccount();
+  const { address: userAddress, ownerAddress } = useOutpostAccount();
+  // Communities created before the migration are managed by the owner wallet.
+  const managerAddresses = useMemo(
+    () => identityAddresses(userAddress, ownerAddress),
+    [userAddress, ownerAddress],
+  );
 
   const [activeTab, setActiveTab] = useQueryState<CommunityTabOption>(
     "tab",
@@ -83,7 +89,7 @@ export const useCommunities = () => {
           orderBy === CommunitySortOption.Alphabetical ? "asc" : "desc",
 
         ...(activeTab === CommunityTabOption.My && isManagedByUser
-          ? { managerAddress: userAddress }
+          ? { managerAddress: managerAddresses }
           : activeTab === CommunityTabOption.My
             ? { memberAddress: userAddress }
             : {}),
@@ -95,6 +101,7 @@ export const useCommunities = () => {
       orderBy,
       tiers,
       userAddress,
+      managerAddresses,
       isManagedByUser,
     ],
   );

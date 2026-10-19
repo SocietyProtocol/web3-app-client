@@ -10,7 +10,12 @@ import {
 import { entryPoint07Address } from "viem/account-abstraction";
 import { mainnet, sepolia } from "viem/chains";
 import { http } from "viem";
-import { getPublicClient, getWalletClient } from "wagmi/actions";
+import {
+  getAccount,
+  getPublicClient,
+  getWalletClient,
+  switchChain,
+} from "wagmi/actions";
 import { aaRpcUrl } from "@/lib/pimlico-proxy";
 import {
   SPONSORSHIP_POLICY_ID,
@@ -18,6 +23,29 @@ import {
   supportedAaChainId,
 } from "@/lib/smart-account";
 import { wagmiConfig } from "@/lib/wagmi";
+
+function isChainMismatch(error: unknown) {
+  return (
+    error instanceof Error &&
+    (error.name === "ConnectorChainMismatchError" ||
+      /does not match the connection's chain/i.test(error.message))
+  );
+}
+
+/** The owner's wallet on chainId, asking it to switch chains if needed. */
+async function ownerWalletClient(chainId: 1 | 11155111) {
+  const connected = getAccount(wagmiConfig).chainId;
+  if (connected !== undefined && connected !== chainId) {
+    await switchChain(wagmiConfig, { chainId });
+  }
+  try {
+    return await getWalletClient(wagmiConfig, { chainId });
+  } catch (error) {
+    if (!isChainMismatch(error)) throw error;
+    await switchChain(wagmiConfig, { chainId });
+    return getWalletClient(wagmiConfig, { chainId });
+  }
+}
 
 /**
  * Owner signs in MetaMask. The UserOp sender is the Light Account.
@@ -51,7 +79,7 @@ export async function sendSponsoredUserOperation(params: {
 
   const chain = params.chainId === mainnet.id ? mainnet : sepolia;
   const publicClient = getPublicClient(wagmiConfig, { chainId: params.chainId });
-  const walletClient = await getWalletClient(wagmiConfig, { chainId: params.chainId });
+  const walletClient = await ownerWalletClient(params.chainId);
   if (!publicClient || !walletClient) {
     throw new Error("Wallet is not connected");
   }

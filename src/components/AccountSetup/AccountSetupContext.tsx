@@ -7,12 +7,11 @@ import { ValidationError } from "@/errors/ValidationError";
 import { AccountData, accountValidationSchema } from "@/validation/account";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
-import legacyAccounts from "@/consts/legacy-account-map.json";
+import { legacySmartAccount } from "@/data/users/legacyAccounts";
 
-const legacyOwners = legacyAccounts as Record<string, string>;
-
+/** The owner's old wallet when it is in the app chain's legacy map. */
 function previousWallet(owner?: Address): Address | undefined {
-  if (!owner || !legacyOwners[owner.toLowerCase()]) return undefined;
+  if (!legacySmartAccount(owner)) return undefined;
   return owner;
 }
 

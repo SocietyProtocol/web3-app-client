@@ -9,7 +9,7 @@
     "dev": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next dev",
     "build": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build && next build --webpack",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "codegen": "yarn generate:persisted-graphql && GRAPHCLIENT_CODEGEN=1 graphclient build",
     "export:schema": "node scripts/export-schema.mjs",
     "generate:persisted-graphql": "node scripts/generate-persisted-graphql.mjs",

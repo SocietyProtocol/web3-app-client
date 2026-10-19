@@ -16,9 +16,15 @@ import {
 import { mergeOptions } from "./utils";
 import { useBadgesQuery } from "./useBadgesQuery";
 import { useMemo } from "react";
+import { identityAddresses } from "@/components/shared/accountIdentity";
 
 export const useBadges = () => {
-  const { address: userAddress } = useOutpostAccount();
+  const { address: userAddress, ownerAddress } = useOutpostAccount();
+  // Manager badges granted before the migration stay on the owner wallet.
+  const managerAddresses = useMemo(
+    () => identityAddresses(userAddress, ownerAddress),
+    [userAddress, ownerAddress],
+  );
   const [activeTab, setActiveTab] = useQueryState<TabOption>(
     "tab",
     parseAsStringEnum([
@@ -80,7 +86,7 @@ export const useBadges = () => {
               ? userAddress
               : undefined,
         managerAddress:
-          activeTab === TabOption.Managed ? userAddress : undefined,
+          activeTab === TabOption.Managed ? managerAddresses : undefined,
         holderAddress:
           activeTab === TabOption.MyBadges ? userAddress : undefined,
         orderBy: orderBy,
@@ -92,6 +98,7 @@ export const useBadges = () => {
       createdBy,
       createdByAddress,
       userAddress,
+      managerAddresses,
       activeTab,
       orderBy,
       categories,

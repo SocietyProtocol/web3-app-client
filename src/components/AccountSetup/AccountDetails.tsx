@@ -20,12 +20,10 @@ import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { CardRow } from "../Cards/CardRow";
 import { Page } from "../Page/Page";
 import { useUserQuery } from "@/data/users/useUserQuery";
-import { truncateAddress } from "@/utils/string";
+import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
+import { useLegacyAccounts } from "../shared/useLegacyAccounts";
 import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
-import {
-  GOVERNOR_BADGE_ID,
-  GOVERNOR_BADGE_MAX_COUNT,
-} from "@/consts/badges";
+import { GOVERNOR_BADGE_ID, GOVERNOR_BADGE_MAX_COUNT } from "@/consts/badges";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -33,8 +31,24 @@ interface AccountDetailsProps {
 }
 
 export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
-  const { address: accountAddress } = useOutpostAccount();
+  const { address: accountAddress, ownerAddress } = useOutpostAccount();
   const overrideAddress = address || accountAddress;
+  const legacy = useLegacyAccounts();
+
+  const isOwnProfile =
+    !address ||
+    (!!accountAddress && isEqualCaseInsensitive(address, accountAddress));
+
+  // SPEC, VIP locks and auction bids stay on the wallet (E). For the
+  // connected member read the owner wallet; for others only when the legacy
+  // map knows it.
+  const specHolder = isOwnProfile
+    ? (ownerAddress ?? overrideAddress)
+    : (legacy.ownerOf(overrideAddress) ?? overrideAddress);
+  const specHeldElsewhere =
+    !!specHolder &&
+    !!overrideAddress &&
+    !isEqualCaseInsensitive(specHolder, overrideAddress);
 
   const { data, isLoading } = useUserQuery(overrideAddress);
 
@@ -53,16 +67,14 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
     decimals: specDecimals,
     isLoading: isSpecBalanceLoading,
   } = useFullBalanceOf({
-    address: overrideAddress,
+    address: specHolder,
     tokenAddress,
   });
 
   const badgesCount = data?.badges?.length;
 
   const governorBalance = useBadgeBalanceOf(overrideAddress, GOVERNOR_BADGE_ID);
-  const governorCount = governorBalance.data
-    ? Number(governorBalance.data)
-    : 0;
+  const governorCount = governorBalance.data ? Number(governorBalance.data) : 0;
 
   const communityCount = data?.communities?.length;
 
@@ -146,7 +158,19 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 />
               }
               loading={isSpecBalanceLoading}
-              tooltip="Total SPEC token balance."
+              tooltip={
+                specHeldElsewhere
+                  ? "Total SPEC token balance of the wallet that owns this Society address."
+                  : "Total SPEC token balance."
+              }
+              caption={
+                specHeldElsewhere && specHolder ? (
+                  <span title={specHolder}>
+                    {isOwnProfile ? "held by your wallet" : "held by wallet"}{" "}
+                    {truncateAddress(specHolder, 4)}
+                  </span>
+                ) : undefined
+              }
             />
 
             <AccountStat

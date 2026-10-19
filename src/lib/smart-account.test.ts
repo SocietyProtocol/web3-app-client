@@ -9,13 +9,21 @@ import {
   ENTRY_POINT_V07,
   LIGHT_ACCOUNT_FACTORY,
   LIGHT_ACCOUNT_IMPLEMENTATION,
+  LIGHT_ACCOUNT_PROXY_RUNTIME_CODE,
+  MAX_PROFILE_URI_LENGTH,
+  badgesFunctionNames,
   encodeCreateProfile,
+  isSponsoredBadgesCall,
+  profileMetadataUriAllowed,
   encodeExecute,
   lightAccountAddress,
   userOperationIsSponsored,
 } from "@/lib/smart-account";
 
 const owner = getAddress("0x0000000000000000000000000000000000000001");
+const PROFILE_URI =
+  "https://ipfs.filebase.io/ipfs/bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku";
+const NEXT_URI = "ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG";
 const sepoliaBadges = contracts.badges.sepolia;
 
 function userOp(callData: `0x${string}`, extra: Record<string, string> = {}) {
@@ -89,7 +97,7 @@ describe("sponsorship allowlist", () => {
   const create = encodeExecute({
     to: sepoliaBadges,
     value: BigInt(0),
-    data: encodeCreateProfile("ipfs://profile"),
+    data: encodeCreateProfile(PROFILE_URI),
   });
 
   it("sponsors profile, profile update, and invite acceptance", () => {
@@ -112,7 +120,7 @@ describe("sponsorship allowlist", () => {
           },
         ],
         functionName: "updateProfileURI",
-        args: [BigInt(1), "ipfs://next"],
+        args: [BigInt(1), NEXT_URI],
       }),
     });
     expect(userOperationIsSponsored(userOp(update), 11155111).ok).toBe(true);
@@ -146,7 +154,7 @@ describe("sponsorship allowlist", () => {
           encodeExecute({
             to: contracts.badges.mainnet,
             value: BigInt(0),
-            data: encodeCreateProfile("ipfs://profile"),
+            data: encodeCreateProfile(PROFILE_URI),
           }),
         ),
         1,
@@ -185,7 +193,7 @@ describe("sponsorship allowlist", () => {
     const auction = encodeExecute({
       to: contracts.auction.sepolia,
       value: BigInt(0),
-      data: encodeCreateProfile("ipfs://profile"),
+      data: encodeCreateProfile(PROFILE_URI),
     });
     expect(userOperationIsSponsored(userOp(auction), 11155111).ok).toBe(false);
   });
@@ -194,12 +202,12 @@ describe("sponsorship allowlist", () => {
     const paid = encodeExecute({
       to: sepoliaBadges,
       value: BigInt(1),
-      data: encodeCreateProfile("ipfs://profile"),
+      data: encodeCreateProfile(PROFILE_URI),
     });
     expect(userOperationIsSponsored(userOp(paid), 11155111).ok).toBe(false);
     expect(
       userOperationIsSponsored(
-        userOp(encodeCreateProfile("ipfs://profile")),
+        userOp(encodeCreateProfile(PROFILE_URI)),
         11155111,
       ).ok,
     ).toBe(false);
@@ -255,6 +263,52 @@ describe("sponsorship allowlist", () => {
   it("uses EntryPoint 0.7", () => {
     expect(ENTRY_POINT_V07.toLowerCase()).toBe(
       "0x0000000071727de22e5e9d8baf0edac6f37da032",
+    );
+  });
+});
+
+describe("profile metadata URI", () => {
+  it("accepts the gateway and ipfs:// shapes the app writes", () => {
+    expect(profileMetadataUriAllowed(PROFILE_URI)).toBe(true);
+    expect(profileMetadataUriAllowed(NEXT_URI)).toBe(true);
+  });
+
+  it("refuses other hosts, junk CIDs, and oversized URIs", () => {
+    expect(
+      profileMetadataUriAllowed(PROFILE_URI.replace("ipfs.filebase.io", "ipfsXfilebase.io")),
+    ).toBe(false);
+    expect(profileMetadataUriAllowed("https://evil.example/ipfs/" + PROFILE_URI.slice(-59))).toBe(
+      false,
+    );
+    expect(profileMetadataUriAllowed("ipfs://profile")).toBe(false);
+    const oversized = `ipfs://b${"a".repeat(MAX_PROFILE_URI_LENGTH)}`;
+    expect(oversized.length).toBeGreaterThan(MAX_PROFILE_URI_LENGTH);
+    expect(profileMetadataUriAllowed(oversized)).toBe(false);
+    expect(
+      isSponsoredBadgesCall({
+        chainId: 11155111,
+        to: sepoliaBadges,
+        data: encodeCreateProfile(`${PROFILE_URI}${"a".repeat(300)}`),
+      }),
+    ).toBe(false);
+  });
+
+  it("names the badges functions a call reaches", () => {
+    const create = encodeExecute({
+      to: sepoliaBadges,
+      value: BigInt(0),
+      data: encodeCreateProfile(PROFILE_URI),
+    });
+    expect(badgesFunctionNames(create, 11155111)).toEqual(["createProfile"]);
+    expect(badgesFunctionNames(create, 1)).toEqual([]);
+  });
+});
+
+describe("Light Account proxy runtime code", () => {
+  it("matches a deployed Light Account v2 on mainnet", () => {
+    // eth_getCode of 0xf16850fc91973c6e60792cbbd0f2d6cef8dcbd5c, read 2026-10-19.
+    expect(LIGHT_ACCOUNT_PROXY_RUNTIME_CODE).toBe(
+      "0x363d3d373d3d363d7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc545af43d6000803e6038573d6000fd5b3d6000f3",
     );
   });
 });

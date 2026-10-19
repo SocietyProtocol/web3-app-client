@@ -1,330 +1,323 @@
 /**
- * Build the DAO Safe batch that deploys each member's Light Account and
- * moves the badges the DAO is allowed to mint. Does not broadcast.
+ * Build the admin Safe batch that deploys each member's Light Account and
+ * moves the badges the Safe is allowed to mint and burn. Does not broadcast.
  *
- *   node scripts/migrate-to-smart-accounts.mjs
- *   RPC_URL=https://... node scripts/migrate-to-smart-accounts.mjs
+ *   node scripts/migrate-to-smart-accounts.mjs [--chain mainnet|sepolia]
+ *     [--safe <address|ens>] [--badges 13,24] [--split <members per batch>]
+ *     [--include-credentials] [--force] [--dry-run]
+ *   RPC_URL=https://... node scripts/migrate-to-smart-accounts.mjs --chain sepolia --safe 0x...
  *
- * The DAO (societyprotocol.eth) holds badge 11 and is a Safe. Import
- * the written JSON in the Safe Transaction Builder. Do not run this
- * from a personal key.
+ * Mainnet defaults to the DAO Safe (societyprotocol.eth). Sepolia needs
+ * --safe. Import the written JSON in the Safe Transaction Builder of that
+ * Safe. Do not run this from a personal key.
+ *
+ * Writes, per chain (web3-app-contracts/script-output/):
+ *   safe-smart-account-migration.<chain>[.part-i-of-n].json
+ *   safe-smart-account-migration.rollback.<chain>[.part-i-of-n].json
+ *   smart-account-migration-report.<chain>.json
+ * and this chain's key of src/consts/legacy-account-map.json and
+ * discourse-siwe-auth/script/forum-address-map.json.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getAddress, isAddress } from "viem";
+import { normalize } from "viem/ens";
 import {
-  createPublicClient,
-  encodeAbiParameters,
-  encodeFunctionData,
-  getAddress,
-  getContractAddress,
-  http,
-  keccak256,
-  pad,
-  parseAbiItem,
-  toBytes,
-  toHex,
-} from "viem";
-import { mainnet } from "viem/chains";
-
-const IMPLEMENTATION = "0x8E8e658E22B12ada97B402fF0b044D6A325013C7";
-
-function lightAccountInitCode() {
-  const mem = new Uint8Array(0x80);
-  const writeWord = (offset, word) => {
-    mem.set(toBytes(pad(word, { size: 32 })), offset);
-  };
-  writeWord(0x60, "0xcc3735a920a3ca505d382bbc545af43d6000803e6038573d6000fd5b3d6000f3");
-  writeWord(0x40, "0x5155f3363d3d373d3d363d7f360894a13ba1a3210667c828492db98dca3e2076");
-  writeWord(0x20, "0x6009");
-  mem.set(toBytes(pad(IMPLEMENTATION, { size: 32 })), 0x1e);
-  writeWord(0x0a, "0x603d3d8160223d3973");
-  return toHex(mem.slice(0x21, 0x21 + 0x5f));
-}
-
-function lightAccountAddress(owner) {
-  const combinedSalt = keccak256(
-    encodeAbiParameters(
-      [{ type: "address" }, { type: "uint256" }],
-      [getAddress(owner), 0n],
-    ),
-  );
-  return getContractAddress({
-    opcode: "CREATE2",
-    from: factory,
-    salt: combinedSalt,
-    bytecode: lightAccountInitCode(),
-  });
-}
+  EXPECTED_MAINNET_MIGRATABLE,
+  FACTORY,
+  IMPLEMENTATION,
+  badgesAbi,
+  batchFileNames,
+  chainConfig,
+  chunkMembers,
+  factoryAbi,
+  isContractCode,
+  isStaleBatchFile,
+  lightAccountAddress,
+  makeClients,
+  mergeChainMap,
+  multicallAll,
+  parseArgs,
+  parseIdList,
+  planMember,
+  profileCreatedEvent,
+  rollbackCalls,
+  rpcList,
+  safeBatch,
+  sameIdSet,
+  scanLogs,
+  selectMigratable,
+  withFallback,
+} from "./smart-account-migration-lib.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const badges = getAddress("0x2313C0cDdc233c92d16c2cfE17DF5fDCcE556763");
-const factory = getAddress("0x0000000000400CdFef5E2714E63d8040b700BC24");
-const fromBlock = 25099621n;
-const migratable = [13n, 24n, 25n, 26n, 27n, 28n, 50n];
+const args = parseArgs(process.argv.slice(2));
+const config = chainConfig(args.chain === undefined ? "mainnet" : String(args.chain));
+const chainId = config.chain.id;
+const dryRun = args["dry-run"] === true;
+const split = args.split === undefined ? 0 : Number(args.split);
+if (!Number.isInteger(split) || split < 0) throw new Error("--split takes a positive member count");
 
-const badgesAbi = [
-  {
-    type: "function",
-    name: "mint",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "to", type: "address" },
-      { name: "id", type: "uint256" },
-      { name: "amount", type: "uint256" },
-      { name: "data", type: "bytes" },
-    ],
-    outputs: [],
-  },
-  {
-    type: "function",
-    name: "burn",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "from", type: "address" },
-      { name: "id", type: "uint256" },
-      { name: "value", type: "uint256" },
-    ],
-    outputs: [],
-  },
-  {
-    type: "function",
-    name: "balanceOf",
-    stateMutability: "view",
-    inputs: [
-      { name: "account", type: "address" },
-      { name: "id", type: "uint256" },
-    ],
-    outputs: [{ type: "uint256" }],
-  },
-];
+const log = (...line) => console.log(...line);
+const quiet = (line) => console.log(line);
+const endpoints = makeClients(config, rpcList(config));
+const read = (run) => withFallback(endpoints, run, { log: quiet });
 
-const factoryAbi = [
-  {
-    type: "function",
-    name: "getAddress",
-    stateMutability: "view",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "salt", type: "uint256" },
-    ],
-    outputs: [{ type: "address" }],
-  },
-  {
-    type: "function",
-    name: "createAccount",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "salt", type: "uint256" },
-    ],
-    outputs: [{ type: "address" }],
-  },
-];
+log(`chain ${config.name} (${chainId})`);
+log(`rpcs ${endpoints.map((endpoint) => endpoint.label).join(", ")}`);
 
-const client = createPublicClient({
-  chain: mainnet,
-  transport: http(process.env.RPC_URL || "https://ethereum-rpc.publicnode.com"),
-});
-
-const scannedProfiles = [
-  ["0x9ba704115F0ed3a431A025ffa0525fDD1D507C3c", 17n],
-  ["0x51Bd128Eb1F801cE41910001589D41D452Bd6eEb", 23n],
-  ["0x2e468914660439F879721cAffAd710Acdc0A676B", 29n],
-  ["0xE776cB56Bf554c2D684Bf39726C9ACce164114A4", 30n],
-  ["0xaAE9d45cD6c0b487824a0332d804591B0d438C9B", 34n],
-  ["0x09676Ee4685B618d0DCc85E221019c9Ce3810211", 36n],
-  ["0x19310357eEb9b5AF955BBd8fF639E65172E2995b", 37n],
-  ["0x261ADDe627f7A60BEa2989b6b12Bd7186C0B96fd", 38n],
-  ["0x0493c946AEBD49710a5a069c8611727dd890125A", 39n],
-  ["0x5B50e75b56B28A7b8BaE81dA251b0Ccfa72d0FAb", 40n],
-  ["0xaD50aD547F27e4BB1553Cda8057Fd9680E31C226", 41n],
-  ["0x4f93ce49015fa9F57e40fEcaBD01c2ba68D3da0A", 42n],
-  ["0x4F14f35245981e47ca00F49066BeAc9C37Babe1e", 43n],
-  ["0x283A96231238805D9Cfbe175DD7348f1a37a1b72", 44n],
-  ["0x3B15221d93c5A1dDEf43Cb9fA5b2C1311b22848c", 45n],
-  ["0x818ab48846d5FE6908b02db1438568E2f20fF5e9", 46n],
-  ["0x25d5C9DbC1E12163B973261A08739927E4F72BA8", 47n],
-  ["0xa651c309aedEcd6e6347c9eF390afd18986f25AD", 48n],
-  ["0x067b91aeAc320Df3d886E6817B00f1f0eefcaf31", 49n],
-  ["0xcf08A5aA2066Bff5aA7cCD7D7b7a47fB16Fd17CD", 51n],
-  ["0xE317A0b5769b49A157219a76733a48937bC2A5e5", 52n],
-  ["0xa90Aa49a215BfF94c1F6b28b6dCFA49d5a907A2f", 53n],
-  ["0x3dD929862bd3E3b2649d9a0c9eD36514d0Ad6ecc", 54n],
-  ["0x1cc5e66F0d75beADd6DD3cEFeeE87371aE29971f", 55n],
-  ["0xF0FAc756d276225dd7aF4133E261528dF2479977", 56n],
-  ["0x096D93cdBf4d873e4bfAbfD9354c4771ef4A1187", 57n],
-  ["0xA3DB316D9198d888Ec015e02B9b7578b96bb2C0E", 58n],
-  ["0xD02Ec09AdA0C4f3176fC9a90569a9232Dcb4afa7", 59n],
-  ["0xE8E94Fc399623cc8E96eE3700f5Eb56F903E39a2", 60n],
-  ["0xc6eC9DD8b5add6E402A7AF23EA03AB505980eaC2", 64n],
-  ["0x6fD7F750e47CB95b7caAAc219a73379a316e764D", 65n],
-  ["0x84c11998bc94072265CBe837c1D4890237F98E46", 66n],
-];
-
-function safeCall(to, abi, functionName, args, values) {
-  return {
-    to,
-    value: "0",
-    data: encodeFunctionData({ abi, functionName, args }),
-    contractMethod: {
-      inputs: abi.find((item) => item.name === functionName).inputs,
-      name: functionName,
-      payable: false,
-    },
-    contractInputsValues: values,
-  };
-}
-
+// The local CREATE2 math must match the factory before anything is trusted.
 const sample = getAddress("0x0000000000000000000000000000000000000001");
-const onChain = await client.readContract({
-  address: factory,
-  abi: factoryAbi,
-  functionName: "getAddress",
-  args: [sample, 0n],
-});
+const onChain = await read((client) =>
+  client.readContract({ address: FACTORY, abi: factoryAbi, functionName: "getAddress", args: [sample, 0n] }),
+);
 if (getAddress(onChain) !== lightAccountAddress(sample)) {
   throw new Error("Local Light Account address does not match the factory");
 }
 
-let profiles = scannedProfiles.map(([user, id]) => ({ user, id }));
-try {
-  const logs = await client.getLogs({
-    address: badges,
-    event: parseAbiItem(
-      "event ProfileCreated(address indexed user, uint256 indexed id)",
-    ),
-    fromBlock,
-    toBlock: "latest",
-  });
-  profiles = logs.map((log) => ({ user: log.args.user, id: log.args.id }));
-} catch (error) {
-  console.log(`Using the scanned profile list (${profiles.length}). Live log scan failed.`);
+async function resolveSafe() {
+  const value = args.safe === undefined || args.safe === true ? config.defaultSafeEns : String(args.safe);
+  if (!value) throw new Error(`--safe <address> is required on ${config.name}`);
+  if (isAddress(value)) return { safe: getAddress(value), safeName: undefined };
+  if (config.name !== "mainnet") throw new Error(`--safe must be an address on ${config.name}`);
+  const resolved = await read((client) => client.getEnsAddress({ name: normalize(value) }));
+  if (!resolved) throw new Error(`${value} does not resolve`);
+  return { safe: getAddress(resolved), safeName: value };
 }
 
-const members = [];
-const transactions = [];
-const legacyMap = {};
-const rows = profiles.map((profile) => {
-  const eoa = getAddress(profile.user);
+const { safe, safeName } = await resolveSafe();
+const safeCode = await read((client) => client.getCode({ address: safe }));
+if (!isContractCode(safeCode)) log(`warning: ${safe} has no contract code; is it really a Safe?`);
+log(`safe ${safe}${safeName ? ` (${safeName})` : ""}`);
+
+const toBlock = await read((client) => client.getBlockNumber());
+const nextTokenId = await read((client) =>
+  client.readContract({ address: config.badges, abi: badgesAbi, functionName: "nextTokenId" }),
+);
+log(`badges ${config.badges}, nextTokenId ${nextTokenId}, head ${toBlock}`);
+
+// nextTokenId is the most recently assigned id (_badgeExists: id <= nextTokenId),
+// so the range is inclusive.
+const ids = Array.from({ length: Number(nextTokenId) }, (_, index) => BigInt(index + 1));
+const perBadge = (functionName, extra = []) =>
+  ids.map((id) => ({ address: config.badges, abi: badgesAbi, functionName, args: [...extra, id] }));
+const [isProfile, info, minters, burners, safeBalances] = await Promise.all([
+  multicallAll(endpoints, perBadge("isProfileBadge"), { log: quiet }),
+  multicallAll(endpoints, perBadge("badges"), { log: quiet }),
+  multicallAll(endpoints, perBadge("getBadgeMinters"), { log: quiet }),
+  multicallAll(endpoints, perBadge("getBadgeBurners"), { log: quiet }),
+  multicallAll(endpoints, perBadge("balanceOf", [safe]), { log: quiet }),
+]);
+const badgeRows = ids.map((id, index) => ({
+  id,
+  name: info[index][0],
+  hook: info[index][1],
+  isOfficial: info[index][2],
+  isCommunity: info[index][3],
+  isProfile: isProfile[index],
+  minters: minters[index],
+  burners: burners[index],
+  safeBalance: safeBalances[index],
+}));
+const profileIds = badgeRows.filter((row) => row.isProfile).map((row) => row.id);
+const heldIds = badgeRows.filter((row) => row.safeBalance > 0n).map((row) => row.id);
+log(`profile badges ${profileIds.length}, safe holds [${heldIds.join(", ")}]`);
+
+// Profiles come from ProfileCreated, scanned in chunks from the deploy block.
+log(`scanning ProfileCreated ${config.deployBlock}-${toBlock}`);
+const scan = await scanLogs({
+  endpoints,
+  address: config.badges,
+  event: profileCreatedEvent,
+  fromBlock: config.deployBlock,
+  toBlock,
+  log: quiet,
+});
+const byId = new Map();
+for (const entry of scan.logs) byId.set(entry.args.id, getAddress(entry.args.user));
+log(`ProfileCreated ${scan.logs.length} logs in ${scan.requests} requests`);
+
+const logIds = [...byId.keys()];
+if (!sameIdSet(logIds, profileIds)) {
+  const missing = profileIds.filter((id) => !byId.has(id));
+  const extra = logIds.filter((id) => !profileIds.includes(id));
+  console.error(
+    `Profile count mismatch: ${logIds.length} from logs, ${profileIds.length} by isProfileBadge.` +
+      ` missing [${missing.join(", ")}] extra [${extra.join(", ")}]`,
+  );
+  process.exit(1);
+}
+
+const auto = selectMigratable(
+  badgeRows.filter((row) => row.id > 10n),
+  heldIds,
+  { includeCredentials: args["include-credentials"] === true },
+);
+const override = parseIdList(args.badges);
+const migratable = override ?? auto.migratable;
+if (override) {
+  log(`badges overridden: [${override.join(", ")}] (discovered [${auto.migratable.join(", ")}])`);
+} else {
+  log(`migratable [${migratable.join(", ")}]`);
+}
+// A changed mainnet set needs a human: pass --badges to pick the set, or
+// --force to accept what was discovered.
+if (config.name === "mainnet" && !sameIdSet(auto.migratable, EXPECTED_MAINNET_MIGRATABLE)) {
+  const message = `discovered [${auto.migratable.join(", ")}], expected [${EXPECTED_MAINNET_MIGRATABLE.join(", ")}]`;
+  if (!override && args.force !== true) {
+    console.error(`${message}. Check the reasons below, then rerun with --badges or --force.`);
+    for (const [id, why] of Object.entries(auto.reasons)) {
+      if (EXPECTED_MAINNET_MIGRATABLE.includes(BigInt(id))) console.error(`  ${id}: ${why.join(", ")}`);
+    }
+    process.exit(1);
+  }
+  log(`warning: ${message}`);
+}
+
+// Owners that are contracts (a Safe, a multisig) cannot sign as a Light
+// Account owner. 7702-delegated EOAs still can.
+const owners = [...byId.entries()].sort(([a], [b]) => (a < b ? -1 : 1));
+const ownerCodes = [];
+const smartCodes = [];
+for (const [, eoa] of owners) {
+  ownerCodes.push(await read((client) => client.getCode({ address: eoa })));
+  smartCodes.push(await read((client) => client.getCode({ address: lightAccountAddress(eoa) })));
+}
+const skippedContracts = [];
+const rows = [];
+owners.forEach(([profileId, eoa], index) => {
+  if (isContractCode(ownerCodes[index])) {
+    skippedContracts.push({ eoa, profileId: profileId.toString() });
+    log(`skip ${eoa} (profile #${profileId}): owner is a contract`);
+    return;
+  }
   const smart = lightAccountAddress(eoa);
-  return { eoa, smart, profileId: profile.id };
+  rows.push({ eoa, smart, profileId, smartDeployed: isContractCode(smartCodes[index]) });
 });
 
 const balanceCalls = rows.flatMap((row) =>
   migratable.flatMap((id) => [
-    {
-      address: badges,
-      abi: badgesAbi,
-      functionName: "balanceOf",
-      args: [row.eoa, id],
-    },
-    {
-      address: badges,
-      abi: badgesAbi,
-      functionName: "balanceOf",
-      args: [row.smart, id],
-    },
+    { address: config.badges, abi: badgesAbi, functionName: "balanceOf", args: [row.eoa, id] },
+    { address: config.badges, abi: badgesAbi, functionName: "balanceOf", args: [row.smart, id] },
   ]),
 );
-const balances = [];
-for (let index = 0; index < balanceCalls.length; index += 40) {
-  const chunk = await client.multicall({
-    contracts: balanceCalls.slice(index, index + 40),
-    allowFailure: false,
-  });
-  balances.push(...chunk);
-}
+const balances = await multicallAll(endpoints, balanceCalls, { chunk: 40, log: quiet });
+
 let cursor = 0;
-
-for (const row of rows) {
-  legacyMap[row.eoa.toLowerCase()] = row.smart;
-  transactions.push(
-    safeCall(factory, factoryAbi, "createAccount", [row.eoa, 0n], {
-      owner: row.eoa,
-      salt: "0",
-    }),
-  );
-
-  const moved = [];
-  for (const id of migratable) {
-    const onOld = balances[cursor++];
-    const onSmart = balances[cursor++];
-    if (onOld === 0n) continue;
-    const missing = onOld > onSmart ? onOld - onSmart : 0n;
-    if (missing > 0n) {
-      transactions.push(
-        safeCall(badges, badgesAbi, "mint", [row.smart, id, missing, "0x"], {
-          to: row.smart,
-          id: id.toString(),
-          amount: missing.toString(),
-          data: "0x",
-        }),
-      );
-    }
-    transactions.push(
-      safeCall(badges, badgesAbi, "burn", [row.eoa, id, onOld], {
-        from: row.eoa,
-        id: id.toString(),
-        value: onOld.toString(),
-      }),
-    );
-    moved.push({
-      id: id.toString(),
-      amount: onOld.toString(),
-      minted: missing.toString(),
-    });
-  }
-
-  members.push({
+const members = rows.map((row) => {
+  const memberBalances = migratable.map((id) => ({
+    id,
+    onOld: balances[cursor++],
+    onSmart: balances[cursor++],
+  }));
+  const { forward, moved } = planMember({
+    badges: config.badges,
     eoa: row.eoa,
     smart: row.smart,
-    profileId: row.profileId.toString(),
-    moved,
+    smartDeployed: row.smartDeployed,
+    balances: memberBalances,
   });
-}
+  const rollback = rollbackCalls({ badges: config.badges, eoa: row.eoa, smart: row.smart, moved });
+  return { ...row, forward, rollback, moved };
+});
 
-const batch = {
-  version: "1.0",
-  chainId: "1",
-  createdAt: Date.now(),
-  meta: {
-    name: "Outpost smart account migration",
+const parts = chunkMembers(members, split);
+const names = batchFileNames(config.name, parts.length);
+const createdAt = Date.now();
+const forwardBatches = parts.map((part, index) =>
+  safeBatch({
+    chainId,
+    safe,
+    createdAt,
+    name: `Outpost smart account migration (${config.name}${parts.length > 1 ? `, ${index + 1}/${parts.length}` : ""})`,
     description:
-      "Deploy each member Light Account, mint DAO-movable badges onto it, and burn those badges from the old wallet. Profiles, VIP, SPEC, and community badges are not included.",
-    txBuilderVersion: "1.16.5",
-  },
-  transactions,
-};
+      "Deploy each member Light Account, mint Safe-movable badges onto it, and burn those badges from the old wallet. Profiles, community, hooked, and Safe-held badges are not included.",
+    transactions: part.flatMap((member) => member.forward),
+  }),
+);
+const rollbackBatches = parts.map((part, index) =>
+  safeBatch({
+    chainId,
+    safe,
+    createdAt,
+    name: `Outpost smart account migration ROLLBACK (${config.name}${parts.length > 1 ? `, ${index + 1}/${parts.length}` : ""})`,
+    description:
+      "Undo the migration batch: mint the moved badges back to each old wallet and burn what was minted from its Light Account. Deployed Light Accounts stay deployed.",
+    transactions: part.flatMap((member) => member.rollback),
+  }),
+);
+
+const legacyEntries = {};
+for (const member of members) legacyEntries[member.eoa.toLowerCase()] = member.smart;
 
 const report = {
-  dao: "societyprotocol.eth",
-  badges,
+  chain: config.name,
+  chainId,
+  safe,
+  safeName,
+  badges: config.badges,
+  factory: FACTORY,
+  implementation: IMPLEMENTATION,
+  scannedBlocks: { from: config.deployBlock.toString(), to: toBlock.toString() },
+  nextTokenId: nextTokenId.toString(),
+  profileCount: profileIds.length,
+  safeHeldBadges: heldIds.map(String),
+  migratableBadges: migratable.map(String),
+  badgesOverridden: Boolean(override),
+  // Profile badges are listed once in profileCount, not per id.
+  notMigratable: Object.fromEntries(
+    Object.entries(auto.reasons).filter(([, why]) => !why.includes("profile")),
+  ),
   memberCount: members.length,
-  transactionCount: transactions.length,
+  transactionCount: forwardBatches.reduce((sum, batch) => sum + batch.transactions.length, 0),
+  rollbackTransactionCount: rollbackBatches.reduce((sum, batch) => sum + batch.transactions.length, 0),
+  batches: names.forward,
+  rollbackBatches: names.rollback,
+  skippedContracts,
   notMoved: [
     "Profile badges cannot be burned or transferred.",
-    "VIP badges 14, 15, and 16 follow the SPEC lock.",
+    "Community badges are minted by the community manager, not the Safe.",
+    "Hooked badges (e.g. VIP, following the SPEC lock) are decided by their hook.",
+    "Badges the Safe holds stay where they are.",
+    "Credential badges other badges depend on (Security Council 12) are moved by their holders.",
     "SPEC, VIP locks, and ETH stay on the old wallet.",
-    "Community badges are minted by the community manager, not the DAO.",
-    "Badges 11 and 12 stay on the DAO and the Security Council.",
   ],
-  members,
+  members: members.map((member, index) => ({
+    eoa: member.eoa,
+    smart: member.smart,
+    profileId: member.profileId.toString(),
+    smartDeployed: member.smartDeployed,
+    batch: split ? Math.floor(index / split) + 1 : 1,
+    moved: member.moved,
+  })),
 };
 
-const paths = {
-  map: resolve(here, "../src/consts/legacy-account-map.json"),
-  forum: resolve(here, "../../discourse-siwe-auth/script/forum-address-map.json"),
-  batch: resolve(here, "../../web3-app-contracts/script-output/safe-smart-account-migration.json"),
-  report: resolve(here, "../../web3-app-contracts/script-output/smart-account-migration-report.json"),
-};
+log(`members ${members.length}, skipped contracts ${skippedContracts.length}`);
+log(`safe transactions ${report.transactionCount}, rollback ${report.rollbackTransactionCount}`);
 
-for (const path of Object.values(paths)) mkdirSync(dirname(path), { recursive: true });
-writeFileSync(paths.map, `${JSON.stringify(legacyMap, null, 2)}\n`);
-writeFileSync(paths.forum, `${JSON.stringify(legacyMap, null, 2)}\n`);
-writeFileSync(paths.batch, `${JSON.stringify(batch, null, 2)}\n`);
-writeFileSync(paths.report, `${JSON.stringify(report, null, 2)}\n`);
+if (dryRun) {
+  log("dry run: nothing written");
+  process.exit(0);
+}
 
-console.log(`members ${members.length}`);
-console.log(`safe transactions ${transactions.length}`);
-console.log(paths.batch);
+const outDir = resolve(here, "../../web3-app-contracts/script-output");
+const mapPaths = [
+  resolve(here, "../src/consts/legacy-account-map.json"),
+  resolve(here, "../../discourse-siwe-auth/script/forum-address-map.json"),
+];
+mkdirSync(outDir, { recursive: true });
+for (const file of readdirSync(outDir)) {
+  if (isStaleBatchFile(file, config.name)) rmSync(resolve(outDir, file));
+}
+const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+forwardBatches.forEach((batch, index) => writeJson(resolve(outDir, names.forward[index]), batch));
+rollbackBatches.forEach((batch, index) => writeJson(resolve(outDir, names.rollback[index]), batch));
+writeJson(resolve(outDir, names.report), report);
+for (const path of mapPaths) {
+  mkdirSync(dirname(path), { recursive: true });
+  const existing = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : {};
+  writeJson(path, mergeChainMap(existing, chainId, legacyEntries));
+}
+
+for (const name of [...names.forward, ...names.rollback, names.report]) log(resolve(outDir, name));

@@ -10,7 +10,10 @@ import { notFound, redirect } from "next/navigation";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useUserQuery } from "@/data/users/useUserQuery";
-import legacyAccounts from "@/consts/legacy-account-map.json";
+import {
+  legacySmartAccount,
+  migratedProfileRedirect,
+} from "@/data/users/legacyAccounts";
 
 export default function UserProfilePage({
   params,
@@ -28,6 +31,11 @@ export default function UserProfilePage({
   );
 
   const user = useUserQuery(concreteAddress);
+  // Old wallets on the app's chain open their Light Account, once it has a
+  // profile; until then the old profile (still listed) is shown here.
+  const smartAccount = legacySmartAccount(concreteAddress);
+  const smartUser = useUserQuery(smartAccount);
+  const migratedTo = migratedProfileRedirect(smartAccount, smartUser);
 
   useEffect(() => {
     document.title = `User ${user.data?.name ? `@${user.data.name}` : concreteAddress ? truncateAddress(concreteAddress) : ""} | Society Protocol`;
@@ -37,17 +45,15 @@ export default function UserProfilePage({
     return notFound();
   }
 
-  const smartAccount =
-    legacyAccounts[concreteAddress.toLowerCase() as keyof typeof legacyAccounts];
-  if (smartAccount) {
-    return redirect(`/user/${smartAccount}`);
+  if (migratedTo && migratedTo !== "pending") {
+    return redirect(`/user/${migratedTo}`);
   }
 
   if (connectedAddress && isEqualCaseInsensitive(connectedAddress, address)) {
     return redirect("/profile");
   }
 
-  if (!wagmiReady || user.isLoading) {
+  if (!wagmiReady || user.isLoading || migratedTo === "pending") {
     return <AccountSkeleton />;
   }
 

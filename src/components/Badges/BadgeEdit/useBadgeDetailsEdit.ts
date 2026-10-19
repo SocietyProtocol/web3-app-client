@@ -15,8 +15,11 @@ export const useBadgeDetailsEdit = ({
   onCancel,
   onSave,
 }: UseBadgeDetailsEditProps) => {
-  const { address } = useOutpostAccount();
-  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
+  const { address, ownerAddress } = useOutpostAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(
+    address,
+    ownerAddress,
+  );
   const { enqueueSnackbar } = useSnackbar();
   const hasCompletedRef = useRef(false);
 

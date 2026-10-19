@@ -13,8 +13,11 @@ import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
 
 export const BadgeInfoStep = () => {
-  const { address } = useOutpostAccount();
-  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
+  const { address, ownerAddress } = useOutpostAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(
+    address,
+    ownerAddress,
+  );
   const { form, getServerFieldError } = useBadgeCreation();
   const {
     register,

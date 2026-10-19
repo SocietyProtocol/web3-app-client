@@ -153,7 +153,8 @@ export const fetchMigratedLegacyAccounts = async (
     const res = await execute(UsersDocument, {
       first: MAX_PAGE,
       skip: 0,
-      orderBy: "id",
+      // The query gateway only allows the directory's orderings for Users.
+      orderBy: "profile__createdAt",
       orderDirection: "asc",
       where: {
         id_in: smarts.slice(index, index + MAX_PAGE),

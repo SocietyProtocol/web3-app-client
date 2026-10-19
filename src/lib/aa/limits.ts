@@ -1,12 +1,12 @@
 import { UserOperationShape } from "@/lib/smart-account";
 
 /**
- * Ceilings for sponsored UserOps. Real Light Account v2 ops sit well below:
- * createProfile with deployment is ~350k verification and ~250k call gas.
- * Anything larger is either broken or trying to drain the policy.
+ * Ceilings for sponsored UserOps. Pimlico pads its estimates: on Sepolia,
+ * createProfile with deployment estimates ~1.6M call and ~1.03M verification
+ * gas. Anything larger is either broken or trying to drain the policy.
  */
-export const MAX_CALL_GAS_LIMIT = BigInt(750_000);
-export const MAX_VERIFICATION_GAS_LIMIT = BigInt(500_000);
+export const MAX_CALL_GAS_LIMIT = BigInt(2_500_000);
+export const MAX_VERIFICATION_GAS_LIMIT = BigInt(1_500_000);
 export const MAX_PRE_VERIFICATION_GAS = BigInt(200_000);
 export const MAX_PAYMASTER_VERIFICATION_GAS_LIMIT = BigInt(150_000);
 export const MAX_PAYMASTER_POST_OP_GAS_LIMIT = BigInt(100_000);

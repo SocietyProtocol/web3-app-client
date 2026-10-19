@@ -8,14 +8,14 @@ import { referralCodeValidationSchema } from "@/validation/referralCode";
 import { useCallback, useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { useAcceptInvitationMutation } from "./useAcceptInvitationMutation";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { SimulationError } from "@/components/Transaction/SimulationError";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { type Hex } from "viem";
 import { useHasInvited } from "@/data/users/useHasInvited";
 
 export const AcceptInvitation = () => {
-  const { address } = useAccount();
+  const { address, ownerAddress } = useOutpostAccount();
   const { enqueueSnackbar } = useSnackbar();
 
   const form = useForm({
@@ -74,7 +74,12 @@ export const AcceptInvitation = () => {
         return "Invalid referral code format.";
       }
 
-      if (isEqualCaseInsensitive(inviter, address)) {
+      const ownAddress =
+        isEqualCaseInsensitive(inviter, address) ||
+        (!!ownerAddress &&
+          !isEqualCaseInsensitive(ownerAddress, address) &&
+          isEqualCaseInsensitive(inviter, ownerAddress));
+      if (ownAddress) {
         return "You cannot use your own referral code.";
       }
 
@@ -88,7 +93,7 @@ export const AcceptInvitation = () => {
 
       return true;
     },
-    [address, hasInvited.data, hasInvited.error],
+    [address, ownerAddress, hasInvited.data, hasInvited.error],
   );
 
   const invitationArgs = useMemo(() => {

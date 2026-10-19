@@ -9,7 +9,7 @@ import {
   BadgeCreationProvider,
   useBadgeCreation,
 } from "./BadgeCreationContext";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box, Stack } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
@@ -41,7 +41,7 @@ const BadgeCreationWizardContent = () => {
     name: ["name", "imageUrl", "isOfficial"],
   });
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
 
   const nextDisabled = !form.formState.isValid;

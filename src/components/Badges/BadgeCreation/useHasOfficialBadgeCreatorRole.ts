@@ -5,7 +5,14 @@ import { expectedNetwork } from "@/lib/wagmi";
 import { Hex } from "viem";
 import { useReadContract } from "wagmi";
 
-export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
+/**
+ * True if `address` or `ownerAddress` holds OFFICIAL_BADGE_CREATOR_ROLE.
+ * Roles granted before the Light Account migration stay on the wallet.
+ */
+export const useHasOfficialBadgeCreatorRole = (
+  address?: Hex,
+  ownerAddress?: Hex,
+) => {
   const contractAddress = useChainVar(contracts.badges);
 
   const officialBadgeCreatorRole = useReadContract({
@@ -35,8 +42,33 @@ export const useHasOfficialBadgeCreatorRole = (address?: Hex) => {
     },
   });
 
+  const checkOwner =
+    !!ownerAddress &&
+    (!address || ownerAddress.toLowerCase() !== address.toLowerCase());
+
+  const ownerHasRole = useReadContract({
+    address: contractAddress,
+    abi: SocietyProtocolBadgesABI,
+    functionName: "hasRole",
+    args:
+      officialBadgeCreatorRole.data && checkOwner
+        ? [officialBadgeCreatorRole.data, ownerAddress]
+        : undefined,
+    chainId: expectedNetwork.id,
+    query: {
+      enabled: !!officialBadgeCreatorRole.data && checkOwner,
+      staleTime: Infinity,
+      gcTime: Infinity,
+    },
+  });
+
   return {
     ...hasRole,
-    isLoading: officialBadgeCreatorRole.isLoading || hasRole.isLoading,
+    data:
+      hasRole.data === true || ownerHasRole.data === true ? true : hasRole.data,
+    isLoading:
+      officialBadgeCreatorRole.isLoading ||
+      hasRole.isLoading ||
+      (checkOwner && ownerHasRole.isLoading),
   };
 };

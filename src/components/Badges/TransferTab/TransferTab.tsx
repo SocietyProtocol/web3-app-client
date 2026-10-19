@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -11,8 +11,13 @@ import z from "zod";
 import { transferBadgeValidationSchema } from "./validation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { SimulationError } from "@/components/Transaction/SimulationError";
-import { Hex } from "viem";
+import { Address, Hex } from "viem";
 import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
+import { useLegacyAccounts } from "@/components/shared/useLegacyAccounts";
+import {
+  MappedRecipient,
+  RecipientAddressHints,
+} from "@/components/shared/RecipientAddressHints";
 
 interface TransferTabProps {
   id: string;
@@ -23,6 +28,9 @@ type TransferFormOutput = z.output<typeof transferBadgeValidationSchema>;
 
 export const TransferTab = ({ id }: TransferTabProps) => {
   const { data } = useBadge(id);
+  const legacy = useLegacyAccounts();
+  // Set when a legacy wallet in "To" was replaced by its Society address.
+  const [mappedTo, setMappedTo] = useState<MappedRecipient | undefined>();
 
   const holders = useMemo(
     () => data?.badge?.holders.map((h) => h.id.toLowerCase()) || [],
@@ -64,6 +72,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
         : undefined,
     onSuccess: () => {
       form.reset();
+      setMappedTo(undefined);
     },
   });
 
@@ -105,7 +114,18 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                 onChange={(_, newValue) => {
                   const newId =
                     typeof newValue === "string" ? newValue : newValue?.id;
-                  field.onChange(newId ?? "");
+                  const resolved = newId
+                    ? legacy.resolveRecipient(newId)
+                    : undefined;
+                  setMappedTo(
+                    resolved?.mappedFrom
+                      ? {
+                          from: resolved.mappedFrom,
+                          to: resolved.address as Address,
+                        }
+                      : undefined,
+                  );
+                  field.onChange(resolved?.address ?? "");
                 }}
                 freeSolo
                 filterOptions={filterToOptions}
@@ -114,6 +134,15 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                 helperText={fieldState.error?.message}
               />
             )}
+          />
+
+          <RecipientAddressHints
+            addresses={toValue ? [toValue] : []}
+            mapped={mappedTo ? [mappedTo] : []}
+            onReplace={(_, societyAddress) =>
+              form.setValue("to", societyAddress, { shouldValidate: true })
+            }
+            disabled={transaction.isLoading}
           />
         </Stack>
       </Box>

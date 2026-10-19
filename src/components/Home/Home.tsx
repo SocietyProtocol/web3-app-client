@@ -11,7 +11,7 @@ import NorthEastIcon from "@mui/icons-material/NorthEast";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useProfileId } from "@/data/users/useProfileId";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useWagmiReady } from "@/atoms/wagmiReady";
@@ -33,7 +33,7 @@ const CardIcon = ({ src, alt }: { src: string; alt: string }) => (
 export const Home = () => {
   const router = useRouter();
   const wagmiReady = useWagmiReady();
-  const { isConnected, address } = useAccount();
+  const { isConnected, address } = useOutpostAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const { data: profileId, isLoading: profileLoading } = useProfileId(address);
 

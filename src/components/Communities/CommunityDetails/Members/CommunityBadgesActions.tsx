@@ -2,8 +2,7 @@
 
 import { Box } from "@mui/material";
 import { useCallback, useMemo, useState } from "react";
-import { useAccount } from "wagmi";
-import { Address } from "viem";
+import { useIdentityAddresses } from "@/components/shared/useLegacyAccounts";
 import { BadgeActions } from "@/components/Badges/BadgeActions";
 import { BadgeAutocomplete } from "@/components/Badges/BadgeAutocomplete/BadgeAutocomplete";
 import { useBadge } from "@/data/badges/useBadge";
@@ -14,7 +13,8 @@ import { useCommunityDetailsContext } from "../CommunityDetails.context";
 import { uniqueBy } from "@/utils/collection";
 
 export function CommunityBadgesActions() {
-  const { address } = useAccount();
+  // Society address and owner wallet; legacy rights stay on the wallet.
+  const addresses = useIdentityAddresses();
   const { community } = useCommunityDetailsContext();
 
   const eligibleBadges = useMemo(() => {
@@ -45,10 +45,10 @@ export function CommunityBadgesActions() {
 
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
-      data?.badge && address
-        ? getBadgePermissions(data.badge, address as Address)
+      data?.badge && addresses.length
+        ? getBadgePermissions(data.badge, addresses)
         : { canMint: false, canBurn: false, canTransfer: false },
-    [address, data],
+    [addresses, data],
   );
 
   const eligibleBadgeIds = useMemo(

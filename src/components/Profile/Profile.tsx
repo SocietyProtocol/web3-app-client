@@ -2,7 +2,7 @@
 
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
 import { useEffect, useRef } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
@@ -18,7 +18,7 @@ export const Profile = () => {
   );
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useOutpostAccount();
   const user = useUserQuery(address);
   const isInitialMount = useRef(true);
 

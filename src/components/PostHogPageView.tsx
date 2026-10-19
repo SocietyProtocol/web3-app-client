@@ -3,15 +3,16 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import posthog from "posthog-js";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { expectedNetwork } from "@/lib/wagmi";
 import { capturePostHogEvent, isPostHogEnabled } from "@/lib/posthog";
 import { isEqualCaseInsensitive } from "@/utils/string";
+import { identifyOutpostPerson } from "@/components/shared/posthogIdentity";
 
 export default function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { address, chainId, connector } = useAccount();
+  const { address, ownerAddress, chainId, connector } = useOutpostAccount();
   const previousAddressRef = useRef<typeof address>(undefined);
   const trackedWrongNetworkChainIdRef = useRef<number | undefined>(undefined);
 
@@ -21,12 +22,14 @@ export default function PostHogPageView() {
     }
 
     if (address) {
-      posthog.identify(address.toLowerCase());
+      // Identify by the Society address; merge the wallet's person so the
+      // one tracked before the Light Account migration joins it.
+      identifyOutpostPerson(posthog, address, ownerAddress);
       return;
     }
 
     posthog.reset();
-  }, [address]);
+  }, [address, ownerAddress]);
 
   useEffect(() => {
     if (!isPostHogEnabled) {
@@ -40,6 +43,7 @@ export default function PostHogPageView() {
     ) {
       capturePostHogEvent("wallet_connected", {
         wallet_address: address.toLowerCase(),
+        owner_address: ownerAddress?.toLowerCase(),
         chain_id: chainId,
         connector: connector?.name,
       });
@@ -50,7 +54,7 @@ export default function PostHogPageView() {
     }
 
     previousAddressRef.current = address;
-  }, [address, chainId, connector]);
+  }, [address, ownerAddress, chainId, connector]);
 
   useEffect(() => {
     if (!isPostHogEnabled || !address || chainId === undefined) {

@@ -9468,6 +9468,11 @@ pathval@^1.1.1:
   resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.1.tgz#8534e77a77ce7ac5a2512ea21e0fdb8fcf6c3d8d"
   integrity sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==
 
+permissionless@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.4.1.tgz#4e5ca4e4f7bc3b26cfe1d0e0dbcb9bc8bac5636d"
+  integrity sha512-RhSLhA3Aw3gc1il6unWYfo1K+GBQNGBMSEVwv2gJQN6Ryxv6VoYtutRyIIQ279bPHu6WlRutbw/IxRC8giNamQ==
+
 picocolors@^1.0.0, picocolors@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.1.tgz#3d321af3eab939b083c8f929a1d12cda81c26b6b"

@@ -3,7 +3,7 @@ import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
@@ -15,7 +15,7 @@ import { capturePostHogEvent } from "@/lib/posthog";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
   const contractAddress = useChainVar(contracts.badges);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const userAddress = overrideAddress || address;
   const { generateAuthPayload } = useAuth();
   const pendingProfileEventRef = useRef<{

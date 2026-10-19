@@ -7,7 +7,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeCommunityDetailsUpdated } from "@/data/communities/decodeUtils";
 
 interface UseMutateCommunityProps {
@@ -20,7 +20,7 @@ export const useMutateCommunity = ({
   onError,
 }: UseMutateCommunityProps) => {
   const contractAddress = useChainVar(contracts.communityRegistry);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const uploadIpfsResult = useMutateMetadata({
     onError,

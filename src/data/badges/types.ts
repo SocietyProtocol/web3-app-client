@@ -38,7 +38,8 @@ export enum BadgeCategory {
 export interface BadgeQueryOptions {
   searchText?: string | null;
   creatorAddress?: string | null;
-  managerAddress?: string | null;
+  /** One address, or every address the member acts as. */
+  managerAddress?: string | string[] | null;
   holderAddress?: string | null;
   includeProfile?: boolean;
   isCommunity?: boolean;

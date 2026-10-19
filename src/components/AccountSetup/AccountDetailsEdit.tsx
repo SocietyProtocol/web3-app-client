@@ -8,7 +8,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useAccountSetup } from "./AccountSetupContext";
 import { parseErrorMessage } from "@/utils/errors";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { truncateAddress } from "@/utils/string";
 
 interface AccountDetailsEditProps {
@@ -20,7 +20,7 @@ export const AccountDetailsEdit = ({
   onCancel,
   onSave,
 }: AccountDetailsEditProps) => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { enqueueSnackbar } = useSnackbar();
   const hasCompletedRef = useRef(false);
   const {

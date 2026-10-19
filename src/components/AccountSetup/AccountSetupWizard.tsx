@@ -4,7 +4,7 @@ import { Wizard, WizardStep } from "../Wizard";
 import { AccountInfoStep } from "./AccountInfoStep";
 import { ReviewStep } from "./ReviewStep";
 import { AccountSetupProvider, useAccountSetup } from "./AccountSetupContext";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
@@ -29,7 +29,7 @@ const AccountSetupWizardContent = ({
   const { isSigning, isConfirming, isLoading, isSyncing, isSuccess } =
     transaction;
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
 
@@ -159,7 +159,7 @@ export const AccountSetupWizard = ({
 }: {
   onComplete?: () => void;
 }) => {
-  const { isConnected } = useAccount();
+  const { isConnected } = useOutpostAccount();
 
   if (!isConnected) {
     return null;

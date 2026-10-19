@@ -4,7 +4,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
 import { Address, Hex, TransactionReceipt } from "viem";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 
 interface AcceptInvitationData {
   inviter: Address;
@@ -24,7 +24,7 @@ export const useAcceptInvitationMutation = ({
   onError,
   args,
 }: UseAcceptInvitationMutationParams) => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   return useTransaction({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,

@@ -18,6 +18,10 @@ interface BadgesModalProps {
   onClose: () => void;
   username: string;
   badges: BadgeData[];
+  /** Held amount per badge id, from the badges contract. */
+  balances?: ReadonlyMap<string, bigint>;
+  /** Total supply per badge id, from the badges contract. */
+  supplies?: ReadonlyMap<string, bigint>;
 }
 
 export const BadgesModal = ({
@@ -25,6 +29,8 @@ export const BadgesModal = ({
   onClose,
   username,
   badges,
+  balances,
+  supplies,
 }: BadgesModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -70,7 +76,13 @@ export const BadgesModal = ({
           ) : (
             <Gallery
               items={badges}
-              renderItem={(badge) => <BadgeCard {...badge} />}
+              renderItem={(badge) => (
+                <BadgeCard
+                  {...badge}
+                  count={balances?.get(badge.id)}
+                  total={supplies?.get(badge.id)}
+                />
+              )}
               columns={{
                 xs: 1,
                 sm: 2,

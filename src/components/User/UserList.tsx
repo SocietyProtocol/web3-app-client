@@ -19,6 +19,8 @@ export interface UserListProps {
   viewAllButtonText?: string;
   andMoreText?: string;
   sx?: SxProps<Theme>;
+  /** Extra content under each user card, e.g. a badge count. */
+  renderUserExtra?: (user: UserListProps["users"][number]) => ReactNode;
 }
 
 export const UserList = ({
@@ -30,6 +32,7 @@ export const UserList = ({
   viewAllButtonText = "View All Users",
   andMoreText = "And {count} more...",
   sx,
+  renderUserExtra,
 }: UserListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -78,7 +81,9 @@ export const UserList = ({
             size="small"
             highlightYou
             link
-          />
+          >
+            {!loading && renderUserExtra?.(user)}
+          </UserCard>
         )}
         andMoreText={andMoreText}
         noneFoundText={noUsersFoundText}
@@ -94,6 +99,7 @@ export const UserList = ({
         noUsersFoundText={noUsersFoundText}
         highlightYou
         link
+        renderUserExtra={renderUserExtra}
       />
     </>
   );

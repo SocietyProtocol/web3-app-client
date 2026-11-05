@@ -7,10 +7,20 @@ import { env } from "@/lib/env";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer/MarkdownRenderer";
 import { useBadge } from "@/data/badges/useBadge";
 import { GOVERNOR_BADGE_ID } from "@/consts/badges";
+import {
+  useBadgeHolderBalances,
+  useBadgeTotalSupplies,
+} from "@/data/badges/useBadgeQuantities";
+import { HolderAmountChip } from "../Badges/HolderAmountChip";
+import { useMemo } from "react";
 
 export const Governance = () => {
   const { data, isLoading } = useBadge(GOVERNOR_BADGE_ID);
-  const governors = data?.badge?.holders ?? [];
+  const governors = useMemo(() => data?.badge?.holders ?? [], [data]);
+  const governorIds = useMemo(() => governors.map((g) => g.id), [governors]);
+  const { balances } = useBadgeHolderBalances(GOVERNOR_BADGE_ID, governorIds);
+  const { supplies } = useBadgeTotalSupplies([GOVERNOR_BADGE_ID]);
+  const totalSupply = supplies.get(GOVERNOR_BADGE_ID);
 
   return (
     <Box>
@@ -117,6 +127,12 @@ export const Governance = () => {
         modalTitle="Governors"
         viewAllButtonText="View All Governors"
         andMoreText="And {count} more governors..."
+        renderUserExtra={(user) => {
+          const count = balances.get(user.id.toLowerCase());
+          return count === undefined ? null : (
+            <HolderAmountChip count={count} total={totalSupply} showPercent />
+          );
+        }}
         sx={{
           marginTop: 10,
         }}

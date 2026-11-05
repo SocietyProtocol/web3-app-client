@@ -17,6 +17,7 @@ import {
   switchChain,
 } from "wagmi/actions";
 import { aaRpcUrl } from "@/lib/pimlico-proxy";
+import { isAlreadyDeployedError } from "@/lib/aa/errors";
 import {
   SPONSORSHIP_POLICY_ID,
   isSponsoredBadgesCall,
@@ -84,6 +85,32 @@ export async function sendSponsoredUserOperation(params: {
     throw new Error("Wallet is not connected");
   }
 
+  // A lagging RPC node can still report a just-deployed Light Account as
+  // undeployed, so the op carries a factory and the bundler rejects it with
+  // AA10 during estimation, before the owner signs. Rebuild and retry.
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await buildAndSend({ ...params, data, sponsor, chain, publicClient, walletClient });
+    } catch (error) {
+      if (attempt >= AA10_ATTEMPTS || !isAlreadyDeployedError(error)) throw error;
+      await new Promise((resolve) => setTimeout(resolve, AA10_RETRY_MS));
+    }
+  }
+}
+
+const AA10_ATTEMPTS = 3;
+const AA10_RETRY_MS = 3_000;
+
+async function buildAndSend(params: {
+  chainId: number;
+  to: Address;
+  data: Hex;
+  sponsor: boolean;
+  chain: typeof mainnet | typeof sepolia;
+  publicClient: NonNullable<ReturnType<typeof getPublicClient>>;
+  walletClient: NonNullable<Awaited<ReturnType<typeof ownerWalletClient>>>;
+}): Promise<Hex> {
+  const { chain, publicClient, walletClient, sponsor, data } = params;
   const account = await toLightSmartAccount({
     client: publicClient,
     owner: walletClient,

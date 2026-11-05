@@ -20,6 +20,7 @@ import { tokens } from "@/consts/tokens";
 import { SimulationError } from "../Transaction/SimulationError";
 import { useLockParameters } from "./useLockParameters";
 import { SECONDS_PER_YEAR_BN } from "@/consts/time";
+import { truncateAddress } from "@/utils/string";
 
 export const LockSpec = () => {
   const [selectedTierId, setSelectedTierId] = useState<TierId>(TierId.SILVER);
@@ -82,6 +83,12 @@ export const LockSpec = () => {
           sx={{ fontWeight: 700 }}
           hideTooltip
         />
+        {/* SPEC and VIP locks stay on the owner wallet, not the Society address. */}
+        {address && (
+          <Typography variant="caption" color="text.secondary">
+            held by your wallet {truncateAddress(address)}
+          </Typography>
+        )}
       </Stack>
 
       {/* Tier selection */}

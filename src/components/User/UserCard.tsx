@@ -4,7 +4,7 @@ import { UserCardProps } from "./types";
 import { UserCardPaper } from "./components";
 import { UserAvatar } from "../Avatar/UserAvatar";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useMemo } from "react";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { Hex } from "viem";
@@ -22,7 +22,7 @@ export const UserCard = ({
   highlightYou = false,
   link = false,
 }: UserCardProps) => {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useOutpostAccount();
 
   const isConnectedUser = useMemo(
     () =>

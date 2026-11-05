@@ -8,7 +8,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import {
   decodeBadgeCreatedEvents,
   decodeBadgePermissions,
@@ -30,7 +30,7 @@ export const useMutateBadge = ({
     communityId ? contracts.communityRegistry : contracts.badges,
   );
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const uploadIpfsResult = useMutateMetadata({ onError });
 

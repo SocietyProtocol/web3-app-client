@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSnackbar } from "notistack";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useBadgeEdit } from "./BadgeEditContext";
 import { useHasOfficialBadgeCreatorRole } from "../BadgeCreation/useHasOfficialBadgeCreatorRole";
 
@@ -15,8 +15,11 @@ export const useBadgeDetailsEdit = ({
   onCancel,
   onSave,
 }: UseBadgeDetailsEditProps) => {
-  const { address } = useAccount();
-  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
+  const { address, ownerAddress } = useOutpostAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(
+    address,
+    ownerAddress,
+  );
   const { enqueueSnackbar } = useSnackbar();
   const hasCompletedRef = useRef(false);
 

@@ -17,7 +17,7 @@ import {
 } from "../../User/UserAutocomplete/UserAutocomplete";
 import DropArea from "../../DropArea/DropArea";
 import { WithTooltip } from "../../WithTooltip/WithTooltip";
-import { isAddress, Hex } from "viem";
+import { isAddress, Hex, Address } from "viem";
 import { uniq } from "@/utils/collection";
 import { mintBadgeValidationSchema } from "./validation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
@@ -26,6 +26,12 @@ import { prop, toLowerCase } from "@/utils/curry";
 import { useSnackbar } from "notistack";
 import { useMintBadgeMutation } from "./useMintBadgeMutation";
 import { SimulationError } from "@/components/Transaction/SimulationError";
+import { useLegacyAccounts } from "@/components/shared/useLegacyAccounts";
+import { replaceRecipient } from "@/components/shared/legacyAccounts";
+import {
+  MappedRecipient,
+  RecipientAddressHints,
+} from "@/components/shared/RecipientAddressHints";
 
 enum MintMode {
   SINGLE = "single",
@@ -39,23 +45,15 @@ interface MintTabProps {
 export const MintTab = ({ id }: MintTabProps) => {
   const [mintMode, setMintMode] = useState<MintMode>(MintMode.SINGLE);
   const { enqueueSnackbar } = useSnackbar();
+  const legacy = useLegacyAccounts();
+  // Legacy wallets replaced by their Society address, for the inline notice.
+  const [mapped, setMapped] = useState<MappedRecipient[]>([]);
 
   const { data } = useBadge(id);
 
   const holders = useMemo(
     () => data?.badge?.holders.map(toLowerCase(prop("id"))) || [],
     [data],
-  );
-
-  const filterOptions = useCallback(
-    (options: UserOption[]) => {
-      const filtered = options.filter(
-        (option) => !holders.includes(option.id.toLowerCase()),
-      );
-
-      return filtered;
-    },
-    [holders],
   );
 
   const form = useForm({
@@ -73,13 +71,28 @@ export const MintTab = ({ id }: MintTabProps) => {
     name: ["recipients", "file", "fileContent"],
   });
 
+  // Recipients who already hold this badge. Minting to them is allowed (the
+  // contract is ERC-1155, a holder can own several), so this only informs.
+  const existingHolders = useMemo(
+    () =>
+      recipients.filter((recipient) =>
+        holders.includes(recipient.toLowerCase()),
+      ),
+    [recipients, holders],
+  );
+
+  const resetForm = useCallback(() => {
+    form.reset();
+    setMapped([]);
+  }, [form]);
+
   const handleToggleMintMode = useCallback(
     (event: React.SyntheticEvent, newValue: MintMode) => {
       setMintMode(newValue);
 
-      form.reset();
+      resetForm();
     },
-    [form],
+    [resetForm],
   );
 
   const handleOnChangeSingle = useCallback(
@@ -87,30 +100,27 @@ export const MintTab = ({ id }: MintTabProps) => {
       _: SyntheticEvent<Element, Event>,
       newValue: string | null | UserOption,
     ) => {
-      const newUserId = typeof newValue === "string" ? newValue : newValue?.id;
+      const rawUserId = typeof newValue === "string" ? newValue : newValue?.id;
+      const resolved = rawUserId
+        ? legacy.resolveRecipient(rawUserId)
+        : undefined;
+      const newUserId = resolved?.address;
 
       if (newUserId && !isAddress(newUserId, { strict: false })) {
         enqueueSnackbar(`Invalid address (${newUserId})`, { variant: "error" });
         return;
       }
 
-      if (newUserId && holders.includes(newUserId.toLowerCase())) {
-        enqueueSnackbar(
-          `User with address ${newUserId} already holds this badge`,
-          {
-            variant: "error",
-          },
-        );
-        return;
-      }
-
-      form.setValue(
-        "recipients",
-        newValue ? [typeof newValue === "string" ? newValue : newValue.id] : [],
-        { shouldValidate: true },
+      setMapped(
+        resolved?.mappedFrom
+          ? [{ from: resolved.mappedFrom, to: resolved.address as Address }]
+          : [],
       );
+      form.setValue("recipients", newUserId ? [newUserId] : [], {
+        shouldValidate: true,
+      });
     },
-    [holders, form, enqueueSnackbar],
+    [form, enqueueSnackbar, legacy],
   );
 
   const handleOnChangeBatch = useCallback(
@@ -119,9 +129,10 @@ export const MintTab = ({ id }: MintTabProps) => {
       newValues: (string | UserOption)[],
       reason: AutocompleteChangeReason,
     ) => {
-      const cleanNewValues = newValues.map((v) =>
-        typeof v === "string" ? v : v.id,
+      const resolved = legacy.resolveRecipients(
+        newValues.map((v) => (typeof v === "string" ? v : v.id)),
       );
+      const cleanNewValues = resolved.addresses;
 
       if (
         reason === "createOption" ||
@@ -139,25 +150,15 @@ export const MintTab = ({ id }: MintTabProps) => {
           });
           return;
         }
-
-        const holder = holders.find((h) =>
-          cleanNewValues.some((v) => v.toLowerCase() === h),
-        );
-
-        if (holder) {
-          enqueueSnackbar(
-            `User with address ${holder} already holds this badge`,
-            {
-              variant: "error",
-            },
-          );
-          return;
-        }
       }
 
+      setMapped((prev) => [
+        ...prev.filter((m) => !resolved.mapped.some((n) => n.to === m.to)),
+        ...resolved.mapped,
+      ]);
       form.setValue("recipients", cleanNewValues, { shouldValidate: true });
     },
-    [enqueueSnackbar, form, holders],
+    [enqueueSnackbar, form, legacy],
   );
 
   const handleOnFile = useCallback(
@@ -170,18 +171,14 @@ export const MintTab = ({ id }: MintTabProps) => {
             shouldValidate: true,
           });
 
-          const validAddresses = uniq(
+          const resolved = legacy.resolveRecipients(
             text
               .split(",")
               .map((line) => line.trim())
-              .filter(
-                (line) =>
-                  isAddress(line, { strict: false }) &&
-                  !holders.includes(line.toLowerCase()),
-              ),
+              .filter((line) => isAddress(line, { strict: false })),
           );
-
-          form.setValue("recipients", validAddresses, {
+          setMapped(resolved.mapped);
+          form.setValue("recipients", resolved.addresses, {
             shouldValidate: true,
           });
         }
@@ -195,7 +192,16 @@ export const MintTab = ({ id }: MintTabProps) => {
         shouldValidate: true,
       });
     },
-    [enqueueSnackbar, form, holders],
+    [enqueueSnackbar, form, legacy],
+  );
+
+  const handleReplaceRecipient = useCallback(
+    (from: string, to: Address) => {
+      form.setValue("recipients", replaceRecipient(recipients, from, to), {
+        shouldValidate: true,
+      });
+    },
+    [form, recipients],
   );
 
   const invalidAddresses = useMemo(() => {
@@ -209,13 +215,12 @@ export const MintTab = ({ id }: MintTabProps) => {
       addresses.filter(
         (line) =>
           line !== "" &&
-          (!isAddress(line, { strict: false }) ||
-            holders.includes(line.toLowerCase())),
+          !isAddress(line, { strict: false }),
       ),
     );
 
     return invalids;
-  }, [fileContent, mintMode, holders]);
+  }, [fileContent, mintMode]);
 
   const transaction = useMintBadgeMutation({
     args:
@@ -224,7 +229,7 @@ export const MintTab = ({ id }: MintTabProps) => {
       recipients.every((r) => isAddress(r, { strict: false }))
         ? { id: BigInt(id), recipients: recipients as Hex[] }
         : undefined,
-    onSuccess: () => form.reset(),
+    onSuccess: resetForm,
   });
 
   const handleSubmit = form.handleSubmit(() => transaction.execute());
@@ -309,7 +314,19 @@ export const MintTab = ({ id }: MintTabProps) => {
               >["onChange"]
             }
             disabled={transaction.isLoading}
-            filterOptions={filterOptions}
+          />
+          {existingHolders.length > 0 && (
+            <Typography color="warning.main" variant="body2">
+              {existingHolders.length === 1
+                ? `${existingHolders[0]} already holds this badge. They will receive another one.`
+                : `${existingHolders.length} recipients already hold this badge. They will each receive another one.`}
+            </Typography>
+          )}
+          <RecipientAddressHints
+            addresses={recipients}
+            mapped={mapped}
+            onReplace={handleReplaceRecipient}
+            disabled={transaction.isLoading}
           />
           {mintMode === "batch" &&
             file &&
@@ -331,7 +348,7 @@ export const MintTab = ({ id }: MintTabProps) => {
                   <Button
                     variant="text"
                     size="small"
-                    onClick={() => form.reset()}
+                    onClick={resetForm}
                     sx={{
                       color: (theme) => theme.palette.text.primary,
                       p: "0 !important",

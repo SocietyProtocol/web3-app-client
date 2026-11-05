@@ -1,11 +1,12 @@
 import { useCallback } from "react";
 import { Hex, TransactionReceipt } from "viem";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
 import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
+import { useCommunityDetailsContext } from "../CommunityDetails.context";
 
 interface UseTransferOwnershipProps {
   enabled?: boolean;
@@ -24,7 +25,10 @@ export function useTransferOwnership({
   onSuccess,
   onError,
 }: UseTransferOwnershipProps) {
-  const { address } = useAccount();
+  const { address: societyAddress } = useOutpostAccount();
+  // The manager badge may still sit on the owner wallet; move it from there.
+  const { managerHolder } = useCommunityDetailsContext();
+  const address = managerHolder ?? societyAddress;
   const badgesAddress = useChainVar(contracts.badges);
 
   const hasArgs = !!address && !!managerBadgeId && !!newOwner;
@@ -47,6 +51,7 @@ export function useTransferOwnership({
       ["badge", managerBadgeId],
       ["badges"],
       ["user", address?.toLowerCase()],
+      ["user", societyAddress?.toLowerCase()],
       ["community-members"],
       ["community-members-infinite"],
     ],
@@ -55,7 +60,7 @@ export function useTransferOwnership({
         community_id: communityId,
         manager_badge_id: managerBadgeId,
         new_owner: newOwner,
-        wallet_address: address?.toLowerCase(),
+        wallet_address: societyAddress?.toLowerCase(),
         tx_hash: receipt.transactionHash,
       });
       onSuccess?.(receipt);

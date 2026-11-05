@@ -4,7 +4,7 @@ import { BadgeCard } from "./BadgeCard";
 import { useMemo, useEffect, useRef } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
 import { Stack, Box, Tabs, Tab, Typography, Button } from "@mui/material";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isAddress } from "viem";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
 import { CreatedByOption, TabOption } from "../../data/badges/types";
@@ -15,7 +15,7 @@ import { SearchBox } from "@/components/Common/SearchBox";
 import { BadgeCategoryFilter } from "./BadgeCategoryFilter";
 
 export const Badges = () => {
-  const { address: userAddress } = useAccount();
+  const { address: userAddress } = useOutpostAccount();
 
   const {
     data,

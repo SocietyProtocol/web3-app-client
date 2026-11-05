@@ -1,6 +1,27 @@
 import { describe, expect, it } from "vitest";
 
-import { TokenBucketLimiter } from "./rate-limit";
+import { TokenBucketLimiter, clientIp } from "./rate-limit";
+
+describe("clientIp", () => {
+  const headers = (h: Record<string, string>) => new Headers(h);
+
+  it("uses the visitor IP Cloudflare reports, not the edge in x-forwarded-for", () => {
+    expect(
+      clientIp(headers({ "cf-connecting-ip": "203.0.113.7", "x-forwarded-for": "172.68.0.1" })),
+    ).toBe("203.0.113.7");
+  });
+
+  it("ignores a client-supplied first x-forwarded-for hop", () => {
+    expect(clientIp(headers({ "x-forwarded-for": "198.51.100.1, 172.68.0.1" }))).toBe(
+      "172.68.0.1",
+    );
+  });
+
+  it("falls back to x-real-ip, then unknown", () => {
+    expect(clientIp(headers({ "x-real-ip": "203.0.113.9" }))).toBe("203.0.113.9");
+    expect(clientIp(headers({}))).toBe("unknown");
+  });
+});
 
 describe("TokenBucketLimiter", () => {
   it("limits a key until it refills", () => {

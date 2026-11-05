@@ -343,7 +343,11 @@ const canonical: ChainState = {
 function post(body: unknown, ip = "203.0.113.7") {
   return new Request(`http://localhost/api/aa/rpc?chainId=${SEPOLIA}`, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-forwarded-for": `${ip}, 10.0.0.1` },
+    headers: {
+      "content-type": "application/json",
+      "cf-connecting-ip": ip,
+      "x-forwarded-for": "172.68.0.1",
+    },
     body: JSON.stringify(body),
   });
 }

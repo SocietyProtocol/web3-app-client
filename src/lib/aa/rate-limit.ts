@@ -87,10 +87,13 @@ export function resetAaRateLimits() {
 }
 
 /**
- * First x-forwarded-for hop, as set by the hosting proxy. Anyone can send
- * this header when the app is reached directly, so treat it as best effort.
+ * The visitor's IP as Cloudflare reports it. Behind Cloudflare and Caddy the
+ * first x-forwarded-for hop is the Cloudflare edge, so it would put every
+ * visitor on that edge in one bucket. The last hop is the one our own proxy
+ * appended; the first is whatever the client sent.
  */
 export function clientIp(headers: Headers) {
-  const forwarded = headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || headers.get("x-real-ip")?.trim() || "unknown";
+  const cloudflare = headers.get("cf-connecting-ip")?.trim();
+  const forwarded = headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
+  return cloudflare || headers.get("x-real-ip")?.trim() || forwarded || "unknown";
 }

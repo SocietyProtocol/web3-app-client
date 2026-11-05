@@ -10,8 +10,9 @@ import {
   Skeleton,
   Link,
 } from "@mui/material";
-import { useAccount } from "wagmi";
-import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
+import { truncateAddress } from "@/utils/string";
+import { holdsAny } from "@/components/shared/accountIdentity";
+import { useIdentityAddresses } from "@/components/shared/useLegacyAccounts";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
@@ -44,21 +45,22 @@ export const BadgeDetails = ({
   setIsEditing,
 }: BadgeDetailsProps) => {
   const wagmiReady = useWagmiReady();
-  const { address: userAddress } = useAccount();
+  // Society address and owner wallet: rights granted before the migration
+  // stay on the wallet.
+  const userAddresses = useIdentityAddresses();
 
   const { data, isLoading } = useBadge(id);
 
   const showLoader = !wagmiReady || isLoading;
 
-  const isManager = useMemo(() => {
-    if (!data?.badge?.managers || !userAddress) return false;
-
-    const managers = data?.badge?.managers;
-
-    return managers.some((manager) =>
-      isEqualCaseInsensitive(manager.id, userAddress),
-    );
-  }, [data?.badge?.managers, userAddress]);
+  const isManager = useMemo(
+    () =>
+      holdsAny(
+        data?.badge?.managers?.map((manager) => manager.id),
+        userAddresses,
+      ),
+    [data?.badge?.managers, userAddresses],
+  );
 
   const creatorAddress = data?.badge?.creatorAddress
     ? (data?.badge?.creatorAddress as Hex)
@@ -68,10 +70,10 @@ export const BadgeDetails = ({
 
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
-      data?.badge && userAddress
-        ? getBadgePermissions(data?.badge, userAddress)
+      data?.badge && userAddresses.length
+        ? getBadgePermissions(data?.badge, userAddresses)
         : { canMint: false, canBurn: false, canTransfer: false },
-    [data?.badge, userAddress],
+    [data?.badge, userAddresses],
   );
 
   const toggleEditing = () => {

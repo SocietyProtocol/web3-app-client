@@ -14,6 +14,23 @@ import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { requireGraphData } from "@/lib/graph-response";
 
 /**
+ * Lower-cases one address or a list of them. A list of one collapses to
+ * a string so query keys stay stable for members without a legacy wallet.
+ */
+export const normalizeAddresses = (
+  value?: string | readonly string[] | null,
+): string | string[] | undefined => {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string") return value.trim().toLowerCase() || undefined;
+
+  const list = Array.from(
+    new Set(value.map((v) => v.trim().toLowerCase()).filter(Boolean)),
+  );
+  if (list.length === 0) return undefined;
+  return list.length === 1 ? list[0] : list;
+};
+
+/**
  * Merges the provided options with the default options.
  *
  * @param options Options to merge
@@ -30,7 +47,7 @@ export const mergeOptions = (
   return {
     ...defaultOptions,
     ...options,
-    managerAddress: managerAddress?.trim().toLowerCase(),
+    managerAddress: normalizeAddresses(managerAddress),
     creatorAddress: creatorAddress?.trim().toLowerCase(),
     holderAddress: holderAddress?.trim().toLowerCase(),
     searchText: (searchText ?? defaultOptions.searchText)
@@ -48,7 +65,7 @@ export const mergeOptions = (
 export const buildWhereClause = (options: {
   searchText?: string | null;
   creatorAddress?: string | null;
-  managerAddress?: string | null;
+  managerAddress?: string | readonly string[] | null;
   holderAddress?: string | null;
   includeProfile?: boolean;
   isCommunity?: boolean;
@@ -72,10 +89,17 @@ export const buildWhereClause = (options: {
     });
   }
 
-  if (managerAddress) {
+  const managerAddresses = normalizeAddresses(managerAddress);
+  if (typeof managerAddresses === "string") {
     whereClauses.push({
       managers_: {
-        id: managerAddress,
+        id: managerAddresses,
+      },
+    });
+  } else if (managerAddresses) {
+    whereClauses.push({
+      managers_: {
+        id_in: managerAddresses,
       },
     });
   }
@@ -182,15 +206,20 @@ export const fetchBadges = async (options?: BadgeQueryOptions) => {
  * Gets the badge permissions for a user.
  *
  * @param badge Badge data
- * @param userAddress User address
+ * @param userAddress User address, or every address the user acts as
+ * (Society address and owner wallet). A right held by any of them counts.
  * @returns Badge permissions { canMint: boolean, canBurn: boolean, canTransfer: boolean }
  *
  */
 export const getBadgePermissions = (
   badge: FullBadgeData,
-  userAddress: Address,
+  userAddress: Address | readonly Address[],
 ) => {
-  const lowerCasedUserAddress = userAddress.toLowerCase();
+  const userAddresses = (
+    typeof userAddress === "string" ? [userAddress] : userAddress
+  ).map((address) => address.toLowerCase());
+  const hasAny = (set: Set<string>) =>
+    userAddresses.some((address) => set.has(address));
 
   const mintersSet = new Set(
     badge.minters.flatMap((minter) =>
@@ -211,9 +240,9 @@ export const getBadgePermissions = (
   );
 
   return {
-    canMint: mintersSet.has(lowerCasedUserAddress),
-    canBurn: burnersSet.has(lowerCasedUserAddress),
-    canTransfer: transferersSet.has(lowerCasedUserAddress),
+    canMint: hasAny(mintersSet),
+    canBurn: hasAny(burnersSet),
+    canTransfer: hasAny(transferersSet),
   };
 };
 

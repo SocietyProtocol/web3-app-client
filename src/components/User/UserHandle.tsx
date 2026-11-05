@@ -2,7 +2,7 @@ import { Skeleton, Stack, Typography } from "@mui/material";
 import { UserCard } from "./UserCard";
 import { PreviewPopover } from "../PreviewPopover/PreviewPopover";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useMemo } from "react";
 import { UserHandleProps } from "./types";
@@ -21,7 +21,7 @@ export const UserHandle = ({
   loading,
   fullAddress = false,
 }: UserHandleProps) => {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useOutpostAccount();
 
   const isConnectedUser = useMemo(
     () =>

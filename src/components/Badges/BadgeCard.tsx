@@ -18,17 +18,20 @@ import { CommunityChip } from "./CommunityChip";
 import { IndividualChip } from "./IndividualChip";
 import { UserHandle } from "../User/UserHandle";
 import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
+import { formatBadgeCount } from "@/data/badges/quantity";
 
 export interface BadgeCardProps extends Partial<BadgeData> {
   loading?: boolean;
   readonly?: boolean;
   /**
-   * For badges where the holder may own multiple ERC-1155 instances
-   * (e.g. Governor), display an "X / N" counter at the bottom of the card.
-   * Both `governorCount` and `governorMaxCount` must be provided.
+   * How many of this badge the viewed account holds (ERC-1155 balance).
+   * Shown with `total` as an "X / N" counter at the bottom of the card for
+   * every badge, since any badge can be minted to the same account twice.
+   * Both `count` and `total` must be provided.
    */
-  governorCount?: number;
-  governorMaxCount?: number;
+  count?: bigint;
+  /** Total supply of this badge. */
+  total?: bigint;
 }
 
 type BadgeOutline = "official" | "community" | "individual";
@@ -78,11 +81,10 @@ export const BadgeCard = ({
   loading = false,
   imageUrl,
   readonly = false,
-  governorCount,
-  governorMaxCount,
+  count,
+  total,
 }: BadgeCardProps) => {
-  const showGovernorCounter =
-    governorMaxCount !== undefined && governorCount !== undefined;
+  const showCounter = count !== undefined && total !== undefined;
   const isIndividual = !isOfficial && !isCommunity;
   const outline: BadgeOutline | undefined = loading
     ? undefined
@@ -282,10 +284,10 @@ export const BadgeCard = ({
         )
       )}
 
-      {/* Multi-instance counter (e.g. Governor: x / 10) */}
-      {!loading && showGovernorCounter && (
+      {/* Held amount over total supply (e.g. 2 / 15) */}
+      {!loading && showCounter && (
         <Chip
-          label={`${governorCount} / ${governorMaxCount}`}
+          label={formatBadgeCount(count, total)}
           size="small"
           sx={{
             mt: "auto",

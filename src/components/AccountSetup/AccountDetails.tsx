@@ -22,8 +22,10 @@ import { Page } from "../Page/Page";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useLegacyAccounts } from "../shared/useLegacyAccounts";
-import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
-import { GOVERNOR_BADGE_ID, GOVERNOR_BADGE_MAX_COUNT } from "@/consts/badges";
+import {
+  useAccountBadgeBalances,
+  useBadgeTotalSupplies,
+} from "@/data/badges/useBadgeQuantities";
 
 interface AccountDetailsProps {
   address?: Address;
@@ -73,8 +75,15 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
 
   const badgesCount = data?.badges?.length;
 
-  const governorBalance = useBadgeBalanceOf(overrideAddress, GOVERNOR_BADGE_ID);
-  const governorCount = governorBalance.data ? Number(governorBalance.data) : 0;
+  const badgeIds = useMemo(
+    () => (data?.badges ?? []).map((badge) => badge.id),
+    [data?.badges],
+  );
+  const { balances: badgeBalances } = useAccountBadgeBalances(
+    overrideAddress,
+    badgeIds,
+  );
+  const { supplies: badgeSupplies } = useBadgeTotalSupplies(badgeIds);
 
   const communityCount = data?.communities?.length;
 
@@ -272,14 +281,8 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
                 creatorAddress={badge.creatorAddress}
                 uri={badge.uri}
                 loading={badge.loading}
-                governorCount={
-                  badge.id === GOVERNOR_BADGE_ID ? governorCount : undefined
-                }
-                governorMaxCount={
-                  badge.id === GOVERNOR_BADGE_ID
-                    ? GOVERNOR_BADGE_MAX_COUNT
-                    : undefined
-                }
+                count={badgeBalances.get(badge.id)}
+                total={badgeSupplies.get(badge.id)}
               />
             )}
             noneFoundText="No badges found"
@@ -293,6 +296,8 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
             onClose={handleCloseBadgesModal}
             username={username}
             badges={data?.badges || []}
+            balances={badgeBalances}
+            supplies={badgeSupplies}
           />
         </Stack>
       )}

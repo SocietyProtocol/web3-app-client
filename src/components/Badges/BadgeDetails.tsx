@@ -30,6 +30,11 @@ import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { UserList } from "../User/UserList";
+import {
+  useBadgeHolderBalances,
+  useBadgeTotalSupplies,
+} from "@/data/badges/useBadgeQuantities";
+import { HolderAmountChip } from "./HolderAmountChip";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 
@@ -52,6 +57,12 @@ export const BadgeDetails = ({
   const { data, isLoading } = useBadge(id);
 
   const showLoader = !wagmiReady || isLoading;
+
+  const holders = useMemo(() => data?.badge?.holders ?? [], [data]);
+  const holderIds = useMemo(() => holders.map((holder) => holder.id), [holders]);
+  const { balances: holderBalances } = useBadgeHolderBalances(id, holderIds);
+  const { supplies } = useBadgeTotalSupplies([id]);
+  const totalSupply = supplies.get(id);
 
   const isManager = useMemo(
     () =>
@@ -331,7 +342,13 @@ export const BadgeDetails = ({
       <UserList
         title="Holders"
         modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
-        users={data?.badge?.holders || []}
+        users={holders}
+        renderUserExtra={(user) => {
+          const count = holderBalances.get(user.id.toLowerCase());
+          return count === undefined ? null : (
+            <HolderAmountChip count={count} total={totalSupply} />
+          );
+        }}
         loading={showLoader}
         noUsersFoundText="No holders found"
         viewAllButtonText="View All Holders"

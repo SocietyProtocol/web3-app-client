@@ -23,6 +23,7 @@ interface UsersModalProps {
   noUsersFoundText?: string;
   highlightYou?: boolean;
   link?: boolean;
+  renderUserExtra?: (user: UsersModalProps["users"][number]) => ReactNode;
 }
 
 export const UsersModal = ({
@@ -33,6 +34,7 @@ export const UsersModal = ({
   noUsersFoundText = "No users found",
   highlightYou = false,
   link = true,
+  renderUserExtra,
 }: UsersModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -93,7 +95,9 @@ export const UsersModal = ({
                     size="small"
                     highlightYou={highlightYou}
                     link={link}
-                  />
+                  >
+                    {renderUserExtra?.(user)}
+                  </UserCard>
                 </Box>
               )}
               columns={{

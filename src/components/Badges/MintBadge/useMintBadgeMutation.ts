@@ -4,7 +4,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeMintTransfers } from "@/data/badges/decodeUtils";
 
 interface BadgeMintData {
@@ -23,7 +23,7 @@ export const useMintBadgeMutation = ({
   onError,
   args,
 }: UseMintBadgeMutationProps) => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   return useTransaction({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,

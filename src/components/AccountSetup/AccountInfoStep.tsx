@@ -1,5 +1,5 @@
 import { Box, Stack, Typography, TextField } from "@mui/material";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Controller } from "react-hook-form";
 import { AvatarInput } from "./AvatarInput";
 import { truncateAddress } from "@/utils/string";
@@ -7,7 +7,7 @@ import { useAccountSetup } from "./AccountSetupContext";
 
 export const AccountInfoStep = () => {
   const { form, getServerFieldError, reset } = useAccountSetup();
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   return (
     <Stack spacing={{ xs: 2, sm: 3 }}>

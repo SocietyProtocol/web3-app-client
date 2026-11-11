@@ -18,7 +18,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Hex, isAddress } from "viem";
+import { Address, Hex, isAddress } from "viem";
+import { ChangeEvent, useState } from "react";
 import { z } from "zod";
 import { GasEstimation } from "@/components/Transaction/GasEstimation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
@@ -26,6 +27,11 @@ import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { addressValidationSchema } from "@/validation/address";
 import { useCommunityDetailsContext } from "../CommunityDetails.context";
 import { useTransferOwnership } from "./useTransferOwnership";
+import { useLegacyAccounts } from "@/components/shared/useLegacyAccounts";
+import {
+  MappedRecipient,
+  RecipientAddressHints,
+} from "@/components/shared/RecipientAddressHints";
 
 const schema = z.object({
   newOwner: addressValidationSchema,
@@ -48,12 +54,15 @@ export function TransferOwnershipDialog({
 }: TransferOwnershipDialogProps) {
   const { id, community } = useCommunityDetailsContext();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
+  const legacy = useLegacyAccounts();
+  const [mappedOwner, setMappedOwner] = useState<MappedRecipient | undefined>();
 
   const managerBadgeId = community?.managerBadge?.id;
 
   const {
     register,
     handleSubmit,
+    setValue,
     reset,
     control,
     formState: { errors, isValid },
@@ -67,6 +76,19 @@ export function TransferOwnershipDialog({
   });
 
   const watchedNewOwner = useWatch({ control, name: "newOwner" });
+
+  // A migrated wallet becomes its Society address as soon as it is typed.
+  const newOwnerField = register("newOwner", {
+    onChange: (event: ChangeEvent<HTMLInputElement>) => {
+      const resolved = legacy.resolveRecipient(event.target.value);
+      if (!resolved.mappedFrom) return;
+      setMappedOwner({
+        from: resolved.mappedFrom,
+        to: resolved.address as Address,
+      });
+      setValue("newOwner", resolved.address, { shouldValidate: true });
+    },
+  });
   const validNewOwner =
     watchedNewOwner && isAddress(watchedNewOwner, { strict: false })
       ? (watchedNewOwner.toLowerCase() as Hex)
@@ -84,6 +106,7 @@ export function TransferOwnershipDialog({
 
   const handleClose = () => {
     reset();
+    setMappedOwner(undefined);
     onClose();
   };
 
@@ -118,10 +141,20 @@ export function TransferOwnershipDialog({
               label="New Owner Address"
               placeholder="0x..."
               fullWidth
-              {...register("newOwner")}
+              {...newOwnerField}
               error={Boolean(errors.newOwner)}
               helperText={errors.newOwner?.message}
               disabled={isLoading}
+            />
+
+            <RecipientAddressHints
+              addresses={validNewOwner ? [validNewOwner] : []}
+              mapped={mappedOwner ? [mappedOwner] : []}
+              onReplace={(_, societyAddress) =>
+                setValue("newOwner", societyAddress, { shouldValidate: true })
+              }
+              disabled={isLoading}
+              allowReplace={false}
             />
 
             <Controller

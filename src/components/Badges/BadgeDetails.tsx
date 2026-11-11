@@ -10,8 +10,9 @@ import {
   Skeleton,
   Link,
 } from "@mui/material";
-import { useAccount } from "wagmi";
-import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
+import { truncateAddress } from "@/utils/string";
+import { holdsAny } from "@/components/shared/accountIdentity";
+import { useIdentityAddresses } from "@/components/shared/useLegacyAccounts";
 import { Hex } from "viem";
 import { Logo } from "../icons/Logo";
 import { useBadge } from "../../data/badges/useBadge";
@@ -29,6 +30,11 @@ import { BadgeDetailsEdit } from "./BadgeEdit/BadgeDetailsEdit";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { UserList } from "../User/UserList";
+import {
+  useBadgeHolderBalances,
+  useBadgeTotalSupplies,
+} from "@/data/badges/useBadgeQuantities";
+import { HolderAmountChip } from "./HolderAmountChip";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 
@@ -44,21 +50,28 @@ export const BadgeDetails = ({
   setIsEditing,
 }: BadgeDetailsProps) => {
   const wagmiReady = useWagmiReady();
-  const { address: userAddress } = useAccount();
+  // Society address and owner wallet: rights granted before the migration
+  // stay on the wallet.
+  const userAddresses = useIdentityAddresses();
 
   const { data, isLoading } = useBadge(id);
 
   const showLoader = !wagmiReady || isLoading;
 
-  const isManager = useMemo(() => {
-    if (!data?.badge?.managers || !userAddress) return false;
+  const holders = useMemo(() => data?.badge?.holders ?? [], [data]);
+  const holderIds = useMemo(() => holders.map((holder) => holder.id), [holders]);
+  const { balances: holderBalances } = useBadgeHolderBalances(id, holderIds);
+  const { supplies } = useBadgeTotalSupplies([id]);
+  const totalSupply = supplies.get(id);
 
-    const managers = data?.badge?.managers;
-
-    return managers.some((manager) =>
-      isEqualCaseInsensitive(manager.id, userAddress),
-    );
-  }, [data?.badge?.managers, userAddress]);
+  const isManager = useMemo(
+    () =>
+      holdsAny(
+        data?.badge?.managers?.map((manager) => manager.id),
+        userAddresses,
+      ),
+    [data?.badge?.managers, userAddresses],
+  );
 
   const creatorAddress = data?.badge?.creatorAddress
     ? (data?.badge?.creatorAddress as Hex)
@@ -68,10 +81,10 @@ export const BadgeDetails = ({
 
   const { canMint, canBurn, canTransfer } = useMemo(
     () =>
-      data?.badge && userAddress
-        ? getBadgePermissions(data?.badge, userAddress)
+      data?.badge && userAddresses.length
+        ? getBadgePermissions(data?.badge, userAddresses)
         : { canMint: false, canBurn: false, canTransfer: false },
-    [data?.badge, userAddress],
+    [data?.badge, userAddresses],
   );
 
   const toggleEditing = () => {
@@ -329,7 +342,13 @@ export const BadgeDetails = ({
       <UserList
         title="Holders"
         modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
-        users={data?.badge?.holders || []}
+        users={holders}
+        renderUserExtra={(user) => {
+          const count = holderBalances.get(user.id.toLowerCase());
+          return count === undefined ? null : (
+            <HolderAmountChip count={count} total={totalSupply} />
+          );
+        }}
         loading={showLoader}
         noUsersFoundText="No holders found"
         viewAllButtonText="View All Holders"

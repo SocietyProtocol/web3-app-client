@@ -4,7 +4,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeBurnTransfer } from "@/data/badges/decodeUtils";
 
 interface BadgeBurnData {
@@ -25,7 +25,7 @@ export const useBurnBadgeMutation = ({
   args,
   successMessage = "Badge burned successfully",
 }: UseBurnBadgeMutationProps) => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   return useTransaction({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,

@@ -216,6 +216,36 @@ export async function rewriteDataUriImages(
   return value;
 }
 
+const KUBO_TIMEOUT_MS = 5_000;
+
+/**
+ * Also add the bytes to our own Kubo node, which graph-node reads metadata
+ * from. Filebase announces new CIDs to the network late (often 15+ minutes),
+ * so without this the subgraph shows no name or photo for a fresh profile.
+ * Best effort: Filebase stays the source of truth and errors are ignored.
+ */
+export async function mirrorToKubo(
+  body: string,
+  cid: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
+  const api = process.env.KUBO_API_URL;
+  if (!api) return false;
+  try {
+    const form = new FormData();
+    form.append("file", new Blob([body]), "metadata.json");
+    const res = await fetchImpl(
+      `${api.replace(/\/$/, "")}/api/v0/add?cid-version=1&raw-leaves=false&pin=true`,
+      { method: "POST", body: form, signal: AbortSignal.timeout(KUBO_TIMEOUT_MS) },
+    );
+    if (!res.ok) return false;
+    const added = (await res.json()) as { Hash?: string };
+    return !!added.Hash && toIndexedCid(added.Hash) === cid;
+  } catch {
+    return false;
+  }
+}
+
 /** Pin JSON to a Filebase IPFS bucket and return the CID. */
 export async function pinJson(
   data: Record<string, unknown>,
@@ -227,11 +257,14 @@ export async function pinJson(
     string,
     unknown
   >;
+  const body = JSON.stringify(rewritten);
 
-  return putAndReadCid(s3, {
+  const cid = await putAndReadCid(s3, {
     Bucket: bucket,
     Key: objectKey("json"),
-    Body: JSON.stringify(rewritten),
+    Body: body,
     ContentType: "application/json",
   });
+  await mirrorToKubo(body, cid);
+  return cid;
 }

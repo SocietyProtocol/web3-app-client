@@ -1,8 +1,12 @@
 "use client";
 
 import { ReactNode, createContext, useContext, useMemo } from "react";
-import { useAccount } from "wagmi";
-import { isEqualCaseInsensitive } from "@/utils/string";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
+import { Address } from "viem";
+import {
+  findIdentity,
+  identityAddresses,
+} from "@/components/shared/accountIdentity";
 import { useCommunityDetail } from "./useCommunityDetail";
 import { CommunityQuery } from "../../../../.graphclient";
 import { CommunityDetailsTab } from "./CommunityDetail.types";
@@ -22,6 +26,11 @@ interface CommunityDetailsContextValue {
   badgeCount: number;
   memberCount: number;
   isManager: boolean;
+  /**
+   * The member address that holds the manager badge: the Society address,
+   * or the owner wallet for communities created before the migration.
+   */
+  managerHolder: Address | undefined;
   tab: CommunityDetailsTab;
   setTab: (tab: CommunityDetailsTab) => void;
 }
@@ -39,7 +48,7 @@ export function CommunityDetailsProvider({
   id,
   children,
 }: CommunityDetailsProviderProps) {
-  const { address } = useAccount();
+  const { address, ownerAddress } = useOutpostAccount();
 
   const {
     community,
@@ -67,10 +76,11 @@ export function CommunityDetailsProvider({
   );
 
   const value = useMemo<CommunityDetailsContextValue>(() => {
-    const isManager =
-      !!address &&
-      !!managerAddress &&
-      isEqualCaseInsensitive(address, managerAddress);
+    const managerHolder = findIdentity(
+      managerAddress,
+      identityAddresses(address, ownerAddress),
+    );
+    const isManager = !!managerHolder;
 
     return {
       id,
@@ -84,11 +94,13 @@ export function CommunityDetailsProvider({
       badgeCount,
       memberCount,
       isManager,
+      managerHolder,
       tab,
       setTab,
     };
   }, [
     address,
+    ownerAddress,
     badgeCount,
     community,
     error,

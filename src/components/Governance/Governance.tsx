@@ -12,15 +12,17 @@ import {
   useBadgeTotalSupplies,
 } from "@/data/badges/useBadgeQuantities";
 import { HolderAmountChip } from "../Badges/HolderAmountChip";
+import { useChainVar } from "@/hooks/useChainVar";
 import { useMemo } from "react";
 
 export const Governance = () => {
-  const { data, isLoading } = useBadge(GOVERNOR_BADGE_ID);
+  const governorBadgeId = useChainVar(GOVERNOR_BADGE_ID);
+  const { data, isLoading } = useBadge(governorBadgeId);
   const governors = useMemo(() => data?.badge?.holders ?? [], [data]);
   const governorIds = useMemo(() => governors.map((g) => g.id), [governors]);
-  const { balances } = useBadgeHolderBalances(GOVERNOR_BADGE_ID, governorIds);
-  const { supplies } = useBadgeTotalSupplies([GOVERNOR_BADGE_ID]);
-  const totalSupply = supplies.get(GOVERNOR_BADGE_ID);
+  const { balances } = useBadgeHolderBalances(governorBadgeId, governorIds);
+  const { supplies } = useBadgeTotalSupplies([governorBadgeId]);
+  const totalSupply = supplies.get(governorBadgeId);
 
   return (
     <Box>

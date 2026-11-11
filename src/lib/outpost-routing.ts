@@ -11,6 +11,7 @@ import {
   quoteOwnerPays,
   walletNeedsEthMessage,
 } from "@/lib/owner-pays";
+import { isContractRevert } from "@/lib/aa/errors";
 
 /**
  * Which account acts for a write, and who pays.
@@ -42,6 +43,10 @@ export type OutpostRoute = {
   message?: string;
   error?: unknown;
 };
+
+/** The Light Account simulation got no answer, so the sender is unknown. */
+export const ROUTE_UNCHECKED_MESSAGE =
+  "Could not check this action with the network. Please try again in a moment.";
 
 export type SimulationOutcome = { ok: true } | { ok: false; error: unknown };
 
@@ -129,8 +134,10 @@ export function callShape(input: {
  * Outpost calls go from the Light Account whenever the call succeeds as it,
  * paid by the wallet through execute, so the action is never recorded under
  * the wallet when it could have been the Light Account's. The wallet sends
- * directly only calls that fail as the Light Account but succeed as the
- * wallet (a role only it holds).
+ * directly only calls that revert as the Light Account but succeed as the
+ * wallet (a role only it holds). A Light Account simulation that failed
+ * without an answer from the contract (timeout, RPC error) decides nothing:
+ * the write is blocked until it can be checked, never moved to the wallet.
  */
 export function chooseWriteSender(input: {
   owner?: Address;
@@ -183,7 +190,20 @@ export function chooseWriteSender(input: {
       error: new Error(message, { cause: input.quoteError }),
     };
   }
-  if (ownerOk) return asOwner;
+  const smartSim = input.smartAccountSimulation;
+  const smartReverted = !!smartSim && !smartSim.ok && isContractRevert(smartSim.error);
+  if (ownerOk && smartReverted) return asOwner;
+  if (ownerOk) {
+    return {
+      kind: "blocked",
+      sender: input.smartAccount,
+      sponsor: false,
+      message: ROUTE_UNCHECKED_MESSAGE,
+      error: new Error(ROUTE_UNCHECKED_MESSAGE, {
+        cause: smartSim && !smartSim.ok ? smartSim.error : undefined,
+      }),
+    };
+  }
 
   const failed = input.smartAccountSimulation ?? input.ownerSimulation;
   return {

@@ -35,6 +35,27 @@ export function isUserRejection(error: unknown): boolean {
 }
 
 /**
+ * The node ran the call and the contract refused it. A request that never got
+ * an answer (timeout, HTTP error, rate limit) is not a revert: it says nothing
+ * about whether the call would succeed.
+ */
+export function isContractRevert(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < 8 && current; depth += 1) {
+    if (typeof current !== "object") break;
+    const record = current as Record<string, unknown>;
+    if (
+      record.name === "ContractFunctionRevertedError" ||
+      record.name === "ExecutionRevertedError"
+    ) {
+      return true;
+    }
+    current = record.cause;
+  }
+  return /execution reverted/i.test(chainText(error));
+}
+
+/**
  * Society could not pay for a sponsored action: the paymaster, the bundler
  * or /api/aa/rpc refused or failed before the owner was asked to sign. The
  * caller may send the same call paid by the owner wallet instead.

@@ -242,7 +242,11 @@ async function admitAaRpc(
   }
 
   if (review.kind === "paymaster") {
-    const senderKey = `${chainId}:${String(review.sender).toLowerCase()}`;
+    // Keyed on the visitor as well as the sender. A paymaster call carries no
+    // proof that the caller controls the sender (the signature is still a
+    // stub), so a bucket keyed on the sender alone could be emptied by anyone
+    // who knows the address, pushing its owner onto paid gas.
+    const senderKey = `${ip}|${chainId}:${String(review.sender).toLowerCase()}`;
     if (!aaRateLimits.paymasterBySender.take(senderKey)) {
       return { ok: false, message: "Too many sponsorship requests", code: RATE_LIMITED };
     }

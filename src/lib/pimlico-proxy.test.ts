@@ -463,10 +463,12 @@ describe("forwardAaRpc", () => {
     const request = await stubDataRequest();
     const results = [];
     for (let i = 0; i < 6; i += 1) {
-      results.push(await rpcError(await forwardAaRpc(post(request, `198.51.100.${i}`))));
+      results.push(await rpcError(await forwardAaRpc(post(request, "198.51.100.1"))));
     }
     expect(results.slice(0, 5).every((error) => error === undefined)).toBe(true);
-    expect(results[5]?.code).toBe(-32005);
+    expect(results[5]).toEqual({ code: -32005, message: "Too many sponsorship requests" });
+    // Another visitor naming the same sender has its own allowance.
+    expect(await rpcError(await forwardAaRpc(post(request, "198.51.100.2")))).toBeUndefined();
 
     resetAaRateLimits();
     const otherSenders = Array.from({ length: PAYMASTER_PER_IP_PER_MINUTE + 1 }, () =>
@@ -491,7 +493,7 @@ describe("forwardAaRpc", () => {
     const errors = [];
     for (let i = 0; i < 11; i += 1) {
       vi.useFakeTimers({ now: Date.now() + i * 60_000 });
-      errors.push(await rpcError(await forwardAaRpc(post(request, `198.51.100.${i}`))));
+      errors.push(await rpcError(await forwardAaRpc(post(request))));
       vi.useRealTimers();
     }
     expect(errors.slice(0, 10).every((error) => error === undefined)).toBe(true);
@@ -506,7 +508,7 @@ describe("forwardAaRpc", () => {
     for (let i = 0; i < INVITE_ACCEPTS_PER_SENDER_PER_DAY + 1; i += 1) {
       // Spread out so the per-minute limits stay clear.
       vi.useFakeTimers({ now: Date.now() + i * 60_000 });
-      errors.push(await rpcError(await forwardAaRpc(post(request, `198.51.100.${i}`))));
+      errors.push(await rpcError(await forwardAaRpc(post(request))));
       vi.useRealTimers();
     }
     expect(errors.slice(0, INVITE_ACCEPTS_PER_SENDER_PER_DAY).every((e) => e === undefined)).toBe(true);
@@ -529,9 +531,37 @@ describe("forwardAaRpc", () => {
     });
     expect(await rpcError(await forwardAaRpc(post(batch)))).toBeUndefined();
     vi.useFakeTimers({ now: Date.now() + 60_000 });
-    const second = await rpcError(await forwardAaRpc(post(batch, "198.51.100.9")));
+    const second = await rpcError(await forwardAaRpc(post(batch)));
     vi.useRealTimers();
     expect(second?.message).toBe("Daily sponsored invite limit reached");
+  });
+
+  it("does not let another visitor spend an account's daily allowances", async () => {
+    // A paymaster call is admitted with a stub signature, so anyone can name
+    // any sender. Requests from a stranger's IP must not use up the owner's
+    // free invites or profile updates.
+    mockFetch(canonical);
+    const invite = await paymasterDataRequest({ callData: inviteCallData });
+    const update = await paymasterDataRequest({ callData: updateCallData });
+    for (let i = 0; i < 12; i += 1) {
+      vi.useFakeTimers({ now: Date.now() + i * 60_000 });
+      await forwardAaRpc(post(invite, "192.0.2.66"));
+      await forwardAaRpc(post(update, "192.0.2.66"));
+      vi.useRealTimers();
+    }
+    vi.useFakeTimers({ now: Date.now() + 20 * 60_000 });
+    expect((await rpcError(await forwardAaRpc(post(invite, "192.0.2.66"))))?.message).toBe(
+      "Daily sponsored invite limit reached",
+    );
+    vi.useRealTimers();
+    vi.useFakeTimers({ now: Date.now() + 21 * 60_000 });
+    expect((await rpcError(await forwardAaRpc(post(update, "192.0.2.66"))))?.message).toBe(
+      "Daily sponsored profile update limit reached",
+    );
+    vi.useRealTimers();
+    // The account's own visitor is untouched.
+    expect(await rpcError(await forwardAaRpc(post(invite)))).toBeUndefined();
+    expect(await rpcError(await forwardAaRpc(post(update)))).toBeUndefined();
   });
 
   it("refuses when Pimlico is not configured", async () => {

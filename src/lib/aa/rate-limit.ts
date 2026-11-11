@@ -64,6 +64,11 @@ export class TokenBucketLimiter {
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 
+/**
+ * The "per sender" limits below count one sender as seen from one visitor IP
+ * (see admitAaRpc): requests from another IP naming the same sender do not
+ * spend its allowance.
+ */
 /** A sponsored send makes two paymaster calls (stub, then data). */
 export const PAYMASTER_PER_IP_PER_MINUTE = 10;
 export const PAYMASTER_PER_SENDER_PER_MINUTE = 5;

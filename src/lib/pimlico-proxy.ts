@@ -72,6 +72,8 @@ export type AaRpcReview = {
   needsDeployedSender: boolean;
   /** Paymaster call that signs an updateProfileURI sponsorship. */
   signsProfileUpdate: boolean;
+  /** acceptInvite calls in a paymaster call that signs their sponsorship. */
+  signedInviteAccepts: number;
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -117,6 +119,7 @@ export function reviewAaRpc(input: {
     kind: isPaymaster ? "paymaster" : isBundler ? "bundler" : "read",
     needsDeployedSender: false,
     signsProfileUpdate: false,
+    signedInviteAccepts: 0,
   };
 
   if (isBundler || isPaymaster) {
@@ -150,11 +153,16 @@ export function reviewAaRpc(input: {
 
     review.sender = op.sender;
     review.needsDeployedSender = !userOperationHasFactory(op);
-    review.signsProfileUpdate =
+    const signedFunctions =
       SIGNING_PAYMASTER_METHODS.has(request.method) &&
       typeof op.callData === "string" &&
-      isHex(op.callData) &&
-      badgesFunctionNames(op.callData, input.chainId).includes("updateProfileURI");
+      isHex(op.callData)
+        ? badgesFunctionNames(op.callData, input.chainId)
+        : [];
+    review.signsProfileUpdate = signedFunctions.includes("updateProfileURI");
+    review.signedInviteAccepts = signedFunctions.filter(
+      (name) => name === "acceptInvite",
+    ).length;
 
     if (request.method === "eth_sendUserOperation") params.length = 2;
     if (request.method === "eth_estimateUserOperationGas" && params.length > 3) {
@@ -244,6 +252,16 @@ async function admitAaRpc(
         message: "Daily sponsored profile update limit reached",
         code: RATE_LIMITED,
       };
+    }
+    // One token per acceptInvite, so a batch cannot stretch the allowance.
+    for (let accepted = 0; accepted < review.signedInviteAccepts; accepted += 1) {
+      if (!aaRateLimits.inviteAcceptsBySender.take(senderKey)) {
+        return {
+          ok: false,
+          message: "Daily sponsored invite limit reached",
+          code: RATE_LIMITED,
+        };
+      }
     }
   }
   return { ok: true };

@@ -71,6 +71,12 @@ export const PAYMASTER_PER_SENDER_PER_MINUTE = 5;
 export const BUNDLER_PER_IP_PER_MINUTE = 30;
 /** Sponsored updateProfileURI signatures per sender per day. */
 export const PROFILE_UPDATES_PER_SENDER_PER_DAY = 10;
+/**
+ * Sponsored acceptInvite calls per sender per day. The contract accepts an
+ * invite signed by any key, so without this one account could have Society
+ * pay for an endless stream of invites it signs for itself.
+ */
+export const INVITE_ACCEPTS_PER_SENDER_PER_DAY = 5;
 
 export const aaRateLimits = {
   paymasterByIp: new TokenBucketLimiter(PAYMASTER_PER_IP_PER_MINUTE, MINUTE_MS),
@@ -78,6 +84,10 @@ export const aaRateLimits = {
   bundlerByIp: new TokenBucketLimiter(BUNDLER_PER_IP_PER_MINUTE, MINUTE_MS),
   profileUpdatesBySender: new TokenBucketLimiter(
     PROFILE_UPDATES_PER_SENDER_PER_DAY,
+    DAY_MS,
+  ),
+  inviteAcceptsBySender: new TokenBucketLimiter(
+    INVITE_ACCEPTS_PER_SENDER_PER_DAY,
     DAY_MS,
   ),
 };

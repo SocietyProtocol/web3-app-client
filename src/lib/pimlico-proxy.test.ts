@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   encodeCreateProfile,
   encodeExecute,
+  encodeExecuteBatch,
   ERC1967_IMPLEMENTATION_SLOT,
   LIGHT_ACCOUNT_FACTORY,
   LIGHT_ACCOUNT_IMPLEMENTATION,
@@ -13,6 +14,7 @@ import { aaRpcHealth, forwardAaRpc, reviewAaRpc, pimlicoRpcUrl } from "@/lib/pim
 import {
   aaRateLimits,
   resetAaRateLimits,
+  INVITE_ACCEPTS_PER_SENDER_PER_DAY,
   PAYMASTER_PER_IP_PER_MINUTE,
 } from "@/lib/aa/rate-limit";
 import { resetSenderCache } from "@/lib/aa/sender-check";
@@ -55,6 +57,27 @@ const updateCallData = encodeExecute({
     args: [BigInt(1), PROFILE_URI],
   }),
 });
+
+const acceptInviteData = encodeFunctionData({
+  abi: [
+    {
+      type: "function",
+      name: "acceptInvite",
+      stateMutability: "nonpayable",
+      inputs: [
+        { type: "address" },
+        { type: "uint256" },
+        { type: "uint256" },
+        { type: "bytes" },
+      ],
+      outputs: [],
+    },
+  ],
+  functionName: "acceptInvite",
+  args: [owner, BigInt(1), BigInt(2_000_000_000), "0x1234"],
+});
+const inviteCall = { to: contracts.badges.sepolia, value: BigInt(0), data: acceptInviteData };
+const inviteCallData = encodeExecute(inviteCall);
 
 const gas = {
   callGasLimit: BigInt(200_000),
@@ -269,6 +292,22 @@ describe("reviewAaRpc", () => {
     expect(data.ok && data.review.signsProfileUpdate).toBe(true);
   });
 
+  it("counts the invites a signing call accepts", async () => {
+    const review = async (request: Promise<{ method: string; params: unknown[] }>) => {
+      const reviewed = reviewAaRpc({ chainId: SEPOLIA, request: await request });
+      return reviewed.ok ? reviewed.review.signedInviteAccepts : undefined;
+    };
+    // The stub call signs nothing, so it is not counted.
+    expect(await review(stubDataRequest({ callData: inviteCallData }))).toBe(0);
+    expect(await review(paymasterDataRequest({ callData: inviteCallData }))).toBe(1);
+    expect(
+      await review(
+        paymasterDataRequest({ callData: encodeExecuteBatch([inviteCall, inviteCall, inviteCall]) }),
+      ),
+    ).toBe(3);
+    expect(await review(paymasterDataRequest())).toBe(0);
+  });
+
   it("rejects other contracts, other chains, and unknown methods", () => {
     const blocked = reviewAaRpc({
       chainId: SEPOLIA,
@@ -457,6 +496,42 @@ describe("forwardAaRpc", () => {
     }
     expect(errors.slice(0, 10).every((error) => error === undefined)).toBe(true);
     expect(errors[10]?.message).toMatch(/Daily/);
+  });
+
+  it("caps sponsored invite acceptances per sender per day", async () => {
+    expect(INVITE_ACCEPTS_PER_SENDER_PER_DAY).toBe(5);
+    mockFetch(canonical);
+    const request = await paymasterDataRequest({ callData: inviteCallData });
+    const errors = [];
+    for (let i = 0; i < INVITE_ACCEPTS_PER_SENDER_PER_DAY + 1; i += 1) {
+      // Spread out so the per-minute limits stay clear.
+      vi.useFakeTimers({ now: Date.now() + i * 60_000 });
+      errors.push(await rpcError(await forwardAaRpc(post(request, `198.51.100.${i}`))));
+      vi.useRealTimers();
+    }
+    expect(errors.slice(0, INVITE_ACCEPTS_PER_SENDER_PER_DAY).every((e) => e === undefined)).toBe(true);
+    expect(errors.at(-1)).toEqual({
+      code: -32005,
+      message: "Daily sponsored invite limit reached",
+    });
+
+    // Another sender and other sponsored calls are not affected.
+    const createProfile = await paymasterDataRequest();
+    vi.useFakeTimers({ now: Date.now() + 10 * 60_000 });
+    expect(await rpcError(await forwardAaRpc(post(createProfile, "198.51.100.50")))).toBeUndefined();
+    vi.useRealTimers();
+  });
+
+  it("spends one invite token per acceptInvite in a batch", async () => {
+    mockFetch(canonical);
+    const batch = await paymasterDataRequest({
+      callData: encodeExecuteBatch([inviteCall, inviteCall, inviteCall]),
+    });
+    expect(await rpcError(await forwardAaRpc(post(batch)))).toBeUndefined();
+    vi.useFakeTimers({ now: Date.now() + 60_000 });
+    const second = await rpcError(await forwardAaRpc(post(batch, "198.51.100.9")));
+    vi.useRealTimers();
+    expect(second?.message).toBe("Daily sponsored invite limit reached");
   });
 
   it("refuses when Pimlico is not configured", async () => {

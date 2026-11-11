@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { BaseError, UserRejectedRequestError } from "viem";
+import {
+  BaseError,
+  ContractFunctionRevertedError,
+  HttpRequestError,
+  TimeoutError,
+  UserRejectedRequestError,
+} from "viem";
 import {
   SponsorshipUnavailableError,
   isAlreadyDeployedError,
+  isContractRevert,
   isUserRejection,
   sponsorshipIsUnavailable,
 } from "./errors";
@@ -74,5 +81,32 @@ describe("sponsorshipIsUnavailable", () => {
     expect(error.name).toBe("SponsorshipUnavailableError");
     expect(error.message).toBe("Free gas is unavailable right now");
     expect(error.cause).toBe(cause);
+  });
+});
+
+describe("isContractRevert", () => {
+  it("matches a revert the node reported", () => {
+    const reverted = new ContractFunctionRevertedError({
+      abi: [],
+      functionName: "burn",
+      message: "not the holder",
+    });
+    expect(isContractRevert(reverted)).toBe(true);
+    expect(isContractRevert(new BaseError("simulation failed", { cause: reverted }))).toBe(true);
+    expect(isContractRevert(new Error("execution reverted"))).toBe(true);
+    expect(isContractRevert(new BaseError("RPC Request failed.", { details: "execution reverted" }))).toBe(true);
+  });
+
+  it("does not match a request that got no answer", () => {
+    expect(isContractRevert(new HttpRequestError({ url: "https://rpc.example", status: 503 }))).toBe(false);
+    expect(
+      isContractRevert(
+        new BaseError("simulation failed", {
+          cause: new TimeoutError({ body: {}, url: "https://rpc.example" }),
+        }),
+      ),
+    ).toBe(false);
+    expect(isContractRevert(new Error("fetch failed"))).toBe(false);
+    expect(isContractRevert(undefined)).toBe(false);
   });
 });

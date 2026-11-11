@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { encodeFunctionData, getAddress, parseEther } from "viem";
+import {
+  BaseError,
+  ContractFunctionRevertedError,
+  HttpRequestError,
+  encodeFunctionData,
+  getAddress,
+  parseEther,
+} from "viem";
 import { contracts } from "@/consts/contracts";
 import {
   LIGHT_ACCOUNT_FACTORY,
@@ -7,6 +14,7 @@ import {
   lightAccountAddress,
 } from "@/lib/smart-account";
 import {
+  ROUTE_UNCHECKED_MESSAGE,
   RoutingClient,
   callShape,
   chooseWriteSender,
@@ -28,7 +36,7 @@ const registry = contracts.communityRegistry.sepolia;
 const other = getAddress("0x00000000000000000000000000000000000000aa");
 
 const ok = { ok: true } as const;
-const fail = (error: unknown = new Error("reverted")) =>
+const fail = (error: unknown = new Error("execution reverted")) =>
   ({ ok: false, error }) as const;
 
 const base = {
@@ -283,6 +291,38 @@ describe("chooseWriteSender", () => {
     ).toEqual({ kind: "owner", sender: owner, payer: owner, sponsor: false });
   });
 
+  it("does not move the call to the wallet when the Light Account check got no answer", () => {
+    // createBadge and the like succeed as either account. A timeout on the
+    // Light Account simulation must not record the action under the wallet.
+    const timeout = new HttpRequestError({ url: "https://rpc.example", details: "timed out" });
+    const route = chooseWriteSender({
+      ...base,
+      smartAccountSimulation: fail(timeout),
+      ownerSimulation: ok,
+      ownerPays: quote(),
+    });
+    expect(route).toMatchObject({
+      kind: "blocked",
+      sender: smartAccount,
+      sponsor: false,
+      message: ROUTE_UNCHECKED_MESSAGE,
+    });
+    expect((route.error as Error).cause).toBe(timeout);
+  });
+
+  it("treats viem's contract revert as the Light Account lacking the right", () => {
+    const revert = new BaseError("The contract function reverted.", {
+      cause: new ContractFunctionRevertedError({ abi: [], functionName: "burn", message: "nope" }),
+    });
+    expect(
+      chooseWriteSender({
+        ...base,
+        smartAccountSimulation: fail(revert),
+        ownerSimulation: ok,
+      }).kind,
+    ).toBe("owner");
+  });
+
   it("names the wallet, not the Light Account, when the wallet is short", () => {
     const route = chooseWriteSender({
       ...base,
@@ -368,6 +408,8 @@ const GAS_PRICE = BigInt(1_000_000_000);
 function fakeClient(options: {
   gasFails?: boolean;
   smartReverts?: boolean;
+  /** The Light Account simulation fails without an answer from the contract. */
+  smartTimesOut?: boolean;
   ownerReverts?: boolean;
   /** The owner wallet's ETH. */
   ownerBalance?: bigint;
@@ -380,6 +422,9 @@ function fakeClient(options: {
     (account === owner && options.ownerReverts);
   return {
     simulateContract: vi.fn(async ({ account }: { account: unknown }) => {
+      if (account === smartAccount && options.smartTimesOut) {
+        throw new HttpRequestError({ url: "https://rpc.example", details: "fetch failed" });
+      }
       if (reverts(account)) throw new Error("execution reverted");
       return { result: undefined, request: {} };
     }),
@@ -483,6 +528,13 @@ describe("resolveOutpostRoute", () => {
     const client = fakeClient({ smartReverts: true, deployed: true });
     const route = await resolveOutpostRoute(client, burnCall);
     expect(route).toEqual({ kind: "owner", sender: owner, payer: owner, sponsor: false });
+  });
+
+  it("blocks instead of sending from the wallet when the Light Account check fails to load", async () => {
+    const client = fakeClient({ smartTimesOut: true, deployed: true });
+    const route = await resolveOutpostRoute(client, burnCall);
+    expect(route.kind).toBe("blocked");
+    expect(route.message).toBe(ROUTE_UNCHECKED_MESSAGE);
   });
 
   it("names the wallet and the ETH it needs when the wallet is short", async () => {

@@ -81,7 +81,9 @@ const PAYMASTER_FAILED =
 const ACCOUNT_ABSTRACTION_MESSAGES: [RegExp, string][] = [
   [
     /\bAA21\b|didn't pay prefund|InsufficientPrefundError|does not have sufficient funds to execute the User Operation/i,
-    "Your Society account does not have enough ETH for this action. Send ETH to it from your wallet or ask an admin.",
+    // Only a UserOp without a paymaster can hit this, and the app sends none:
+    // when Society cannot pay, the owner wallet pays with a normal transaction.
+    "The network fee for this action could not be covered. Please try again.",
   ],
   [/\bAA34\b|UserOperationPaymasterSignatureError/, PAYMASTER_FAILED],
   [
@@ -99,6 +101,17 @@ const ACCOUNT_ABSTRACTION_MESSAGES: [RegExp, string][] = [
   [
     /outside the sponsorship allowlist|This call is not sponsored/i,
     "Society does not sponsor this action.",
+  ],
+  // /api/aa/rpc refusals (lib/pimlico-proxy). A sponsored write that meets
+  // one before the signature is sent from the owner wallet instead, so these
+  // are only shown when that fallback could not run.
+  [
+    /Too many sponsorship requests/i,
+    "Too many free-gas requests in a short time. Please wait a minute and try again.",
+  ],
+  [
+    /Daily sponsored [^.\n]*limit reached/i,
+    "You have reached today's limit of free-gas transactions for this action. Please try again tomorrow.",
   ],
   [
     /rate limit|too many requests|status:\s*429/i,

@@ -239,7 +239,8 @@ export function lightAccountAddress(
   });
 }
 
-type InnerCall = { to: Address; value: bigint; data: Hex };
+export type AccountCall = { to: Address; value: bigint; data: Hex };
+type InnerCall = AccountCall;
 
 function sameAddress(left: Address, right: Address) {
   return isAddressEqual(getAddress(left), getAddress(right));
@@ -495,5 +496,30 @@ export function encodeExecute(call: InnerCall): Hex {
     abi: executeAbi,
     functionName: "execute",
     args: [call.to, call.value, call.data],
+  });
+}
+
+/** executeBatch(address[],uint256[],bytes[]) on Light Account v2. */
+export function encodeExecuteBatch(calls: readonly InnerCall[]): Hex {
+  return encodeFunctionData({
+    abi: executeBatchWithValueAbi,
+    functionName: "executeBatch",
+    args: [
+      calls.map((call) => call.to),
+      calls.map((call) => call.value),
+      calls.map((call) => call.data),
+    ],
+  });
+}
+
+/** LightAccountFactory.createAccount(owner, salt). Returns the account if it already exists. */
+export function encodeCreateAccount(
+  owner: Address,
+  salt: bigint = LIGHT_ACCOUNT_SALT,
+): Hex {
+  return encodeFunctionData({
+    abi: createAccountAbi,
+    functionName: "createAccount",
+    args: [getAddress(owner), salt],
   });
 }

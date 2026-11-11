@@ -14,7 +14,7 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { Hex, TransactionReceipt } from "viem";
+import { Abi, Hex, TransactionReceipt, encodeFunctionData } from "viem";
 import { getPublicClient } from "wagmi/actions";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
@@ -35,6 +35,9 @@ import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation"
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useOutpostRouting } from "@/hooks/useOutpostRouting";
 import { resolveOutpostRoute } from "@/lib/outpost-routing";
+import { sendOutpostWrite } from "@/lib/outpost-send";
+import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
+import { ownerWalletClient } from "@/lib/owner-wallet";
 import { wagmiConfig } from "@/lib/wagmi";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
@@ -174,7 +177,8 @@ export const useTransaction = ({
   const chainId = useChainId();
   const outpost = useOutpostAccount();
 
-  // Pick the sender first. Sponsored and Light Account calls simulate as it.
+  // Pick the sender first. Calls the Light Account makes simulate as it,
+  // whether Society or the owner wallet pays.
   const routing = useOutpostRouting({
     address,
     abi,
@@ -228,12 +232,12 @@ export const useTransaction = ({
     enabled: enabled && simulate && route?.kind === "owner",
   });
 
-  // The Light Account pays from its own ETH: show the prefund it must hold.
-  const smartAccountGasUsd =
-    route?.kind === "smart-account" &&
-    route.prefundWei !== undefined &&
+  // The owner wallet pays through the Light Account: show the wallet's cost.
+  const throughAccountGasUsd =
+    route?.kind === "owner-through-account" &&
+    route.gasWei !== undefined &&
     gasEstimation.priceUsd !== undefined
-      ? (route.prefundWei * gasEstimation.priceUsd) /
+      ? (route.gasWei * gasEstimation.priceUsd) /
         BigInt(10) ** BigInt(gasEstimation.decimalsWei)
       : undefined;
 
@@ -264,36 +268,58 @@ export const useTransaction = ({
         if (outpost.isLoading) {
           throw new Error("Your account is still loading. Please try again in a moment.");
         }
-        const callRoute = await resolveOutpostRoute(
-          getPublicClient(wagmiConfig, { chainId: chainId as 1 | 11155111 }),
-          {
-            chainId,
-            to: finalAddress,
-            abi: finalAbi,
-            functionName: finalFunctionName,
-            args: finalArgs,
-            value: finalValue,
-            owner: outpost.ownerAddress,
-            smartAccount: outpost.isSmartAccount ? outpost.address : undefined,
-            isContractWallet: outpost.isContractWallet,
-          },
-        );
-        if (callRoute.kind === "blocked") {
-          throw callRoute.error ?? new Error(callRoute.message ?? "This action would fail");
-        }
+        const walletChainId = chainId as 1 | 11155111;
+        const publicClient = getPublicClient(wagmiConfig, { chainId: walletChainId });
+        const smartAccount = outpost.isSmartAccount ? outpost.address : undefined;
+        const callRoute = await resolveOutpostRoute(publicClient, {
+          chainId,
+          to: finalAddress,
+          abi: finalAbi,
+          functionName: finalFunctionName,
+          args: finalArgs,
+          value: finalValue,
+          owner: outpost.ownerAddress,
+          smartAccount,
+          isContractWallet: outpost.isContractWallet,
+        });
 
-        const hash =
-          callRoute.kind === "sponsored" || callRoute.kind === "smart-account"
-            ? await sendSponsoredUserOperation({
+        const notify = (message: string) => {
+          closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+          closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
+          enqueueSnackbar(message, {
+            key: `${snackbarKeyPrefixFinal}-notice`,
+            variant: "info",
+            persist: true,
+          });
+        };
+        const accountCall = () => ({
+          to: finalAddress,
+          value: BigInt(0),
+          data: encodeFunctionData({
+            abi: finalAbi as Abi,
+            functionName: finalFunctionName,
+            args: finalArgs ?? [],
+          }),
+        });
+        let fellBack = false;
+        const requirePublicClient = () => {
+          if (!publicClient) throw new Error("Network is not available");
+          return publicClient;
+        };
+
+        const hash = await sendOutpostWrite(
+          {
+            sendSponsored: () =>
+              sendSponsoredUserOperation({
                 chainId,
                 to: finalAddress,
                 abi: finalAbi,
                 functionName: finalFunctionName,
                 args: finalArgs,
                 value: finalValue,
-                sponsor: callRoute.sponsor,
-              })
-            : await submitAccountWrite({
+              }),
+            sendAsOwner: async () =>
+              submitAccountWrite({
                 supportsSendCalls: await walletSupportsSendCalls(chainId),
                 write: () =>
                   writeContractAsync({
@@ -317,10 +343,73 @@ export const useTransaction = ({
                     value: finalValue,
                   });
                 },
+              }),
+            simulateAsAccount: () =>
+              requirePublicClient().simulateContract({
+                address: finalAddress,
+                abi: finalAbi as Abi,
+                functionName: finalFunctionName,
+                args: finalArgs ?? [],
+                account: smartAccount,
+              }),
+            quoteOwnerPays: () => {
+              if (!outpost.ownerAddress) throw new Error("Wallet is not connected");
+              return quoteOwnerPays(requirePublicClient(), {
+                owner: outpost.ownerAddress,
+                calls: [accountCall()],
               });
+            },
+            ownerWallet: async () => {
+              const client = requirePublicClient();
+              const wallet = await ownerWalletClient(walletChainId);
+              return {
+                sendTransaction: (transaction) => wallet.sendTransaction(transaction),
+                waitForReceipt: (receiptHash) =>
+                  client.waitForTransactionReceipt({ hash: receiptHash }),
+                getCode: (codeAddress, blockNumber) =>
+                  client.getCode({
+                    address: codeAddress,
+                    ...(blockNumber !== undefined && { blockNumber }),
+                  }),
+                estimateGas: (transaction, from, blockNumber) =>
+                  client.estimateGas({
+                    account: from,
+                    ...transaction,
+                    ...(blockNumber !== undefined && { blockNumber }),
+                  }),
+              };
+            },
+            onSponsorshipUnavailable: (quote, reason) => {
+              console.warn("Sponsorship unavailable; the owner wallet pays instead:", reason);
+              fellBack = true;
+              notify(freeGasUnavailableNotice(quote));
+            },
+            onOwnerPaysStep: (step, { steps }) => {
+              if (steps < 2) return;
+              if (step === "deploy") {
+                // After a fallback the free-gas notice already names both steps.
+                if (!fellBack) {
+                  notify("Step 1 of 2: confirm setting up your Society account in your wallet");
+                }
+                return;
+              }
+              notify(
+                fellBack
+                  ? "Step 2 of 2: confirm the action in your wallet. Free gas is unavailable right now, so your wallet pays the network fee."
+                  : "Step 2 of 2: confirm the action in your wallet",
+              );
+            },
+          },
+          {
+            route: callRoute,
+            owner: outpost.ownerAddress,
+            call: accountCall,
+          },
+        );
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+        closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
         enqueueSnackbar(submittedMessage, {
           variant: "info",
           key: `${snackbarKeyPrefixFinal}-submitted`,
@@ -334,6 +423,7 @@ export const useTransaction = ({
       } catch (error) {
         setStatus("error");
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+        closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
 
         if (!suppressErrorSnackbar) {
           enqueueSnackbar(parseErrorMessage(error, errorMessage), {
@@ -472,8 +562,9 @@ export const useTransaction = ({
       isSuccess: simulation.isSuccess && !routeError,
     },
 
-    // Who will send it: "sponsored" / "smart-account" act as the Light
-    // Account, "owner" as the connected wallet.
+    // Who acts: "sponsored" / "owner-through-account" act as the Light
+    // Account, "owner" as the connected wallet. Only "sponsored" is free;
+    // the connected wallet pays for the other two.
     sender: route?.sender,
     route,
 
@@ -481,8 +572,8 @@ export const useTransaction = ({
     gas:
       route?.kind === "sponsored"
         ? BigInt(0)
-        : route?.kind === "smart-account"
-          ? smartAccountGasUsd
+        : route?.kind === "owner-through-account"
+          ? throughAccountGasUsd
           : gasEstimation.totalUsd,
     gasLoading:
       routing.isLoading ||

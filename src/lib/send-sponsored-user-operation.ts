@@ -10,14 +10,15 @@ import {
 import { entryPoint07Address } from "viem/account-abstraction";
 import { mainnet, sepolia } from "viem/chains";
 import { http } from "viem";
-import {
-  getAccount,
-  getPublicClient,
-  getWalletClient,
-  switchChain,
-} from "wagmi/actions";
+import { toAccount } from "viem/accounts";
+import { getPublicClient } from "wagmi/actions";
 import { aaRpcUrl } from "@/lib/pimlico-proxy";
-import { isAlreadyDeployedError } from "@/lib/aa/errors";
+import {
+  SponsorshipUnavailableError,
+  isAlreadyDeployedError,
+  sponsorshipIsUnavailable,
+} from "@/lib/aa/errors";
+import { ownerWalletClient } from "@/lib/owner-wallet";
 import {
   SPONSORSHIP_POLICY_ID,
   isSponsoredBadgesCall,
@@ -25,32 +26,14 @@ import {
 } from "@/lib/smart-account";
 import { wagmiConfig } from "@/lib/wagmi";
 
-function isChainMismatch(error: unknown) {
-  return (
-    error instanceof Error &&
-    (error.name === "ConnectorChainMismatchError" ||
-      /does not match the connection's chain/i.test(error.message))
-  );
-}
-
-/** The owner's wallet on chainId, asking it to switch chains if needed. */
-async function ownerWalletClient(chainId: 1 | 11155111) {
-  const connected = getAccount(wagmiConfig).chainId;
-  if (connected !== undefined && connected !== chainId) {
-    await switchChain(wagmiConfig, { chainId });
-  }
-  try {
-    return await getWalletClient(wagmiConfig, { chainId });
-  } catch (error) {
-    if (!isChainMismatch(error)) throw error;
-    await switchChain(wagmiConfig, { chainId });
-    return getWalletClient(wagmiConfig, { chainId });
-  }
-}
-
 /**
- * Owner signs in MetaMask. The UserOp sender is the Light Account.
- * The browser talks to /api/aa/rpc, which holds the Pimlico key.
+ * Society pays: the owner signs in the wallet, the UserOp sender is the
+ * Light Account and the paymaster covers the gas. The browser talks to
+ * /api/aa/rpc, which holds the Pimlico key.
+ * Throws SponsorshipUnavailableError when the paymaster, the bundler or the
+ * proxy refused or failed before the owner was asked to sign; the caller
+ * then sends the call paid by the owner wallet (lib/owner-pays). There is no
+ * UserOp paid from the Light Account's own ETH.
  */
 export async function sendSponsoredUserOperation(params: {
   chainId: number;
@@ -59,7 +42,6 @@ export async function sendSponsoredUserOperation(params: {
   functionName: string;
   args?: readonly unknown[];
   value?: bigint;
-  sponsor?: boolean;
 }): Promise<Hex> {
   if (!supportedAaChainId(params.chainId)) {
     throw new Error("Smart accounts are only enabled on Ethereum and Sepolia");
@@ -73,8 +55,7 @@ export async function sendSponsoredUserOperation(params: {
     functionName: params.functionName,
     args: params.args ?? [],
   });
-  const sponsor = params.sponsor !== false;
-  if (sponsor && !isSponsoredBadgesCall({ chainId: params.chainId, to: params.to, data })) {
+  if (!isSponsoredBadgesCall({ chainId: params.chainId, to: params.to, data })) {
     throw new Error("This call is not sponsored");
   }
 
@@ -88,12 +69,17 @@ export async function sendSponsoredUserOperation(params: {
   // A lagging RPC node can still report a just-deployed Light Account as
   // undeployed, so the op carries a factory and the bundler rejects it with
   // AA10 during estimation, before the owner signs. Rebuild and retry.
+  const stage = { signatureRequested: false };
   for (let attempt = 1; ; attempt += 1) {
     try {
-      return await buildAndSend({ ...params, data, sponsor, chain, publicClient, walletClient });
+      return await buildAndSend({ ...params, data, chain, publicClient, walletClient, stage });
     } catch (error) {
-      if (attempt >= AA10_ATTEMPTS || !isAlreadyDeployedError(error)) throw error;
-      await new Promise((resolve) => setTimeout(resolve, AA10_RETRY_MS));
+      if (attempt < AA10_ATTEMPTS && isAlreadyDeployedError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, AA10_RETRY_MS));
+        continue;
+      }
+      if (sponsorshipIsUnavailable(error, stage)) throw new SponsorshipUnavailableError(error);
+      throw error;
     }
   }
 }
@@ -105,15 +91,34 @@ async function buildAndSend(params: {
   chainId: number;
   to: Address;
   data: Hex;
-  sponsor: boolean;
   chain: typeof mainnet | typeof sepolia;
   publicClient: NonNullable<ReturnType<typeof getPublicClient>>;
   walletClient: NonNullable<Awaited<ReturnType<typeof ownerWalletClient>>>;
+  /** Set once the wallet is asked to sign the UserOp. */
+  stage: { signatureRequested: boolean };
 }): Promise<Hex> {
-  const { chain, publicClient, walletClient, sponsor, data } = params;
+  const { chain, publicClient, walletClient, data, stage } = params;
+  // Same signer permissionless builds from a wallet client, noting when it
+  // is first asked to sign: sponsorship was granted by then.
+  const owner = toAccount({
+    address: walletClient.account.address,
+    async signMessage({ message }) {
+      stage.signatureRequested = true;
+      return walletClient.signMessage({ message });
+    },
+    async signTypedData(typedData) {
+      stage.signatureRequested = true;
+      return walletClient.signTypedData(
+        typedData as Parameters<typeof walletClient.signTypedData>[0],
+      );
+    },
+    async signTransaction() {
+      throw new Error("Smart account signer doesn't need to sign transactions");
+    },
+  });
   const account = await toLightSmartAccount({
     client: publicClient,
-    owner: walletClient,
+    owner,
     version: "2.0.0",
     entryPoint: {
       address: entryPoint07Address,
@@ -136,14 +141,10 @@ async function buildAndSend(params: {
     chain,
     client: publicClient,
     bundlerTransport: http(rpc),
-    ...(sponsor
-      ? {
-          paymaster: pimlicoClient,
-          paymasterContext: {
-            sponsorshipPolicyId: SPONSORSHIP_POLICY_ID,
-          },
-        }
-      : {}),
+    paymaster: pimlicoClient,
+    paymasterContext: {
+      sponsorshipPolicyId: SPONSORSHIP_POLICY_ID,
+    },
     userOperation: {
       estimateFeesPerGas: async () =>
         (await pimlicoClient.getUserOperationGasPrice()).fast,

@@ -12,10 +12,12 @@ import {
   LIGHT_ACCOUNT_PROXY_RUNTIME_CODE,
   MAX_PROFILE_URI_LENGTH,
   badgesFunctionNames,
+  encodeCreateAccount,
   encodeCreateProfile,
   isSponsoredBadgesCall,
   profileMetadataUriAllowed,
   encodeExecute,
+  encodeExecuteBatch,
   lightAccountAddress,
   userOperationIsSponsored,
 } from "@/lib/smart-account";
@@ -90,6 +92,55 @@ describe("lightAccountAddress", () => {
     const other = getAddress("0x0000000000000000000000000000000000000002");
     expect(lightAccountAddress(owner)).not.toBe(lightAccountAddress(other));
     expect(lightAccountAddress(owner, BigInt(1))).not.toBe(lightAccountAddress(owner, BigInt(0)));
+  });
+});
+
+describe("owner-paid calls through the Light Account", () => {
+  const call = {
+    to: sepoliaBadges,
+    value: BigInt(0),
+    data: encodeCreateProfile(PROFILE_URI),
+  };
+
+  async function codeAt(address: string) {
+    const response = await fetch("https://ethereum-sepolia-rpc.publicnode.com", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_getCode",
+        params: [address, "latest"],
+      }),
+    });
+    const body = (await response.json()) as { result?: string; error?: { message: string } };
+    expect(body.error, body.error?.message).toBeUndefined();
+    return body.result!.toLowerCase();
+  }
+
+  it("encodes the selectors the deployed implementation and factory dispatch on", async () => {
+    const execute = encodeExecute(call).slice(2, 10);
+    const executeBatch = encodeExecuteBatch([call, call]).slice(2, 10);
+    const createAccount = encodeCreateAccount(owner).slice(2, 10);
+    expect(`0x${execute}`).toBe(toFunctionSelector("execute(address,uint256,bytes)"));
+    expect(`0x${executeBatch}`).toBe(
+      toFunctionSelector("executeBatch(address[],uint256[],bytes[])"),
+    );
+    expect(`0x${createAccount}`).toBe(toFunctionSelector("createAccount(address,uint256)"));
+
+    // PUSH4 <selector> in the dispatcher of the code actually on Sepolia.
+    const implementation = await codeAt(LIGHT_ACCOUNT_IMPLEMENTATION);
+    expect(implementation).toContain(`63${execute}`);
+    expect(implementation).toContain(`63${executeBatch}`);
+    const factory = await codeAt(LIGHT_ACCOUNT_FACTORY);
+    expect(factory).toContain(`63${createAccount}`);
+  });
+
+  it("createAccount carries the owner and salt 0", () => {
+    const data = encodeCreateAccount(owner);
+    expect(data.slice(10)).toBe(
+      `${owner.slice(2).toLowerCase().padStart(64, "0")}${"0".repeat(64)}`,
+    );
   });
 });
 

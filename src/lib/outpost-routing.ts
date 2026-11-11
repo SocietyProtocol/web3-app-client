@@ -1,33 +1,44 @@
+import { Abi, Address, Hex, PublicClient, encodeFunctionData } from "viem";
 import {
-  Abi,
-  Address,
-  Hex,
-  PublicClient,
-  encodeFunctionData,
-  formatEther,
-} from "viem";
-import {
-  ENTRY_POINT_V07,
   encodeExecute,
   isSponsoredBadgesCall,
   userOperationMayRelay,
 } from "@/lib/smart-account";
+import {
+  OwnerPaysQuote,
+  gasUnknownMessage,
+  ownerCanPay,
+  quoteOwnerPays,
+  walletNeedsEthMessage,
+} from "@/lib/owner-pays";
 
 /**
- * Which account acts for a write.
- * - sponsored: the Light Account, Society pays gas.
- * - smart-account: the Light Account, paying gas from its own ETH.
- * - owner: the connected wallet, through writeContract / sendCalls.
+ * Which account acts for a write, and who pays.
+ * - sponsored: the Light Account acts, Society pays gas. If sponsorship is
+ *   unavailable when the write is sent, it goes owner-through-account.
+ * - owner-through-account: the Light Account acts, the connected wallet pays:
+ *   a normal transaction from the wallet to the Light Account's execute.
+ * - owner: the connected wallet acts and pays, through writeContract / sendCalls.
  * - blocked: nothing can send it. message (or error) says why.
+ * The Light Account never pays: it holds no ETH and is never asked to.
  */
-export type OutpostRouteKind = "sponsored" | "smart-account" | "owner" | "blocked";
+export type OutpostRouteKind =
+  | "sponsored"
+  | "owner-through-account"
+  | "owner"
+  | "blocked";
 
 export type OutpostRoute = {
   kind: OutpostRouteKind;
+  /** The account the contracts see as msg.sender. */
   sender?: Address;
+  /** The wallet that pays gas. Undefined while Society sponsors. */
+  payer?: Address;
   sponsor: boolean;
-  /** Upper bound the Light Account must hold (smart-account and blocked). */
-  prefundWei?: bigint;
+  /** What the owner wallet is expected to pay (owner-through-account and blocked). */
+  gasWei?: bigint;
+  /** The owner must first deploy the Light Account: two transactions. */
+  deploysAccount?: boolean;
   message?: string;
   error?: unknown;
 };
@@ -112,48 +123,14 @@ export function callShape(input: {
   }
 }
 
-// Rough Light Account v2 limits on EntryPoint 0.7. The bundler sets the real
-// ones; if these are short, it rejects with AA21 and the user sees that.
-const VERIFICATION_GAS_DEPLOYED = BigInt(120_000);
-const VERIFICATION_GAS_UNDEPLOYED = BigInt(400_000);
-const PRE_VERIFICATION_GAS = BigInt(60_000);
-
-export function estimateUserOperationPrefund(input: {
-  callGas: bigint;
-  deployed: boolean;
-  maxFeePerGas: bigint;
-}): bigint {
-  const callGas = (input.callGas * BigInt(12)) / BigInt(10);
-  const verification = input.deployed
-    ? VERIFICATION_GAS_DEPLOYED
-    : VERIFICATION_GAS_UNDEPLOYED;
-  return (callGas + verification + PRE_VERIFICATION_GAS) * input.maxFeePerGas;
-}
-
-/** Rounds up so the user never sends too little. */
-export function formatEthCeil(wei: bigint, decimals = 5): string {
-  const step = BigInt(10) ** BigInt(18 - decimals);
-  const rounded = ((wei + step - BigInt(1)) / step) * step;
-  return formatEther(rounded);
-}
-
-export function insufficientFundsMessage(smartAccount: Address, neededWei?: bigint) {
-  const amount = neededWei !== undefined ? `~${formatEthCeil(neededWei)} ETH` : "ETH";
-  return `Your Society account ${smartAccount} needs ${amount} for this action; send ETH to it from your wallet or ask an admin`;
-}
-
-export function fundsUnknownMessage(smartAccount: Address) {
-  return `Could not check the ETH balance of your Society account ${smartAccount}; please try again`;
-}
-
 /**
- * Picks the sender for one write.
- * Sponsored calls always go from the Light Account. Other Outpost calls go
- * from the Light Account whenever the call succeeds as it: if it cannot pay
- * (or its balance could not be read) the write is blocked rather than sent
- * from the wallet, so the action is never recorded under the wallet when it
- * could have been the Light Account's. The wallet sends only calls that fail
- * as the Light Account but succeed as the wallet (a role only it holds).
+ * Picks the sender and the payer for one write.
+ * Sponsored calls go from the Light Account with Society paying. Other
+ * Outpost calls go from the Light Account whenever the call succeeds as it,
+ * paid by the wallet through execute, so the action is never recorded under
+ * the wallet when it could have been the Light Account's. The wallet sends
+ * directly only calls that fail as the Light Account but succeed as the
+ * wallet (a role only it holds).
  */
 export function chooseWriteSender(input: {
   owner?: Address;
@@ -163,12 +140,17 @@ export function chooseWriteSender(input: {
   sponsored: boolean;
   smartAccountSimulation?: SimulationOutcome;
   ownerSimulation?: SimulationOutcome;
-  smartAccountFunds?: bigint;
-  prefundWei?: bigint;
-  /** Why smartAccountFunds or prefundWei is missing, when a read failed. */
-  fundsReadError?: unknown;
+  /** Price of sending it from the wallet through the Light Account. */
+  ownerPays?: OwnerPaysQuote;
+  /** Why ownerPays is missing, when pricing it failed. */
+  quoteError?: unknown;
 }): OutpostRoute {
-  const asOwner: OutpostRoute = { kind: "owner", sender: input.owner, sponsor: false };
+  const asOwner: OutpostRoute = {
+    kind: "owner",
+    sender: input.owner,
+    payer: input.owner,
+    sponsor: false,
+  };
   if (!input.owner || !input.smartAccount || input.isContractWallet) return asOwner;
   if (!input.relayable) return asOwner;
   if (input.sponsored) {
@@ -177,40 +159,28 @@ export function chooseWriteSender(input: {
 
   const smartOk = input.smartAccountSimulation?.ok === true;
   const ownerOk = input.ownerSimulation?.ok === true;
-  const prefundWei = input.prefundWei;
-  const funded =
-    prefundWei !== undefined &&
-    input.smartAccountFunds !== undefined &&
-    input.smartAccountFunds >= prefundWei;
+  const through = { sender: input.smartAccount, payer: input.owner, sponsor: false };
 
-  if (smartOk && funded) {
-    return { kind: "smart-account", sender: input.smartAccount, sponsor: false, prefundWei };
-  }
-  if (smartOk && (prefundWei === undefined || input.smartAccountFunds === undefined)) {
-    const message = fundsUnknownMessage(input.smartAccount);
-    return {
-      kind: "blocked",
-      sender: input.smartAccount,
-      sponsor: false,
-      prefundWei,
-      message,
-      error: new Error(message, { cause: input.fundsReadError }),
-    };
+  if (smartOk && input.ownerPays) {
+    const quote = input.ownerPays;
+    const priced = { gasWei: quote.costWei, deploysAccount: !quote.deployed };
+    if (!ownerCanPay(quote)) {
+      return {
+        kind: "blocked",
+        ...through,
+        ...priced,
+        message: walletNeedsEthMessage(input.owner, quote.costWei),
+      };
+    }
+    return { kind: "owner-through-account", ...through, ...priced };
   }
   if (smartOk) {
-    const shortfall =
-      prefundWei !== undefined
-        ? prefundWei - (input.smartAccountFunds ?? BigInt(0))
-        : undefined;
+    const message = gasUnknownMessage();
     return {
       kind: "blocked",
-      sender: input.smartAccount,
-      sponsor: false,
-      prefundWei,
-      message: insufficientFundsMessage(
-        input.smartAccount,
-        shortfall !== undefined && shortfall > BigInt(0) ? shortfall : prefundWei,
-      ),
+      ...through,
+      message,
+      error: new Error(message, { cause: input.quoteError }),
     };
   }
   if (ownerOk) return asOwner;
@@ -225,24 +195,9 @@ export function chooseWriteSender(input: {
   };
 }
 
-const entryPointBalanceAbi = [
-  {
-    type: "function",
-    name: "balanceOf",
-    stateMutability: "view",
-    inputs: [{ name: "account", type: "address" }],
-    outputs: [{ name: "", type: "uint256" }],
-  },
-] as const;
-
 export type RoutingClient = Pick<
   PublicClient,
-  | "simulateContract"
-  | "estimateContractGas"
-  | "estimateFeesPerGas"
-  | "getBalance"
-  | "getCode"
-  | "readContract"
+  "simulateContract" | "estimateGas" | "getGasPrice" | "getBalance" | "getCode"
 >;
 
 function outcome(promise: PromiseSettledResult<unknown>): SimulationOutcome {
@@ -253,8 +208,8 @@ function outcome(promise: PromiseSettledResult<unknown>): SimulationOutcome {
 
 /**
  * Reads what chooseWriteSender needs. Only unsponsored Outpost calls from an
- * EOA owner touch the chain: simulate as both accounts, read the Light
- * Account's ETH and EntryPoint deposit, and price a UserOp.
+ * EOA owner touch the chain: simulate as both accounts and price the
+ * transaction the wallet would send through the Light Account.
  */
 export async function resolveOutpostRoute(
   client: RoutingClient | undefined,
@@ -299,44 +254,20 @@ export async function resolveOutpostRoute(
     functionName: input.functionName,
     args: input.args ?? [],
   };
-  const smartAccount = input.smartAccount;
-  const [smartSim, ownerSim, gas, balance, deposit, code, fees] =
-    await Promise.allSettled([
-      client.simulateContract({ ...call, account: smartAccount }),
-      client.simulateContract({ ...call, account: input.owner }),
-      client.estimateContractGas({ ...call, account: smartAccount }),
-      client.getBalance({ address: smartAccount }),
-      client.readContract({
-        address: ENTRY_POINT_V07,
-        abi: entryPointBalanceAbi,
-        functionName: "balanceOf",
-        args: [smartAccount],
-      }),
-      client.getCode({ address: smartAccount }),
-      client.estimateFeesPerGas(),
-    ]);
-
-  const smartAccountFunds =
-    balance.status === "fulfilled"
-      ? balance.value + (deposit.status === "fulfilled" ? (deposit.value as bigint) : BigInt(0))
-      : undefined;
-  const prefundWei =
-    gas.status === "fulfilled" && fees.status === "fulfilled"
-      ? estimateUserOperationPrefund({
-          callGas: gas.value,
-          deployed: code.status === "fulfilled" && !!code.value && code.value !== "0x",
-          maxFeePerGas: fees.value.maxFeePerGas ?? fees.value.gasPrice ?? BigInt(0),
-        })
-      : undefined;
-
-  const fundsRead = [gas, fees, balance].find((read) => read.status === "rejected");
+  const [smartSim, ownerSim, quote] = await Promise.allSettled([
+    client.simulateContract({ ...call, account: input.smartAccount }),
+    client.simulateContract({ ...call, account: input.owner }),
+    quoteOwnerPays(client, {
+      owner: input.owner,
+      calls: [{ to: input.to, value: BigInt(0), data }],
+    }),
+  ]);
 
   return chooseWriteSender({
     ...base,
     smartAccountSimulation: outcome(smartSim),
     ownerSimulation: outcome(ownerSim),
-    smartAccountFunds,
-    prefundWei,
-    fundsReadError: fundsRead?.status === "rejected" ? fundsRead.reason : undefined,
+    ownerPays: quote.status === "fulfilled" ? quote.value : undefined,
+    quoteError: quote.status === "rejected" ? quote.reason : undefined,
   });
 }

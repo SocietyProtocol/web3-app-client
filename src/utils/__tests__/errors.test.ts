@@ -10,8 +10,10 @@ import {
 } from "viem/account-abstraction";
 import { ResponseError } from "@/errors/ResponseError";
 import { parseAccountAbstractionError, parseErrorMessage } from "@/utils/errors";
+import { SponsorshipUnavailableError } from "@/lib/aa/errors";
+import { walletNeedsEthMessage } from "@/lib/owner-pays";
 
-const PREFUND = "Your Society account does not have enough ETH";
+const PREFUND = "The network fee for this action could not be covered";
 const SIGNATURE = "Your wallet's signature was not accepted";
 const NONCE = "another action in progress";
 const PAYMASTER = "Society could not sponsor this action";
@@ -102,9 +104,51 @@ describe("parseErrorMessage account abstraction errors", () => {
     ).toBeUndefined();
   });
 
-  it("passes the insufficient-funds route message through", () => {
-    const message =
-      "Your Society account 0x0000000000000000000000000000000000000001 needs ~0.001 ETH for this action; send ETH to it from your wallet or ask an admin";
+  it("maps the proxy's sponsorship rate limit", () => {
+    expect(
+      parseErrorMessage(
+        new BaseError("RPC Request failed.", { details: "Too many sponsorship requests" }),
+      ),
+    ).toBe("Too many free-gas requests in a short time. Please wait a minute and try again.");
+  });
+
+  it("maps the proxy's daily sponsorship limits", () => {
+    for (const details of [
+      "Daily sponsored profile update limit reached",
+      "Daily sponsored invite limit reached",
+    ]) {
+      expect(parseErrorMessage(new BaseError("RPC Request failed.", { details }))).toBe(
+        "You have reached today's limit of free-gas transactions for this action. Please try again tomorrow.",
+      );
+    }
+  });
+
+  it("maps those refusals when they arrive as the cause of a fallback error", () => {
+    const refusal = new BaseError("RPC Request failed.", {
+      details: "Daily sponsored profile update limit reached",
+    });
+    expect(parseErrorMessage(new SponsorshipUnavailableError(refusal))).toContain(
+      "today's limit of free-gas transactions",
+    );
+  });
+
+  it("never tells the user to send ETH to their Society account", () => {
+    for (const error of [
+      new Error("UserOperation reverted: AA21 didn't pay prefund"),
+      wrapped(new InsufficientPrefundError({})),
+    ]) {
+      expect(parseErrorMessage(error)).not.toMatch(/send ETH|Society account/i);
+    }
+  });
+
+  it("passes the wallet-balance route message through", () => {
+    const message = walletNeedsEthMessage(
+      "0x0000000000000000000000000000000000000001",
+      BigInt(10) ** BigInt(15),
+    );
+    expect(message).toBe(
+      "Your wallet 0x0000000000000000000000000000000000000001 needs about 0.001 ETH to pay the network fee for this action",
+    );
     expect(parseErrorMessage(new Error(message))).toBe(message);
   });
 });

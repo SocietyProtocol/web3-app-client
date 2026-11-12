@@ -7,7 +7,7 @@ import { contracts } from "@/consts/contracts";
 import { useBadge } from "@/data/badges/useBadge";
 import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeBadgeModified } from "@/data/badges/decodeUtils";
 
 interface UseUpdateBadgeProps {
@@ -16,7 +16,7 @@ interface UseUpdateBadgeProps {
 
 export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { data: badgeData } = useBadge(badgeId);
 
   const uploadIpfsResult = useMutateMetadata({ showNotifications: false });

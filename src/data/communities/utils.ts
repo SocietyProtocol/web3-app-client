@@ -9,6 +9,7 @@ import {
   InputMaybe,
 } from "../../../.graphclient";
 import { requireGraphData } from "@/lib/graph-response";
+import { normalizeAddresses } from "../badges/utils";
 import { defaultOptions } from "./consts";
 import { CommunityQueryOptions, CommunityTier } from "./types";
 
@@ -57,7 +58,7 @@ export const mergeOptions = (
   return {
     ...defaultOptions,
     ...options,
-    managerAddress: managerAddress?.trim().toLowerCase(),
+    managerAddress: normalizeAddresses(managerAddress),
     memberAddress: memberAddress?.trim().toLowerCase(),
     searchText: (searchText ?? defaultOptions.searchText)
       ?.trim()
@@ -73,7 +74,7 @@ export const mergeOptions = (
  */
 export const buildWhereClause = (options: {
   searchText?: string | null;
-  managerAddress?: string | null;
+  managerAddress?: string | readonly string[] | null;
   tiers?: CommunityTier[] | undefined;
   memberAddress?: string | null;
   now?: number;
@@ -82,10 +83,17 @@ export const buildWhereClause = (options: {
 
   const whereClauses: InputMaybe<InputMaybe<Community_filter>[]> = [];
 
-  if (managerAddress) {
+  const managerAddresses = normalizeAddresses(managerAddress);
+  if (typeof managerAddresses === "string") {
     whereClauses.push({
       manager_: {
-        id: managerAddress,
+        id: managerAddresses,
+      },
+    });
+  } else if (managerAddresses) {
+    whereClauses.push({
+      manager_: {
+        id_in: managerAddresses,
       },
     });
   } else if (memberAddress) {
@@ -179,8 +187,5 @@ export const fetchCommunities = async (options?: CommunityQueryOptions) => {
  */
 export const fetchCommunity = async (id: string): Promise<CommunityQuery> => {
   const res = await execute(CommunityDocument, { id });
-  return requireGraphData(
-    res.data as CommunityQuery | undefined,
-    "Community",
-  );
+  return requireGraphData(res.data as CommunityQuery | undefined, "Community");
 };

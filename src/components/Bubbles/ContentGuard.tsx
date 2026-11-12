@@ -2,7 +2,7 @@
 
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box, Button, Stack, SxProps, Theme } from "@mui/material";
 import { ConnectWalletBubble } from "./ConnectWalletBubble";
 import { WrongNetworkBubble } from "./WrongNetworkBubble";
@@ -44,7 +44,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const router = useRouter();
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useOutpostAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const user = useUserQuery(requireAccount ? address : undefined);
 

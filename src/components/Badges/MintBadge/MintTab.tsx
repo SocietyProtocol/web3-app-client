@@ -47,17 +47,6 @@ export const MintTab = ({ id }: MintTabProps) => {
     [data],
   );
 
-  const filterOptions = useCallback(
-    (options: UserOption[]) => {
-      const filtered = options.filter(
-        (option) => !holders.includes(option.id.toLowerCase()),
-      );
-
-      return filtered;
-    },
-    [holders],
-  );
-
   const form = useForm({
     resolver: zodResolver(mintBadgeValidationSchema),
     defaultValues: {
@@ -72,6 +61,16 @@ export const MintTab = ({ id }: MintTabProps) => {
     control: form.control,
     name: ["recipients", "file", "fileContent"],
   });
+
+  // Recipients who already hold this badge. Minting to them is allowed (the
+  // contract is ERC-1155, a holder can own several), so this only informs.
+  const existingHolders = useMemo(
+    () =>
+      recipients.filter((recipient) =>
+        holders.includes(recipient.toLowerCase()),
+      ),
+    [recipients, holders],
+  );
 
   const handleToggleMintMode = useCallback(
     (event: React.SyntheticEvent, newValue: MintMode) => {
@@ -94,23 +93,13 @@ export const MintTab = ({ id }: MintTabProps) => {
         return;
       }
 
-      if (newUserId && holders.includes(newUserId.toLowerCase())) {
-        enqueueSnackbar(
-          `User with address ${newUserId} already holds this badge`,
-          {
-            variant: "error",
-          },
-        );
-        return;
-      }
-
       form.setValue(
         "recipients",
         newValue ? [typeof newValue === "string" ? newValue : newValue.id] : [],
         { shouldValidate: true },
       );
     },
-    [holders, form, enqueueSnackbar],
+    [form, enqueueSnackbar],
   );
 
   const handleOnChangeBatch = useCallback(
@@ -139,25 +128,11 @@ export const MintTab = ({ id }: MintTabProps) => {
           });
           return;
         }
-
-        const holder = holders.find((h) =>
-          cleanNewValues.some((v) => v.toLowerCase() === h),
-        );
-
-        if (holder) {
-          enqueueSnackbar(
-            `User with address ${holder} already holds this badge`,
-            {
-              variant: "error",
-            },
-          );
-          return;
-        }
       }
 
       form.setValue("recipients", cleanNewValues, { shouldValidate: true });
     },
-    [enqueueSnackbar, form, holders],
+    [enqueueSnackbar, form],
   );
 
   const handleOnFile = useCallback(
@@ -174,11 +149,7 @@ export const MintTab = ({ id }: MintTabProps) => {
             text
               .split(",")
               .map((line) => line.trim())
-              .filter(
-                (line) =>
-                  isAddress(line, { strict: false }) &&
-                  !holders.includes(line.toLowerCase()),
-              ),
+              .filter((line) => isAddress(line, { strict: false })),
           );
 
           form.setValue("recipients", validAddresses, {
@@ -195,7 +166,7 @@ export const MintTab = ({ id }: MintTabProps) => {
         shouldValidate: true,
       });
     },
-    [enqueueSnackbar, form, holders],
+    [enqueueSnackbar, form],
   );
 
   const invalidAddresses = useMemo(() => {
@@ -207,15 +178,12 @@ export const MintTab = ({ id }: MintTabProps) => {
 
     const invalids = uniq(
       addresses.filter(
-        (line) =>
-          line !== "" &&
-          (!isAddress(line, { strict: false }) ||
-            holders.includes(line.toLowerCase())),
+        (line) => line !== "" && !isAddress(line, { strict: false }),
       ),
     );
 
     return invalids;
-  }, [fileContent, mintMode, holders]);
+  }, [fileContent, mintMode]);
 
   const transaction = useMintBadgeMutation({
     args:
@@ -309,8 +277,14 @@ export const MintTab = ({ id }: MintTabProps) => {
               >["onChange"]
             }
             disabled={transaction.isLoading}
-            filterOptions={filterOptions}
           />
+          {existingHolders.length > 0 && (
+            <Typography color="warning.main" variant="body2">
+              {existingHolders.length === 1
+                ? `${existingHolders[0]} already holds this badge. They will receive another one.`
+                : `${existingHolders.length} recipients already hold this badge. They will each receive another one.`}
+            </Typography>
+          )}
           {mintMode === "batch" &&
             file &&
             (recipients.length > 0 || invalidAddresses.length > 0) && (

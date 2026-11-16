@@ -550,13 +550,7 @@ test.describe("accounts directory", () => {
       await accounts.openFromSidebar();
       await accounts.loaded();
       await expect(accounts.cards.first()).toBeVisible();
-
-      // Known app bug: the button is shown when the subgraph has no user at
-      // all (`!user.data`, src/components/Accounts/Accounts.tsx), not when
-      // the user has no profile, so this visitor gets no button. Remove the
-      // timeout together with test.fail.
-      test.fail(true, "Accounts.tsx shows Setup Account only when the subgraph has no User entity for the address");
-      await expect(accounts.setupAccountButton).toBeVisible({ timeout: 2_000 });
+      await expect(accounts.setupAccountButton).toBeVisible();
     },
   );
 });

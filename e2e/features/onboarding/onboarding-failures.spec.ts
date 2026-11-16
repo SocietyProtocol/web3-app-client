@@ -193,24 +193,10 @@ test.describe("smart-account onboarding: waiting, declining and failing", () => 
       expect(wallet.sendTransactionRequests()).toHaveLength(0);
       expect(aa.calls).toHaveLength(0);
 
-      // APP BUG, expected to fail until it is fixed: the name, bio (and
-      // avatar) typed before the network changed are gone, and from the
-      // review step the user is put back on step one. Profile wraps the
-      // wizard in <ContentGuard requireNetwork>, which unmounts it while the
-      // network is wrong, so the form state is lost. The wizard was written
-      // to stay on screen and only hide its buttons (showActions =
-      // !isWrongNetwork, and the "Please switch to ..." toast in
-      // handleFinish), but the guard makes both unreachable. Everything above
-      // this line must pass; only the assertions below are expected to fail.
-      test.fail(true, "the wizard loses what was typed when the wallet leaves and returns to the right network");
-      // Short on purpose: a known failure should not cost a long wait. A
-      // fixed app has this on screen already when the assertion starts
-      // (the form is visible, checked above, and its values need no request), so the wait only covers a render. Remove this timeout
-      // together with test.fail.
-      await expect(pages.onboarding.nameInput).toHaveValue("Wrong Network", { timeout: 2_000 });
-      await expect(pages.onboarding.bioInput).toHaveValue("Typed before the wallet changed network.", {
-        timeout: 2_000,
-      });
+      // What was typed before the network changed is still there: the guard
+      // keeps the wizard mounted, hidden, under the switch prompt.
+      await expect(pages.onboarding.nameInput).toHaveValue("Wrong Network");
+      await expect(pages.onboarding.bioInput).toHaveValue("Typed before the wallet changed network.");
     },
   );
 

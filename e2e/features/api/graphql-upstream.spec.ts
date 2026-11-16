@@ -95,18 +95,20 @@ test.describe("pages while the subgraph is down", () => {
       expect(asked.length, "the page asked for the Governor badge and was refused").toBeGreaterThan(0);
       await expect(pages.governance.governors.rows).toHaveCount(0);
 
-      // APP BUG (seen running: the list settles on "No governors found"),
-      // expected to fail until it is fixed: Governance.tsx reads only `data` and
-      // `isLoading` of the badge query. When the query fails, the list of
-      // holders is empty and the section reads "Governors (0)" and "No
-      // governors found", which is false: the Governors are on chain, the
-      // page just could not load them. Everything above this line must pass.
-      test.fail(true, "a failed Badge query is shown as an empty list of Governors");
-      // Short on purpose: the page has settled (awaited above). Remove the
-      // timeouts together with test.fail.
-      await expect(errorState(page)).toBeVisible({ timeout: 2_000 });
-      await expect(pages.governance.emptyState).toBeHidden({ timeout: 2_000 });
-      await expect(pages.governance.governors.section).not.toContainText("Governors (0)", { timeout: 2_000 });
+      // A failed query is not an empty list: the Governors are on chain, the
+      // page just could not load them, and it says so and offers a retry.
+      await expect(errorState(page)).toBeVisible();
+      await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+      await expect(pages.governance.emptyState).toBeHidden();
+      await expect(pages.governance.governors.section).toBeVisible();
+      await expect(pages.governance.governors.section).not.toContainText("Governors (0)");
+
+      // The subgraph is back: Retry loads the Governors.
+      await subgraph.clearFaults();
+      await page.getByRole("button", { name: "Retry" }).click();
+      await expect(pages.governance.governors.rows.first()).toBeVisible();
+      await expect(errorState(page)).toBeHidden();
+      await expect(page.getByRole("button", { name: "Retry" })).toBeHidden();
     },
   );
 });

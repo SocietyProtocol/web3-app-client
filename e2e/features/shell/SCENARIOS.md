@@ -28,3 +28,7 @@ a self-funded user operation): re-read `src/lib/outpost-routing.ts` before autom
 | A9 | Home identity card: "Check your profile" | MEM | W C | @core | `shell/home.spec.ts`; one `test.fail`: "Claim your account" shows while the wallet's code is read |
 | A10 | Hero video plays and closes when `NEXT_PUBLIC_HERO_VIDEO_URL` is set; Welcome card otherwise | LO | – | @edge | `shell/home.spec.ts`, Welcome card only: the suite's build has no hero video |
 | A11 | Footer and header logo links; external X/Discord links carry `target=_blank` | LO | – | @edge | `shell/home.spec.ts`; the X/Discord half is **fixme** until the owner decides: the shell never had such links (not counted as an app bug) |
+| A12 | Header links Website, Forum, YouTube, Discord and X, in that order, each with its exact `href`, `target=_blank`, `rel=noopener` and accessible name; pills show labels | LO | – | @smoke | `shell/external-links.spec.ts` |
+| A13 | Hover, keyboard focus and press give a link the "selected" fill and a focus outline; no `aria-current` | LO | – | @core | – |
+| A14 | 900 to 1199px: compact links, circles name themselves on hover; below 900px (820, 390) the links move to the drawer; the header never overflows (390, 820, 900, 1199, 1200) | LO | – | @core | `shell/external-links.spec.ts` |
+| A15 | Docs banner below the last nav item and above Collapse, a tile with a "Documentation" tooltip when collapsed, in the phone drawer; opens docs.societyprotocol.io in a new tab | LO | – | @core | `shell/external-links.spec.ts` |

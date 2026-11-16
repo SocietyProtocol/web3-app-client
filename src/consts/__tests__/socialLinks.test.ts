@@ -13,24 +13,27 @@ describe("getSocialLinks", () => {
     ]);
   });
 
-  it("shows YouTube by default only when its URL is set", () => {
-    expect(getSocialLinks().some((l) => l.id === "youtube")).toBe(
-      URLS.YOUTUBE !== null,
-    );
+  it("shows all five links by default, YouTube third", () => {
+    expect(getSocialLinks().map((l) => l.id)).toEqual([
+      "website",
+      "forum",
+      "youtube",
+      "discord",
+      "x",
+    ]);
   });
 
   it("uses the official URLs", () => {
     const hrefs = Object.fromEntries(
-      getSocialLinks({ ...URLS, YOUTUBE: null }).map((l) => [l.id, l.href]),
+      getSocialLinks().map((l) => [l.id, l.href]),
     );
     expect(hrefs).toEqual({
       website: "https://societyprotocol.io",
       forum: "https://forum.societyprotocol.io",
-      discord: URLS.DISCORD,
-      x: URLS.TWITTER,
+      youtube: "https://www.youtube.com/@SocietyProtocolStream",
+      discord: "https://discord.com/invite/fpk7eH7aWQ",
+      x: "https://x.com/ProtocolSociety",
     });
-    expect(URLS.DISCORD).toBe("https://discord.com/invite/fpk7eH7aWQ");
-    expect(URLS.TWITTER).toBe("https://x.com/ProtocolSociety");
   });
 
   it("shows YouTube third once its URL is set", () => {
@@ -50,11 +53,12 @@ describe("getSocialLinks", () => {
 
   it("renders Website and Forum as pills and the rest as icons", () => {
     const kinds = Object.fromEntries(
-      getSocialLinks({ ...URLS, YOUTUBE: null }).map((l) => [l.id, l.kind]),
+      getSocialLinks().map((l) => [l.id, l.kind]),
     );
     expect(kinds).toEqual({
       website: "pill",
       forum: "pill",
+      youtube: "icon",
       discord: "icon",
       x: "icon",
     });

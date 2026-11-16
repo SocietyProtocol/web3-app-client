@@ -9,6 +9,8 @@ interface HolderAmountChipProps {
   total?: bigint;
   /** Also show the share of the total supply (governance voting power). */
   showPercent?: boolean;
+  /** data-testid of the chip, for browser tests. */
+  testId?: string;
 }
 
 /** "2 / 15" or "10 / 15 · 66.67%" under a holder's card. */
@@ -16,8 +18,13 @@ export const HolderAmountChip = ({
   count,
   total,
   showPercent = false,
+  testId = "badge-holder-amount",
 }: HolderAmountChipProps) => (
   <Chip
+    data-testid={testId}
+    // Exact numbers behind the label: units held and the total supply.
+    data-count={count.toString()}
+    data-total={total?.toString()}
     label={
       showPercent
         ? formatVotingPower(count, total)

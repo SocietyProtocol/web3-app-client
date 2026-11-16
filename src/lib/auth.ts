@@ -3,6 +3,7 @@ import { mainnet, sepolia } from "viem/chains";
 import { NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { isContractWalletSignature } from "@/lib/contract-signature";
+import { e2eOverride } from "@/lib/e2e-overrides";
 
 export interface AuthPayload {
   address: string;
@@ -16,7 +17,11 @@ function authPublicClient() {
   const chain = env.environment === "production" ? mainnet : sepolia;
   return createPublicClient({
     chain,
-    transport: http(`https://${chain.id === mainnet.id ? "eth-mainnet" : "eth-sepolia"}.g.alchemy.com/v2/${env.alchemyApiKey}`),
+    transport: http(
+      // Hermetic browser tests only: a local fork. Ignored in production.
+      e2eOverride("E2E_RPC_URL") ??
+        `https://${chain.id === mainnet.id ? "eth-mainnet" : "eth-sepolia"}.g.alchemy.com/v2/${env.alchemyApiKey}`,
+    ),
   });
 }
 

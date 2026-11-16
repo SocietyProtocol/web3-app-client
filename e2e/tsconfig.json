@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "allowJs": false,
+    "types": ["node"],
+    "plugins": [],
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["./aa-stack", "./.stack", "./test-results", "./playwright-report"]
+}

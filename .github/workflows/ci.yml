@@ -1,0 +1,54 @@
+name: CI
+
+# Checks that need no secret, so they also run for pull requests from forks.
+on:
+  pull_request:
+  push:
+    branches: [staging]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Lint, type-check and unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Placeholder, not a real endpoint. The Graph Client codegen reads this
+      # name from .graphclientrc.yml but builds from the checked-in
+      # schema.graphql, so nothing is fetched.
+      NEXT_PUBLIC_GRAPH_URL: https://graph.invalid/graphql
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Same major as the Dockerfile.
+          node-version: 22
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # Writes .graphclient/ (imported by the app, not checked in) and the
+      # persisted query list.
+      - name: Generate GraphQL code
+        run: yarn codegen
+
+      - name: Generated persisted queries are up to date
+        run: git diff --exit-code -- src/lib/persisted-graphql.generated.ts
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Type-check
+        run: yarn type-check
+
+      - name: Unit tests
+        run: yarn vitest run

@@ -14,6 +14,15 @@ const optionalWalletModules = [
 ] as const;
 
 const nextConfig: NextConfig = {
+  env: {
+    // The mark of the hermetic test suite's own build (src/lib/e2e-build.ts).
+    // Next inlines a NEXT_PUBLIC_ variable only when it is set at build time;
+    // an unset one stays a live process.env read in the server bundle, which
+    // the server's runtime environment could then switch on. Listing it here
+    // inlines it into every bundle, server included, whatever the build had:
+    // "1" for the suite's build, "" for every other build.
+    NEXT_PUBLIC_E2E_BUILD: process.env.NEXT_PUBLIC_E2E_BUILD === "1" ? "1" : "",
+  },
   serverExternalPackages: [
     "pino",
     "thread-stream",

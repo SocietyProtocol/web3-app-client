@@ -74,6 +74,7 @@ export const LockSpec = () => {
           Your balance
         </Typography>
         <FormattedNumber
+          data-testid="lock-spec-balance"
           value={balance}
           scaleDownDecimals={SPEC_DECIMALS}
           minThreshold={1000}
@@ -132,6 +133,7 @@ export const LockSpec = () => {
 
       {/* Lock button */}
       <TransactionButton
+        data-testid="lock-spec-submit"
         variant="contained"
         size="large"
         fullWidth

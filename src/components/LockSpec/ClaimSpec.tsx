@@ -88,7 +88,7 @@ export const ClaimSpec = () => {
     isError;
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} data-testid="lock-spec-claim">
       {/* 3-column data row */}
       <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
         <ClaimDataColumn
@@ -163,6 +163,7 @@ export const ClaimSpec = () => {
 
       {/* Claim button */}
       <TransactionButton
+        data-testid="lock-spec-claim-submit"
         variant="contained"
         size="large"
         fullWidth

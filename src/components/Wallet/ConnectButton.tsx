@@ -30,9 +30,11 @@ import { Address } from "viem";
 const AccountMenuRow = ({
   label,
   address,
+  testId,
 }: {
   label: string;
   address: Address;
+  testId: string;
 }) => (
   <Box sx={{ px: 2, py: 1 }}>
     <Typography variant="caption" color="text.secondary" component="div">
@@ -43,6 +45,7 @@ const AccountMenuRow = ({
         variant="body2"
         sx={{ fontFamily: "monospace", color: "text.primary" }}
         title={address}
+        data-testid={testId}
       >
         {truncateAddress(address)}
       </Typography>
@@ -103,6 +106,7 @@ export const ConnectButton = ({
               disabled={!wagmiReady}
               variant={variant || "outlined"}
               onClick={openConnectModal}
+              data-testid="wallet-connect"
               sx={sx}
               fullWidth={fullWidth}
             >
@@ -148,6 +152,7 @@ export const ConnectButton = ({
                 variant={variant || "wallet"}
                 onClick={handleClick}
                 aria-haspopup="menu"
+                data-testid="wallet-account-button"
                 aria-expanded={menuAnchor ? "true" : undefined}
                 sx={mergeSx(
                   sx,
@@ -201,21 +206,25 @@ export const ConnectButton = ({
               anchorEl={menuAnchor}
               open={!!menuAnchor}
               onClose={closeMenu}
+              data-testid="wallet-account-menu"
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
               <AccountMenuRow
                 label="Society address"
+                testId="wallet-society-address"
                 address={societyAddress}
               />
               {showOwner && (
                 <AccountMenuRow
                   label="Wallet (owner)"
+                  testId="wallet-owner-address"
                   address={outpost.ownerAddress as Address}
                 />
               )}
               <Divider />
               <MenuItem
+                data-testid="wallet-settings"
                 onClick={() => {
                   closeMenu();
                   openAccountModal();

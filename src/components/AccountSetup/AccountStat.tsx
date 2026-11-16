@@ -20,6 +20,7 @@ export const AccountStat = ({
   return (
     <Grid
       size={1}
+      data-testid={`account-stat-${label.toLowerCase().replace(/\s+/g, "-")}`}
       sx={{
         minWidth: "120px",
       }}

@@ -105,7 +105,7 @@ export const GasEstimation = ({
   }
 
   return (
-    <Box sx={boxSx}>
+    <Box data-testid="transaction-gas-estimate" sx={boxSx}>
       <LocalGasStationIcon sx={{ fontSize: 16 }} />
       {text}
     </Box>

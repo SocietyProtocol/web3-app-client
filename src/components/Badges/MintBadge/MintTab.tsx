@@ -314,9 +314,14 @@ export const MintTab = ({ id }: MintTabProps) => {
               >["onChange"]
             }
             disabled={transaction.isLoading}
+            inputTestId="mint-recipient-input"
           />
           {existingHolders.length > 0 && (
-            <Typography color="warning.main" variant="body2">
+            <Typography
+              color="warning.main"
+              variant="body2"
+              data-testid="mint-existing-holder-warning"
+            >
               {existingHolders.length === 1
                 ? `${existingHolders[0]} already holds this badge. They will receive another one.`
                 : `${existingHolders.length} recipients already hold this badge. They will each receive another one.`}
@@ -407,6 +412,7 @@ export const MintTab = ({ id }: MintTabProps) => {
           loading={transaction.isLoading}
           loadingText="Minting..."
           routeKind={transaction.routeKind}
+          data-testid="mint-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}
           gasError={transaction.gasError}

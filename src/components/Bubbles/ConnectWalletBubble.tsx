@@ -12,6 +12,7 @@ export const ConnectWalletBubble = ({
   return (
     <BubbleBase
       variant="info"
+      testId="wallet-connect-prompt"
       actions={<ConnectButton variant="contained" fullWidth />}
     >
       <Typography

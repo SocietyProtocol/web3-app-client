@@ -44,6 +44,8 @@ interface WizardProps {
   loadingText?: string;
   /** Who pays for the Finish write, shown beside the button. */
   payment?: WritePayment;
+  /** Prefix for the data-testid of Back, Next and Finish, for browser tests. */
+  testIdPrefix?: string;
 }
 
 export const Wizard = ({
@@ -64,6 +66,7 @@ export const Wizard = ({
   isLoading = false,
   loadingText = "Saving...",
   payment,
+  testIdPrefix,
 }: WizardProps) => {
   const isMobile = useIsMobile();
 
@@ -157,6 +160,7 @@ export const Wizard = ({
                   onClick={onBack}
                   sx={{ width: { xs: "100%", sm: "auto" } }}
                   disabled={backDisabled || isLoading}
+                  data-testid={testIdPrefix && `${testIdPrefix}-back`}
                 >
                   Back
                 </WizardButton>
@@ -188,6 +192,7 @@ export const Wizard = ({
                     gasError={payment?.gasError}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     component={WizardButton}
+                    data-testid={testIdPrefix && `${testIdPrefix}-submit`}
                   >
                     Finish
                   </TransactionButton>
@@ -197,6 +202,7 @@ export const Wizard = ({
                     onClick={onNext}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     disabled={nextDisabled}
+                    data-testid={testIdPrefix && `${testIdPrefix}-next`}
                   >
                     Next
                   </WizardButton>

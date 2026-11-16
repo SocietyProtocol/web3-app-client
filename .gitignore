@@ -43,3 +43,11 @@ yarn-error.log*
 next-env.d.ts
 .graphclient/
 package-lock.json
+
+# browser tests (e2e/)
+/e2e/.stack/
+/e2e/test-results/
+/e2e/playwright-report/
+/e2e/aa-stack/node_modules/
+!/e2e/aa-stack/package-lock.json
+.env.e2e.local

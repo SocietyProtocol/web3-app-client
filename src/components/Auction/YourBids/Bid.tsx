@@ -61,7 +61,7 @@ export const Bid = ({
   }
 
   return (
-    <Tr role="row">
+    <Tr role="row" data-testid="auction-bid-row">
       <Box
         sx={{
           display: "flex",
@@ -182,6 +182,7 @@ export const Bid = ({
             >
               <span>
                 <TransactionButton
+                  data-testid="auction-bid-cancel"
                   size="small"
                   variant="contained"
                   onClick={handleCancelClick}

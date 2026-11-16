@@ -147,6 +147,7 @@ const AccountSetupWizardContent = ({
         loadingText={getLoadingText()}
         payment={transaction}
         showActions={!isWrongNetwork}
+        testIdPrefix="onboarding"
       >
         {activeStep === 0 && <AccountInfoStep />}
         {activeStep === 1 && <ReviewStep />}

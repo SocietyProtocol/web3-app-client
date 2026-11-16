@@ -155,7 +155,7 @@ export const AcceptInvitation = () => {
       label="Enter Referral Code to Accept Invitation"
       tooltip="If you have received a referral code from an existing user, enter it here to accept the invitation and link your account to the referrer."
     >
-      <Stack spacing={2}>
+      <Stack spacing={2} data-testid="referrals-accept-form">
         <TextField
           size="small"
           fullWidth

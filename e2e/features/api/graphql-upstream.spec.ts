@@ -106,6 +106,13 @@ test.describe("pages while the subgraph is down", () => {
       await expect(pages.governance.emptyState).toBeHidden();
       await expect(pages.governance.governors.section).toBeVisible();
       await expect(pages.governance.governors.section).not.toContainText("Governors (0)");
+
+      // The subgraph is back: Retry loads the Governors.
+      await subgraph.clearFaults();
+      await page.getByRole("button", { name: "Retry" }).click();
+      await expect(pages.governance.governors.rows.first()).toBeVisible();
+      await expect(errorState(page)).toBeHidden();
+      await expect(page.getByRole("button", { name: "Retry" })).toBeHidden();
     },
   );
 });

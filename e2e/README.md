@@ -677,7 +677,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | C Onboarding | `onboarding` | 22 tests: C1 to C19 | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
-| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 on its own bug: expected failures) | – | – |
+| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (one F7 fails on its own bug: an expected failure) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 | – | G12 with only `totalSupply` failing. |
 | H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 | – | H12 declined signature: a mint asks for none. H13 for Burn. |
 | I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug, I6 image preview and both I7: expected failures) | – | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |

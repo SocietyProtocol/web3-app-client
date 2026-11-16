@@ -3,6 +3,7 @@ import { ConnectButton } from "@/components/Wallet/ConnectButton";
 import { Box, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import Link from "next/link";
+import { SocialLinks } from "./SocialLinks";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -60,7 +61,22 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           </Box>
         </Link>
       </Box>
-      <ConnectButton />
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: { md: 2, lg: 3 },
+          minWidth: 0,
+        }}
+      >
+        {/* Below md the links live in the mobile drawer instead */}
+        <SocialLinks
+          variant="header"
+          sx={{ display: { xs: "none", md: "flex" } }}
+        />
+        {/* Cap long profile names so the links and the button fit from md */}
+        <ConnectButton sx={{ minWidth: 0, maxWidth: { md: 260, lg: 360 } }} />
+      </Box>
     </Box>
   );
 };

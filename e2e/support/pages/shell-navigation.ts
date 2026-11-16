@@ -78,6 +78,30 @@ export class ShellNavigationPage {
     return this.page.getByTestId("shell-footer");
   }
 
+  /**
+   * The Society Protocol links that are on screen: in the header from 900px
+   * up, in the open drawer below. The drawer's copy stays in the document
+   * (hidden) at every width.
+   */
+  get socialLinks(): Locator {
+    return this.page.getByTestId("shell-social-links").filter({ visible: true });
+  }
+
+  /** The header's own group of links, on screen or not. */
+  get headerSocialLinks(): Locator {
+    return this.page.getByRole("banner").getByTestId("shell-social-links");
+  }
+
+  /** One link of the visible group: website, forum, youtube, discord or x. */
+  socialLink(id: string): Locator {
+    return this.socialLinks.getByTestId(`shell-social-link-${id}`);
+  }
+
+  /** The docs banner at the bottom of the sidebar that is on screen. */
+  get docsBanner(): Locator {
+    return this.page.getByTestId("shell-docs-banner").filter({ visible: true });
+  }
+
   /** The page's own content, without header, sidebar and footer. */
   get main(): Locator {
     return this.page.getByRole("main");

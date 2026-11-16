@@ -166,6 +166,7 @@ export const ConnectButton = ({
                   direction="row"
                   alignItems="center"
                   flexGrow={1}
+                  minWidth={0}
                   spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                 >
                   <Avatar
@@ -179,6 +180,10 @@ export const ConnectButton = ({
                     whiteSpace="nowrap"
                     flexGrow={1}
                     textAlign="left"
+                    minWidth={0}
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    title={data?.name || undefined}
                   >
                     {data?.name || truncateAddress(societyAddress)}
                   </Typography>

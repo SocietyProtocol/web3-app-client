@@ -88,6 +88,12 @@ export const DROP_AREA_BORDER = "#636363";
 // Divider
 export const DIVIDER = "rgba(255, 255, 255, 0.4)";
 
+// Brand colors — Society Protocol links in the top bar and sidebar
+export const BRAND_OUTLINE = "#F1EDE4";
+export const BRAND_TEAL = "#6FA5B6";
+export const BRAND_YOUTUBE = "#FF0000";
+export const BRAND_DISCORD = "#7289DA";
+
 export const CHART_STROKE = "#73B46A";
 
 export const CHART_FILL = "#31B47A";

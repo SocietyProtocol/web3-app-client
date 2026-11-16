@@ -408,7 +408,7 @@ Account" made while the page still has a URL write pending is undone (C16), so
 
 Only real defects are expected failures. A scenario row the app never implemented, or one
 that may be out of date, is `test.fixme` with "owner to decide" until the owner has said which
-side changes (A5, A11).
+side changes (A5).
 
 ### Fixtures
 
@@ -661,17 +661,17 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 367 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
+of every run: 377 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
-and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
-A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 320 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
+and 1 is `test.fixme` until the owner decides on a scenario the app never implemented (A5).
+In the committed build 15 auction tests skip themselves (see M below), so a default run
+reports 331 passed, 30 failed as expected and 16 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
 | Area | Folder | Verified | Written, unverified | Not written, and why |
 |---|---|---|---|---|
-| A Shell, navigation, static content | `shell` | 19 tests: A1 to A9, A10 (Welcome card), A11 (one A5 and one A11 test are fixme: the "What is this?" copy and the X/Discord links, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
+| A Shell, navigation, static content | `shell` | 29 tests: A1 to A9, A10 (Welcome card), A11 to A15 (the top-bar links, the drawer below 900px and the docs banner; one A5 test is fixme: the "What is this?" copy, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
 | B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
 | C Onboarding | `onboarding` | 22 tests: C1 to C19 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |

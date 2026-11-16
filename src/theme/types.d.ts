@@ -49,6 +49,14 @@ declare module "@mui/material/styles" {
       dropArea: string;
     };
 
+    brand: {
+      outline: string;
+      teal: string;
+      youtube: string;
+      discord: string;
+      x: string;
+    };
+
     chart: {
       stroke: string;
       fill: string;
@@ -71,6 +79,14 @@ declare module "@mui/material/styles" {
       counter?: string;
       area?: string;
       dropArea?: string;
+    };
+
+    brand?: {
+      outline?: string;
+      teal?: string;
+      youtube?: string;
+      discord?: string;
+      x?: string;
     };
 
     chart?: {

@@ -345,26 +345,35 @@ test.describe("home", () => {
   );
 
   test(
-    "A11: the footer links to X and Discord in a new tab",
+    "A11: the header links to X and Discord in a new tab, and so does the drawer on a phone",
     { tag: ["@edge"] },
-    async ({ page }) => {
+    async ({ page, pages }) => {
       const nav = new ShellNavigationPage(page);
-      await page.goto("/");
-      await expect(nav.footer).toBeVisible();
-
-      // The scenario expects X and Discord links in the shell. The footer
-      // (src/components/Footer/Footer.tsx) holds a logo and the year only;
-      // the two links exist on a community's Governance tab and nowhere in
-      // the header, sidebar or footer. A feature the app never had is not an
-      // app bug: whether the shell should have the links is the owner's
-      // decision, so the rest is fixme (skipped) until then. Remove the
-      // fixme and the timeouts if the links are added; drop the test and
-      // change the A11 row if not.
-      test.fixme(true, "owner to decide: the scenario expects X and Discord links in the shell, which never had them");
-      for (const href of [APP_URLS.TWITTER, APP_URLS.DISCORD]) {
-        const link = nav.footer.locator(`a[href="${href}"]`);
-        await expect(link).toBeVisible({ timeout: 2_000 });
-        await expect(link).toHaveAttribute("target", "_blank", { timeout: 2_000 });
+      // The links live in the header from 900px up and in the drawer below
+      // (src/components/Header/SocialLinks.tsx); the footer keeps only the
+      // logo and the year. external-links.spec.ts (A12 to A14) covers the
+      // rest of the group.
+      for (const viewport of [
+        { width: 1440, height: 900 },
+        { width: 390, height: 844 },
+      ]) {
+        await page.setViewportSize(viewport);
+        await page.goto("/");
+        await expect(nav.homeHeading).toBeVisible();
+        if (viewport.width < 900) {
+          await expect(nav.headerSocialLinks).toBeHidden();
+          await pages.shell.menuButton.click();
+        }
+        for (const [id, href] of [
+          ["x", APP_URLS.TWITTER],
+          ["discord", APP_URLS.DISCORD],
+        ] as const) {
+          const link = nav.socialLink(id);
+          await expect(link, `${id} at ${viewport.width}px`).toBeVisible();
+          await expect(link).toHaveAttribute("href", href);
+          await expect(link).toHaveAttribute("target", "_blank");
+          await expect(link).toHaveAttribute("rel", /noopener/);
+        }
       }
     },
   );

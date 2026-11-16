@@ -69,7 +69,8 @@ const OPERATIONS: Record<
     },
   },
   Users: {
-    variables: () => ({ first: 5, skip: 0, orderBy: "id", orderDirection: "asc" }),
+    // The gateway allows only the sorts the app uses (e2e/support/backends/gateway).
+    variables: () => ({ first: 5, skip: 0, orderBy: "name", orderDirection: "asc" }),
     check: (data) => {
       const users = data.users as { id: string }[];
       expect(users.length).toBeGreaterThan(0);
@@ -93,7 +94,7 @@ const OPERATIONS: Record<
     check: (data) => expect(Array.isArray(data.lockTransactions)).toBe(true),
   },
   Communities: {
-    variables: () => ({ first: 5, skip: 0, orderBy: "id", orderDirection: "asc" }),
+    variables: () => ({ first: 5, skip: 0, orderBy: "createdAt", orderDirection: "asc" }),
     check: (data) => expect(Array.isArray(data.communities)).toBe(true),
   },
   Community: {
@@ -255,11 +256,22 @@ test.describe("/api/graphql: the whole contract", () => {
     expect(await refused.json()).toEqual(refusal("GraphQL request body is too large"));
     expect(await subgraph.requests(), "nothing reached the subgraph").toEqual([]);
 
+    // The route takes it and passes it on. The query gateway behind it then
+    // refuses the padding, as it does on staging, and the route passes that
+    // refusal on as a 400 (not a 502). The gateway checks the size of all
+    // variables against the operation's maxPayloadBytes (128 bytes for Status)
+    // before it looks for undeclared ones, so the padding is refused for its
+    // size, not as an undeclared variable.
     const justUnder = body(limit - 1024);
     expect(justUnder.byteLength).toBeLessThanOrEqual(limit);
     const accepted = await api.post(GRAPHQL, { headers: JSON_HEADERS, data: justUnder });
-    expect(accepted.status()).toBe(200);
-    expect(((await accepted.json()) as GraphqlBody).data).toHaveProperty("_meta");
+    expect(await subgraph.requests(), "the route passed it on").toHaveLength(1);
+    expect((await subgraph.requests())[0].refused).toEqual({
+      status: 400,
+      message: "GraphQL variables exceed operation limits",
+    });
+    expect(accepted.status()).toBe(400);
+    expect(await accepted.json()).toEqual(refusal("GraphQL gateway refused the request"));
   });
 
   test("P2: PUT, PATCH and DELETE are refused like GET", { tag: ["@core"] }, async ({ api }) => {

@@ -33,6 +33,16 @@ const GATEWAY_BUSY_STATUSES = new Set([429, 503]);
 const DEFAULT_BUSY_RETRY_AFTER_SECONDS = 1;
 const MAX_BUSY_RETRY_AFTER_SECONDS = 60;
 
+/**
+ * Gateway answers that refuse the request itself (its variables, its size):
+ * passed on with their status. Behind Cloudflare a 502 becomes an HTML error
+ * page, so a query the gateway does not allow looked like an outage. Every
+ * other 4xx of the gateway (401, 403, 404, 415, ...) is this server's own
+ * misconfiguration and stays a 502.
+ */
+const GATEWAY_REFUSALS_PASSED_ON = new Set([400, 413, 422]);
+const MAX_LOGGED_MESSAGE_LENGTH = 200;
+
 class RequestBodyTooLargeError extends Error {}
 class UpstreamResponseTooLargeError extends Error {}
 
@@ -196,6 +206,42 @@ async function readLimitedResponse(response: Response) {
   return new TextDecoder().decode(body);
 }
 
+/** The first error message of a gateway answer, for the log. Never the variables. */
+function upstreamMessage(text: string) {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    const errors =
+      parsed && typeof parsed === "object" && "errors" in parsed
+        ? (parsed as { errors?: unknown }).errors
+        : undefined;
+    const first = Array.isArray(errors) ? errors[0] : undefined;
+    const message =
+      first && typeof first === "object" && "message" in first
+        ? (first as { message?: unknown }).message
+        : undefined;
+    if (typeof message === "string" && message) {
+      return message
+        // Printable ASCII only: one log line, whatever the upstream sent.
+        .replace(/[^\x20-\x7e]+/g, " ")
+        .slice(0, MAX_LOGGED_MESSAGE_LENGTH);
+    }
+  } catch {
+    // Not JSON: an HTML error page of a proxy, for instance.
+  }
+  return "no message";
+}
+
+function gatewayRefusal(status: number, operationName: string, text: string) {
+  const passedOn = GATEWAY_REFUSALS_PASSED_ON.has(status);
+  logGatewayFailure(
+    operationName,
+    `the query gateway refused the request with ${status} (${upstreamMessage(text)}); answering ${passedOn ? status : 502}`,
+  );
+  return passedOn
+    ? jsonError("GraphQL gateway refused the request", status)
+    : jsonError("GraphQL upstream request failed", 502);
+}
+
 function sanitizeError(error: unknown) {
   const source = error && typeof error === "object" ? error : undefined;
   const safe: Record<string, unknown> = {
@@ -304,11 +350,15 @@ export async function POST(request: Request) {
       });
     }
 
+    const text = await readLimitedResponse(upstream);
+    if (upstream.status >= 400 && upstream.status < 500) {
+      return gatewayRefusal(upstream.status, payload.operationName, text);
+    }
+
     let body: unknown;
     try {
-      body = JSON.parse(await readLimitedResponse(upstream));
-    } catch (error) {
-      if (error instanceof UpstreamResponseTooLargeError) throw error;
+      body = JSON.parse(text);
+    } catch {
       logGatewayFailure(
         payload.operationName,
         `the query gateway answered ${upstream.status} with a body that is not JSON; answering 502`,

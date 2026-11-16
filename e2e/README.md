@@ -273,6 +273,15 @@ them against the checked-in `schema.graphql`. Three sources feed the store:
 3. **Overlays**: operations a test pushes with `subgraph.overlay(...)`, dropped before the next
    test.
 
+**The query gateway.** Before it answers, the fake refuses what the real query gateway in
+front of the subgraph refuses: a document that is not in the gateway's registry, and variables
+outside the operation's `variablePolicy` (filter keys, depth, sorts, sizes). It answers those
+with the gateway's 400 and its message, records `refused` in `subgraph.requests()`, and
+`/api/graphql` passes the refusal on as a 400. The policy is a committed snapshot of the
+gateway's registry; [backends/gateway/README.md](support/backends/gateway/README.md) says
+where it comes from and how to refresh it. A test that seeds variables of its own must use
+values the gateway allows (a sort the app offers, for instance, not `orderBy: "id"` on Users).
+
 The follower is an imitation. It proves that the UI renders the state a write should produce,
 not that the real subgraph indexes it; only `live` can prove that. It knows the badges contract
 only. Communities, the auction, Lock SPEC and community activities are not followed and are not

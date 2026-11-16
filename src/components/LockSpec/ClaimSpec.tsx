@@ -66,6 +66,7 @@ export const ClaimSpec = () => {
     mutate: onClaim,
     isTransactionPending,
     simulation: { isFetching: isSimulating, isError, error: simulationError },
+    routeKind,
     gas,
     gasError,
     gasLoading,
@@ -148,6 +149,7 @@ export const ClaimSpec = () => {
           label="Est. Gas"
           content={
             <GasEstimation
+              routeKind={routeKind}
               value={gas}
               isLoading={gasLoading}
               isError={gasError}

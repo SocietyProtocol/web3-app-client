@@ -1,9 +1,13 @@
-import { Box, Skeleton, SxProps, Theme } from "@mui/material";
+import { Box, Skeleton, SxProps, Theme, Typography } from "@mui/material";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
 import { FormattedNumber } from "../FormattedNumber/FormattedNumber";
 import { mergeSx } from "@/utils/sx";
+import type { OutpostRouteKind } from "@/lib/outpost-routing";
+import { FREE_LABEL, PAID_LABEL, paymentLabel } from "@/lib/payment-label";
 
 interface GasEstimationProps {
+  /** Who pays: from useTransaction's routeKind. Nothing shows while unknown. */
+  routeKind: OutpostRouteKind | undefined;
   value?: bigint;
   isLoading?: boolean;
   isError?: boolean;
@@ -11,12 +15,20 @@ interface GasEstimationProps {
 }
 
 export const GasEstimation = ({
+  routeKind,
   value,
   isLoading = false,
   isError = false,
   sx,
 }: GasEstimationProps) => {
-  if (isError || (!isLoading && value === undefined)) {
+  const label = paymentLabel({
+    routeKind,
+    gas: value,
+    gasLoading: isLoading,
+    gasError: isError,
+  });
+
+  if (!label) {
     return null;
   }
 
@@ -33,17 +45,28 @@ export const GasEstimation = ({
       )}
     >
       <LocalGasStationIcon sx={{ fontSize: 16 }} />
-      {isLoading ? (
+      {label.kind === "loading" ? (
         <Skeleton width={20} height={20} />
+      ) : label.kind === "free" ? (
+        <Typography variant="body2" color="inherit">
+          {FREE_LABEL}
+        </Typography>
       ) : (
-        <FormattedNumber
-          variant="body2"
-          color="inherit"
-          value={value}
-          scaleDownDecimals={8}
-          minThreshold={0.01}
-          prefix="$"
-        />
+        <>
+          <Typography variant="body2" color="inherit">
+            {label.feeUsd === undefined ? PAID_LABEL : `${PAID_LABEL}, about`}
+          </Typography>
+          {label.feeUsd !== undefined && (
+            <FormattedNumber
+              variant="body2"
+              color="inherit"
+              value={label.feeUsd}
+              scaleDownDecimals={8}
+              minThreshold={0.01}
+              prefix="$"
+            />
+          )}
+        </>
       )}
     </Box>
   );

@@ -86,6 +86,7 @@ export const BidControl = () => {
     approveReceipt,
     bidReceipt,
     simulation,
+    routeKind,
     gas,
     gasLoading,
     gasError,
@@ -262,6 +263,7 @@ export const BidControl = () => {
 
         {!isActionDisabled && (
           <GasEstimation
+            routeKind={routeKind}
             value={gas}
             isLoading={gasLoading}
             isError={gasError}

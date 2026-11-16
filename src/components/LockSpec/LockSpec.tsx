@@ -118,6 +118,7 @@ export const LockSpec = () => {
           label="Est. Gas"
           content={
             <GasEstimation
+              routeKind={lockMutation.routeKind}
               value={lockMutation.gas}
               isLoading={lockMutation.gasLoading}
               isError={lockMutation.gasError}

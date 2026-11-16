@@ -112,6 +112,7 @@ export function useUpdateBadge({
     isWritingContract: transaction.isLoading,
     status: transaction.status,
     error: uploadMetadata.error ?? transaction.txReceipt.error,
+    routeKind: transaction.routeKind,
     gas: transaction.gas,
     gasLoading: transaction.gasLoading,
     gasError: transaction.gasError,

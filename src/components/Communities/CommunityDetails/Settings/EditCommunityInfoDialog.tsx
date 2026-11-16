@@ -75,7 +75,7 @@ export function EditCommunityInfoDialog({
     name: ["name", "description"],
   });
 
-  const { update, isLoading, gas, gasLoading, gasError } =
+  const { update, isLoading, routeKind, gas, gasLoading, gasError } =
     useUpdateCommunityInfo({
       communityId: id,
       name,
@@ -127,14 +127,13 @@ export function EditCommunityInfoDialog({
               disabled={isLoading}
             />
           </Stack>
-          {(gas !== undefined || gasLoading) && (
-            <GasEstimation
-              value={gas}
-              isLoading={gasLoading}
-              isError={gasError}
-              sx={{ mt: 1.5 }}
-            />
-          )}
+          <GasEstimation
+            routeKind={routeKind}
+            value={gas}
+            isLoading={gasLoading}
+            isError={gasError}
+            sx={{ mt: 1.5 }}
+          />
         </DialogContent>
 
         <DialogActions>

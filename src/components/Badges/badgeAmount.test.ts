@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { partialMatchKey } from "@tanstack/react-query";
+import { readContractQueryKey, readContractsQueryKey } from "wagmi/query";
 import {
   badgeActionAmount,
   badgeAmountMaxError,
   badgeAmountValidationSchema,
+  badgeBalanceQueryKeys,
   burnAllBadgeArgs,
   burnBadgeCallArgs,
   canChooseBadgeAmount,
@@ -14,6 +17,8 @@ import { transferBadgeValidationSchema } from "./TransferTab/validation";
 
 const HOLDER = "0x1111111111111111111111111111111111111111" as const;
 const OTHER = "0x2222222222222222222222222222222222222222" as const;
+const BADGES = "0x3333333333333333333333333333333333333333" as const;
+const TOKEN = "0x4444444444444444444444444444444444444444" as const;
 
 describe("badgeAmountValidationSchema", () => {
   it.each([
@@ -201,5 +206,71 @@ describe("burnAllBadgeArgs (revoking a community member)", () => {
     expect(
       burnAllBadgeArgs({ holder: HOLDER, id: BigInt(42), balance: BigInt(0) }),
     ).toBeUndefined();
+  });
+});
+
+describe("badgeBalanceQueryKeys", () => {
+  const matches = (
+    queryKey: readonly unknown[],
+    keys: readonly (readonly unknown[])[],
+  ) => keys.some((key) => partialMatchKey(queryKey, key));
+
+  const balanceOf = readContractQueryKey({
+    address: BADGES,
+    functionName: "balanceOf",
+    args: [HOLDER, BigInt(42)],
+    chainId: 1,
+  });
+  const holderBalances = readContractsQueryKey({
+    contracts: [
+      {
+        address: BADGES,
+        functionName: "balanceOf",
+        args: [HOLDER, BigInt(42)],
+      },
+      {
+        address: BADGES,
+        functionName: "balanceOf",
+        args: [OTHER, BigInt(42)],
+      },
+    ],
+    chainId: 1,
+  } as Parameters<typeof readContractsQueryKey>[0]);
+  const supplies = readContractsQueryKey({
+    contracts: [
+      { address: BADGES, functionName: "totalSupply", args: [BigInt(42)] },
+    ],
+    chainId: 1,
+  } as Parameters<typeof readContractsQueryKey>[0]);
+  const otherContract = readContractQueryKey({
+    address: TOKEN,
+    functionName: "balanceOf",
+    args: [HOLDER],
+    chainId: 1,
+  });
+  const allowance = readContractQueryKey({
+    address: BADGES,
+    functionName: "isApprovedForAll",
+    args: [HOLDER, OTHER],
+    chainId: 1,
+  });
+
+  it("refreshes the badge contract's balances after a transfer", () => {
+    const keys = badgeBalanceQueryKeys(BADGES);
+    expect(matches(balanceOf, keys)).toBe(true);
+    expect(matches(holderBalances, keys)).toBe(true);
+    expect(matches(supplies, keys)).toBe(false);
+  });
+
+  it("also refreshes supply after a burn", () => {
+    expect(
+      matches(supplies, badgeBalanceQueryKeys(BADGES, { totalSupply: true })),
+    ).toBe(true);
+  });
+
+  it("leaves other contract reads alone", () => {
+    const keys = badgeBalanceQueryKeys(BADGES, { totalSupply: true });
+    expect(matches(otherContract, keys)).toBe(false);
+    expect(matches(allowance, keys)).toBe(false);
   });
 });

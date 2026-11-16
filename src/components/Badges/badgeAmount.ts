@@ -5,7 +5,7 @@
  * transfer take an amount. It defaults to 1 and is capped by the holder's
  * on-chain balance. Profile badges are unique, so they always move one.
  */
-import { Hex } from "viem";
+import { Address, Hex } from "viem";
 import z from "zod";
 
 export const DEFAULT_BADGE_AMOUNT = "1";
@@ -101,3 +101,29 @@ export const burnAllBadgeArgs = ({
   balance !== undefined && balance > BigInt(0)
     ? { holder, id, amount: balance }
     : undefined;
+
+/**
+ * Query keys of the badge contract's on-chain reads that a burn or transfer
+ * changes: `balanceOf` (single and batched) and, for a burn, `totalSupply`.
+ * They match wagmi's readContract/readContracts keys by prefix, so other
+ * contract reads are left alone.
+ */
+export const badgeBalanceQueryKeys = (
+  badges: Address,
+  { totalSupply = false }: { totalSupply?: boolean } = {},
+) => [
+  ["readContract", { address: badges, functionName: "balanceOf" }],
+  [
+    "readContracts",
+    { contracts: [{ address: badges, functionName: "balanceOf" }] },
+  ],
+  ...(totalSupply
+    ? [
+        ["readContract", { address: badges, functionName: "totalSupply" }],
+        [
+          "readContracts",
+          { contracts: [{ address: badges, functionName: "totalSupply" }] },
+        ],
+      ]
+    : []),
+];

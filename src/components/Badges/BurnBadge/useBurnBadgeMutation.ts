@@ -6,7 +6,7 @@ import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeBurnTransfer } from "@/data/badges/decodeUtils";
-import { burnBadgeCallArgs } from "../badgeAmount";
+import { burnBadgeCallArgs, badgeBalanceQueryKeys } from "../badgeAmount";
 
 interface BadgeBurnData {
   id: bigint;
@@ -29,8 +29,9 @@ export const useBurnBadgeMutation = ({
   successMessage = "Badge burned successfully",
 }: UseBurnBadgeMutationProps) => {
   const { address } = useOutpostAccount();
+  const badges = useChainVar(contracts.badges);
   return useTransaction({
-    address: useChainVar(contracts.badges),
+    address: badges,
     abi: SocietyProtocolBadgesABI,
     functionName: "burn",
     args: args ? burnBadgeCallArgs(args) : undefined,
@@ -42,9 +43,8 @@ export const useBurnBadgeMutation = ({
       ["community"],
       ["community-members"],
       ["community-members-infinite"],
-      // On-chain balances (holder amounts, the burn tab's maximum).
-      ["readContract"],
-      ["readContracts"],
+      // On-chain balances and supply (holder amounts, the burn tab's maximum).
+      ...badgeBalanceQueryKeys(badges, { totalSupply: true }),
     ],
     onSuccess: (receipt) => {
       const burn = decodeBurnTransfer(receipt);

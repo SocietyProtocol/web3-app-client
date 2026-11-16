@@ -6,7 +6,7 @@ import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeBadgeTransfer } from "@/data/badges/decodeUtils";
-import { transferBadgeCallArgs } from "../badgeAmount";
+import { transferBadgeCallArgs, badgeBalanceQueryKeys } from "../badgeAmount";
 
 interface BadgeTransferData {
   id: bigint;
@@ -28,8 +28,9 @@ export const useTransferBadgeMutation = ({
   args,
 }: UseTransferBadgeMutationProps) => {
   const { address } = useOutpostAccount();
+  const badges = useChainVar(contracts.badges);
   return useTransaction({
-    address: useChainVar(contracts.badges),
+    address: badges,
     abi: SocietyProtocolBadgesABI,
     functionName: "safeTransferFrom",
     args: args ? transferBadgeCallArgs(args) : undefined,
@@ -38,8 +39,7 @@ export const useTransferBadgeMutation = ({
       ["badge", args?.id.toString()],
       ["user"],
       // On-chain balances (holder amounts, the transfer tab's maximum).
-      ["readContract"],
-      ["readContracts"],
+      ...badgeBalanceQueryKeys(badges),
     ],
     onSuccess: (receipt) => {
       const transfer = decodeBadgeTransfer(receipt);

@@ -6,6 +6,7 @@ import {
   legacyPairsByState,
 } from "../../support/builders/accounts-directory";
 import { user, type ProtocolRole } from "../../support/builders/entities";
+import { watchGraphqlAnswers } from "../../support/graphql-limit";
 import { AccountsPage, ROLE_PARAM, type AccountRoleFilter } from "../../support/pages/accounts-directory";
 import { onlyShortAddress } from "../../support/pages/connect-wallet";
 
@@ -22,15 +23,26 @@ import { onlyShortAddress } from "../../support/pages/connect-wallet";
  * Known app bug, several tests below: every card's avatar asks /api/graphql
  * for its own User (src/components/Avatar/Avatar.tsx:22, useUserQuery), so
  * one load of the directory is 2 + 50 requests, and the route allows a
- * visitor 60 a minute (src/app/api/graphql/route.ts:11-12). The next page,
- * a reload, a new search, sort or filter within the minute is answered 429
- * "Too many GraphQL requests", and the grid shows "Users data is
- * unavailable". Where in a test the 61st request falls depends on how many
- * members the chain has (other tests add some), so `test.fail` is put above
- * the first step that can be the one, and every check after it has a short
- * timeout. Remove both when the bug is fixed.
+ * visitor a burst of 60 that refills one a second
+ * (src/app/api/graphql/route.ts). The next page, a reload, a new search,
+ * sort or filter soon after is answered 429 "Too many GraphQL requests".
+ * TanStack Query retries a failed query three times (after 1, 2 and 4
+ * seconds), and each retry can take a token that refilled meanwhile, so
+ * whether the grid then shows "Users data is unavailable" or, late, the
+ * cards depends on timing: with few requests missing (F2, F3) the cards
+ * sometimes arrive. So each of these tests also ends with what browsing the
+ * directory should never meet: a request refused with 429
+ * (`expectNoGraphqlRefused`). Where in a test the first 429 falls depends
+ * on how many members the chain has (other tests add some), so `test.fail`
+ * is put above the first step that can be the one, and every check after it
+ * has a short timeout. Remove both when the bug is fixed.
  */
-const RATE_LIMIT_BUG = "the directory's avatars use up the visitor's 60 /api/graphql requests a minute (Avatar.tsx useUserQuery per card)";
+const RATE_LIMIT_BUG = "the directory's avatars use up the visitor's /api/graphql allowance, a burst of 60 that refills one a second (Avatar.tsx useUserQuery per card)";
+
+/** Browsing the directory stays within the visitor's /api/graphql allowance (see RATE_LIMIT_BUG). */
+function expectNoGraphqlRefused(answers: ReturnType<typeof watchGraphqlAnswers>) {
+  expect(answers.refused(), "requests of the directory to /api/graphql refused with 429").toBe(0);
+}
 
 /** The page size of the directory (defaultOptions.pageSize in src/data/users/consts.ts). */
 const PAGE_SIZE = 50;
@@ -46,6 +58,7 @@ test.describe("accounts directory", () => {
     { tag: ["@smoke"] },
     async ({ page, subgraph, nextAccount }) => {
       const accounts = new AccountsPage(page);
+      const graphqlAnswers = watchGraphqlAnswers(page);
 
       // 110 more members than the chain has: more than two pages in any case,
       // so the end is reached more than once, whatever else is on the chain.
@@ -99,6 +112,7 @@ test.describe("accounts directory", () => {
       await expect(page.getByRole("heading", { name: "Scroll 109's Profile", exact: true })).toBeVisible({
         timeout: 5_000,
       });
+      expectNoGraphqlRefused(graphqlAnswers);
     },
   );
 
@@ -107,6 +121,7 @@ test.describe("accounts directory", () => {
     { tag: ["@core"] },
     async ({ page, actor, nextAccount, subgraph }) => {
       const accounts = new AccountsPage(page);
+      const graphqlAnswers = watchGraphqlAnswers(page);
       // A name nobody else has, also not a member left by an earlier attempt of this test.
       const salt = nextAccount().address.slice(2, 8).toLowerCase();
       const name = `Quokka ${salt}`;
@@ -173,6 +188,7 @@ test.describe("accounts directory", () => {
       await accounts.search(someone.address.slice(0, 22));
       await expect(accounts.emptyState).toBeVisible(short);
       await expect(accounts.cards).toHaveCount(0, short);
+      expectNoGraphqlRefused(graphqlAnswers);
     },
   );
 
@@ -181,6 +197,7 @@ test.describe("accounts directory", () => {
     { tag: ["@core"] },
     async ({ page, subgraph, nextAccount }) => {
       const accounts = new AccountsPage(page);
+      const graphqlAnswers = watchGraphqlAnswers(page);
       // Three members whose order by name differs from their order by age.
       // Their names sort before everyone else's.
       const salt = nextAccount().address.slice(2, 8).toLowerCase();
@@ -231,6 +248,7 @@ test.describe("accounts directory", () => {
       await expect.poll(async () => (await accounts.addresses()).slice(0, 3), short).toEqual([bravo, charlie, alpha]);
       const byAge = pageRequests(await subgraph.requests()).at(-1)!;
       expect(byAge.variables).toMatchObject({ orderBy: "profile__createdAt", orderDirection: "desc", skip: 0 });
+      expectNoGraphqlRefused(graphqlAnswers);
     },
   );
 
@@ -239,6 +257,7 @@ test.describe("accounts directory", () => {
     { tag: ["@core"] },
     async ({ page, subgraph, nextAccount }) => {
       const accounts = new AccountsPage(page);
+      const graphqlAnswers = watchGraphqlAnswers(page);
       // One member per role, one without a role and one with two.
       const roles: Record<string, ProtocolRole[]> = {
         governor: ["GOVERNOR"],
@@ -317,6 +336,7 @@ test.describe("accounts directory", () => {
         await accounts.toggleRole(filter);
       }
       await expect.poll(shown, short).toEqual(keys);
+      expectNoGraphqlRefused(graphqlAnswers);
     },
   );
 
@@ -325,6 +345,7 @@ test.describe("accounts directory", () => {
     { tag: ["@core"] },
     async ({ page, subgraph, nextAccount }) => {
       const accounts = new AccountsPage(page);
+      const graphqlAnswers = watchGraphqlAnswers(page);
       // The fork has members from before smart accounts in both states.
       const { migrated, pending } = await legacyPairsByState(subgraph);
       expect(migrated.length, "old wallets whose Society address has a profile").toBeGreaterThan(0);
@@ -391,6 +412,7 @@ test.describe("accounts directory", () => {
       await accounts.search(mover.society);
       await expect(accounts.cards).toHaveCount(1, short);
       await expect(accounts.card(mover.society)).toContainText("Moved Over", short);
+      expectNoGraphqlRefused(graphqlAnswers);
     },
   );
 

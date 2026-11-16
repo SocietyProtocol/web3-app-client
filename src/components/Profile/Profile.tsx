@@ -22,7 +22,7 @@ export const Profile = () => {
   );
 
   const wagmiReady = useWagmiReady();
-  const { address } = useOutpostAccount();
+  const { address, isLoading: identityLoading } = useOutpostAccount();
   const user = useUserQuery(address);
   const shownAddress = useRef(address);
 
@@ -38,7 +38,7 @@ export const Profile = () => {
 
   const view = profileView({
     wagmiReady,
-    isLoading: user.isLoading,
+    isLoading: identityLoading || user.isLoading,
     isError: user.isError,
     hasData: user.data !== undefined,
   });

@@ -51,24 +51,24 @@ test.describe("smart-account onboarding", () => {
   );
 
   test(
-    "C16: a click on the setup prompt while the wallet is still being read keeps the wizard open",
+    "C16: the wizard open in the URL stays open when a reload restores the connection and the identity settles",
     { tag: ["@edge"] },
     async ({ persona, pages, page, network }) => {
       await persona("new");
-      // The app reads the wallet's code to decide which identity applies.
-      // Keep that read open: this is the moment right after connecting, on a
-      // slow RPC. The setup prompt is already offered then.
-      const codeRead = network.holdRpc({ method: "eth_getCode" });
       await pages.onboarding.open();
-      await pages.shell.connectButton.click();
-      await pages.shell.walletOption.click();
-      await expect.poll(() => codeRead.hits()).toBeGreaterThan(0);
+      await pages.shell.connect();
       await expect(pages.onboarding.setupPrompt).toBeVisible();
-      await expect(pages.shell.accountButton).toHaveCount(0);
 
-      await pages.onboarding.startButton.click();
-      await expect(page).toHaveURL(/setupOpen=true/);
-      await expect(pages.onboarding.form).toBeVisible();
+      // Reload into the wizard (a click on the prompt, then a reload). The
+      // app reads the wallet's code to decide which identity applies: keep
+      // that read open, as on a slow RPC. While it runs the identity is not
+      // known, so no setup prompt is offered (A9, B-4) and the wizard cannot
+      // be opened by a click; the URL is what asks for it.
+      const codeRead = network.holdRpc({ method: "eth_getCode" });
+      await page.goto("/profile?setupOpen=true");
+      await expect.poll(() => codeRead.hits()).toBeGreaterThan(0);
+      await expect(pages.onboarding.setupPrompt).toBeHidden();
+      await expect(pages.shell.accountButton).toHaveCount(0);
 
       codeRead.release();
       await expect(pages.shell.accountButton).toBeVisible();
@@ -78,9 +78,9 @@ test.describe("smart-account onboarding", () => {
       // pass on the state before it.
       await pages.onboarding.waitForUrlWritesToSettle();
 
-      // The address going from undefined to the Light Account is the
-      // identity settling, not a change of account: the wizard the user just
-      // opened stays open (it may sit behind the skeleton while the subgraph
+      // The connection coming back and the address going from undefined to
+      // the Light Account is the identity settling, not a change of account:
+      // the wizard the URL asks for stays open (it may sit behind the skeleton while the subgraph
       // is asked for the Light Account's User). Profile.tsx used to reset
       // setupOpen here, which also made O7 and O13 flaky under load.
       await expect(page).toHaveURL(/setupOpen=true/);

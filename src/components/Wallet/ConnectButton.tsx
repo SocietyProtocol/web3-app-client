@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import { MouseEvent, useState } from "react";
 import { ConnectButtonSkeleton } from "./ConnectButtonSkeleton";
+import { connectButtonView } from "./connectButtonView";
+import { useWagmiReady } from "@/atoms/wagmiReady";
 import type { SxProps } from "@mui/system";
 import type { ButtonPropsVariantOverrides } from "@mui/material/Button";
 import { OverridableStringUnion } from "@mui/types";
@@ -73,6 +75,7 @@ export const ConnectButton = ({
   variant,
 }: ConnectButtonProps) => {
   const outpost = useOutpostAccount();
+  const wagmiReady = useWagmiReady();
   const { data, isLoading } = useUserQuery(outpost.address);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const showOwner =
@@ -87,23 +90,25 @@ export const ConnectButton = ({
         chain,
         openAccountModal,
         openChainModal,
-        mounted: wagmiReady,
+        mounted,
         openConnectModal,
       }) => {
-        // Until the Society address is known, show nothing copyable: the
-        // wallet address is not the member's identity.
-        if (
-          !wagmiReady ||
-          isLoading ||
-          (account && (outpost.isLoading || !outpost.address))
-        ) {
+        const view = connectButtonView({
+          mounted,
+          wagmiReady,
+          hasAccount: !!account,
+          userLoading: isLoading,
+          identityLoading: outpost.isLoading,
+          address: outpost.address,
+        });
+
+        if (view === "skeleton") {
           return <ConnectButtonSkeleton fullWidth={fullWidth} sx={sx} />;
         }
 
-        if (!account) {
+        if (view === "connect") {
           return (
             <Button
-              disabled={!wagmiReady}
               variant={variant || "outlined"}
               onClick={openConnectModal}
               data-testid="wallet-connect"

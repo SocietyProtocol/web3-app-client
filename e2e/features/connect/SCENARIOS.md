@@ -20,7 +20,7 @@ a self-funded user operation): re-read `src/lib/outpost-routing.ts` before autom
 | B-1 | Connect via RainbowKit modal; header shows Society address, not the EOA | NEW | W C | @smoke | `connect/connect.spec.ts` |
 | B-2 | Account menu lists "Society address" and "Wallet (owner)"; copy buttons work | MEM | W | @core | `connect/account-menu.spec.ts` |
 | B-3 | Header shows profile name and avatar once the profile exists | MEM | W G | @core | `connect/account-menu.spec.ts` |
-| B-4 | Reload keeps the connection; skeleton until wagmi is ready | MEM | W | @core | `connect/account-menu.spec.ts`; two `test.fail`: the setup prompt shows to a member while the wallet's code is read, and the header shows "Connect Wallet" for a moment while wagmi reconnects |
+| B-4 | Reload keeps the connection; skeleton until wagmi is ready | MEM | W | @core | `connect/account-menu.spec.ts`; also checks that neither the setup prompt (while the wallet's code is read) nor "Connect Wallet" (while wagmi reconnects) is shown to a member |
 | B-5 | Disconnect via "Wallet settings" returns to Connect; guarded pages show the connect bubble | MEM | W | @core | `connect/account-menu.spec.ts` |
 | B-6 | Wallet on the wrong chain: header error state; guarded pages show "Switch to Sepolia" | MEM | W | @core | `connect/network.spec.ts` |
 | B-7 | Switch button calls `wallet_switchEthereumChain` and content appears | MEM | W | @core | `connect/network.spec.ts` |

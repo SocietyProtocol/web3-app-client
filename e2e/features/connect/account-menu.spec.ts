@@ -177,13 +177,9 @@ test.describe("account menu and session", () => {
       const sawConnect = await page.evaluate(
         () => (window as unknown as { __e2eSawConnect?: boolean }).__e2eSawConnect,
       );
-      // After the reload the header goes skeleton -> "Connect Wallet" (about
-      // 200 ms) -> skeleton -> account button. ConnectButton.tsx renders the
-      // skeleton only while RainbowKit is not mounted or the Society address
-      // is loading; while wagmi is still reconnecting, `account` is undefined
-      // and the logged-out button is shown. The assertion reads a recorded
-      // flag, so it has no timeout to shorten.
-      test.fail(true, "the header shows \"Connect Wallet\" while wagmi reconnects a connected wallet");
+      // While wagmi is still reconnecting, RainbowKit reports no account:
+      // the header must keep its skeleton until the reconnect has settled,
+      // not show the logged-out button for a moment.
       expect(sawConnect, "a Connect button appeared while the connection was being restored").toBe(false);
     },
   );
@@ -204,15 +200,10 @@ test.describe("account menu and session", () => {
       await expect(connect.headerSkeleton).toBeVisible();
 
       // While the wallet's code is read, useOutpostAccount reports a
-      // connected wallet without an address. ContentGuard then asks
-      // useUserQuery(undefined), a disabled query that is not "loading" and
-      // has no data, takes that for "no profile" and renders
-      // AccountSetupBubble, whose own check (useProfileId(undefined)) says
-      // the same: a member sees "Welcome! Let's get started by setting up
-      // your account." until eth_getCode returns. Remove the timeout
-      // together with test.fail.
-      test.fail(true, "ContentGuard shows the account-setup prompt to a member until eth_getCode returns");
-      await expect(pages.onboarding.setupPrompt).toBeHidden({ timeout: 2_000 });
+      // connected wallet without an address. That is not "no profile": a
+      // member must not see "Welcome! Let's get started by setting up your
+      // account." before eth_getCode returns.
+      await expect(pages.onboarding.setupPrompt).toBeHidden();
 
       codeRead.release();
       await expect(pages.profile.details).toBeVisible();

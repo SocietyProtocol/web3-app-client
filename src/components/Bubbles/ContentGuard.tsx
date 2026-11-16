@@ -51,7 +51,11 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const router = useRouter();
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useOutpostAccount();
+  const {
+    address,
+    isConnected,
+    isLoading: identityLoading,
+  } = useOutpostAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const user = useUserQuery(requireAccount ? address : undefined);
 
@@ -60,7 +64,9 @@ export const ContentGuard = (props: ContentGuardProps) => {
     wagmiReady,
     isConnected,
     networkMissing: !!requireNetwork && isWrongNetwork,
-    accountLoading: !!requireAccount && user.isLoading,
+    // While the wallet's code is read, the address (and so the profile) is
+    // not known yet: that is not "no profile".
+    accountLoading: !!requireAccount && (identityLoading || user.isLoading),
     accountMissing: !!requireAccount && !user.data?.profile,
     keepMountedOnWrongNetwork,
   });

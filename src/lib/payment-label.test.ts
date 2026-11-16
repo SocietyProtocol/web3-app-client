@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { profileMetadataUriAllowed } from "@/lib/smart-account";
 import {
   CONFIRM_PROMPT,
+  PREVIEW_METADATA_URI,
   SIGN_PROMPT,
   paymentLabel,
   walletPrompt,
@@ -49,6 +51,12 @@ describe("paymentLabel", () => {
 
   it("shows nothing for a blocked write", () => {
     expect(paymentLabel({ routeKind: "blocked", gas: BigInt(10) })).toBeNull();
+  });
+});
+
+describe("PREVIEW_METADATA_URI", () => {
+  it("is a profile URI Society sponsors, like the real upload", () => {
+    expect(profileMetadataUriAllowed(PREVIEW_METADATA_URI)).toBe(true);
   });
 });
 

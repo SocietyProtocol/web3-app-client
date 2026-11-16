@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
@@ -7,6 +7,7 @@ import { TransactionReceipt, zeroAddress } from "viem";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
+import { PREVIEW_METADATA_URI, WritePayment } from "@/lib/payment-label";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import {
@@ -34,7 +35,38 @@ export const useMutateBadge = ({
 
   const uploadIpfsResult = useMutateMetadata({ onError });
 
+  // The real call needs the uploaded metadata URI; preview a minimal badge
+  // so the button can say who pays and about how much.
+  const preview = useMemo(() => {
+    if (!communityId) {
+      return {
+        address: contractAddress,
+        abi: SocietyProtocolBadgesABI,
+        functionName: "createBadge",
+        args: [
+          "Badge",
+          false,
+          false,
+          zeroAddress,
+          PREVIEW_METADATA_URI,
+          [],
+          [],
+          [],
+          [],
+        ],
+      };
+    }
+    if (!/^\d+$/.test(communityId)) return undefined;
+    return {
+      address: contractAddress,
+      abi: CommunityRegistryAbi,
+      functionName: "createCommunityBadge",
+      args: [BigInt(communityId), "Badge", PREVIEW_METADATA_URI, [], [], []],
+    };
+  }, [communityId, contractAddress]);
+
   const transaction = useTransaction({
+    preview,
     waitForSync: true,
     successMessage: "Badge created successfully",
     queryKeysToInvalidateOnSuccess: [
@@ -136,8 +168,15 @@ export const useMutateBadge = ({
 
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
+  const { routeKind, gas, gasLoading, gasError } = transaction;
+  const payment = useMemo<WritePayment>(
+    () => ({ routeKind, gas, gasLoading, gasError }),
+    [routeKind, gas, gasLoading, gasError],
+  );
+
   return {
     mutate,
+    payment,
     isUploadingToIpfs: uploadIpfsResult.isPending,
     isWritingContract: transaction.isExecuting,
     isTransactionPending: transaction.isLoading,

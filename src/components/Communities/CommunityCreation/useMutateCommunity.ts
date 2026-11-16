@@ -6,6 +6,7 @@ import { TransactionReceipt } from "viem";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
+import { PREVIEW_METADATA_URI, WritePayment } from "@/lib/payment-label";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeCommunityDetailsUpdated } from "@/data/communities/decodeUtils";
@@ -31,7 +32,26 @@ export const useMutateCommunity = ({
     [],
   );
 
+  // The real call needs the uploaded badge URIs; preview a minimal
+  // community so the button can say who pays and about how much.
+  const preview = useMemo(
+    () => ({
+      address: contractAddress,
+      abi: CommunityRegistryAbi,
+      functionName: "createCommunity",
+      args: [
+        "Community",
+        "Community",
+        PREVIEW_METADATA_URI,
+        PREVIEW_METADATA_URI,
+        PREVIEW_METADATA_URI,
+      ],
+    }),
+    [contractAddress],
+  );
+
   const transaction = useTransaction({
+    preview,
     waitForSync: true,
     successMessage: "Community created successfully",
     queryKeysToInvalidateOnSuccess,
@@ -105,8 +125,15 @@ export const useMutateCommunity = ({
 
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
+  const { routeKind, gas, gasLoading, gasError } = transaction;
+  const payment = useMemo<WritePayment>(
+    () => ({ routeKind, gas, gasLoading, gasError }),
+    [routeKind, gas, gasLoading, gasError],
+  );
+
   return {
     mutate,
+    payment,
     reset,
     isMutating,
     isUploadingToIpfs: uploadIpfsResult.isPending,

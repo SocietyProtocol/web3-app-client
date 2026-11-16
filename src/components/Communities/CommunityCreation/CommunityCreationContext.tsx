@@ -12,6 +12,7 @@ import {
 import { Hex, TransactionReceipt } from "viem";
 import { decodeCommunityCreated } from "@/data/communities/decodeUtils";
 import { useSnackbar } from "notistack";
+import type { WritePayment } from "@/lib/payment-label";
 
 interface CommunityCreationContextType {
   form: UseFormReturn<CommunityInputData, unknown, CommunityTransformedData>;
@@ -24,6 +25,7 @@ interface CommunityCreationContextType {
   >;
   isMutating: boolean;
   isSyncing: boolean;
+  payment: WritePayment;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
   isTransactionPending: boolean;
@@ -83,6 +85,7 @@ export const CommunityCreationProvider = ({
     isWritingContract,
     isSyncing,
     isTransactionPending,
+    payment,
   } = useMutateCommunity({
     onSuccess: async (receipt: TransactionReceipt) => {
       const communityCreated = decodeCommunityCreated(receipt);
@@ -113,6 +116,7 @@ export const CommunityCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       createdCommunity,
     }),
     [
@@ -123,6 +127,7 @@ export const CommunityCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       createdCommunity,
     ],
   );

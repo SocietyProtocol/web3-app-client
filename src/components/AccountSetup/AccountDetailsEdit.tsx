@@ -192,6 +192,10 @@ export const AccountDetailsEdit = ({
           variant="contained"
           disabled={disabled || !form.formState.isDirty}
           loading={isUploadingToIpfs || isLoading}
+          routeKind={transaction.routeKind}
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
           loadingText={
             isUploadingToIpfs
               ? "Uploading to IPFS..."

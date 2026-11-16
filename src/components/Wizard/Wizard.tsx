@@ -10,6 +10,7 @@ import {
 import { ArrowConnector, CustomStepIcon, WizardButton } from "./styles";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { TransactionButton } from "../Transaction/TransactionButton";
+import type { WritePayment } from "@/lib/payment-label";
 
 export interface WizardStep {
   label: string;
@@ -41,6 +42,8 @@ interface WizardProps {
       };
   isLoading?: boolean;
   loadingText?: string;
+  /** Who pays for the Finish write, shown beside the button. */
+  payment?: WritePayment;
 }
 
 export const Wizard = ({
@@ -60,6 +63,7 @@ export const Wizard = ({
   minHeight,
   isLoading = false,
   loadingText = "Saving...",
+  payment,
 }: WizardProps) => {
   const isMobile = useIsMobile();
 
@@ -178,6 +182,10 @@ export const Wizard = ({
                     disabled={finishDisabled}
                     loading={isLoading}
                     loadingText={loadingText}
+                    routeKind={payment?.routeKind}
+                    gas={payment?.gas}
+                    gasLoading={payment?.gasLoading}
+                    gasError={payment?.gasError}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     component={WizardButton}
                   >

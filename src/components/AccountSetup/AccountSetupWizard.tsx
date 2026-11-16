@@ -144,6 +144,7 @@ const AccountSetupWizardContent = ({
         minHeight={{ xs: 400, sm: 554 }}
         isLoading={isUploadingToIpfs || isLoading}
         loadingText={getLoadingText()}
+        payment={transaction}
         showActions={!isWrongNetwork}
       >
         {activeStep === 0 && <AccountInfoStep />}

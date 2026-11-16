@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { ValidationError } from "@/errors/ValidationError";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
+import type { WritePayment } from "@/lib/payment-label";
 
 interface BadgeCreationContextType {
   form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
@@ -30,6 +31,7 @@ interface BadgeCreationContextType {
   >;
   isMutating: boolean;
   isSyncing: boolean;
+  payment: WritePayment;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
   getServerFieldError: (field: keyof BadgeInputData) => string | undefined;
@@ -94,6 +96,7 @@ export const BadgeCreationProvider = ({
     isWritingContract,
     isSyncing,
     isTransactionPending,
+    payment,
     error: serverError,
   } = useMutateBadge({
     communityId,
@@ -150,6 +153,7 @@ export const BadgeCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       getServerFieldError,
       communityId,
     }),
@@ -161,6 +165,7 @@ export const BadgeCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       getServerFieldError,
       communityId,
     ],

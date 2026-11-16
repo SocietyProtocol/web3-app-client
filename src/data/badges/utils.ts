@@ -1,4 +1,4 @@
-import { Address, decodeEventLog, TransactionReceipt } from "viem";
+import { Address, parseEventLogs, TransactionReceipt } from "viem";
 import {
   Badge_filter,
   BadgeDocument,
@@ -252,23 +252,9 @@ export const getBadgePermissions = (
  * @param receipt Transaction receipt
  * @returns Created badge ID or null if not found
  */
-export const decodeBadgeId = (receipt: TransactionReceipt) => {
-  let id: bigint | null = null;
-
-  for (const log of receipt.logs) {
-    try {
-      const decoded = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "BadgeCreated",
-      });
-
-      id = decoded.args.id;
-    } catch {
-      // Ignore errors for logs that are not BadgeCreated events
-    }
-  }
-
-  return id;
-};
+export const decodeBadgeId = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "BadgeCreated",
+  }).at(-1)?.args.id ?? null;

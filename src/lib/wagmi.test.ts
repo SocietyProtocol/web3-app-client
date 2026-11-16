@@ -6,9 +6,13 @@ const mocks = vi.hoisted(() => ({
   onChange: undefined as ((data: AccountChange) => void) | undefined,
   unwatch: vi.fn(),
   watchAccount: vi.fn(),
+  /** wagmi's storage: what `recentConnectorId` holds, or a read that fails. */
+  getItem: vi.fn(),
 }));
 
-vi.mock("@rainbow-me/rainbowkit", () => ({ getDefaultConfig: () => ({}) }));
+vi.mock("@rainbow-me/rainbowkit", () => ({
+  getDefaultConfig: () => ({ storage: { getItem: mocks.getItem } }),
+}));
 vi.mock("@wagmi/core", () => ({
   http: () => ({}),
   watchAccount: mocks.watchAccount,
@@ -38,6 +42,8 @@ describe("initializeWagmiWatcher", () => {
     mocks.onChange = undefined;
     mocks.unwatch.mockReset();
     mocks.watchAccount.mockReset();
+    mocks.getItem.mockReset();
+    mocks.getItem.mockResolvedValue(null);
     mocks.watchAccount.mockImplementation(
       (_config, { onChange }: { onChange: (data: AccountChange) => void }) => {
         mocks.onChange = onChange;
@@ -65,7 +71,7 @@ describe("initializeWagmiWatcher", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("is ready at once for a saved session that is reconnecting", async () => {
+  it("is ready at once when the attempt starts as reconnecting", async () => {
     const { initializeWagmiWatcher, ready } = await load();
     initializeWagmiWatcher();
 
@@ -81,11 +87,83 @@ describe("initializeWagmiWatcher", () => {
     initializeWagmiWatcher();
     mocks.onChange?.(connecting);
 
-    vi.advanceTimersByTime(WAGMI_READY_TIMEOUT_MS - 1);
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS - 1);
     expect(ready()).toBe(false);
 
-    vi.advanceTimersByTime(1);
+    await vi.advanceTimersByTimeAsync(1);
     expect(ready()).toBe(true);
+    expect(mocks.unwatch).toHaveBeenCalledTimes(1);
+    expect(mocks.getItem).toHaveBeenCalledWith("recentConnectorId");
+  });
+
+  it("waits longer for a browser that has connected a wallet before", async () => {
+    mocks.getItem.mockResolvedValue("io.metamask");
+    const {
+      initializeWagmiWatcher,
+      ready,
+      WAGMI_READY_TIMEOUT_MS,
+      WAGMI_RECONNECT_TIMEOUT_MS,
+    } = await load();
+    initializeWagmiWatcher();
+    mocks.onChange?.(connecting);
+
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS);
+    expect(ready()).toBe(false);
+    expect(mocks.unwatch).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(
+      WAGMI_RECONNECT_TIMEOUT_MS - WAGMI_READY_TIMEOUT_MS - 1,
+    );
+    expect(ready()).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(ready()).toBe(true);
+    expect(mocks.unwatch).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("a returning member whose wallet answers late is ready then, not at the fallback", async () => {
+    mocks.getItem.mockResolvedValue("io.metamask");
+    const { initializeWagmiWatcher, ready, WAGMI_READY_TIMEOUT_MS } =
+      await load();
+    initializeWagmiWatcher();
+    mocks.onChange?.(connecting);
+
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS + 2_000);
+    expect(ready()).toBe(false);
+
+    mocks.onChange?.({ isConnecting: false });
+    expect(ready()).toBe(true);
+    expect(mocks.unwatch).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("treats a storage read that fails as a browser that never connected", async () => {
+    mocks.getItem.mockRejectedValue(new Error("SecurityError"));
+    const { initializeWagmiWatcher, ready, WAGMI_READY_TIMEOUT_MS } =
+      await load();
+    initializeWagmiWatcher();
+    mocks.onChange?.(connecting);
+
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS);
+    expect(ready()).toBe(true);
+  });
+
+  it("does not wait on when the attempt settles while storage is read", async () => {
+    let answer!: (value: string) => void;
+    mocks.getItem.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+    const { initializeWagmiWatcher, ready, WAGMI_READY_TIMEOUT_MS } =
+      await load();
+    initializeWagmiWatcher();
+    mocks.onChange?.(connecting);
+
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS);
+    mocks.onChange?.({ isConnecting: false });
+    expect(ready()).toBe(true);
+
+    answer("io.metamask");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(vi.getTimerCount()).toBe(0);
     expect(mocks.unwatch).toHaveBeenCalledTimes(1);
   });
 
@@ -94,7 +172,7 @@ describe("initializeWagmiWatcher", () => {
       await load();
     initializeWagmiWatcher();
 
-    vi.advanceTimersByTime(WAGMI_READY_TIMEOUT_MS);
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS);
     expect(ready()).toBe(true);
   });
 
@@ -105,7 +183,7 @@ describe("initializeWagmiWatcher", () => {
     initializeWagmiWatcher();
     expect(mocks.watchAccount).toHaveBeenCalledTimes(1);
 
-    vi.advanceTimersByTime(WAGMI_READY_TIMEOUT_MS);
+    await vi.advanceTimersByTimeAsync(WAGMI_READY_TIMEOUT_MS);
     expect(ready()).toBe(true);
 
     // Once ready, it neither watches again nor starts another timer.

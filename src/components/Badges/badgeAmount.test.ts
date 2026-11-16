@@ -3,6 +3,7 @@ import {
   badgeActionAmount,
   badgeAmountMaxError,
   badgeAmountValidationSchema,
+  burnAllBadgeArgs,
   burnBadgeCallArgs,
   canChooseBadgeAmount,
   maxBadgeAmount,
@@ -183,5 +184,22 @@ describe("contract call arguments", () => {
         amount: BigInt(2),
       }),
     ).toEqual([HOLDER, OTHER, BigInt(42), BigInt(2), "0x"]);
+  });
+});
+
+describe("burnAllBadgeArgs (revoking a community member)", () => {
+  it("burns every copy the member holds", () => {
+    expect(
+      burnAllBadgeArgs({ holder: HOLDER, id: BigInt(42), balance: BigInt(2) }),
+    ).toEqual({ holder: HOLDER, id: BigInt(42), amount: BigInt(2) });
+  });
+
+  it("waits for a known, non-zero balance", () => {
+    expect(
+      burnAllBadgeArgs({ holder: HOLDER, id: BigInt(42), balance: undefined }),
+    ).toBeUndefined();
+    expect(
+      burnAllBadgeArgs({ holder: HOLDER, id: BigInt(42), balance: BigInt(0) }),
+    ).toBeUndefined();
   });
 });

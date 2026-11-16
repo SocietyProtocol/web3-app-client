@@ -84,3 +84,20 @@ export const transferBadgeCallArgs = ({
   id: bigint;
   amount: bigint;
 }): [Hex, Hex, bigint, bigint, "0x"] => [from, to, id, amount, "0x"];
+
+/**
+ * Burn arguments that take every copy the holder has, e.g. revoking a
+ * community member. `undefined` until the balance is known and above 0.
+ */
+export const burnAllBadgeArgs = ({
+  holder,
+  id,
+  balance,
+}: {
+  holder: Hex;
+  id: bigint;
+  balance: bigint | undefined;
+}): { holder: Hex; id: bigint; amount: bigint } | undefined =>
+  balance !== undefined && balance > BigInt(0)
+    ? { holder, id, amount: balance }
+    : undefined;

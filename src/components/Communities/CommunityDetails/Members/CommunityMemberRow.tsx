@@ -10,6 +10,8 @@ import { CommunityMember } from "@/data/community-members/types";
 import { useMemo } from "react";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { CopyButton } from "@/components/CopyButton/CopyButton";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import { burnAllBadgeArgs } from "@/components/Badges/badgeAmount";
 
 interface CommunityMemberRowProps {
   member: CommunityMember;
@@ -22,20 +24,33 @@ export function CommunityMemberRow({
   isManager,
   memberBadgeId,
 }: CommunityMemberRowProps) {
+  // Revoking burns every copy the member holds, so they stop being a member.
+  const { data: memberBalance } = useBadgeBalanceOf(
+    memberBadgeId && isManager ? (member.user.id as Hex) : undefined,
+    memberBadgeId,
+  );
+
   const burnBadge = useBurnBadgeMutation(
     useMemo(
       () => ({
         args:
           memberBadgeId && isManager
-            ? {
+            ? burnAllBadgeArgs({
                 id: BigInt(memberBadgeId),
                 holder: member.user.id as Hex,
-              }
+                balance: memberBalance,
+              })
             : undefined,
         successMessage: `Badge revoked from ${member.user.name ?? member.user.id}`,
       }),
 
-      [memberBadgeId, isManager, member.user.id, member.user.name],
+      [
+        memberBadgeId,
+        isManager,
+        member.user.id,
+        member.user.name,
+        memberBalance,
+      ],
     ),
   );
 
@@ -88,7 +103,7 @@ export function CommunityMemberRow({
             color="error"
             size="small"
             disableRipple
-            disabled={!memberBadgeId}
+            disabled={!memberBadgeId || !memberBalance}
             loading={burnBadge.isLoading}
             loadingText="Revoking..."
             onClick={() => burnBadge.execute()}

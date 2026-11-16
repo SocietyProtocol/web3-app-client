@@ -257,13 +257,19 @@ test.describe("/api/graphql: the whole contract", () => {
     expect(await subgraph.requests(), "nothing reached the subgraph").toEqual([]);
 
     // The route takes it and passes it on. The query gateway behind it then
-    // refuses the variable that Status does not declare, as it does on
-    // staging, and the route passes that refusal on as a 400 (not a 502).
+    // refuses the padding, as it does on staging, and the route passes that
+    // refusal on as a 400 (not a 502). The gateway checks the size of all
+    // variables against the operation's maxPayloadBytes (128 bytes for Status)
+    // before it looks for undeclared ones, so the padding is refused for its
+    // size, not as an undeclared variable.
     const justUnder = body(limit - 1024);
     expect(justUnder.byteLength).toBeLessThanOrEqual(limit);
     const accepted = await api.post(GRAPHQL, { headers: JSON_HEADERS, data: justUnder });
     expect(await subgraph.requests(), "the route passed it on").toHaveLength(1);
-    expect((await subgraph.requests())[0].refused).toEqual({ status: 400, message: "Undeclared GraphQL variable" });
+    expect((await subgraph.requests())[0].refused).toEqual({
+      status: 400,
+      message: "GraphQL variables exceed operation limits",
+    });
     expect(accepted.status()).toBe(400);
     expect(await accepted.json()).toEqual(refusal("GraphQL gateway refused the request"));
   });

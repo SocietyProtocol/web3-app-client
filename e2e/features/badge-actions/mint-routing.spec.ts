@@ -85,7 +85,13 @@ test.describe("badge actions: who sends a mint and who pays", () => {
       await expect(pages.badge.mintSubmit).toHaveText("Simulating...");
       await expect(pages.badge.mintSubmit).toBeDisabled();
       await expect(pages.badge.gasEstimate).toHaveCount(0);
-      expect(pricing.hits()).toBeGreaterThan(0);
+      // "Simulating..." starts with the simulations (eth_call), before the
+      // page asks for the gas estimate: wait for the held estimate, and the
+      // button still waits for it.
+      await expect.poll(() => pricing.hits(), { message: "the page asked for the gas estimate" }).toBeGreaterThan(0);
+      await expect(pages.badge.mintSubmit).toHaveText("Simulating...");
+      await expect(pages.badge.mintSubmit).toBeDisabled();
+      await expect(pages.badge.gasEstimate).toHaveCount(0);
       pricing.release();
 
       // O9: then it names the fee the WALLET will pay, in USD: the price of

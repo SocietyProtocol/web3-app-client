@@ -4,13 +4,13 @@ name: Browser tests
 # local chain, bundler, paymaster and fakes. It needs no secret, so it also
 # runs for pull requests from forks. It never deploys anything.
 #
-#   pull request      the @smoke tests, plus every spec file the pull request changed
-#   push to staging   every test
-#   run by hand       every test, optionally with several workers
+#   pull request          the @smoke tests, plus every spec file the pull request changed
+#   push to main/staging  every test; called by deploy-aws.yml, which deploys
+#                         only if this and CI pass for the same commit
+#   run by hand           every test, optionally with several workers
 on:
   pull_request:
-  push:
-    branches: [staging]
+  workflow_call:
   workflow_dispatch:
     inputs:
       workers:
@@ -20,9 +20,13 @@ on:
 permissions:
   contents: read
 
+# A newer commit of a pull request cancels the run of the older one. Runs
+# called for a push are never cancelled once started, so every pushed commit
+# gets a verdict; a queued one is still replaced by a newer push, and its
+# deploy is then skipped, never run untested.
 concurrency:
-  group: e2e-${{ github.ref }}
-  cancel-in-progress: true
+  group: e2e-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   hermetic:
@@ -105,7 +109,7 @@ jobs:
         env:
           E2E_GREP: ${{ steps.choose.outputs.grep }}
           # Empty unless the run was started by hand with a number.
-          E2E_WORKERS: ${{ inputs.workers }}
+          E2E_WORKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.workers || '' }}
         run: |
           # Each worker is a chain, a bundler, a paymaster, an app server and
           # a browser. More of them than cores shows up as timeouts and

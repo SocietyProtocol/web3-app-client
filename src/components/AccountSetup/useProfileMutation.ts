@@ -12,6 +12,7 @@ import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { capturePostHogEvent } from "@/lib/posthog";
+import { PREVIEW_METADATA_URI } from "@/lib/payment-label";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
   const contractAddress = useChainVar(contracts.badges);
@@ -60,7 +61,28 @@ export const useProfileMutation = (overrideAddress?: Address) => {
     },
   });
 
+  // The metadata URI only exists after the upload on submit; preview the
+  // call with a stand-in so the button can say who pays.
+  const profileId = user.data?.profile?.id;
+  const preview = useMemo(
+    () =>
+      user.isLoading
+        ? undefined
+        : {
+            address: contractAddress,
+            abi: SocietyProtocolBadgesABI,
+            functionName:
+              profileId !== undefined ? "updateProfileURI" : "createProfile",
+            args:
+              profileId !== undefined
+                ? [BigInt(profileId), PREVIEW_METADATA_URI]
+                : [PREVIEW_METADATA_URI],
+          },
+    [user.isLoading, contractAddress, profileId],
+  );
+
   const transaction = useTransaction({
+    preview,
     queryKeysToInvalidateOnSuccess: [
       ["user", userAddress?.toLowerCase()],
       ["users"],

@@ -99,17 +99,24 @@ export function EditBadgeDialog({
 
   const watchedName = useWatch({ control, name: "name" });
 
-  const { update, isLoading, isUploadingToIpfs, gas, gasLoading, gasError } =
-    useUpdateBadge({
-      enabled: open,
-      communityId,
-      badgeId,
-      badgeName: watchedName || undefined,
-      badgeRole,
-      onSuccess: () => {
-        onClose();
-      },
-    });
+  const {
+    update,
+    isLoading,
+    isUploadingToIpfs,
+    routeKind,
+    gas,
+    gasLoading,
+    gasError,
+  } = useUpdateBadge({
+    enabled: open,
+    communityId,
+    badgeId,
+    badgeName: watchedName || undefined,
+    badgeRole,
+    onSuccess: () => {
+      onClose();
+    },
+  });
 
   const handleClose = () => {
     reset();
@@ -178,14 +185,13 @@ export function EditBadgeDialog({
               />
             </Stack>
           )}
-          {(gas !== undefined || gasLoading) && (
-            <GasEstimation
-              value={gas}
-              isLoading={gasLoading}
-              isError={gasError}
-              sx={{ mt: 1.5 }}
-            />
-          )}
+          <GasEstimation
+            routeKind={routeKind}
+            value={gas}
+            isLoading={gasLoading}
+            isError={gasError}
+            sx={{ mt: 1.5 }}
+          />
         </DialogContent>
 
         <DialogActions>

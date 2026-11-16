@@ -21,6 +21,7 @@ import {
   isContractWalletCode,
   outpostIdentity,
   resolveOutpostRoute,
+  routeWithoutChain,
 } from "@/lib/outpost-routing";
 import {
   EXECUTE_OVERHEAD_GAS,
@@ -176,6 +177,49 @@ describe("callShape", () => {
       relayable: false,
       sponsored: false,
     });
+  });
+});
+
+describe("routeWithoutChain", () => {
+  const profileData = encodeCreateProfile(
+    "ipfs://bafkreigh2akiscaildcqabsyg3dfr6chu3fgpregiymsck7e7aqa4s52zy",
+  );
+  const burnData = encodeFunctionData({
+    abi: [
+      {
+        type: "function",
+        name: "burn",
+        stateMutability: "nonpayable",
+        inputs: [{ name: "id", type: "uint256" }],
+        outputs: [],
+      },
+    ],
+    functionName: "burn",
+    args: [BigInt(1)],
+  });
+  const eoa = { chainId: SEPOLIA, owner, smartAccount, isContractWallet: false };
+
+  it("knows a sponsored call is sponsored", () => {
+    expect(routeWithoutChain({ ...eoa, to: badges, data: profileData })?.kind).toBe(
+      "sponsored",
+    );
+  });
+
+  it("leaves unsponsored Outpost calls from a Light Account to the chain", () => {
+    expect(routeWithoutChain({ ...eoa, to: badges, data: burnData })).toBeUndefined();
+  });
+
+  it("knows the wallet acts for other contracts and contract wallets", () => {
+    expect(routeWithoutChain({ ...eoa, to: other, data: burnData })?.kind).toBe("owner");
+    expect(
+      routeWithoutChain({
+        chainId: SEPOLIA,
+        owner,
+        isContractWallet: true,
+        to: badges,
+        data: profileData,
+      })?.kind,
+    ).toBe("owner");
   });
 });
 

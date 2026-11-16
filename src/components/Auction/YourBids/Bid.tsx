@@ -35,10 +35,17 @@ export const Bid = ({
 
   const { decimalsBiddingToken } = auctionDetail || {};
 
-  const { simulation, execute, isLoading, gas, gasError, gasLoading } =
-    useCancelBidMutation({
-      orderId,
-    });
+  const {
+    simulation,
+    execute,
+    isLoading,
+    routeKind,
+    gas,
+    gasError,
+    gasLoading,
+  } = useCancelBidMutation({
+    orderId,
+  });
 
   const handleCancelClick = useCallback(() => execute(), [execute]);
 
@@ -188,6 +195,7 @@ export const Bid = ({
                   simulating={simulation?.isFetching}
                   loading={isLoading}
                   loadingText="Canceling..."
+                  routeKind={routeKind}
                   gas={gas}
                   gasLoading={gasLoading}
                   gasError={gasError}

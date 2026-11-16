@@ -652,11 +652,11 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 363 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
+of every run: 367 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 316 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 320 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
@@ -676,7 +676,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | L Governance | `governance` | 8 tests: L1 to L7 | – | – |
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
-| O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
+| O Transactions that fail | `tx-failures` | 25 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11); O16 to O19, who pays as the page says it (`payment-label.spec.ts`) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
 | P Server routes | `api` | 78 tests: P1 to P13 | – | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
 | The foundation itself | `stack` | 23 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |

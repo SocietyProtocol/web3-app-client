@@ -9,6 +9,7 @@ const attentionPulse = keyframes`
 `;
 import { navigationItems } from "./navigationItems";
 import { NavigationItem } from "./NavigationItem";
+import { DocsBanner } from "./DocsBanner";
 
 interface SidebarContentProps {
   isExpanded: boolean;
@@ -28,6 +29,8 @@ export const SidebarContent = ({
       </List>
 
       <Box sx={{ flexGrow: 1 }} />
+
+      <DocsBanner isExpanded={isExpanded} />
 
       {onToggle && (
         <Box

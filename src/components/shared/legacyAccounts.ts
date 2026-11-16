@@ -1,5 +1,6 @@
 import { Address, getAddress, isAddress } from "viem";
 import legacyAccountMap from "@/consts/legacy-account-map.json";
+import { e2eLegacyAccounts } from "@/lib/e2e-legacy-accounts";
 
 /**
  * Members who held a profile on their wallet (E) before Light Accounts
@@ -24,13 +25,9 @@ const normalize = (map: FlatLegacyMap): Record<string, Address> =>
       .map(([eoa, smart]) => [eoa.toLowerCase(), getAddress(smart)]),
   );
 
-/**
- * Returns the legacy EOA -> Society address map for a chain.
- * A flat map applies to every chain.
- */
-export const legacyAccountsFor = (
+const accountsIn = (
   chainId: number | undefined,
-  source: unknown = legacyAccountMap,
+  source: unknown,
 ): Record<string, Address> => {
   if (!source || typeof source !== "object") return {};
 
@@ -40,6 +37,25 @@ export const legacyAccountsFor = (
   if (chainId === undefined) return {};
 
   return normalize(map[String(chainId)] ?? {});
+};
+
+/**
+ * Returns the legacy EOA -> Society address map for a chain.
+ * A flat map applies to every chain.
+ */
+export const legacyAccountsFor = (
+  chainId: number | undefined,
+  source: unknown = legacyAccountMap,
+): Record<string, Address> => {
+  const accounts = accountsIn(chainId, source);
+  // Browser test build only (lib/e2e-legacy-accounts): undefined in every
+  // deployment, and never applied to a map the caller passed in.
+  const extra =
+    source === legacyAccountMap && chainId !== undefined
+      ? e2eLegacyAccounts()
+      : undefined;
+
+  return extra ? { ...accounts, ...normalize(extra) } : accounts;
 };
 
 /** Society address of a legacy wallet, if it is in the map. */

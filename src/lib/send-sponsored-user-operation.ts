@@ -12,6 +12,7 @@ import { mainnet, sepolia } from "viem/chains";
 import { http } from "viem";
 import { toAccount } from "viem/accounts";
 import { getPublicClient } from "wagmi/actions";
+import { e2ePollingOption, pollMs } from "@/lib/e2e-timing";
 import { aaRpcUrl } from "@/lib/pimlico-proxy";
 import {
   SponsorshipUnavailableError,
@@ -75,7 +76,7 @@ export async function sendSponsoredUserOperation(params: {
       return await buildAndSend({ ...params, data, chain, publicClient, walletClient, stage });
     } catch (error) {
       if (attempt < AA10_ATTEMPTS && isAlreadyDeployedError(error)) {
-        await new Promise((resolve) => setTimeout(resolve, AA10_RETRY_MS));
+        await new Promise((resolve) => setTimeout(resolve, pollMs(AA10_RETRY_MS)));
         continue;
       }
       if (sponsorshipIsUnavailable(error, stage)) throw new SponsorshipUnavailableError(error);
@@ -141,6 +142,9 @@ async function buildAndSend(params: {
     chain,
     client: publicClient,
     bundlerTransport: http(rpc),
+    // How often the receipt of the user operation is asked for. Empty in
+    // every real deployment: viem keeps its own interval.
+    ...e2ePollingOption(),
     paymaster: pimlicoClient,
     paymasterContext: {
       sponsorshipPolicyId: SPONSORSHIP_POLICY_ID,

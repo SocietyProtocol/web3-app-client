@@ -38,6 +38,7 @@ export const UserTag = ({
 
   return (
     <Box
+      data-testid={loading ? "user-tag-skeleton" : "user-tag"}
       sx={{
         minWidth: 214,
         maxWidth: {

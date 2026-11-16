@@ -69,6 +69,7 @@ export const CountDown = ({ endTimestamp, title }: CountDownProps) => {
 
   useEffect(() => {
     // Set initial time after mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- kept as it is; changing how the countdown starts is an app change for its own pull request
     setTimeLeft(calculateTimeRemaining(endTimestamp));
   }, [endTimestamp]);
 

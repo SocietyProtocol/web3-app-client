@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import { CID } from "multiformats/cid";
 
 import { URLS } from "@/consts/urls";
+import { e2eOverride } from "@/lib/e2e-overrides";
 
 /** Subgraph MetadataFile only accepts CIDv1 bafybei/bafkrei or CIDv0 Qm. */
 export function toIndexedCid(cid: string): string {
@@ -61,11 +62,16 @@ export function getFilebaseEnv() {
   return { key, secret, bucket };
 }
 
-export function createFilebaseClient(): S3Client {
+/** S3 client settings. Exported so the endpoint override can be tested. */
+export function filebaseClientConfig() {
   const { key, secret } = getFilebaseEnv();
+  // Hermetic browser tests only: a local S3 fake, which has no per-bucket
+  // host names. Ignored in production.
+  const override = e2eOverride("E2E_FILEBASE_ENDPOINT");
 
-  return new S3Client({
-    endpoint: FILEBASE_ENDPOINT,
+  return {
+    endpoint: override ?? FILEBASE_ENDPOINT,
+    ...(override ? { forcePathStyle: true } : {}),
     region: FILEBASE_REGION,
     credentials: {
       accessKeyId: key,
@@ -74,7 +80,11 @@ export function createFilebaseClient(): S3Client {
     // IPFS buckets do not support S3 checksum headers.
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
-  });
+  } as const;
+}
+
+export function createFilebaseClient(): S3Client {
+  return new S3Client(filebaseClientConfig());
 }
 
 function sleep(ms: number) {

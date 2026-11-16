@@ -11,7 +11,11 @@ export const ReviewStep = () => {
   const formValues = useWatch({ control: form.control });
 
   return (
-    <Stack spacing={{ xs: 2, sm: 3 }} alignItems="flex-start">
+    <Stack
+      spacing={{ xs: 2, sm: 3 }}
+      alignItems="flex-start"
+      data-testid="onboarding-review"
+    >
       <Typography
         variant="h6"
         sx={{

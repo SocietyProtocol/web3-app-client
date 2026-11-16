@@ -19,12 +19,14 @@ export const WrongNetworkBubble: React.FC<WrongNetworkBubbleProps> = ({
     <BubbleBase
       show={isConnected && isWrongNetwork}
       variant="warning"
+      testId="wallet-wrong-network"
       actions={
         <Button
           onClick={() => switchChain?.({ chainId: expectedNetwork.id })}
           disabled={isSwitching}
           variant="contained"
           fullWidth
+          data-testid="wallet-switch-network"
         >
           {isSwitching ? "Switching..." : `Switch to ${expectedNetwork.name}`}
         </Button>

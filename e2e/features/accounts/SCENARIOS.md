@@ -24,7 +24,7 @@ a self-funded user operation): re-read `src/lib/outpost-routing.ts` before autom
 | F5 | Each migrated member appears once (old wallet hidden once its Society address has a profile) | LO | G | @core | `accounts-directory.spec.ts`. Expected failure, same rate-limit bug: the third page is refused. The test seeds more than two pages |
 | F6 | Empty result "No accounts found"; GraphQL error state | LO | G | @edge | `accounts-directory.spec.ts`: two tests |
 | F7 | "Setup Account" button for a connected user without a profile | NEW | W G | @core | `accounts-directory.spec.ts`: three tests; one is an expected failure (known app bug): an address the subgraph knows without a profile gets no button |
-| F8 | /user/<address> read-only profile (no Edit, no Manage referrals) | LO | G C | @smoke | `public-profile.spec.ts`: two tests; one is an expected failure (known app bug): `?edit=true` opens an edit form on a read-only profile |
+| F8 | /user/<address> read-only profile (no Edit, no Manage referrals); `?edit=true` on it is ignored: the read-only profile, no edit form, for a connected member, for a visitor without a wallet (no prompt to connect) and on the member's own owner wallet (the form saves the Society address) | LO, MEM | W G C | @smoke | `public-profile.spec.ts`: four tests (the `?edit=true` cases are @core, @core and @edge) |
 | F9 | /user/<own Society address> redirects to /profile | MEM | W | @core | `public-profile.spec.ts` |
 | F10 | /user/<not an address> gives 404 | LO | – | @core | `public-profile.spec.ts` |
 | F11 | /user/<legacy wallet>: shows the old profile until the Society address has one, then redirects | LO | G | @core | `public-profile.spec.ts` |

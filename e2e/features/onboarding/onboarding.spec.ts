@@ -72,25 +72,19 @@ test.describe("smart-account onboarding", () => {
 
       codeRead.release();
       await expect(pages.shell.accountButton).toBeVisible();
-      // The reset below is a URL write that nuqs applies up to about 150 ms
-      // after the address changed: wait until it has landed (or, in a fixed
-      // app, until none is pending), so that the checks below see the state
-      // after it and cannot pass on the state before it.
+      // A reset of setupOpen is a URL write that nuqs applies up to about
+      // 150 ms after the address changed: wait until none is pending, so
+      // that the checks below see the state after any such write and cannot
+      // pass on the state before it.
       await pages.onboarding.waitForUrlWritesToSettle();
 
-      // APP BUG, expected to fail until it is fixed: Profile.tsx (the effect
-      // on isConnected and address, lines 26-35) sets setupOpen to false on
-      // every address change after mount. The address goes from undefined
-      // to the Light Account when the code read returns, so the wizard the
-      // user just opened closes and the URL loses setupOpen. The same reset,
-      // landing just after a click, is what made O7 and O13 fail in
-      // onboarding.start() under load. Remove the timeouts with test.fail:
-      // 2 s for the URL, which a fixed app keeps; 5 s for the form, which a
-      // fixed app hides behind the skeleton while it asks the subgraph for
-      // the Light Account's User.
-      test.fail(true, "Profile.tsx closes the wizard when the wallet's identity settles after the click");
-      await expect(page).toHaveURL(/setupOpen=true/, { timeout: 2_000 });
-      await expect(pages.onboarding.form).toBeVisible({ timeout: 5_000 });
+      // The address going from undefined to the Light Account is the
+      // identity settling, not a change of account: the wizard the user just
+      // opened stays open (it may sit behind the skeleton while the subgraph
+      // is asked for the Light Account's User). Profile.tsx used to reset
+      // setupOpen here, which also made O7 and O13 flaky under load.
+      await expect(page).toHaveURL(/setupOpen=true/);
+      await expect(pages.onboarding.form).toBeVisible();
     },
   );
 

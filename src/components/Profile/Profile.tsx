@@ -13,6 +13,7 @@ import { parseAsBoolean, useQueryState } from "nuqs";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { profileView } from "./profileView";
+import { identityLeft } from "@/lib/outpost-routing";
 
 export const Profile = () => {
   const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
@@ -21,21 +22,19 @@ export const Profile = () => {
   );
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useOutpostAccount();
+  const { address } = useOutpostAccount();
   const user = useUserQuery(address);
-  const isInitialMount = useRef(true);
+  const shownAddress = useRef(address);
 
-  // reset accountSetupOpen when user connects/disconnects or address changes
+  // Close the setup when the identity it was opened for goes away
+  // (disconnect, switching accounts). address is undefined while the wallet
+  // is being read, so connecting and the identity settling are not changes:
+  // the URL's setupOpen, or a click made meanwhile, is kept.
   useEffect(() => {
-    // Skip the initial mount to preserve setupOpen from URL
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    // Close the setup whenever connection or address changes
-    // (covers connect, disconnect, and switching accounts)
-    setAccountSetupOpen(false);
-  }, [isConnected, address, setAccountSetupOpen]);
+    const previous = shownAddress.current;
+    shownAddress.current = address;
+    if (identityLeft(previous, address)) setAccountSetupOpen(false);
+  }, [address, setAccountSetupOpen]);
 
   const view = profileView({
     wagmiReady,

@@ -403,8 +403,9 @@ app can answer would hide the fix. Remove the timeout together with `test.fail`.
 A shared step never retries its way around a known bug: that would hide it, and any
 regression of the same kind, in every test that uses the step. It waits for the state in
 which a user is not affected instead, and then acts once. Example: a click on "Setup your
-Account" made while the page still has a URL write pending is undone (C16), so
-`pages.onboarding.start()` first waits until nuqs has none (`waitForUrlWritesToSettle`).
+Account" made while the page still has a URL write pending (the reset of `setupOpen` after
+an account switch) is undone, so `pages.onboarding.start()` first waits until nuqs has none
+(`waitForUrlWritesToSettle`). C16 pins that connecting no longer queues such a reset.
 
 Only real defects are expected failures. A scenario row the app never implemented, or one
 that may be out of date, is `test.fixme` with "owner to decide" until the owner has said which
@@ -673,7 +674,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 |---|---|---|---|---|
 | A Shell, navigation, static content | `shell` | 29 tests: A1 to A9, A10 (Welcome card), A11 to A15 (the top-bar links, the drawer below 900px and the docs banner; one A5 test is fixme: the "What is this?" copy, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
 | B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
-| C Onboarding | `onboarding` | 22 tests: C1 to C19 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
+| C Onboarding | `onboarding` | 22 tests: C1 to C19 | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
 | F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 on its own bug: expected failures) | – | – |

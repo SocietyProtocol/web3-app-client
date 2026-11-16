@@ -429,22 +429,8 @@ test.describe("communities: creating one", () => {
       expect(await chain.isContract(me.address)).toBe(true);
       expect(wallet.sendTransactionRequests()).toHaveLength(2);
       await expect(pages.shell.transactionStepNotice.filter({ hasText: "Step 1 of 2" })).toHaveCount(0);
-
-      // APP BUG, expected to fail until it is fixed: "Step 2 of 2: confirm
-      // the action in your wallet" never shows here. useTransaction's
-      // notify() closes the step-1 notice and at once enqueues the step-2
-      // notice under the same snackbar key (the I7 bug in
-      // features/badge-create). There the step-2 notice is painted for a
-      // moment; here, with the upload's toasts on screen as well, it is not
-      // painted at all (probably queued behind notistack's maxSnack of 3
-      // and removed with the old notice's key).
-      test.fail(true, "the step-2 notice of a community creation is never shown (same snackbar key reused)");
-      // Short on purpose: a fixed app has this on screen when the assertion
-      // starts (its wallet prompt is open). Remove this timeout together
-      // with test.fail.
       await expect(pages.shell.transactionStepNotice.filter({ hasText: "Step 2 of 2" })).toHaveText(
         "Step 2 of 2: confirm the action in your wallet",
-        { timeout: 2_000 },
       );
     },
   );

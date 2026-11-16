@@ -129,24 +129,7 @@ test.describe("badge creation: a new user's unsponsored write", () => {
       const stepOne = pages.shell.transactionStepNotice.filter({ hasText: "Step 1 of 2" });
       const stepTwo = pages.shell.transactionStepNotice.filter({ hasText: "Step 2 of 2" });
       await expect(stepOne).toHaveCount(0);
-
-      // APP BUG, expected to fail until it is fixed: "Step 2 of 2: confirm
-      // the action in your wallet" shows for a moment and then goes away
-      // together with the notice of step 1, while the wallet is still
-      // waiting for the user. useTransaction's notify() closes the notice
-      // (closeSnackbar(key)) and at once enqueues the next one under the
-      // same key; when the closed toast has finished sliding out, notistack
-      // removes the key, and the new toast with it. The same happens to
-      // "Step 2 of 2: ... Free gas is unavailable right now, so your wallet
-      // pays the network fee." after a refused sponsorship (O11). Everything
-      // above this line must pass; only the assertion below is expected to
-      // fail.
-      test.fail(true, "the step-2 notice disappears while the wallet prompt is still open (same snackbar key reused)");
-      // Short on purpose: a known failure should not cost a long wait. A
-      // fixed app has this on screen already when the assertion starts
-      // (the wallet prompt it belongs to is open), so the wait only covers a render. Remove this timeout
-      // together with test.fail.
-      await expect(stepTwo).toBeVisible({ timeout: 2_000 });
+      await expect(stepTwo).toBeVisible();
     },
   );
 

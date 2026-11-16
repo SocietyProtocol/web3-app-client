@@ -15,6 +15,7 @@ import { useUserQuery } from "@/data/users/useUserQuery";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { SearchBox } from "@/components/Common/SearchBox";
 import { AccountsRoleFilter } from "./AccountsRoleFilter";
+import { offersAccountSetup } from "./accountSetup";
 
 export const Accounts = () => {
   const router = useRouter();
@@ -127,7 +128,7 @@ export const Accounts = () => {
             />
           </Box>
 
-          {!user.isLoading && !user.data && (
+          {offersAccountSetup(user) && (
             <Button variant="contained" onClick={handleSetupAccountClick}>
               Setup Account
             </Button>

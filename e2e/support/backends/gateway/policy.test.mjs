@@ -7,7 +7,7 @@ import { fetchBadges } from "@/data/badges/utils";
 import { CommunitySortOption, CommunityTier } from "@/data/communities/types";
 import { fetchCommunities } from "@/data/communities/utils";
 import { CommunityMembersSortOption } from "@/data/community-members/types";
-import { fetchCommunityMembers } from "@/data/community-members/utils";
+import { MAX_NAME_MATCHES, fetchCommunityMembers } from "@/data/community-members/utils";
 import { fetchUsers } from "@/data/users/utils";
 import { GATEWAY_SOURCE, PERSISTED_DOCUMENTS, gatewayRefusal } from "./policy.mjs";
 
@@ -38,9 +38,9 @@ const LIMITS = { status: 400, message: "GraphQL variables exceed operation limit
 const address = (index) => `0x${index.toString(16).padStart(40, "0")}`;
 
 /** The variables of every query the app sends for `fetch`, in order. */
-async function variablesOf(fetch) {
+async function variablesOf(fetch, data = {}) {
   graph.execute.mockReset();
-  graph.execute.mockResolvedValue({ data: { badges: [], communities: [], communityMemberships: [], users: [] } });
+  graph.execute.mockResolvedValue({ data: { badges: [], communities: [], communityMemberships: [], users: [], ...data } });
   await fetch();
   return graph.execute.mock.calls.map((call) => call[1]);
 }
@@ -169,27 +169,45 @@ describe("the app's own filters", () => {
     expect(answer("CommunityMembers", variables)).toBeUndefined();
   });
 
-  // KNOWN GATEWAY BUG, expected to fail until the gateway fix ships and this
-  // snapshot is refreshed (README.md here): the member search of a community
-  // sends `user_: { and: [{ or: [..., { metadata_: { name_contains_nocase } }] }] }`.
-  // The gateway's CommunityMembers policy does not list `metadata_` and allows
-  // a depth of 6, and the search string sits at depth 7. The fix is in
-  // web3-app-subgraph, infra/query-gateway/generated/registry.js: `metadata_`
-  // in the CommunityMembers allowedKeys and maxDepth 7. Remove `.fails` when
-  // refresh.mjs brings that in; K5's member search (community-detail.spec.ts)
-  // turns green at the same time.
-  it.fails("the members tab search passes", async () => {
-    const [variables] = await variablesOf(() => fetchCommunityMembers({ communityId: "116", searchText: "ada" }));
-    expect(answer("CommunityMembers", variables)).toBeUndefined();
+  // The search is two queries: the community's members whose profile name
+  // matches (Users, communities_contains + metadata_), then the memberships
+  // with `user_: { or: [name, address, id_in: <those ids>] }`.
+  it("the members tab search passes, by name and by address", async () => {
+    for (const searchText of ["ada", address(7)]) {
+      const [lookup, members] = await variablesOf(() => fetchCommunityMembers({ communityId: "116", searchText }));
+      expect(lookup.where, searchText).toEqual({ communities_contains: ["116"], metadata_: { name_contains_nocase: searchText } });
+      expect(answer("Users", lookup), searchText).toBeUndefined();
+      expect(members.where.user_.or, searchText).toHaveLength(2);
+      expect(answer("CommunityMembers", members), searchText).toBeUndefined();
+    }
   });
 
-  // Pins the cause of the failure above, so that `.fails` cannot hide another
-  // one. Delete this test together with `.fails`.
-  it("the members tab search is refused for its metadata clause, nothing else", async () => {
-    const [variables] = await variablesOf(() => fetchCommunityMembers({ communityId: "116", searchText: "ada" }));
-    expect(answer("CommunityMembers", variables)).toEqual(LIMITS);
-    const withoutMetadata = structuredClone(variables);
-    withoutMetadata.where.user_.and[0].or = withoutMetadata.where.user_.and[0].or.filter((clause) => !clause.metadata_);
-    expect(answer("CommunityMembers", withoutMetadata)).toBeUndefined();
+  it("the members tab search passes with as many name matches as the lookup returns", async () => {
+    const matches = Array.from({ length: MAX_NAME_MATCHES }, (_, index) => ({ id: address(index + 1) }));
+    const [lookup, members] = await variablesOf(
+      () => fetchCommunityMembers({ communityId: "116", searchText: "ada" }),
+      { users: matches },
+    );
+    expect(lookup.first).toBe(MAX_NAME_MATCHES);
+    expect(members.where.user_.or.at(-1)).toEqual({ id_in: matches.map((user) => user.id) });
+    expect(answer("CommunityMembers", members)).toBeUndefined();
+  });
+
+  // The filter the search sent before it looked the names up first: graph-node
+  // refuses it (two child-filter levels), and so does the gateway.
+  it("the old nested member search filter is refused", () => {
+    const old = {
+      first: 10,
+      skip: 0,
+      orderBy: "joinActivity__timestamp",
+      orderDirection: "desc",
+      where: {
+        community_: { id: "116" },
+        user_: {
+          and: [{ or: [{ name_contains_nocase: "ada" }, { id: "ada" }, { metadata_: { name_contains_nocase: "ada" } }] }],
+        },
+      },
+    };
+    expect(answer("CommunityMembers", old)).toEqual(LIMITS);
   });
 });

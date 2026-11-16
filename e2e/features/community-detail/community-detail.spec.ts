@@ -407,20 +407,7 @@ test.describe("community detail: looking at a community", () => {
 
       // A part of a name: "Member 2" is in Member 20 to 23. No pages, nothing more to load.
       await detail.membersSearchInput.fill("member 2");
-      // QUERY GATEWAY BUG (seen on staging and production; the subgraph fake
-      // applies the gateway's policy since e2e/support/backends/gateway),
-      // expected to fail until the gateway fix ships and the snapshot there is
-      // refreshed: the search sends CommunityMembers with
-      // `user_: { and: [{ or: [..., { metadata_: { name_contains_nocase } }] }] }`.
-      // The gateway's CommunityMembers policy does not list `metadata_` and
-      // allows a depth of 6, the search string is at depth 7, so every search
-      // is refused with a 400. The fix is in web3-app-subgraph,
-      // infra/query-gateway/generated/registry.js: `metadata_` in the
-      // CommunityMembers allowedKeys and maxDepth 7. Everything above this
-      // line must pass. Remove test.fail, the timeout below and `.fails` in
-      // e2e/support/backends/gateway/policy.test.mjs together.
-      test.fail(true, "the query gateway refuses the member search filter (metadata_, depth 7)");
-      await expect(detail.memberRows).toHaveCount(4, { timeout: 5_000 });
+      await expect(detail.memberRows).toHaveCount(4);
       expect(await detail.memberAddresses()).toEqual(addresses(newestFirst.slice(0, 4)));
       await expect(detail.pageButton(1)).toHaveCount(0);
       await expect(detail.nextPageButton).toHaveCount(0);

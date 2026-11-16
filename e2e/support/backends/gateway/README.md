@@ -52,9 +52,9 @@ yarn test
 ```
 
 Commit `registry.cjs` and `source.json` together, with the test changes the new policy
-brings: a test marked as an expected failure because of the gateway (K5's member search) turns
-red once the snapshot holds the fix. Remove its `test.fail` (and `.fails` in
-`policy.test.mjs`) in the same commit.
+brings: a test marked as an expected failure because of the gateway turns red once the
+snapshot holds the fix. Remove its `test.fail` (or `.fails` in `policy.test.mjs`) in the same
+commit.
 
 If `refresh.mjs` stops because the gateway's validation code changed, read the diff it prints,
 port the change to `policy.mjs`, add a case to `policy.test.mjs`, and run it again with

@@ -18,7 +18,7 @@ type Variant = "header" | "drawer";
 type ResponsiveSize = number | Partial<Record<Breakpoint, number>>;
 
 // Header: compact (40px circles) from md, full (48px) from lg.
-// Drawer: 40px circles, wrapping onto a second line.
+// Drawer: 40px circles, pills on one row and circles on the next.
 const SIZES = {
   header: {
     circle: { md: 40, lg: 48 },
@@ -214,27 +214,50 @@ interface SocialLinksProps {
   sx?: SxProps<Theme>;
 }
 
-export const SocialLinks = ({ variant, sx }: SocialLinksProps) => (
-  <Box
-    component="nav"
-    aria-label="Society Protocol links"
-    data-testid="shell-social-links"
-    sx={[
-      {
-        display: "flex",
-        alignItems: "center",
-        flexWrap: variant === "drawer" ? "wrap" : "nowrap",
-        gap: SIZES[variant].gap,
-      },
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
-  >
-    {getSocialLinks().map((link) =>
-      link.kind === "pill" ? (
-        <PillLink key={link.id} link={link} variant={variant} />
+const renderLink = (link: SocialLink, variant: Variant) =>
+  link.kind === "pill" ? (
+    <PillLink key={link.id} link={link} variant={variant} />
+  ) : (
+    <CircleLink key={link.id} link={link} variant={variant} />
+  );
+
+const rowSx = (variant: Variant) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: SIZES[variant].gap,
+});
+
+export const SocialLinks = ({ variant, sx }: SocialLinksProps) => {
+  const links = getSocialLinks();
+  return (
+    <Box
+      component="nav"
+      aria-label="Society Protocol links"
+      data-testid="shell-social-links"
+      sx={[
+        variant === "drawer"
+          ? { display: "flex", flexDirection: "column", gap: 1 }
+          : rowSx(variant),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      {variant === "drawer" ? (
+        // The drawer is too narrow for one row: pills first, then circles.
+        <>
+          <Box sx={rowSx(variant)}>
+            {links
+              .filter((l) => l.kind === "pill")
+              .map((l) => renderLink(l, variant))}
+          </Box>
+          <Box sx={rowSx(variant)}>
+            {links
+              .filter((l) => l.kind === "icon")
+              .map((l) => renderLink(l, variant))}
+          </Box>
+        </>
       ) : (
-        <CircleLink key={link.id} link={link} variant={variant} />
-      ),
-    )}
-  </Box>
-);
+        links.map((l) => renderLink(l, variant))
+      )}
+    </Box>
+  );
+};

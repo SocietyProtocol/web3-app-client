@@ -372,7 +372,9 @@ test.describe("badge creation", () => {
       // After "Badge created successfully" the wizard goes to the
       // community's Badges tab, which lists the new badge.
       await expect(page).toHaveURL(new RegExp(`/communities/${community.id}\\?tab=badges$`));
-      await expect(page.locator(`[data-testid="badge-card"][data-badge-id="${created.id}"]`)).toContainText(name);
+      // The tab's cards are CommunityBadge ("community-badge"), not the
+      // BadgeCard of /badges and the profile ("badge-card").
+      await expect(pages.communityDetail.badgeCard(created.id)).toContainText(name);
     },
   );
 });

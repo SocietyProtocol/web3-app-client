@@ -650,6 +650,44 @@ describe("forwardAaRpc", () => {
     }
   });
 
+  it("gives the createProfile allowances back when Pimlico signs nothing", async () => {
+    const create = await paymasterDataRequest();
+    const failures: Array<() => Promise<Response>> = [
+      async () => Response.json({ jsonrpc: "2.0", id: 1, error: { code: -32500, message: "denied" } }),
+      async () => new Response("bad gateway", { status: 502 }),
+      async () => {
+        throw new TypeError("fetch failed");
+      },
+    ];
+    const start = Date.now();
+    vi.useFakeTimers({ now: start });
+    for (const [i, failure] of failures.entries()) {
+      vi.setSystemTime(start + i * 60_000);
+      vi.stubGlobal("fetch", vi.fn(failure));
+      expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.40")))).toBeDefined();
+    }
+    // Neither the visitor's daily allowance nor the app-wide slot was used.
+    mockFetch(canonical);
+    vi.setSystemTime(start + 3 * 60_000);
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.40")))).toBeUndefined();
+    vi.useRealTimers();
+  });
+
+  it("keeps the allowance spent once Pimlico has signed, even if nothing is sent", async () => {
+    // The paymaster signature can be submitted to any bundler, so a signed
+    // create counts whether or not the owner then signs and sends it here.
+    vi.stubEnv("SPONSORED_PROFILE_INTERVAL_SECONDS", "0");
+    resetAaRateLimits();
+    mockFetch(canonical);
+    const create = await paymasterDataRequest();
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.41")))).toBeUndefined();
+    vi.useFakeTimers({ now: Date.now() + 10 * 60_000 });
+    expect((await rpcError(await forwardAaRpc(post(create, "198.51.100.41"))))?.message).toBe(
+      "Daily sponsored profile limit reached",
+    );
+    vi.useRealTimers();
+  });
+
   it("refuses when Pimlico is not configured", async () => {
     mockFetch(canonical);
     vi.stubEnv("PIMLICO_API_KEY", "");

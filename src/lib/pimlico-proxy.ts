@@ -225,12 +225,15 @@ export function aaRpcHealth() {
 
 const RATE_LIMITED = -32005;
 
-/** Rate limits, then the on-chain sender check. Order keeps RPC work behind the IP limit. */
+/**
+ * Rate limits, then the on-chain sender check. Order keeps RPC work behind the IP limit.
+ * release, when set, gives back an allowance if Pimlico returns no signature.
+ */
 async function admitAaRpc(
   request: Request,
   chainId: number,
   review: AaRpcReview,
-): Promise<{ ok: true } | { ok: false; message: string; code: number }> {
+): Promise<{ ok: true; release?: () => void } | { ok: false; message: string; code: number }> {
   if (review.kind === "read") return { ok: true };
 
   const ip = clientIp(request.headers);
@@ -280,6 +283,7 @@ async function admitAaRpc(
     if (review.signsProfileCreate) {
       const created = takeProfileCreate(ip);
       if (!created.ok) return { ok: false, message: created.message, code: RATE_LIMITED };
+      return { ok: true, release: created.release };
     }
   }
   return { ok: true };
@@ -290,6 +294,16 @@ export function jsonRpcError(id: unknown, message: string, code = -32602) {
     { jsonrpc: "2.0", id: id ?? null, error: { code, message } },
     { status: 200, headers: { "cache-control": "no-store" } },
   );
+}
+
+/** Whether a JSON-RPC response body carries a result rather than an error. */
+function hasRpcResult(text: string) {
+  try {
+    const body = JSON.parse(text) as unknown;
+    return isPlainObject(body) && !("error" in body) && body.result !== undefined;
+  } catch {
+    return false;
+  }
 }
 
 export async function forwardAaRpc(request: Request) {
@@ -346,6 +360,7 @@ export async function forwardAaRpc(request: Request) {
       cache: "no-store",
     });
     const text = await upstream.text();
+    if (!upstream.ok || !hasRpcResult(text)) admitted.release?.();
     return new Response(text, {
       status: upstream.status,
       headers: {
@@ -354,6 +369,7 @@ export async function forwardAaRpc(request: Request) {
       },
     });
   } catch {
+    admitted.release?.();
     return jsonRpcError(requestId, "Sponsorship provider did not respond", -32603);
   } finally {
     clearTimeout(timer);

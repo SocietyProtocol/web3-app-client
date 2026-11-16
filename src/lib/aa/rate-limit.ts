@@ -25,6 +25,15 @@ export class TokenBucketLimiter {
     return this.tokens(key, now) >= 1;
   }
 
+  /** Gives back one token taken from key, up to the capacity. */
+  give(key: string, now = Date.now()) {
+    if (!this.buckets.has(key)) return;
+    this.buckets.set(key, {
+      tokens: Math.min(this.capacity, this.tokens(key, now) + 1),
+      at: now,
+    });
+  }
+
   /** Takes one token for key. Returns false when the bucket is empty. */
   take(key: string, now = Date.now()) {
     const bucket = this.buckets.get(key);
@@ -142,12 +151,18 @@ export function profileCreateLimitsFromEnv(env: Record<string, string | undefine
 /** The app-wide bucket has a single key. */
 const APP_KEY = "app";
 
+/**
+ * One daily bucket holds a visitor for a whole day after a create, and a full
+ * map refuses new visitors, so it tracks more of them than the minute limits.
+ */
+const PROFILE_CREATE_IP_KEYS = 100_000;
+
 function buildProfileCreateLimiters() {
   const limits = profileCreateLimitsFromEnv();
   return {
     byIp:
       limits.perIpPerDay > 0
-        ? new TokenBucketLimiter(limits.perIpPerDay, DAY_MS)
+        ? new TokenBucketLimiter(limits.perIpPerDay, DAY_MS, PROFILE_CREATE_IP_KEYS)
         : undefined,
     app:
       limits.appIntervalSeconds > 0
@@ -159,27 +174,64 @@ function buildProfileCreateLimiters() {
 let profileCreateLimiters: ReturnType<typeof buildProfileCreateLimiters> | undefined;
 
 /**
+ * The per-visitor key for createProfile. An IPv6 visitor is keyed on its /64,
+ * the block one subscriber usually gets, so rotating addresses inside it does
+ * not buy more free accounts. Returns undefined for "unknown" (no client IP
+ * header reached the app): those visitors would all share one key, so only the
+ * app-wide limit applies to them.
+ */
+export function profileCreateIpKey(ip: string) {
+  if (ip === "unknown") return undefined;
+  if (!ip.includes(":")) return ip;
+  const [head, tail = ""] = ip.toLowerCase().split("::");
+  const groups = head ? head.split(":") : [];
+  // With "::", the groups before it are followed by zeros.
+  if (ip.includes("::")) {
+    const tailGroups = tail ? tail.split(":") : [];
+    while (groups.length + tailGroups.length < 8) groups.push("0");
+    groups.push(...tailGroups);
+  }
+  return `${groups
+    .slice(0, 4)
+    .map((group) => group.replace(/^0+(?=.)/, ""))
+    .join(":")}::/64`;
+}
+
+/**
  * Spends one sponsored createProfile for this visitor IP and one app-wide.
  * Both are checked before either is spent, so a refusal by one limit does
- * not use up the other.
+ * not use up the other. On success, release() gives both back; the proxy
+ * calls it when Pimlico returns no paymaster signature.
+ *
+ * The allowance is spent when the paymaster signs, not when the UserOp is
+ * sent: that signature can be submitted to any bundler, so it is the thing
+ * being limited. A user who then cancels the wallet prompt has still used
+ * the allowance, and anyone can hold the app-wide slot by asking for
+ * signatures they never submit (see DEPLOYMENT.md, "Sponsorship limits").
  */
 export function takeProfileCreate(
   ip: string,
   now = Date.now(),
-): { ok: true } | { ok: false; message: string } {
+): { ok: true; release: (now?: number) => void } | { ok: false; message: string } {
   profileCreateLimiters ??= buildProfileCreateLimiters();
   const { byIp, app } = profileCreateLimiters;
-  if (byIp && !byIp.has(ip, now)) {
-    return { ok: false, message: "Daily sponsored profile limit reached" };
-  }
+  const ipKey = profileCreateIpKey(ip);
+  const perIp = byIp && ipKey !== undefined ? { limiter: byIp, key: ipKey } : undefined;
+  const daily = { ok: false as const, message: "Daily sponsored profile limit reached" };
+  if (perIp && !perIp.limiter.has(perIp.key, now)) return daily;
   if (app && !app.has(APP_KEY, now)) {
+    console.warn("Sponsored profile refused by the app-wide limit");
     return { ok: false, message: "Sponsored profile limit reached, try again in a few minutes" };
   }
-  if (byIp && !byIp.take(ip, now)) {
-    return { ok: false, message: "Daily sponsored profile limit reached" };
-  }
+  if (perIp && !perIp.limiter.take(perIp.key, now)) return daily;
   app?.take(APP_KEY, now);
-  return { ok: true };
+  return {
+    ok: true,
+    release: (at = Date.now()) => {
+      perIp?.limiter.give(perIp.key, at);
+      app?.give(APP_KEY, at);
+    },
+  };
 }
 
 /** Clears every count. The createProfile limits re-read the environment. */

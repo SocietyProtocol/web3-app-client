@@ -79,7 +79,9 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const entry = SLUG_MAP[slug];
+  // Own keys only: "constructor", "toString" and other names an object
+  // inherits are unknown slugs too.
+  const entry = Object.hasOwn(SLUG_MAP, slug) ? SLUG_MAP[slug] : undefined;
 
   if (!entry) {
     return new Response("Not Found", { status: 404 });

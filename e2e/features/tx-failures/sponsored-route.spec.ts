@@ -259,22 +259,12 @@ test.describe("the sponsored route", () => {
       await expect(pages.onboarding.submitButton).toHaveText("Finish");
       await expect(pages.onboarding.submitButton).toBeEnabled();
 
-      // APP BUG, expected to fail until it is fixed: the toast reads
-      // "Execution reverted with reason: custom error 0x6e8a1b0a." instead
-      // of "Profile already exists". 0x6e8a1b0a is the selector of the
-      // badges contract's ProfileAlreadyExists(). wagmi's wait for the
-      // receipt replays a reverted transaction without an ABI, so the
-      // error that reaches useTransaction carries the raw selector and not
-      // the decoded error name that parseErrorMessage maps to the app's
-      // wording (CONTRACT_ERROR_MESSAGES). The same call refused before it
-      // is sent does get the app's wording (O13). Everything above this line
-      // must pass; only the assertion below is expected to fail.
-      test.fail(true, "an on-chain revert is reported with a raw custom-error selector, not the app's message");
-      // Short on purpose: a known failure should not cost a long wait. A
-      // fixed app has this on screen already when the assertion starts
-      // (the error toast is up, checked above, and its text does not change), so the wait only covers a render. Remove this timeout
-      // together with test.fail.
-      await expect(pages.shell.transactionToast("error")).toHaveText("Profile already exists", { timeout: 2_000 });
+      // The toast names the contract's error (ProfileAlreadyExists(),
+      // selector 0x6e8a1b0a) in the app's wording, as it does when the same
+      // call is refused before it is sent (O13). wagmi's wait for the receipt
+      // replays the reverted transaction without an ABI; useTransaction
+      // decodes that raw revert with the ABI of the call it sent.
+      await expect(pages.shell.transactionToast("error")).toHaveText("Profile already exists");
     },
   );
 });

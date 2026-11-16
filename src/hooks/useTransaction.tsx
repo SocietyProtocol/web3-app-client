@@ -19,7 +19,7 @@ import { getPublicClient } from "wagmi/actions";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { useEstimateGas } from "@/hooks/useEstimateGas";
-import { parseErrorMessage } from "@/utils/errors";
+import { parseErrorMessage, withDecodedRevert } from "@/utils/errors";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
@@ -160,6 +160,8 @@ export const useTransaction = ({
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
   const handledTxHashRef = useRef<Hex | undefined>(undefined);
+  // The call behind txHash, to name the contract error if it reverts on chain.
+  const sentCallRef = useRef<ExecuteTransactionParams | undefined>(undefined);
 
   const invalidateOnSuccessStable = useStableArray(
     queryKeysToInvalidateOnSuccess,
@@ -250,6 +252,12 @@ export const useTransaction = ({
       const finalValue = params?.value ?? value;
 
       if (!enabled || !finalAddress || !finalAbi || !finalFunctionName) return;
+      sentCallRef.current = {
+        address: finalAddress,
+        abi: finalAbi,
+        functionName: finalFunctionName,
+        args: finalArgs,
+      };
 
       // Reset previous transaction state when starting a new transaction
       if (status === "success" || status === "error") {
@@ -476,15 +484,19 @@ export const useTransaction = ({
       if (txReceipt.status === "error") {
         if (handledTxHashRef.current === txHash) return;
         handledTxHashRef.current = txHash;
+        const sentCall = sentCallRef.current;
+        const error = sentCall
+          ? withDecodedRevert(txReceipt.error, sentCall)
+          : txReceipt.error;
         queueMicrotask(async () => {
           setStatus("error");
           if (!suppressErrorSnackbar) {
-            enqueueSnackbar(parseErrorMessage(txReceipt.error, errorMessage), {
+            enqueueSnackbar(parseErrorMessage(error, errorMessage), {
               variant: "error",
               key: `${snackbarKeyPrefixFinal}-error`,
             });
           }
-          onError?.(txReceipt.error);
+          onError?.(error);
         });
       } else if (txReceipt.status === "success" && shouldWait) {
         if (handledTxHashRef.current === txHash) return;

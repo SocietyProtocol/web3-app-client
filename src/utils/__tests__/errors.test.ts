@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { BaseError, HttpRequestError } from "viem";
+import {
+  BaseError,
+  CallExecutionError,
+  ExecutionRevertedError,
+  HttpRequestError,
+  RpcRequestError,
+  toFunctionSelector,
+} from "viem";
 import {
   InsufficientPrefundError,
   PaymasterFunctionRevertedError,
@@ -9,7 +16,12 @@ import {
   UserOperationSignatureError,
 } from "viem/account-abstraction";
 import { ResponseError } from "@/errors/ResponseError";
-import { parseAccountAbstractionError, parseErrorMessage } from "@/utils/errors";
+import {
+  parseAccountAbstractionError,
+  parseErrorMessage,
+  withDecodedRevert,
+} from "@/utils/errors";
+import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { SponsorshipUnavailableError } from "@/lib/aa/errors";
 import { walletNeedsEthMessage } from "@/lib/owner-pays";
 
@@ -150,5 +162,47 @@ describe("parseErrorMessage account abstraction errors", () => {
       "Your wallet 0x0000000000000000000000000000000000000001 needs about 0.001 ETH to pay the network fee for this action",
     );
     expect(parseErrorMessage(new Error(message))).toBe(message);
+  });
+});
+
+describe("withDecodedRevert", () => {
+  const createProfile = {
+    abi: SocietyProtocolBadgesABI,
+    functionName: "createProfile",
+    args: ["ipfs://profile"],
+  };
+
+  // What wagmi's wait for a receipt throws for a reverted transaction: it
+  // replays the call without an ABI, and the node answers with the raw data.
+  function replayedRevert(data: `0x${string}`) {
+    const rpc = new RpcRequestError({
+      body: { method: "eth_call" },
+      error: { code: 3, message: `execution reverted: custom error ${data}`, data },
+      url: "http://localhost",
+    });
+    return new CallExecutionError(
+      new ExecutionRevertedError({ cause: rpc, message: rpc.details }),
+      {},
+    );
+  }
+
+  it("names an on-chain revert with the app's message for that contract error", () => {
+    const error = replayedRevert(toFunctionSelector("ProfileAlreadyExists()"));
+    expect(parseErrorMessage(error, "Transaction failed")).toMatch(/custom error 0x/);
+
+    expect(parseErrorMessage(withDecodedRevert(error, createProfile), "Transaction failed")).toBe(
+      "Profile already exists",
+    );
+  });
+
+  it("leaves revert data the ABI does not know, and other errors, as they were", () => {
+    const unknown = replayedRevert("0xdeadbeef");
+    expect(withDecodedRevert(unknown, createProfile)).toBe(unknown);
+
+    const other = new HttpRequestError({ url: "/api/aa/rpc", status: 500 });
+    expect(withDecodedRevert(other, createProfile)).toBe(other);
+
+    const plain = new Error("unknown reason");
+    expect(withDecodedRevert(plain, createProfile)).toBe(plain);
   });
 });

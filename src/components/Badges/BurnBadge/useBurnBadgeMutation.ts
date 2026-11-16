@@ -6,10 +6,13 @@ import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeBurnTransfer } from "@/data/badges/decodeUtils";
+import { burnBadgeCallArgs } from "../badgeAmount";
 
 interface BadgeBurnData {
   id: bigint;
   holder: Hex;
+  /** Copies to burn (default 1); at most the holder's balance. */
+  amount?: bigint;
 }
 
 interface UseBurnBadgeMutationProps {
@@ -30,7 +33,7 @@ export const useBurnBadgeMutation = ({
     address: useChainVar(contracts.badges),
     abi: SocietyProtocolBadgesABI,
     functionName: "burn",
-    args: args ? [args.holder, args.id, BigInt(1)] : undefined,
+    args: args ? burnBadgeCallArgs(args) : undefined,
     successMessage,
     queryKeysToInvalidateOnSuccess: [
       ["badge", args?.id.toString()],
@@ -39,6 +42,9 @@ export const useBurnBadgeMutation = ({
       ["community"],
       ["community-members"],
       ["community-members-infinite"],
+      // On-chain balances (holder amounts, the burn tab's maximum).
+      ["readContract"],
+      ["readContracts"],
     ],
     onSuccess: (receipt) => {
       const burn = decodeBurnTransfer(receipt);

@@ -676,7 +676,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
 | C Onboarding | `onboarding` | 22 tests: C1 to C19 | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
-| E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
+| E Invites and referrals | `referrals` | 15 tests: E1 to E10 | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
 | F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (one F7 fails on its own bug: an expected failure) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 | – | G12 with only `totalSupply` failing. |
 | H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 | – | H12 declined signature: a mint asks for none. H13 for Burn. |

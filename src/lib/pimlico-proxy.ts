@@ -2,6 +2,11 @@ import { isAddress, isAddressEqual, isHex, toHex } from "viem";
 import { userOperationWithinCaps } from "@/lib/aa/limits";
 import { aaRateLimits, clientIp } from "@/lib/aa/rate-limit";
 import { verifyDeployedLightAccount } from "@/lib/aa/sender-check";
+import {
+  FIRST_BADGE_REASONS,
+  firstBadgeEligibility,
+  sponsorFirstBadgeEnabled,
+} from "@/lib/aa/first-badge";
 import { e2eOverride } from "@/lib/e2e-overrides";
 import {
   ENTRY_POINT_V07,
@@ -10,6 +15,7 @@ import {
   badgesFunctionNames,
   supportedAaChainId,
   userOperationHasFactory,
+  userOperationIsFreeBadge,
   userOperationIsSponsored,
   userOperationMayRelay,
 } from "@/lib/smart-account";
@@ -84,6 +90,15 @@ export type AaRpcReview = {
   signsProfileUpdate: boolean;
   /** acceptInvite calls in a paymaster call that signs their sponsorship. */
   signedInviteAccepts: number;
+  /**
+   * Paymaster call for the free first badge (SPONSOR_FIRST_BADGE on): the
+   * sender must still have it, checked in admitAaRpc.
+   */
+  freeBadge: boolean;
+  /** freeBadge, and the call signs the sponsorship. */
+  signsFreeBadge: boolean;
+  /** The UserOp's nonce as sent, for the free badge's nonce check. */
+  nonce?: string;
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -104,6 +119,8 @@ export function reviewAaRpc(input: {
   chainId: number;
   request: unknown;
   policyId?: string;
+  /** SPONSOR_FIRST_BADGE is on for this request. */
+  sponsorFirstBadge?: boolean;
 }):
   | { ok: true; body: JsonRpcRequest; review: AaRpcReview }
   | { ok: false; message: string } {
@@ -130,6 +147,8 @@ export function reviewAaRpc(input: {
     needsDeployedSender: false,
     signsProfileUpdate: false,
     signedInviteAccepts: 0,
+    freeBadge: false,
+    signsFreeBadge: false,
   };
 
   if (isBundler || isPaymaster) {
@@ -151,7 +170,9 @@ export function reviewAaRpc(input: {
 
     const op = userOp as UserOperationShape;
     const decision = isPaymaster
-      ? userOperationIsSponsored(op, input.chainId)
+      ? userOperationIsSponsored(op, input.chainId, {
+          firstBadge: !!input.sponsorFirstBadge,
+        })
       : userOperationMayRelay(op, input.chainId);
     if (!decision.ok) return { ok: false, message: decision.reason };
 
@@ -173,6 +194,10 @@ export function reviewAaRpc(input: {
     review.signedInviteAccepts = signedFunctions.filter(
       (name) => name === "acceptInvite",
     ).length;
+    review.freeBadge =
+      isPaymaster && !!input.sponsorFirstBadge && userOperationIsFreeBadge(op, input.chainId);
+    review.signsFreeBadge = review.freeBadge && SIGNING_PAYMASTER_METHODS.has(request.method);
+    if (review.freeBadge) review.nonce = typeof op.nonce === "string" ? op.nonce : undefined;
 
     if (request.method === "eth_sendUserOperation") params.length = 2;
     if (request.method === "eth_estimateUserOperationGas" && params.length > 3) {
@@ -267,6 +292,30 @@ async function admitAaRpc(
         code: RATE_LIMITED,
       };
     }
+    if (review.freeBadge) {
+      if (
+        review.signsFreeBadge &&
+        !aaRateLimits.firstBadgeSignaturesBySender.take(senderKey)
+      ) {
+        return {
+          ok: false,
+          message: "Daily free badge sponsorship limit reached",
+          code: RATE_LIMITED,
+        };
+      }
+      const eligibility = await firstBadgeEligibility({
+        chainId,
+        sender: review.sender,
+        userOpNonce: review.nonce ?? "missing",
+      });
+      if (!eligibility.eligible) {
+        return {
+          ok: false,
+          message: FIRST_BADGE_REASONS[eligibility.reason],
+          code: -32602,
+        };
+      }
+    }
     // One token per acceptInvite, so a batch cannot stretch the allowance.
     for (let accepted = 0; accepted < review.signedInviteAccepts; accepted += 1) {
       if (!aaRateLimits.inviteAcceptsBySender.take(senderKey)) {
@@ -316,6 +365,7 @@ export async function forwardAaRpc(request: Request) {
     chainId,
     request: parsed,
     policyId: sponsorshipPolicyId(),
+    sponsorFirstBadge: sponsorFirstBadgeEnabled(request),
   });
   const requestId =
     parsed && typeof parsed === "object" && "id" in parsed

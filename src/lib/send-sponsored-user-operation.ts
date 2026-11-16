@@ -43,6 +43,8 @@ export async function sendSponsoredUserOperation(params: {
   functionName: string;
   args?: readonly unknown[];
   value?: bigint;
+  /** The server said this account still has its free first badge. */
+  firstBadge?: boolean;
 }): Promise<Hex> {
   if (!supportedAaChainId(params.chainId)) {
     throw new Error("Smart accounts are only enabled on Ethereum and Sepolia");
@@ -56,7 +58,12 @@ export async function sendSponsoredUserOperation(params: {
     functionName: params.functionName,
     args: params.args ?? [],
   });
-  if (!isSponsoredBadgesCall({ chainId: params.chainId, to: params.to, data })) {
+  if (
+    !isSponsoredBadgesCall(
+      { chainId: params.chainId, to: params.to, data },
+      { firstBadge: params.firstBadge },
+    )
+  ) {
     throw new Error("This call is not sponsored");
   }
 

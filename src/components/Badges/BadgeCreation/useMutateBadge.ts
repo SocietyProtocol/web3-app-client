@@ -9,6 +9,7 @@ import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
+import { FIRST_BADGE_QUERY_KEY } from "@/hooks/useFirstBadgeSponsorship";
 import {
   decodeBadgeCreatedEvents,
   decodeBadgePermissions,
@@ -40,6 +41,8 @@ export const useMutateBadge = ({
     queryKeysToInvalidateOnSuccess: [
       ["badges"],
       ["badge"],
+      // The free first badge is used up once a badge exists.
+      [FIRST_BADGE_QUERY_KEY],
       ...(communityId ? [["community", communityId], ["communities"]] : []),
     ],
     onSuccess: (transactionReceipt) => {

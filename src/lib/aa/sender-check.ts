@@ -38,7 +38,12 @@ export function serverRpcUrl(chainId: number) {
   return PUBLIC_RPC[chainId];
 }
 
-async function rpc(chainId: number, method: string, params: unknown[]): Promise<unknown> {
+/** One JSON-RPC call to the server's own node (serverRpcUrl). Throws on any error. */
+export async function serverRpc(
+  chainId: number,
+  method: string,
+  params: unknown[],
+): Promise<unknown> {
   const url = serverRpcUrl(chainId);
   if (!url) throw new Error("No RPC for chain");
   const controller = new AbortController();
@@ -94,9 +99,9 @@ export async function verifyDeployedLightAccount(
   let owner: unknown;
   try {
     [code, slot, owner] = await Promise.all([
-      rpc(chainId, "eth_getCode", [sender, "latest"]),
-      rpc(chainId, "eth_getStorageAt", [sender, ERC1967_IMPLEMENTATION_SLOT, "latest"]),
-      rpc(chainId, "eth_call", [{ to: sender, data: OWNER_SELECTOR }, "latest"]),
+      serverRpc(chainId, "eth_getCode", [sender, "latest"]),
+      serverRpc(chainId, "eth_getStorageAt", [sender, ERC1967_IMPLEMENTATION_SLOT, "latest"]),
+      serverRpc(chainId, "eth_call", [{ to: sender, data: OWNER_SELECTOR }, "latest"]),
     ]);
   } catch {
     return { ok: false, reason: "Could not verify the account on-chain" };

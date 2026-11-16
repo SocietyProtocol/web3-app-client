@@ -32,3 +32,22 @@ export function e2eOverride(name: E2eOverrideName): string | undefined {
   if (!e2eHermeticEnabled()) return undefined;
   return process.env[name] || undefined;
 }
+
+/**
+ * Per-test switches a hermetic browser test sets as a cookie, for app
+ * behaviour that one stack (one server environment) must show both ways.
+ * Only names listed here exist. Honoured under the same lock as the
+ * overrides above: anywhere else, including staging and production, this
+ * is always false whatever the request carries.
+ */
+export type E2eRequestSwitchName =
+  /** Turns on the free first badge (lib/aa/first-badge) for this request. */
+  "e2e-sponsor-first-badge";
+
+export function e2eRequestSwitch(request: Request, name: E2eRequestSwitchName): boolean {
+  if (!e2eHermeticEnabled()) return false;
+  const cookies = request.headers.get("cookie") ?? "";
+  return cookies
+    .split(";")
+    .some((part) => part.trim() === `${name}=1`);
+}

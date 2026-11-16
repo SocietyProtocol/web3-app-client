@@ -63,6 +63,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_AUCTION_ID`            | ID of the specific auction to interact with                                                      | `1`                        |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project token used to enable client-side analytics, pageviews, and custom event tracking | `phc_abc123...`            |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com` | `https://us.i.posthog.com` |
+| `SPONSOR_FIRST_BADGE`               | Server-only. `true` makes Society pay the gas of each Society account's first badge (a plain `createBadge`: not official, not a community badge). Any other value, or unset, leaves every badge paid by the owner wallet. Read at runtime: no rebuild needed. See `src/lib/aa/first-badge.ts`. | `true` |
 
 > **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `FILEBASE_SECRET`) in a `NEXT_PUBLIC_` variable. PostHog analytics stay disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 

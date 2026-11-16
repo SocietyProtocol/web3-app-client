@@ -83,6 +83,16 @@ export const PROFILE_UPDATES_PER_SENDER_PER_DAY = 10;
  */
 export const INVITE_ACCEPTS_PER_SENDER_PER_DAY = 5;
 
+/**
+ * Sponsorship signatures for the free first badge per sender per day. Only
+ * one free badge can ever land (lib/aa/first-badge pins the nonce); this
+ * covers a retry after a declined wallet prompt without letting one visitor
+ * collect a pile of signed sponsorships.
+ */
+export const FIRST_BADGE_SIGNATURES_PER_SENDER_PER_DAY = 3;
+/** GET /api/aa/first-badge per IP: each answer costs subgraph and node reads. */
+export const FIRST_BADGE_CHECKS_PER_IP_PER_MINUTE = 20;
+
 export const aaRateLimits = {
   paymasterByIp: new TokenBucketLimiter(PAYMASTER_PER_IP_PER_MINUTE, MINUTE_MS),
   paymasterBySender: new TokenBucketLimiter(PAYMASTER_PER_SENDER_PER_MINUTE, MINUTE_MS),
@@ -94,6 +104,14 @@ export const aaRateLimits = {
   inviteAcceptsBySender: new TokenBucketLimiter(
     INVITE_ACCEPTS_PER_SENDER_PER_DAY,
     DAY_MS,
+  ),
+  firstBadgeSignaturesBySender: new TokenBucketLimiter(
+    FIRST_BADGE_SIGNATURES_PER_SENDER_PER_DAY,
+    DAY_MS,
+  ),
+  firstBadgeChecksByIp: new TokenBucketLimiter(
+    FIRST_BADGE_CHECKS_PER_IP_PER_MINUTE,
+    MINUTE_MS,
   ),
 };
 

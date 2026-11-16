@@ -3,7 +3,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 vi.mock("server-only", () => ({}));
 
-import { e2eHermeticEnabled, e2eOverride } from "@/lib/e2e-overrides";
+import { e2eHermeticEnabled, e2eOverride, e2eRequestSwitch } from "@/lib/e2e-overrides";
 import { serverRpcUrl } from "@/lib/aa/sender-check";
 import { aaUpstreamUrl } from "@/lib/pimlico-proxy";
 import { filebaseClientConfig } from "@/lib/filebase";
@@ -80,6 +80,23 @@ describe("e2eOverride", () => {
     vi.stubEnv("E2E_RPC_URL", "");
     expect(e2eOverride("E2E_RPC_URL")).toBeUndefined();
     expect(serverRpcUrl(SEPOLIA)).toBe(PUBLIC_SEPOLIA_RPC);
+  });
+});
+
+describe("e2eRequestSwitch", () => {
+  const withCookie = (cookie: string) =>
+    new Request("http://127.0.0.1/api/aa/first-badge", { headers: { cookie } });
+
+  it.each(IGNORED)("is off whatever the request carries when %s", (_, mode) => {
+    stubOverrides(mode);
+    expect(e2eRequestSwitch(withCookie("e2e-sponsor-first-badge=1"), "e2e-sponsor-first-badge")).toBe(false);
+  });
+
+  it.each(HONOURED)("reads the cookie in %s", (_, mode) => {
+    stubOverrides(mode);
+    expect(e2eRequestSwitch(withCookie("a=b; e2e-sponsor-first-badge=1"), "e2e-sponsor-first-badge")).toBe(true);
+    expect(e2eRequestSwitch(withCookie("e2e-sponsor-first-badge=0"), "e2e-sponsor-first-badge")).toBe(false);
+    expect(e2eRequestSwitch(withCookie(""), "e2e-sponsor-first-badge")).toBe(false);
   });
 });
 

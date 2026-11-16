@@ -39,6 +39,8 @@ import { sendOutpostWrite } from "@/lib/outpost-send";
 import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
 import { ownerWalletClient } from "@/lib/owner-wallet";
 import { wagmiConfig } from "@/lib/wagmi";
+import { fetchFirstBadgeStatus } from "@/lib/first-badge-client";
+import { isFreeBadgeShape } from "@/lib/smart-account";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -271,6 +273,26 @@ export const useTransaction = ({
         const walletChainId = chainId as 1 | 11155111;
         const publicClient = getPublicClient(wagmiConfig, { chainId: walletChainId });
         const smartAccount = outpost.isSmartAccount ? outpost.address : undefined;
+        // The free first badge: asked only for a createBadge of that shape.
+        let firstBadge = false;
+        if (smartAccount && !outpost.isContractWallet && !finalValue) {
+          let callData: Hex | undefined;
+          try {
+            callData = encodeFunctionData({
+              abi: finalAbi as Abi,
+              functionName: finalFunctionName,
+              args: finalArgs ?? [],
+            });
+          } catch {
+            callData = undefined;
+          }
+          if (
+            callData &&
+            isFreeBadgeShape({ to: finalAddress, value: BigInt(0), data: callData }, chainId)
+          ) {
+            firstBadge = (await fetchFirstBadgeStatus(chainId, smartAccount)).eligible;
+          }
+        }
         const callRoute = await resolveOutpostRoute(publicClient, {
           chainId,
           to: finalAddress,
@@ -281,6 +303,7 @@ export const useTransaction = ({
           owner: outpost.ownerAddress,
           smartAccount,
           isContractWallet: outpost.isContractWallet,
+          firstBadge,
         });
 
         const notify = (message: string, testId = "transaction-step-notice") => {
@@ -317,6 +340,7 @@ export const useTransaction = ({
                 functionName: finalFunctionName,
                 args: finalArgs,
                 value: finalValue,
+                firstBadge,
               }),
             sendAsOwner: async () =>
               submitAccountWrite({

@@ -7,14 +7,15 @@
     "block": 12112800
   },
   "ports": {
-    "_about": "Fixed local ports, all bound on 127.0.0.1 except alto, which has no host flag and binds 0.0.0.0.",
+    "_about": "Fixed local ports, all bound on 127.0.0.1 except alto, which has no host flag and binds 0.0.0.0. appVariant is a second app server that a test starts for itself, with server settings of its own (e2e/support/app-variant.ts); it is not part of the running stack.",
     "app": 13000,
     "anvil": 18545,
     "alto": 14337,
     "paymaster": 14338,
     "subgraph": 14350,
     "s3": 14351,
-    "control": 14359
+    "control": 14359,
+    "appVariant": 13050
   },
   "stacks": {
     "_about": "A run with several workers (E2E_WORKERS) starts one whole stack per worker. Stack i listens on every port above plus i * portStep. max is the highest number of stacks; with these values no two ports of any two stacks collide.",

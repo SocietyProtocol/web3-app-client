@@ -4,6 +4,7 @@ import path from "node:path";
 import { PERSISTED_GRAPH_DOCUMENTS } from "../src/lib/persisted-graphql.generated";
 import { STACK_LOG_DIR, URLS, stackUrls } from "./env/hermetic";
 import { AaTraffic } from "./support/aa/traffic";
+import { startAppVariant, type AppVariant } from "./support/app-variant";
 import { installHermeticRoutes, type HermeticNetwork } from "./support/backends/routes";
 import { S3Fake } from "./support/backends/s3";
 import { SubgraphFake } from "./support/backends/subgraph";
@@ -30,6 +31,8 @@ import { TestWallet, type WalletIdentity } from "./support/wallet/test-wallet";
  *   subgraph, s3   the fakes: overlays, faults, what was uploaded
  *   pages          page objects
  *   api            HTTP client for the app's routes, with this test's IP
+ *   appVariant     with the `appEnv` option: a second app server with those
+ *                  server settings, which the page and `api` then use
  *   graphql        runs one of the app's persisted queries through /api/graphql
  */
 type GraphqlResult<T> = { status: number; data?: T; errors?: { message: string }[] };
@@ -39,6 +42,15 @@ type Options = {
   walletIdentity: WalletIdentity;
   /** "atomic" makes the wallet answer EIP-5792 (wallet_sendCalls). Default "none", like a plain EOA wallet. */
   walletCapabilities: "none" | "atomic";
+  /**
+   * Server-side environment values for a second app server that this test
+   * uses in place of the stack's (support/app-variant.ts): the page, the
+   * network rules and `api` all go to it. For behaviour the stack's app has
+   * turned off, such as the limits on sponsored profile creation. Each test
+   * gets a fresh server, so in-memory counts start empty. Left out: the
+   * stack's app.
+   */
+  appEnv: Record<string, string> | undefined;
 };
 
 type Fixtures = {
@@ -63,6 +75,8 @@ type Fixtures = {
   api: APIRequestContext;
   graphql: <T = unknown>(operationName: string, variables?: Record<string, unknown>) => Promise<GraphqlResult<T>>;
   resetFakes: void;
+  /** The second app server of a test that sets `appEnv`; undefined otherwise. */
+  appVariant: AppVariant | undefined;
 };
 
 /**
@@ -91,12 +105,28 @@ const runSalt = () => process.env.E2E_RUN_SALT || "no-salt";
 export const test = base.extend<Fixtures & Options>({
   walletIdentity: ["metamask", { option: true }],
   walletCapabilities: ["none", { option: true }],
+  appEnv: [undefined, { option: true }],
+
+  appVariant: async ({ appEnv }, provide, testInfo) => {
+    if (!appEnv) return provide(undefined);
+    const variant = await startAppVariant(appEnv);
+    try {
+      await provide(variant);
+    } finally {
+      if (testInfo.status !== testInfo.expectedStatus) {
+        await testInfo.attach("app-variant.log", { body: variant.log(), contentType: "text/plain" });
+      }
+      await variant.stop();
+    }
+  },
 
   // The app of this worker's own stack (see "Several workers" in
   // e2e/README.md). With one worker it is the URL in the config. A project
   // that sets a base URL of its own (not the hermetic one) keeps it, though
   // the other fixtures of this file still talk to the local stack.
-  baseURL: async ({ baseURL }, provide) => {
+  // A test with `appEnv` uses its own second app server instead.
+  baseURL: async ({ baseURL, appVariant }, provide) => {
+    if (appVariant) return provide(appVariant.url);
     await provide(baseURL && baseURL !== stackUrls(0).app ? baseURL : URLS.app);
   },
 
@@ -139,8 +169,8 @@ export const test = base.extend<Fixtures & Options>({
     await provide(new Chain(subgraph));
   },
 
-  network: async ({ context, testIp }, provide, testInfo) => {
-    const network = await installHermeticRoutes(context, { testIp });
+  network: async ({ context, testIp, baseURL }, provide, testInfo) => {
+    const network = await installHermeticRoutes(context, { testIp, appOrigin: new URL(baseURL ?? URLS.app).origin });
     await provide(network);
     network.releaseRpcFaults();
     if (network.blocked.length) {
@@ -243,9 +273,9 @@ export const test = base.extend<Fixtures & Options>({
     await provide(createPages(page, { walletPickerTestId: wallet.pickerTestId }));
   },
 
-  api: async ({ playwright, testIp }, provide) => {
+  api: async ({ playwright, testIp, baseURL }, provide) => {
     const api = await playwright.request.newContext({
-      baseURL: URLS.app,
+      baseURL: baseURL ?? URLS.app,
       extraHTTPHeaders: { "x-forwarded-for": testIp, "cf-connecting-ip": testIp },
     });
     await provide(api);

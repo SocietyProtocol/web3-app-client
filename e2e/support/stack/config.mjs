@@ -136,6 +136,14 @@ export const APP_RUNTIME_ENV = {
   FILEBASE_SECRET: "e2e-hermetic-secret",
   FILEBASE_BUCKET: "e2e-hermetic-bucket",
   KUBO_API_URL: "",
+  // The limits on sponsored profile creation (src/lib/aa/rate-limit.ts) are
+  // off in the suite's app: their defaults (one per visitor IP a day, one
+  // every five minutes app-wide) would refuse most of the tests that create
+  // a profile, and the wallet would pay or the test fail. The tests of the
+  // limits themselves start a second app server with real values
+  // (e2e/support/app-variant.ts, `appEnv` in e2e/fixtures.ts).
+  SPONSORED_PROFILES_PER_IP_PER_DAY: "0",
+  SPONSORED_PROFILE_INTERVAL_SECONDS: "0",
   PORT: String(PORTS.app),
   HOSTNAME: HOST,
 };

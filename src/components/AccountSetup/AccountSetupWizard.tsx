@@ -145,6 +145,7 @@ const AccountSetupWizardContent = ({
         isLoading={isUploadingToIpfs || isLoading}
         loadingText={getLoadingText()}
         showActions={!isWrongNetwork}
+        testIdPrefix="onboarding"
       >
         {activeStep === 0 && <AccountInfoStep />}
         {activeStep === 1 && <ReviewStep />}

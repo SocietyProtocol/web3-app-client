@@ -23,6 +23,7 @@ export const YourBids = () => {
   return (
     <Paper
       elevation={0}
+      data-testid="auction-your-bids"
       sx={{
         padding: {
           xs: 0,

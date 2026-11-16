@@ -241,10 +241,11 @@ export const ReferralCodeGenerator = () => {
               : ""
         }
         autoComplete="off"
+        data-testid="referrals-generate-address"
       />
 
       {referralCode ? (
-        <Stack spacing={1} sx={{ mt: 2 }}>
+        <Stack spacing={1} sx={{ mt: 2 }} data-testid="referrals-generated">
           <Typography component="div" color="text.primary">
             Share this Referral Code:
           </Typography>
@@ -253,6 +254,7 @@ export const ReferralCodeGenerator = () => {
               component="div"
               variant="body2"
               sx={{ wordBreak: "break-all", color: "success.light" }}
+              data-testid="referrals-generated-code"
             >
               {referralCode}
             </Typography>

@@ -20,6 +20,7 @@ export const SpecTokenDistributionChart = () => {
 
   return (
     <Box
+      data-testid="spec-token-chart"
       sx={{
         mt: 4,
         mb: 2,
@@ -102,6 +103,7 @@ export const SpecTokenDistributionChart = () => {
             </PieChart>
           </ResponsiveContainer>
           <Box
+            data-testid="spec-token-chart-center"
             sx={{
               position: "absolute",
               inset: 0,

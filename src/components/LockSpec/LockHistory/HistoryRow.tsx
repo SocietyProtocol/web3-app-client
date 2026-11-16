@@ -37,6 +37,7 @@ export const HistoryRow = ({ item }: { item: LockHistoryItem }) => {
 
   return (
     <Box
+      data-testid="lock-spec-history-row"
       sx={{
         display: "grid",
         gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr) 0.2fr" },

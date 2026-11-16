@@ -123,6 +123,7 @@ export const Governance = () => {
 
       <UserList
         title="Governors"
+        testId="governance-governors"
         users={governors}
         loading={isLoading}
         noUsersFoundText="No governors found"
@@ -132,7 +133,12 @@ export const Governance = () => {
         renderUserExtra={(user) => {
           const count = balances.get(user.id.toLowerCase());
           return count === undefined ? null : (
-            <HolderAmountChip count={count} total={totalSupply} showPercent />
+            <HolderAmountChip
+              count={count}
+              total={totalSupply}
+              showPercent
+              testId="governance-voting-power"
+            />
           );
         }}
         sx={{

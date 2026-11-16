@@ -94,7 +94,12 @@ export const BadgeCard = ({
         ? "community"
         : "individual";
   return (
-    <StyledBadgeCard outline={outline}>
+    <StyledBadgeCard
+      outline={outline}
+      // For browser tests: one card per badge, addressed by its id.
+      data-testid="badge-card"
+      data-badge-id={loading ? undefined : id}
+    >
       {/* Badge ID and Official Label */}
       <Stack
         width="100%"
@@ -287,6 +292,10 @@ export const BadgeCard = ({
       {/* Held amount over total supply (e.g. 2 / 15) */}
       {!loading && showCounter && (
         <Chip
+          data-testid="badge-card-amount"
+          // Exact numbers behind the label: units held and the total supply.
+          data-count={count.toString()}
+          data-total={total.toString()}
           label={formatBadgeCount(count, total)}
           size="small"
           sx={{

@@ -77,7 +77,7 @@ export const AccountDetailsEdit = ({
     isSuccess;
 
   return (
-    <Stack spacing={{ xs: 2, sm: 3 }}>
+    <Stack spacing={{ xs: 2, sm: 3 }} data-testid="profile-edit-form">
       {/* Header with Edit Button */}
       <Stack
         direction={{ xs: "column", sm: "row" }}

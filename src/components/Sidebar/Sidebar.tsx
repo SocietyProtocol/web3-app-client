@@ -15,7 +15,10 @@ export const Sidebar = ({ headerHeight, isOpen, onToggle }: SidebarProps) => {
 
   return (
     <>
-      <MobileSidebar open={isOpen} onClose={onToggle} />
+      {/* The mobile drawer is a modal that stays mounted and is only hidden by
+          CSS from md up. Left open there, it marks the rest of the page
+          aria-hidden and traps focus, so it opens on mobile only. */}
+      <MobileSidebar open={isOpen && isMobile} onClose={onToggle} />
       {!isMobile && (
         <DesktopSidebar
           headerHeight={headerHeight}

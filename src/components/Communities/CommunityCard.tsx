@@ -84,7 +84,11 @@ export const CommunityCard = ({
   }, [tierName, tierExpiresAt, now]);
 
   return (
-    <StyledCommunityCard tierName={loading ? undefined : realTierName}>
+    <StyledCommunityCard
+      tierName={loading ? undefined : realTierName}
+      data-testid={loading ? "community-card-skeleton" : "community-card"}
+      data-community-id={loading ? undefined : id}
+    >
       {/* Top row: ID chip + COMMUNITY chip */}
       <Stack
         width="100%"

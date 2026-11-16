@@ -152,7 +152,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
           </AccountSetupProvider>
         </ContentGuard>
       ) : (
-        <Stack spacing={{ xs: 2, sm: 5 }}>
+        <Stack spacing={{ xs: 2, sm: 5 }} data-testid="profile-details">
           {/* Stats and Profile Cards */}
           <Grid
             container
@@ -278,6 +278,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               </>
             }
             loading={isLoading}
+            testId="profile-badges"
             items={data?.badges}
             renderItem={(badge) => (
               <BadgeCard

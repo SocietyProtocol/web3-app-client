@@ -2,6 +2,7 @@ import { isAddress, isAddressEqual, isHex, toHex } from "viem";
 import { userOperationWithinCaps } from "@/lib/aa/limits";
 import { aaRateLimits, clientIp } from "@/lib/aa/rate-limit";
 import { verifyDeployedLightAccount } from "@/lib/aa/sender-check";
+import { e2eOverride } from "@/lib/e2e-overrides";
 import {
   ENTRY_POINT_V07,
   SPONSORSHIP_POLICY_ID,
@@ -51,6 +52,15 @@ export function pimlicoRpcUrl(chainId: number, apiKey: string) {
   const url = new URL(`https://api.pimlico.io/v2/${chainId}/rpc`);
   url.searchParams.set("apikey", apiKey);
   return url.toString();
+}
+
+/**
+ * Where reviewed requests are sent. Hermetic browser tests point this at a
+ * local bundler and paymaster; the API key is then not sent anywhere, but
+ * PIMLICO_API_KEY must still be set (any value) for the proxy to be on.
+ */
+export function aaUpstreamUrl(chainId: number, apiKey: string) {
+  return e2eOverride("E2E_PIMLICO_UPSTREAM_URL") ?? pimlicoRpcUrl(chainId, apiKey);
 }
 
 const ERC7677_METHODS = new Set(["pm_getPaymasterData", "pm_getPaymasterStubData"]);
@@ -324,7 +334,7 @@ export async function forwardAaRpc(request: Request) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   try {
-    const upstream = await fetch(pimlicoRpcUrl(chainId, apiKey), {
+    const upstream = await fetch(aaUpstreamUrl(chainId, apiKey), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(reviewed.body),

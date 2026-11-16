@@ -1,0 +1,15 @@
+{
+  "name": "outpost-e2e-aa-stack",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local account-abstraction stack for the hermetic browser tests: anvil, the alto bundler and a mock paymaster. Kept out of the app's dependency tree on purpose (see e2e/README.md).",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@foundry-rs/anvil": "1.7.1",
+    "@pimlico/alto": "0.0.21",
+    "@pimlico/mock-paymaster": "0.0.8",
+    "prool": "0.0.25",
+    "viem": "2.56.3"
+  }
+}

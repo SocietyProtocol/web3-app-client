@@ -146,7 +146,7 @@ export const ClaimSpec = () => {
 
       {!disabled && (
         <DataRow
-          label="Est. Gas"
+          label="Network fee"
           content={
             <GasEstimation
               routeKind={routeKind}

@@ -1,4 +1,8 @@
-import type { OutpostRouteKind } from "@/lib/outpost-routing";
+import { Abi, encodeFunctionData } from "viem";
+import {
+  routeWithoutChain,
+  type OutpostRouteKind,
+} from "@/lib/outpost-routing";
 
 export const FREE_LABEL = "Free - you only sign";
 export const PAID_LABEL = "Paid by your wallet";
@@ -54,4 +58,42 @@ export function paymentLabel(input: WritePayment): PaymentLabel | null {
 /** The wallet prompt while a write waits for the user. */
 export function walletPrompt(routeKind?: OutpostRouteKind): string {
   return routeKind === "sponsored" ? SIGN_PROMPT : CONFIRM_PROMPT;
+}
+
+/**
+ * The wallet prompt for a call about to be sent, chosen without the chain:
+ * a signature for writes known to be sponsored, a transaction otherwise.
+ */
+export function pendingWalletPrompt({
+  abi,
+  functionName,
+  args,
+  ...input
+}: Omit<Parameters<typeof routeWithoutChain>[0], "data"> & {
+  abi: readonly unknown[];
+  functionName: string;
+  args?: readonly unknown[];
+}): string {
+  let routeKind: OutpostRouteKind | undefined;
+  try {
+    const data = encodeFunctionData({
+      abi: abi as Abi,
+      functionName,
+      args: args ?? [],
+    });
+    routeKind = routeWithoutChain({ ...input, data })?.kind;
+  } catch {
+    routeKind = undefined;
+  }
+  return walletPrompt(routeKind);
+}
+
+export const SIGN_WAIT_TEXT = "Waiting for your signature...";
+
+/** Button text while the wallet prompt is open. */
+export function walletWaitText(
+  routeKind: OutpostRouteKind | undefined,
+  paidText: string,
+): string {
+  return routeKind === "sponsored" ? SIGN_WAIT_TEXT : paidText;
 }

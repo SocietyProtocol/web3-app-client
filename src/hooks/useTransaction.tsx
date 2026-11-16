@@ -34,8 +34,8 @@ import { submitAccountWrite } from "@/lib/account-capabilities";
 import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useOutpostRouting } from "@/hooks/useOutpostRouting";
-import { resolveOutpostRoute, routeWithoutChain } from "@/lib/outpost-routing";
-import { walletPrompt } from "@/lib/payment-label";
+import { resolveOutpostRoute } from "@/lib/outpost-routing";
+import { pendingWalletPrompt } from "@/lib/payment-label";
 import { sendOutpostWrite } from "@/lib/outpost-send";
 import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
 import { ownerWalletClient } from "@/lib/owner-wallet";
@@ -134,29 +134,6 @@ const TransactionNotificationActions = ({
       )}
     </>
   );
-};
-
-/** The route when it is known without the chain, to pick the wallet prompt. */
-const expectedRoute = ({
-  abi,
-  functionName,
-  args,
-  ...input
-}: Omit<Parameters<typeof routeWithoutChain>[0], "data"> & {
-  abi: readonly unknown[];
-  functionName: string;
-  args?: unknown[];
-}) => {
-  try {
-    const data = encodeFunctionData({
-      abi: abi as Abi,
-      functionName,
-      args: args ?? [],
-    });
-    return routeWithoutChain({ ...input, data });
-  } catch {
-    return undefined;
-  }
 };
 
 export const useTransaction = ({
@@ -290,19 +267,17 @@ export const useTransaction = ({
         closeSnackbar(`${snackbarKeyPrefixFinal}-error`);
         enqueueSnackbar(
           pendingMessage ??
-            walletPrompt(
-              expectedRoute({
-                chainId,
-                to: finalAddress,
-                abi: finalAbi,
-                functionName: finalFunctionName,
-                args: finalArgs,
-                value: finalValue,
-                owner: outpost.ownerAddress,
-                smartAccount: outpost.isSmartAccount ? outpost.address : undefined,
-                isContractWallet: outpost.isContractWallet,
-              })?.kind,
-            ),
+            pendingWalletPrompt({
+              chainId,
+              to: finalAddress,
+              abi: finalAbi,
+              functionName: finalFunctionName,
+              args: finalArgs,
+              value: finalValue,
+              owner: outpost.ownerAddress,
+              smartAccount: outpost.isSmartAccount ? outpost.address : undefined,
+              isContractWallet: outpost.isContractWallet,
+            }),
           {
             key: `${snackbarKeyPrefixFinal}-pending`,
             variant: "info",

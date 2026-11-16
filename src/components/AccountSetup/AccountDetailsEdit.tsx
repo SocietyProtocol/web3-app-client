@@ -10,6 +10,7 @@ import { useAccountSetup } from "./AccountSetupContext";
 import { parseErrorMessage } from "@/utils/errors";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { truncateAddress } from "@/utils/string";
+import { walletWaitText } from "@/lib/payment-label";
 
 interface AccountDetailsEditProps {
   onCancel: () => void;
@@ -200,7 +201,7 @@ export const AccountDetailsEdit = ({
             isUploadingToIpfs
               ? "Uploading to IPFS..."
               : isSigning
-                ? "Signing transaction..."
+                ? walletWaitText(transaction.routeKind, "Signing transaction...")
                 : isConfirming
                   ? "Confirming transaction..."
                   : isSyncing

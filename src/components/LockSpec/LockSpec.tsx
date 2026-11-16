@@ -115,7 +115,7 @@ export const LockSpec = () => {
 
       {!disabled && (
         <DataRow
-          label="Est. Gas"
+          label="Network fee"
           content={
             <GasEstimation
               routeKind={lockMutation.routeKind}

@@ -4,8 +4,7 @@ import { URLS } from "../urls";
 
 describe("getSocialLinks", () => {
   it("lists the links in design order and hides YouTube while its URL is unset", () => {
-    expect(URLS.YOUTUBE).toBeNull();
-    const links = getSocialLinks();
+    const links = getSocialLinks({ ...URLS, YOUTUBE: null });
     expect(links.map((l) => l.id)).toEqual([
       "website",
       "forum",
@@ -14,9 +13,15 @@ describe("getSocialLinks", () => {
     ]);
   });
 
+  it("shows YouTube by default only when its URL is set", () => {
+    expect(getSocialLinks().some((l) => l.id === "youtube")).toBe(
+      URLS.YOUTUBE !== null,
+    );
+  });
+
   it("uses the official URLs", () => {
     const hrefs = Object.fromEntries(
-      getSocialLinks().map((l) => [l.id, l.href]),
+      getSocialLinks({ ...URLS, YOUTUBE: null }).map((l) => [l.id, l.href]),
     );
     expect(hrefs).toEqual({
       website: "https://societyprotocol.io",
@@ -45,7 +50,7 @@ describe("getSocialLinks", () => {
 
   it("renders Website and Forum as pills and the rest as icons", () => {
     const kinds = Object.fromEntries(
-      getSocialLinks().map((l) => [l.id, l.kind]),
+      getSocialLinks({ ...URLS, YOUTUBE: null }).map((l) => [l.id, l.kind]),
     );
     expect(kinds).toEqual({
       website: "pill",

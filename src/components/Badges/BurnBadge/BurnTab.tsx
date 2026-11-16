@@ -5,7 +5,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -73,6 +73,13 @@ export const BurnTab = ({ id }: BurnTabProps) => {
   const amount = badgeActionAmount(formValues.amount, maxAmount);
   const amountMaxError = badgeAmountMaxError(amount, maxAmount);
 
+  // A hidden amount field must not keep the form invalid: reset it to 1.
+  useEffect(() => {
+    if (!showAmount && formValues.amount !== DEFAULT_BADGE_AMOUNT) {
+      form.setValue("amount", DEFAULT_BADGE_AMOUNT, { shouldValidate: true });
+    }
+  }, [showAmount, formValues.amount, form]);
+
   const transaction = useBurnBadgeMutation({
     args:
       formValues.holder &&
@@ -130,6 +137,12 @@ export const BurnTab = ({ id }: BurnTabProps) => {
                 />
               )}
             />
+          )}
+
+          {!showAmount && amountMaxError && (
+            <Typography color="error.main" variant="body2">
+              {amountMaxError}
+            </Typography>
           )}
 
           <Stack direction="row" spacing={1} alignItems="flex-start">

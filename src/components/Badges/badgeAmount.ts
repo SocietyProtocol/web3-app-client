@@ -52,10 +52,14 @@ export const badgeActionAmount = (
 export const badgeAmountMaxError = (
   amount: bigint | undefined,
   max: bigint | undefined,
-): string | undefined =>
-  amount !== undefined && max !== undefined && amount > max
-    ? `The holder has only ${max}`
-    : undefined;
+): string | undefined => {
+  if (amount === undefined || max === undefined || amount <= max) {
+    return undefined;
+  }
+  return max === BigInt(0)
+    ? "This address holds none of this badge"
+    : `The holder has only ${max}`;
+};
 
 /** `burn(from, id, value)` arguments; one copy unless an amount is given. */
 export const burnBadgeCallArgs = ({

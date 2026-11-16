@@ -1,5 +1,5 @@
-import { Box, Stack } from "@mui/material";
-import { useCallback, useMemo, useState } from "react";
+import { Box, Stack, Typography } from "@mui/material";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -84,6 +84,13 @@ export const TransferTab = ({ id }: TransferTabProps) => {
   const showAmount = canChooseBadgeAmount(maxAmount);
   const amount = badgeActionAmount(amountValue, maxAmount);
   const amountMaxError = badgeAmountMaxError(amount, maxAmount);
+
+  // A hidden amount field must not keep the form invalid: reset it to 1.
+  useEffect(() => {
+    if (!showAmount && amountValue !== DEFAULT_BADGE_AMOUNT) {
+      form.setValue("amount", DEFAULT_BADGE_AMOUNT, { shouldValidate: true });
+    }
+  }, [showAmount, amountValue, form]);
 
   const transaction = useTransferBadgeMutation({
     args:
@@ -193,6 +200,12 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                 />
               )}
             />
+          )}
+
+          {!showAmount && amountMaxError && (
+            <Typography color="error.main" variant="body2">
+              {amountMaxError}
+            </Typography>
           )}
         </Stack>
       </Box>

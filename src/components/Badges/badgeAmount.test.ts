@@ -92,6 +92,12 @@ describe("badgeAmountMaxError", () => {
     );
   });
 
+  it("says when the address holds none", () => {
+    expect(badgeAmountMaxError(BigInt(1), BigInt(0))).toBe(
+      "This address holds none of this badge",
+    );
+  });
+
   it("allows up to the balance", () => {
     expect(badgeAmountMaxError(BigInt(5), BigInt(5))).toBeUndefined();
     expect(badgeAmountMaxError(BigInt(1), BigInt(5))).toBeUndefined();
@@ -150,7 +156,7 @@ describe("contract call arguments", () => {
     ).toEqual([HOLDER, BigInt(42), BigInt(3)]);
   });
 
-  it("burn without an amount sends 1 (e.g. removing a community member)", () => {
+  it("burn without an amount sends 1", () => {
     expect(burnBadgeCallArgs({ holder: HOLDER, id: BigInt(42) })).toEqual([
       HOLDER,
       BigInt(42),

@@ -505,15 +505,12 @@ test.describe("community detail: looking at a community", () => {
       await expect(detail.noBadges).toBeVisible();
       await expect(detail.badgeCards).toHaveCount(0);
 
-      // Known app bug: a badge with one holder reads "1 holders". The count
-      // arrives from the subgraph as the string "1", and CommunityBadge.tsx
-      // compares it with the number 1 to choose the word. Remove the
-      // timeouts together with test.fail.
-      test.fail(true, "CommunityBadge.tsx prints '1 holders': it compares the subgraph's string count with the number 1");
+      // A badge with one holder takes the singular. The count arrives from
+      // the subgraph as the string "1".
       await detail.open(studio.id, "badges");
       await expect(detail.badgeCard(studio.managerBadgeId)).toContainText("K9 Studio Manager");
-      await expect(detail.badgeCard(studio.managerBadgeId)).toContainText("1 holder", { timeout: 2_000 });
-      await expect(detail.badgeCard(studio.managerBadgeId)).not.toContainText("1 holders", { timeout: 2_000 });
+      await expect(detail.badgeCard(studio.managerBadgeId)).toContainText("1 holder");
+      await expect(detail.badgeCard(studio.managerBadgeId)).not.toContainText("1 holders");
     },
   );
 

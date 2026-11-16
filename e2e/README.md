@@ -147,10 +147,15 @@ network.
 
 ### The lock on the test switches
 
-The app has three test switches: the server-only `E2E_*` overrides
-(`src/lib/e2e-overrides.ts`), the shorter waits (`src/lib/e2e-timing.ts`) and the extra legacy
-accounts (`src/lib/e2e-legacy-accounts.ts`). None can be reached by a visitor: all are read
-from the environment only. All three ask `src/lib/e2e-build.ts` first, which is an allowlist:
+The app has four test switches: the server-only `E2E_*` overrides
+(`src/lib/e2e-overrides.ts`), the per-request switches of the same file, the shorter waits
+(`src/lib/e2e-timing.ts`) and the extra legacy accounts (`src/lib/e2e-legacy-accounts.ts`).
+The first, third and fourth are read from the environment only. The per-request switches
+(`e2eRequestSwitch`, at the moment only `e2e-sponsor-first-badge`) are cookies a test sets,
+for app behaviour that one stack must show both ways (the free first badge is off in the
+stack, as in a deployment without `SPONSOR_FIRST_BADGE`): a visitor can send the cookie, but
+it counts only under the same lock as the overrides, so in any other build it does nothing.
+All of them ask `src/lib/e2e-build.ts` first, which is an allowlist:
 the bundle must have been built with `NEXT_PUBLIC_ENVIRONMENT=development` **and**
 `NEXT_PUBLIC_E2E_BUILD=1`. Only the launcher sets that marker (`APP_BUILD_ENV`). A deployment
 is never built with it, staging included (staging is also built as `development`, so the
@@ -627,8 +632,8 @@ committed build; the other 13 are auction tests that only run in a build with an
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
 reports 293 passed, 31 failed as expected and 17 skipped. No test is `@unverified` at the
-moment; a new one would be listed in the fourth column until someone has run it (see
-"Unverified specs"). The last column is what no test covers.
+moment, except the free first badge's (I11 to I16, P9), listed in the fourth column until
+someone has run them (see "Unverified specs"). The last column is what no test covers.
 
 | Area | Folder | Verified | Written, unverified | Not written, and why |
 |---|---|---|---|---|
@@ -640,14 +645,14 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | F Accounts directory, public profiles | `accounts` | 17 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 and one F8 on their own bugs: expected failures) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 (G3 typing into Created by and G11 logged out are expected failures) | – | G12 with only `totalSupply` failing. |
 | H Mint, burn, transfer | `badge-actions` | 19 tests: H1 to H14 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
-| I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug, I6 image preview and both I7: expected failures) | – | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |
+| I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug, I6 image preview and both I7: expected failures) | 6 tests: I11 to I16, the free first badge (`first-badge-free.spec.ts`) | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |
 | J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 (K9 "1 holders" is an expected failure) | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
 | L Governance | `governance` | 8 tests: L1 to L7 | – | – |
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
 | O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
-| P Server routes | `api` | 69 tests: P1 to P8 | – | The proxy's daily limits for profile updates and invites. |
+| P Server routes | `api` | 69 tests: P1 to P8 | 5 tests: P9, the free first badge on the server (`first-badge.api.spec.ts`) | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
 | The foundation itself | `stack` | 22 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
 

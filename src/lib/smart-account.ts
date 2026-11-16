@@ -8,10 +8,12 @@ import {
   getContractAddress,
   isAddress,
   isAddressEqual,
+  isHex,
   keccak256,
   pad,
   toBytes,
   toHex,
+  zeroAddress,
 } from "viem";
 import { contracts } from "@/consts/contracts";
 import { URLS } from "@/consts/urls";
@@ -43,6 +45,17 @@ const SEPOLIA = 11155111;
  */
 export const SPONSORED_MINT_BADGE_IDS: readonly bigint[] = [];
 
+/**
+ * The one free badge (SPONSOR_FIRST_BADGE, lib/aa/first-badge): a member's
+ * first createBadge from their Light Account. Only the shape the badge
+ * wizard sends: not official, not a community badge, no hook, metadata
+ * pinned by /api/upload-metadata (or none), and short permission lists.
+ * Whether this sender has already created a badge is decided on the server.
+ */
+export const MAX_FREE_BADGE_NAME_LENGTH = 100;
+export const MAX_FREE_BADGE_RULES = 20;
+export const MAX_FREE_BADGE_EDITORS = 20;
+
 const MAX_BATCH_CALLS = 4;
 const MAX_MINT_RECIPIENTS = 20;
 export const MAX_PROFILE_URI_LENGTH = 256;
@@ -62,6 +75,23 @@ export function profileMetadataUriAllowed(uri: string) {
 }
 
 const badgesAbi = [
+  {
+    type: "function",
+    name: "createBadge",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "name", type: "string" },
+      { name: "isOfficial", type: "bool" },
+      { name: "isCommunityBadge", type: "bool" },
+      { name: "hook", type: "address" },
+      { name: "metadataURI", type: "string" },
+      { name: "minters", type: "uint256[]" },
+      { name: "transferers", type: "uint256[]" },
+      { name: "burners", type: "uint256[]" },
+      { name: "editors", type: "address[]" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
   {
     type: "function",
     name: "createProfile",
@@ -250,6 +280,64 @@ function mintIdAllowed(id: bigint, mintBadgeIds: readonly bigint[]) {
   return mintBadgeIds.some((allowed) => allowed === id);
 }
 
+/**
+ * Whether call is a createBadge of the shape the free first badge covers.
+ * Says nothing about whether the sender still has its free badge.
+ */
+export function isFreeBadgeShape(call: InnerCall, chainId: number): boolean {
+  const badges = badgesAddress(chainId);
+  if (!badges || !sameAddress(call.to, badges) || call.value !== BigInt(0)) {
+    return false;
+  }
+  if (!call.data || call.data === "0x") return false;
+  try {
+    const decoded = decodeFunctionData({ abi: badgesAbi, data: call.data });
+    if (decoded.functionName !== "createBadge") return false;
+    const [
+      name,
+      isOfficial,
+      isCommunityBadge,
+      hook,
+      metadataURI,
+      minters,
+      transferers,
+      burners,
+      editors,
+    ] = decoded.args;
+    return (
+      name.trim().length > 0 &&
+      name.length <= MAX_FREE_BADGE_NAME_LENGTH &&
+      !isOfficial &&
+      !isCommunityBadge &&
+      sameAddress(hook, zeroAddress) &&
+      (metadataURI === "" || profileMetadataUriAllowed(metadataURI)) &&
+      minters.length <= MAX_FREE_BADGE_RULES &&
+      transferers.length <= MAX_FREE_BADGE_RULES &&
+      burners.length <= MAX_FREE_BADGE_RULES &&
+      editors.length <= MAX_FREE_BADGE_EDITORS
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The UserOp is exactly one execute call, and that call is a free-badge
+ * createBadge. A batch never carries the free badge: one op, one badge.
+ * Nor does a UserOp that deploys its sender (a factory): the free badge is
+ * for accounts that already exist and have a profile, so a fresh key cannot
+ * get a free deployment and a free badge in one operation.
+ */
+export function userOperationIsFreeBadge(
+  userOp: Pick<UserOperationShape, "callData" | "factory">,
+  chainId: number,
+): boolean {
+  if (userOperationHasFactory(userOp)) return false;
+  if (!userOp.callData || !isHex(userOp.callData)) return false;
+  const calls = accountCallsFromCallData(userOp.callData);
+  return calls?.length === 1 && isFreeBadgeShape(calls[0], chainId);
+}
+
 function innerCallIsSponsored(
   call: InnerCall,
   chainId: number,
@@ -340,13 +428,24 @@ export function accountCallsFromCallData(callData: Hex): InnerCall[] | undefined
   }
 }
 
+/**
+ * Whether Society pays for this one call. firstBadge: the server has said
+ * this sender still has its free badge (lib/aa/first-badge), so a
+ * free-badge createBadge counts as sponsored too.
+ */
 export function isSponsoredBadgesCall(
   args: { chainId: number; to: Address; data: Hex },
-  options?: { mintBadgeIds?: readonly bigint[] },
+  options?: { mintBadgeIds?: readonly bigint[]; firstBadge?: boolean },
 ) {
   if (!supportedAaChainId(args.chainId)) return false;
   const badges = badgesAddress(args.chainId);
   if (!badges || !sameAddress(args.to, badges)) return false;
+  if (
+    options?.firstBadge &&
+    isFreeBadgeShape({ to: args.to, value: BigInt(0), data: args.data }, args.chainId)
+  ) {
+    return true;
+  }
   const mintBadgeIds = options?.mintBadgeIds ?? SPONSORED_MINT_BADGE_IDS;
   return innerCallIsSponsored(
     { to: args.to, value: BigInt(0), data: args.data },
@@ -357,6 +456,7 @@ export function isSponsoredBadgesCall(
 
 export type UserOperationShape = {
   sender?: string;
+  nonce?: string;
   callData?: string;
   factory?: string;
   factoryData?: string;
@@ -384,7 +484,7 @@ export function badgesFunctionNames(callData: Hex, chainId: number): string[] {
   });
 }
 
-export function userOperationHasFactory(userOp: UserOperationShape) {
+export function userOperationHasFactory(userOp: Pick<UserOperationShape, "factory">) {
   const factory = userOp.factory;
   return !!factory && factory !== "0x" && factory !== "0x0";
 }
@@ -397,7 +497,15 @@ export function userOperationHasFactory(userOp: UserOperationShape) {
 export function userOperationIsSponsored(
   userOp: UserOperationShape,
   chainId: number,
-  options?: { mintBadgeIds?: readonly bigint[] },
+  options?: {
+    mintBadgeIds?: readonly bigint[];
+    /**
+     * SPONSOR_FIRST_BADGE is on: a UserOp that is exactly one free-badge
+     * createBadge, without a factory, passes here. The proxy then still has to find that the
+     * sender has created no badge yet (pimlico-proxy, lib/aa/first-badge).
+     */
+    firstBadge?: boolean;
+  },
 ): { ok: true } | { ok: false; reason: string } {
   if (!supportedAaChainId(chainId)) {
     return { ok: false, reason: "Sponsorship is only enabled on Ethereum and Sepolia" };
@@ -412,9 +520,10 @@ export function userOperationIsSponsored(
   }
 
   const mintBadgeIds = options?.mintBadgeIds ?? SPONSORED_MINT_BADGE_IDS;
-  const allowed = calls.every((call) =>
-    innerCallIsSponsored(call, chainId, mintBadgeIds),
-  );
+  const freeBadge = !!options?.firstBadge && userOperationIsFreeBadge(userOp, chainId);
+  const allowed =
+    freeBadge ||
+    calls.every((call) => innerCallIsSponsored(call, chainId, mintBadgeIds));
   if (!allowed) {
     return { ok: false, reason: "User operation is outside the sponsorship allowlist" };
   }

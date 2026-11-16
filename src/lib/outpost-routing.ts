@@ -104,12 +104,17 @@ export function outpostIdentity(input: {
   };
 }
 
-/** Whether the Light Account may relay this call, and whether Society pays. */
+/**
+ * Whether the Light Account may relay this call, and whether Society pays.
+ * firstBadge: the server said this account still has its free first badge
+ * (GET /api/aa/first-badge), so a free-badge createBadge is sponsored.
+ */
 export function callShape(input: {
   chainId: number;
   to: Address;
   data: Hex;
   value?: bigint;
+  firstBadge?: boolean;
 }): { relayable: boolean; sponsored: boolean } {
   if (input.value !== undefined && input.value !== BigInt(0)) {
     return { relayable: false, sponsored: false };
@@ -121,7 +126,10 @@ export function callShape(input: {
       relayable,
       sponsored:
         relayable &&
-        isSponsoredBadgesCall({ chainId: input.chainId, to: input.to, data: input.data }),
+        isSponsoredBadgesCall(
+          { chainId: input.chainId, to: input.to, data: input.data },
+          { firstBadge: input.firstBadge },
+        ),
     };
   } catch {
     return { relayable: false, sponsored: false };
@@ -243,6 +251,8 @@ export async function resolveOutpostRoute(
     owner?: Address;
     smartAccount?: Address;
     isContractWallet: boolean;
+    /** The account still has its free first badge (see callShape). */
+    firstBadge?: boolean;
   },
 ): Promise<OutpostRoute> {
   let data: Hex;
@@ -255,7 +265,13 @@ export async function resolveOutpostRoute(
   } catch {
     return chooseWriteSender({ ...input, relayable: false, sponsored: false });
   }
-  const shape = callShape({ chainId: input.chainId, to: input.to, data, value: input.value });
+  const shape = callShape({
+    chainId: input.chainId,
+    to: input.to,
+    data,
+    value: input.value,
+    firstBadge: !!input.firstBadge && !!input.smartAccount && !input.isContractWallet,
+  });
   const base = { ...input, ...shape };
   if (
     !input.owner ||

@@ -61,6 +61,40 @@ export class TokenBucketLimiter {
   }
 }
 
+/**
+ * At most `cap` distinct keys admitted in any rolling window of windowMs.
+ * A key admitted inside the window is admitted again without counting
+ * twice. Memory stays at most `cap` keys. Per instance, like the buckets.
+ */
+export class RollingWindowCap {
+  private readonly admitted = new Map<string, number>();
+
+  constructor(private readonly windowMs: number) {}
+
+  private prune(now: number) {
+    for (const [key, at] of this.admitted) {
+      if (now - at >= this.windowMs) this.admitted.delete(key);
+    }
+  }
+
+  /** Whether take(key) would succeed now, without taking anything. */
+  wouldAdmit(key: string, cap: number, now = Date.now()) {
+    this.prune(now);
+    return this.admitted.has(key) || this.admitted.size < cap;
+  }
+
+  /** Admits key (counting it once per window). False once the cap is reached. */
+  take(key: string, cap: number, now = Date.now()) {
+    if (!this.wouldAdmit(key, cap, now)) return false;
+    if (!this.admitted.has(key)) this.admitted.set(key, now);
+    return true;
+  }
+
+  reset() {
+    this.admitted.clear();
+  }
+}
+
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 
@@ -83,6 +117,38 @@ export const PROFILE_UPDATES_PER_SENDER_PER_DAY = 10;
  */
 export const INVITE_ACCEPTS_PER_SENDER_PER_DAY = 5;
 
+/**
+ * Sponsorship signatures for the free first badge per sender per day. Only
+ * one free badge can ever land (lib/aa/first-badge pins the nonce); this
+ * covers a retry after a declined wallet prompt without letting one visitor
+ * collect a pile of signed sponsorships.
+ */
+export const FIRST_BADGE_SIGNATURES_PER_SENDER_PER_DAY = 3;
+/**
+ * Server variable: free badges the whole app gives out per day (rolling 24
+ * hours, per server instance). One sender counts once however many times it
+ * asks, and only once it has passed every other check.
+ */
+export const FIRST_BADGE_DAILY_CAP_ENV = "FIRST_BADGE_DAILY_CAP";
+/**
+ * Twenty a day: well above the number of new members who make their first
+ * badge on a normal day, and small enough that a farm of aged profiles can
+ * take at most twenty sponsored badges a day before everyone pays their own
+ * gas again. The separate Pimlico policy's cap (DEPLOYMENT.md) is the hard
+ * ceiling across instances and restarts.
+ */
+export const DEFAULT_FIRST_BADGE_DAILY_CAP = 20;
+
+/** The cap from the environment. Unset, empty or not a whole number at least 0: the default. 0 gives none away. */
+export function firstBadgeDailyCap(): number {
+  const raw = process.env[FIRST_BADGE_DAILY_CAP_ENV]?.trim();
+  const cap = raw ? Number(raw) : NaN;
+  return Number.isInteger(cap) && cap >= 0 ? cap : DEFAULT_FIRST_BADGE_DAILY_CAP;
+}
+
+/** GET /api/aa/first-badge per IP: each answer costs subgraph and node reads. */
+export const FIRST_BADGE_CHECKS_PER_IP_PER_MINUTE = 20;
+
 export const aaRateLimits = {
   paymasterByIp: new TokenBucketLimiter(PAYMASTER_PER_IP_PER_MINUTE, MINUTE_MS),
   paymasterBySender: new TokenBucketLimiter(PAYMASTER_PER_SENDER_PER_MINUTE, MINUTE_MS),
@@ -95,6 +161,16 @@ export const aaRateLimits = {
     INVITE_ACCEPTS_PER_SENDER_PER_DAY,
     DAY_MS,
   ),
+  firstBadgeSignaturesBySender: new TokenBucketLimiter(
+    FIRST_BADGE_SIGNATURES_PER_SENDER_PER_DAY,
+    DAY_MS,
+  ),
+  firstBadgeChecksByIp: new TokenBucketLimiter(
+    FIRST_BADGE_CHECKS_PER_IP_PER_MINUTE,
+    MINUTE_MS,
+  ),
+  /** Keyed on chainId:sender, capped at firstBadgeDailyCap(). */
+  firstBadgesPerDay: new RollingWindowCap(DAY_MS),
 };
 
 export function resetAaRateLimits() {

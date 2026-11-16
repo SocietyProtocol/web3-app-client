@@ -63,6 +63,10 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_AUCTION_ID`            | ID of the specific auction to interact with                                                      | `1`                        |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project token used to enable client-side analytics, pageviews, and custom event tracking | `phc_abc123...`            |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com` | `https://us.i.posthog.com` |
+| `SPONSOR_FIRST_BADGE`               | Server-only. `true` makes Society pay the gas of each Society account's first badge (a plain `createBadge`: not official, not a community badge). Any other value, or unset, leaves every badge paid by the owner wallet. Read at runtime: no rebuild needed. See `src/lib/aa/first-badge.ts`. | `true` |
+| `FIRST_BADGE_MIN_PROFILE_AGE_HOURS` | Server-only, with `SPONSOR_FIRST_BADGE`. How old (in hours, by the subgraph's block timestamp) a Society account's profile must be before its first badge is free. Default `6`. `0` drops the age rule; a profile is always required. See §3.7. | `6` |
+| `FIRST_BADGE_DAILY_CAP`             | Server-only, with `SPONSOR_FIRST_BADGE`. Free badges the app gives out per rolling 24 hours, per server instance. Default `20`; `0` gives none. See §3.7. | `20` |
+| `PIMLICO_FIRST_BADGE_POLICY_ID`     | Server-only, with `SPONSOR_FIRST_BADGE`. Pimlico sponsorship policy for free badges only. Unset: they use `PIMLICO_SPONSORSHIP_POLICY_ID` (not recommended, see §3.7). | `sp_...` |
 
 > **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `FILEBASE_SECRET`) in a `NEXT_PUBLIC_` variable. PostHog analytics stay disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 
@@ -114,6 +118,26 @@ The application uses a **single unified subgraph per network** (badges and aucti
 4. Leave both variables unset if you do not want analytics enabled in that deployment.
 
 ---
+
+### 3.7 Pimlico: the free first badge
+
+`SPONSOR_FIRST_BADGE=true` makes Society pay for each account's first plain `createBadge`. Anyone can make
+a new key, so the app limits who gets one (`src/lib/aa/first-badge.ts`):
+
+- the account must already have a Society profile (`profileBadgeId` on the badges contract is not 0);
+- that profile must be at least `FIRST_BADGE_MIN_PROFILE_AGE_HOURS` old (default 6 hours), so a fresh key
+  cannot create a profile and take a free badge in the same run;
+- the account must already be deployed: a free badge in a user operation that carries a factory is refused;
+- at most `FIRST_BADGE_DAILY_CAP` accounts a day (default 20) get one, app-wide. This count lives in the
+  server's memory: each instance has its own, and a restart clears it.
+
+None of this stops a patient attacker with many aged profiles from taking up to the daily cap every day.
+**Recommended:** create a separate sponsorship policy in the Pimlico dashboard for the free badge only, with a
+low global spending cap (for example a few free badges' worth of gas per day), and set its id as
+`PIMLICO_FIRST_BADGE_POLICY_ID`. Free-badge paymaster calls then draw on that policy alone, so if its cap is
+reached only the free badge stops (members pay their own gas for it, as without the feature), while the main
+policy keeps paying for profile creation and the other sponsored calls. Without it, free badges spend the main
+policy's cap, and abuse could end free profile creation for everyone until the cap resets.
 
 ## 4. Local / Development Build
 

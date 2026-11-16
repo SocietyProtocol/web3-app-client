@@ -10,7 +10,8 @@ import {
   useBadgeCreation,
 } from "./BadgeCreationContext";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
-import { Box, Stack } from "@mui/material";
+import { Alert, Box, Stack } from "@mui/material";
+import { useFirstBadgeSponsorship } from "@/hooks/useFirstBadgeSponsorship";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
@@ -43,6 +44,10 @@ const BadgeCreationWizardContent = () => {
 
   const { address } = useOutpostAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
+  // Community badges go through the registry and official ones need a
+  // role: neither is the free first badge.
+  const firstBadge = useFirstBadgeSponsorship({ enabled: !communityId });
+  const showFreeBadgeNotice = !communityId && !isOfficial && firstBadge.eligible;
 
   const nextDisabled = !form.formState.isValid;
 
@@ -147,6 +152,15 @@ const BadgeCreationWizardContent = () => {
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
           {activeStep === 0 && <BadgeInfoStep />}
+          {activeStep === 1 && showFreeBadgeNotice && (
+            <Alert
+              severity="info"
+              sx={{ mb: 3 }}
+              data-testid="badge-create-free-badge-notice"
+            >
+              Your first badge is free: Society pays the network fee.
+            </Alert>
+          )}
           {activeStep === 1 && (
             <BadgePermissionsStep
               hideSections={

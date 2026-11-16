@@ -1,7 +1,12 @@
 import { isAddress, isAddressEqual, isHex, toHex } from "viem";
 import { userOperationWithinCaps } from "@/lib/aa/limits";
-import { aaRateLimits, clientIp } from "@/lib/aa/rate-limit";
+import { aaRateLimits, clientIp, firstBadgeDailyCap } from "@/lib/aa/rate-limit";
 import { verifyDeployedLightAccount } from "@/lib/aa/sender-check";
+import {
+  FIRST_BADGE_REASONS,
+  firstBadgeEligibility,
+  sponsorFirstBadgeEnabled,
+} from "@/lib/aa/first-badge";
 import { e2eOverride } from "@/lib/e2e-overrides";
 import {
   ENTRY_POINT_V07,
@@ -10,6 +15,7 @@ import {
   badgesFunctionNames,
   supportedAaChainId,
   userOperationHasFactory,
+  userOperationIsFreeBadge,
   userOperationIsSponsored,
   userOperationMayRelay,
 } from "@/lib/smart-account";
@@ -84,6 +90,15 @@ export type AaRpcReview = {
   signsProfileUpdate: boolean;
   /** acceptInvite calls in a paymaster call that signs their sponsorship. */
   signedInviteAccepts: number;
+  /**
+   * Paymaster call for the free first badge (SPONSOR_FIRST_BADGE on): the
+   * sender must still have it, checked in admitAaRpc.
+   */
+  freeBadge: boolean;
+  /** freeBadge, and the call signs the sponsorship. */
+  signsFreeBadge: boolean;
+  /** The UserOp's nonce as sent, for the free badge's nonce check. */
+  nonce?: string;
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -104,6 +119,13 @@ export function reviewAaRpc(input: {
   chainId: number;
   request: unknown;
   policyId?: string;
+  /** SPONSOR_FIRST_BADGE is on for this request. */
+  sponsorFirstBadge?: boolean;
+  /**
+   * Pimlico policy for free-badge paymaster calls (PIMLICO_FIRST_BADGE_POLICY_ID),
+   * so they draw on their own capped budget. Unset: policyId.
+   */
+  firstBadgePolicyId?: string;
 }):
   | { ok: true; body: JsonRpcRequest; review: AaRpcReview }
   | { ok: false; message: string } {
@@ -130,6 +152,8 @@ export function reviewAaRpc(input: {
     needsDeployedSender: false,
     signsProfileUpdate: false,
     signedInviteAccepts: 0,
+    freeBadge: false,
+    signsFreeBadge: false,
   };
 
   if (isBundler || isPaymaster) {
@@ -151,7 +175,9 @@ export function reviewAaRpc(input: {
 
     const op = userOp as UserOperationShape;
     const decision = isPaymaster
-      ? userOperationIsSponsored(op, input.chainId)
+      ? userOperationIsSponsored(op, input.chainId, {
+          firstBadge: !!input.sponsorFirstBadge,
+        })
       : userOperationMayRelay(op, input.chainId);
     if (!decision.ok) return { ok: false, message: decision.reason };
 
@@ -173,6 +199,10 @@ export function reviewAaRpc(input: {
     review.signedInviteAccepts = signedFunctions.filter(
       (name) => name === "acceptInvite",
     ).length;
+    review.freeBadge =
+      isPaymaster && !!input.sponsorFirstBadge && userOperationIsFreeBadge(op, input.chainId);
+    review.signsFreeBadge = review.freeBadge && SIGNING_PAYMASTER_METHODS.has(request.method);
+    if (review.freeBadge) review.nonce = typeof op.nonce === "string" ? op.nonce : undefined;
 
     if (request.method === "eth_sendUserOperation") params.length = 2;
     if (request.method === "eth_estimateUserOperationGas" && params.length > 3) {
@@ -182,7 +212,9 @@ export function reviewAaRpc(input: {
 
   if (isPaymaster) {
     // The client context is dropped whole: only the server policy is sent.
-    const context = { sponsorshipPolicyId: input.policyId || SPONSORSHIP_POLICY_ID };
+    const policy =
+      (review.freeBadge && input.firstBadgePolicyId) || input.policyId || SPONSORSHIP_POLICY_ID;
+    const context = { sponsorshipPolicyId: policy };
     if (ERC7677_METHODS.has(request.method)) {
       const chainSlot = params[2];
       if (
@@ -221,6 +253,11 @@ export function sponsorshipPolicyId() {
   return process.env.PIMLICO_SPONSORSHIP_POLICY_ID || SPONSORSHIP_POLICY_ID;
 }
 
+/** Separate Pimlico policy for the free first badge, if set (DEPLOYMENT.md §3.7). */
+export function firstBadgePolicyId() {
+  return process.env.PIMLICO_FIRST_BADGE_POLICY_ID || undefined;
+}
+
 /** GET /api/aa/rpc. Health only: no key material. */
 export function aaRpcHealth() {
   return Response.json(
@@ -230,6 +267,7 @@ export function aaRpcHealth() {
 }
 
 const RATE_LIMITED = -32005;
+export const FIRST_BADGE_DAILY_CAP_MESSAGE = "Today's free badges have all been given out";
 
 /** Rate limits, then the on-chain sender check. Order keeps RPC work behind the IP limit. */
 async function admitAaRpc(
@@ -266,6 +304,41 @@ async function admitAaRpc(
         message: "Daily sponsored profile update limit reached",
         code: RATE_LIMITED,
       };
+    }
+    if (review.freeBadge) {
+      if (
+        review.signsFreeBadge &&
+        !aaRateLimits.firstBadgeSignaturesBySender.take(senderKey)
+      ) {
+        return {
+          ok: false,
+          message: "Daily free badge sponsorship limit reached",
+          code: RATE_LIMITED,
+        };
+      }
+      const eligibility = await firstBadgeEligibility({
+        chainId,
+        sender: review.sender,
+        userOpNonce: review.nonce ?? "missing",
+      });
+      if (!eligibility.eligible) {
+        return {
+          ok: false,
+          message: FIRST_BADGE_REASONS[eligibility.reason],
+          code: -32602,
+        };
+      }
+      // The app-wide daily cap, counted last so that only senders who pass
+      // every other check use it up. A stub call only looks; the signing
+      // call takes. A sender counts once a day, retries included.
+      const capKey = `${chainId}:${String(review.sender).toLowerCase()}`;
+      const cap = firstBadgeDailyCap();
+      const admitted = review.signsFreeBadge
+        ? aaRateLimits.firstBadgesPerDay.take(capKey, cap)
+        : aaRateLimits.firstBadgesPerDay.wouldAdmit(capKey, cap);
+      if (!admitted) {
+        return { ok: false, message: FIRST_BADGE_DAILY_CAP_MESSAGE, code: RATE_LIMITED };
+      }
     }
     // One token per acceptInvite, so a batch cannot stretch the allowance.
     for (let accepted = 0; accepted < review.signedInviteAccepts; accepted += 1) {
@@ -316,6 +389,8 @@ export async function forwardAaRpc(request: Request) {
     chainId,
     request: parsed,
     policyId: sponsorshipPolicyId(),
+    sponsorFirstBadge: sponsorFirstBadgeEnabled(request),
+    firstBadgePolicyId: firstBadgePolicyId(),
   });
   const requestId =
     parsed && typeof parsed === "object" && "id" in parsed

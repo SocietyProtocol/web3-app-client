@@ -4,6 +4,9 @@ import {
   CommunityMembership_filter,
   CommunityMembership_orderBy,
   execute,
+  User_filter,
+  UsersDocument,
+  UsersQuery,
 } from "../../../.graphclient";
 import { requireGraphData } from "@/lib/graph-response";
 import { defaultOptions } from "./consts";
@@ -12,7 +15,14 @@ import {
   CommunityMembersSortOption,
 } from "./types";
 
-import { buildWhereClause as buildUserWhereClause } from "../users/utils";
+/**
+ * Most members a display-name search looks up. A member's display name is
+ * on their profile Metadata, which graph-node cannot reach from a
+ * CommunityMembership filter, so the matching users are looked up first
+ * and passed back by id. Must stay within the query gateway's array limit
+ * for CommunityMembers.
+ */
+export const MAX_NAME_MATCHES = 100;
 
 /**
  * Merges the provided options with the default options.
@@ -34,9 +44,40 @@ export const mergeOptions = (
   };
 };
 
-const buildWhereClause = (
+/**
+ * Ids of the community's members whose profile name contains the search
+ * text. A Users query: there metadata_ is a single child filter, which
+ * graph-node supports.
+ */
+export const fetchNameMatchedMemberIds = async (
   communityId: string,
   searchText: string,
+): Promise<string[]> => {
+  const res = await execute(UsersDocument, {
+    first: MAX_NAME_MATCHES,
+    skip: 0,
+    // The query gateway only allows the directory's orderings for Users.
+    orderBy: "profile__createdAt",
+    orderDirection: "asc",
+    where: {
+      communities_contains: [communityId],
+      metadata_: { name_contains_nocase: searchText },
+    },
+  });
+  const data = requireGraphData(res.data as UsersQuery | undefined, "Users");
+  return data.users.map((user) => user.id);
+};
+
+/**
+ * Builds the CommunityMembership filter. graph-node runs only one level of
+ * child filter, so user_ holds filters on User's own fields only (never
+ * metadata_): the user's name, their address, and the ids of the members
+ * whose profile name matched.
+ */
+export const buildWhereClause = (
+  communityId: string,
+  searchText: string,
+  nameMatchedUserIds: string[] = [],
 ): CommunityMembership_filter => {
   const where: CommunityMembership_filter = {
     community_: {
@@ -45,10 +86,14 @@ const buildWhereClause = (
   };
 
   if (searchText) {
-    where.user_ = buildUserWhereClause({
-      searchText,
-      includeUnregistered: true,
-    });
+    const or: User_filter[] = [
+      { name_contains_nocase: searchText },
+      { id: searchText.toLowerCase() },
+    ];
+    if (nameMatchedUserIds.length > 0) {
+      or.push({ id_in: nameMatchedUserIds });
+    }
+    where.user_ = { or };
   }
 
   return where;
@@ -84,9 +129,14 @@ export const fetchCommunityMembers = async (
   options: CommunityMembersQueryOptions,
 ): Promise<CommunityMembersQuery> => {
   const mergedOptions = mergeOptions(options);
+  const searchText = mergedOptions.searchText ?? "";
+  const nameMatchedUserIds = searchText
+    ? await fetchNameMatchedMemberIds(mergedOptions.communityId, searchText)
+    : [];
   const where = buildWhereClause(
     mergedOptions.communityId,
-    mergedOptions.searchText ?? "",
+    searchText,
+    nameMatchedUserIds,
   );
   const { orderBy, orderDirection } = buildSorting(mergedOptions.orderBy);
 

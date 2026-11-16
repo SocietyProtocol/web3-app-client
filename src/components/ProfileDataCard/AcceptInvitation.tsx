@@ -207,6 +207,7 @@ export const AcceptInvitation = () => {
           loading={transaction.isExecuting || hasInvited.isFetching}
           loadingText={hasInvited.isFetching ? "Loading..." : "Accepting..."}
           onClick={onSubmit}
+          routeKind={transaction.routeKind}
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}
           gasError={transaction.gasError}

@@ -9,7 +9,7 @@ import {
   nowInSeconds,
   type Tier,
 } from "../../support/builders/communities-entities";
-import { community, type OverlayOp } from "../../support/builders/entities";
+import { community, metadata, type OverlayOp, user } from "../../support/builders/entities";
 import type { Chain } from "../../support/chain/chain";
 import type { TestWallet } from "../../support/wallet/test-wallet";
 
@@ -37,6 +37,11 @@ export function fakeCommunity(input: {
   description?: string | null;
   /** How many members to make, or their names. */
   members?: number | string[];
+  /**
+   * Put each member's name on profile Metadata, as the real subgraph
+   * indexes it (User.name stays null), instead of on User.name.
+   */
+  namesInMetadata?: boolean;
 }): {
   ops: OverlayOp[];
   id: number;
@@ -84,15 +89,21 @@ export function fakeCommunity(input: {
         assistantBadgeId: input.id + 1,
         memberBadgeId,
       }),
-      ...members.flatMap((member) =>
-        communityMember({
+      ...members.flatMap((member) => [
+        ...communityMember({
           communityId: input.id,
           address: member.address,
-          name: member.name,
+          name: input.namesInMetadata ? undefined : member.name,
           badgeId: memberBadgeId,
           joinedAt: member.joinedAt,
         }),
-      ),
+        ...(input.namesInMetadata
+          ? [
+              metadata(`e2e-member-${member.address}`, { name: member.name }),
+              user(member.address, { metadata: `e2e-member-${member.address}` }),
+            ]
+          : []),
+      ]),
       community(String(input.id), { memberCount: String(members.length) }),
     ],
   };

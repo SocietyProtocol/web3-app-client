@@ -94,7 +94,7 @@ export function TransferOwnershipDialog({
       ? (watchedNewOwner.toLowerCase() as Hex)
       : undefined;
 
-  const { transfer, isLoading, gas, gasLoading, gasError } =
+  const { transfer, isLoading, routeKind, gas, gasLoading, gasError } =
     useTransferOwnership({
       communityId: id,
       managerBadgeId,
@@ -180,14 +180,13 @@ export function TransferOwnershipDialog({
               )}
             />
           </Stack>
-          {(gas !== undefined || gasLoading) && (
-            <GasEstimation
-              value={gas}
-              isLoading={gasLoading}
-              isError={gasError}
-              sx={{ mt: 1.5 }}
-            />
-          )}
+          <GasEstimation
+            routeKind={routeKind}
+            value={gas}
+            isLoading={gasLoading}
+            isError={gasError}
+            sx={{ mt: 1.5 }}
+          />
         </DialogContent>
 
         <DialogActions>

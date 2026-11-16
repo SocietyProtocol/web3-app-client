@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode, useMemo, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm, UseFormReturn, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutateCommunity } from "./useMutateCommunity";
 import {
@@ -12,6 +12,7 @@ import {
 import { Hex, TransactionReceipt } from "viem";
 import { decodeCommunityCreated } from "@/data/communities/decodeUtils";
 import { useSnackbar } from "notistack";
+import type { WritePayment } from "@/lib/payment-label";
 
 interface CommunityCreationContextType {
   form: UseFormReturn<CommunityInputData, unknown, CommunityTransformedData>;
@@ -24,6 +25,7 @@ interface CommunityCreationContextType {
   >;
   isMutating: boolean;
   isSyncing: boolean;
+  payment: WritePayment;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
   isTransactionPending: boolean;
@@ -76,6 +78,12 @@ export const CommunityCreationProvider = ({
 
   const { enqueueSnackbar } = useSnackbar();
 
+  const [name, description] = useWatch({
+    control: form.control,
+    name: ["name", "description"],
+  });
+  const draft = useMemo(() => ({ name, description }), [name, description]);
+
   const {
     mutate: createCommunity,
     isMutating,
@@ -83,7 +91,9 @@ export const CommunityCreationProvider = ({
     isWritingContract,
     isSyncing,
     isTransactionPending,
+    payment,
   } = useMutateCommunity({
+    draft,
     onSuccess: async (receipt: TransactionReceipt) => {
       const communityCreated = decodeCommunityCreated(receipt);
 
@@ -113,6 +123,7 @@ export const CommunityCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       createdCommunity,
     }),
     [
@@ -123,6 +134,7 @@ export const CommunityCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       createdCommunity,
     ],
   );

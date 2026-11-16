@@ -42,6 +42,7 @@ export const Profile = () => {
     <ErrorBoundary>
       <ContentGuard
         requireNetwork={!user.data?.profile}
+        keepMountedOnWrongNetwork
         requireAccount={!accountSetupOpen}
         sx={{
           paddingX: { xs: 3, md: 6 },

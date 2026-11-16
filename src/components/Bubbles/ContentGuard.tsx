@@ -12,10 +12,16 @@ import { ReactNode } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { mergeSx } from "@/utils/sx";
+import { contentGuardView } from "./contentGuardView";
 
 export type ContentGuardProps = {
   requireNetwork?: boolean;
   requireAccount?: boolean;
+  /**
+   * While the wallet is only on the wrong network, keep the children mounted
+   * (hidden) under the switch prompt, so their state survives the switch.
+   */
+  keepMountedOnWrongNetwork?: boolean;
   loading?: boolean;
   children?: ReactNode;
   fallback?: ReactNode;
@@ -36,6 +42,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const {
     requireNetwork,
     requireAccount,
+    keepMountedOnWrongNetwork = false,
     loading = false,
     children,
     fallback,
@@ -48,20 +55,30 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const { isWrongNetwork } = useCheckWrongNetwork();
   const user = useUserQuery(requireAccount ? address : undefined);
 
-  if (loading || !wagmiReady || (requireAccount && user.isLoading)) {
+  const view = contentGuardView({
+    loading,
+    wagmiReady,
+    isConnected,
+    networkMissing: !!requireNetwork && isWrongNetwork,
+    accountLoading: !!requireAccount && user.isLoading,
+    accountMissing: !!requireAccount && !user.data?.profile,
+    keepMountedOnWrongNetwork,
+  });
+
+  if (view.show === "fallback") {
     return fallback;
   }
 
-  if (
-    isConnected &&
-    (!requireNetwork || !isWrongNetwork) &&
-    (!requireAccount || user.data?.profile)
-  ) {
+  if (view.show === "children") {
     return children;
   }
 
+  const hiddenChildren = view.keepChildrenMounted && (
+    <Box sx={{ display: "none" }}>{children}</Box>
+  );
+
   if (props.hideBubbles) {
-    return null;
+    return hiddenChildren || null;
   }
 
   const { showBackButton, connectWalletMessage, switchNetworkMessage } = props;
@@ -115,6 +132,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
           )
         )}
       </Stack>
+      {hiddenChildren}
     </Box>
   );
 };

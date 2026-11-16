@@ -63,6 +63,14 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_AUCTION_ID`            | ID of the specific auction to interact with                                                      | `1`                        |
 | `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog project token used to enable client-side analytics, pageviews, and custom event tracking | `phc_abc123...`            |
 | `NEXT_PUBLIC_POSTHOG_HOST`          | PostHog ingest host override, typically `https://us.i.posthog.com` or `https://eu.i.posthog.com` | `https://us.i.posthog.com` |
+| `SPONSORED_PROFILES_PER_IP_PER_DAY` | Server only. Free (sponsored) profile creations per visitor IP per day; `0` turns the limit off. Default `1` | `1`                        |
+| `SPONSORED_PROFILE_INTERVAL_SECONDS` | Server only. At most one free profile creation app-wide per this many seconds; `0` turns the limit off. Default `300` | `300`                      |
+
+> **Sponsorship limits:** `/api/aa/rpc` refuses a sponsored profile creation past either limit above before calling Pimlico, and the app then asks the connected wallet to pay, as for any other sponsorship refusal. The counts live in server memory: a restart or deploy resets them, and each running instance (or serverless instance) counts on its own. The Pimlico sponsorship policy remains the spending ceiling.
+>
+> - An allowance is used when Pimlico signs the paymaster data, before the owner signs: that signature can be sent through any bundler, so it is what gets counted. If Pimlico returns an error or does not answer, the allowance is given back. A user who cancels the wallet prompt has still used it for the day.
+> - Because the paymaster call carries no proof of who owns the new account, anyone can keep taking the app-wide slot by asking for signatures they never send, which pushes real new users onto paid gas. Each refusal by the app-wide limit logs `Sponsored profile refused by the app-wide limit`; frequent ones are the sign to look for.
+> - The per-IP limit needs `cf-connecting-ip` or `x-real-ip` (or `x-forwarded-for`) to reach the app. Without them the visitor is `unknown` and only the app-wide limit applies. IPv6 visitors are counted per /64. Up to 100,000 visitors are tracked per day; past that, new visitors are refused until a day's counts expire.
 
 > **Security note:** Variables prefixed with `NEXT_PUBLIC_` are embedded in the client bundle and visible to end-users. Never put secrets (e.g., `FILEBASE_SECRET`) in a `NEXT_PUBLIC_` variable. PostHog analytics stay disabled unless `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is set.
 

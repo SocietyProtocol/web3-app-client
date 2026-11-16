@@ -60,6 +60,24 @@ export const REFUSALS = {
     methods: ["pm_getPaymasterData", "pm_sponsorUserOperation"],
     error: { code: RATE_LIMITED, message: "Daily sponsored profile update limit reached" },
   },
+  /**
+   * The proxy: a visitor IP's second sponsored new account (createProfile)
+   * of the day, with SPONSORED_PROFILES_PER_IP_PER_DAY at its default of 1.
+   * Counted on the signing call only, like the profile updates.
+   */
+  dailyProfileCreateLimit: {
+    methods: ["pm_getPaymasterData", "pm_sponsorUserOperation"],
+    error: { code: RATE_LIMITED, message: "Daily sponsored profile limit reached" },
+  },
+  /**
+   * The proxy: a sponsored new account less than
+   * SPONSORED_PROFILE_INTERVAL_SECONDS (default 300) after the last one,
+   * from any visitor.
+   */
+  appProfileCreateLimit: {
+    methods: ["pm_getPaymasterData", "pm_sponsorUserOperation"],
+    error: { code: RATE_LIMITED, message: "Sponsored profile limit reached, try again in a few minutes" },
+  },
   /** The proxy without PIMLICO_API_KEY: every call, reads included. */
   notConfigured: {
     error: { code: -32603, message: "Sponsorship is not configured" },

@@ -135,9 +135,12 @@ caches verified senders, and the bundler does not survive a revert. Tests are is
 keys instead. A test must only rely on state it created for its own accounts, or on totals it
 read itself during the test.
 
-**Rate limits.** The app's limits live in the server's memory and are keyed by client IP:
-`/api/graphql` by `x-forwarded-for`, `/api/aa/rpc` by `cf-connecting-ip`. Every test gets its
-own IP in both headers (the `testIp` fixture). One limit still applies inside a test: five
+**Rate limits.** The app's limits live in the server's memory and are keyed by the visitor's IP
+as Cloudflare reports it (`cf-connecting-ip`, then `x-real-ip`, then the last `x-forwarded-for`
+hop: `clientIp` in `src/lib/aa/rate-limit.ts`), for `/api/graphql` and `/api/aa/rpc` alike. Every
+test gets its own IP in both headers (the `testIp` fixture). `/api/graphql` allows a visitor a
+burst of sixty requests that refills one a second; `support/graphql-limit.ts` uses it up and
+watches a page's answers (P8 to P10). One limit still applies inside a test: five
 paymaster calls a minute per sender, two per sponsored send, so a persona's third sponsored
 send in quick succession is refused. Split such a scenario, or seed with `chain.sendSponsored`,
 which does not go through the proxy.
@@ -159,7 +162,7 @@ can be given (no `NEXT_PUBLIC_*`, which the build fixes, and no `E2E_*`). The se
 with empty in-memory counts and stops at the end of the test, which costs a few seconds; its
 log is attached to a failed test. It stops by itself when the worker that started it is gone
 (`support/stack/app-variant.mjs`). Used by `features/api/aa-rpc-profile-limits.api.spec.ts`
-(P9 to P11) and `features/onboarding/onboarding-sponsorship-limits.spec.ts` (C17 to C19).
+(P11 to P13) and `features/onboarding/onboarding-sponsorship-limits.spec.ts` (C17 to C19).
 
 **Keys.** All test keys derive from the TEST-ONLY mnemonic in `env/hermetic.json`. It is
 public on purpose and only ever used on the local fork. Never fund those addresses on a real
@@ -199,7 +202,7 @@ and `src/lib/e2e-timing.ts` uses it in place of those intervals:
 | Receipt of a sponsored user operation (`send-sponsored-user-operation.ts`) | 4 s, viem's default | 200 ms |
 | Retry after AA10 (`AA10_RETRY_MS`) | 3 s | 200 ms |
 | Status of a `wallet_sendCalls` batch (`account-capabilities.ts`) | 3 s | 200 ms |
-| Subgraph sync (`useWaitForSubgraphSync`) | 1 s | 500 ms: each poll is a request to `/api/graphql`, which allows a visitor 60 a minute |
+| Subgraph sync (`useWaitForSubgraphSync`) | 1 s | 500 ms: each poll is a request to `/api/graphql`, which allows a visitor a burst of 60 that refills one a second |
 
 The value is compiled into the bundle and ignored unless the bundle is the suite's own build
 (see "The lock on the test switches"), when it is not a whole number from 50 to 1000, and when
@@ -486,6 +489,7 @@ whichever it is.
 | `emitProviderDisconnect()`, `emitProviderConnect()` | The raw EIP-1193 `disconnect` / `connect` events. |
 | `setCapabilities("atomic")` | Answer EIP-5792 (`wallet_sendCalls`). The calls are sent one after another, not as a real atomic batch. |
 | `setAllowSendTransaction(false)` | Refuse transactions and record them as `refused`. |
+| `stopAnswering(method)` | Every request of that method stays unanswered (a hung wallet) until the handle's `release()`; `hits()` counts them. Released after each test. |
 
 The request log is how a test knows who paid. `wallet.requests` holds every request with its
 outcome (`ok`, `error`, `rejected`, `refused`); `signatureRequests()`,
@@ -604,7 +608,7 @@ Pimlico and the bundler without having been recorded. The proxy's two rate limit
 in the stack: `features/api/aa-rpc.api.spec.ts` (P7) and O15 in
 `features/tx-failures/sponsorship-refused.spec.ts` use them up with requests built by
 `support/aa/requests.ts` and compare the real answer with the copy. So are the limits on
-sponsored account creation, on a second app server (P9 to P11, C17 to C19). A refusal with
+sponsored account creation, on a second app server (P11 to P13, C17 to C19). A refusal with
 code -32005 reaches the page up to four times: viem's transport repeats a "limit exceeded"
 call three times before the app sees the error.
 
@@ -648,24 +652,24 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 349 tests. 44 of them are expected to fail on confirmed app bugs (31 in the
+of every run: 363 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 301 passed, 31 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 316 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
 | Area | Folder | Verified | Written, unverified | Not written, and why |
 |---|---|---|---|---|
 | A Shell, navigation, static content | `shell` | 19 tests: A1 to A9, A10 (Welcome card), A11 (one A5 and one A11 test are fixme: the "What is this?" copy and the X/Discord links, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
-| B Wallet connection and network | `connect` | 17 tests: B-1 to B-9, B-12; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
+| B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
 | C Onboarding | `onboarding` | 22 tests: C1 to C19 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
-| F Accounts directory, public profiles | `accounts` | 17 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 and one F8 on their own bugs: expected failures) | – | – |
+| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 on its own bug: expected failures) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 (G3 typing into Created by and G11 logged out are expected failures) | – | G12 with only `totalSupply` failing. |
-| H Mint, burn, transfer | `badge-actions` | 19 tests: H1 to H14 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
+| H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
 | I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug, I6 image preview and both I7: expected failures) | – | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |
 | J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 (K9 "1 holders" is an expected failure) | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
@@ -673,9 +677,9 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
 | O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
-| P Server routes | `api` | 74 tests: P1 to P11 | – | The proxy's daily limits for profile updates and invites. |
+| P Server routes | `api` | 78 tests: P1 to P13 | – | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
-| The foundation itself | `stack` | 22 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
+| The foundation itself | `stack` | 23 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
 
 Every expected failure was seen failing at its marked assertion in a run. One suspected bug
 is not marked: M6's bid that may not be placed by itself after the approval

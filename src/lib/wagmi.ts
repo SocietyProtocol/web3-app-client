@@ -41,15 +41,80 @@ export const wagmiConfig = getDefaultConfig({
   ),
 });
 
+/**
+ * How long pages wait for wagmi's reconnect before rendering anyway, for a
+ * browser that has never connected a wallet here. reconnect() awaits every
+ * connector with no timeout (the injected connector asks eth_accounts and
+ * waits for the answer), so one wallet that never answers would otherwise
+ * keep pages loading for good.
+ */
+export const WAGMI_READY_TIMEOUT_MS = 3_000;
+
+/**
+ * The same wait, in all, for a browser that has connected a wallet here
+ * before. With `ssr: true` wagmi does not restore the saved connection
+ * before it reconnects, so a returning member goes through "connecting"
+ * like a visitor; rendering after 3 s would show them as logged out while
+ * their wallet is merely slow to answer. They wait longer instead.
+ */
+export const WAGMI_RECONNECT_TIMEOUT_MS = 15_000;
+
 let unwatchAccount: (() => void) | null = null;
+let readyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function markWagmiReady() {
+  jotaiStore.set(wagmiReadyAtom, true);
+
+  if (unwatchAccount) {
+    unwatchAccount();
+    unwatchAccount = null;
+  }
+  if (readyTimeout) {
+    clearTimeout(readyTimeout);
+    readyTimeout = null;
+  }
+}
+
+/**
+ * Whether a wallet was ever connected in this browser: wagmi keeps the
+ * connector's id, also after a disconnect, so someone who disconnected
+ * waits the longer time too if their wallet hangs.
+ */
+async function hasConnectedBefore(): Promise<boolean> {
+  try {
+    return Boolean(await wagmiConfig.storage?.getItem("recentConnectorId"));
+  } catch {
+    return false;
+  }
+}
+
+/** The short wait is over: render, unless this browser has connected before. */
+async function onReadyTimeout() {
+  readyTimeout = null;
+  if (jotaiStore.get(wagmiReadyAtom)) return;
+  if (!(await hasConnectedBefore())) {
+    markWagmiReady();
+    return;
+  }
+  // The reconnect may have settled while storage was read.
+  if (jotaiStore.get(wagmiReadyAtom)) return;
+  readyTimeout = setTimeout(
+    markWagmiReady,
+    WAGMI_RECONNECT_TIMEOUT_MS - WAGMI_READY_TIMEOUT_MS,
+  );
+}
 
 /**
  * Initializes wagmi account watching to track connection state.
  * Should be called once during app initialization.
- * Automatically unwatches once wagmi is ready.
+ * Automatically unwatches once wagmi is ready, or once the reconnect
+ * attempt has not settled after WAGMI_READY_TIMEOUT_MS (a browser that has
+ * never connected a wallet here) or WAGMI_RECONNECT_TIMEOUT_MS (one that
+ * has). Pages read the account from wagmi and still update if a wallet
+ * connects later.
  */
 export function initializeWagmiWatcher() {
-  if (unwatchAccount) {
+  if (unwatchAccount || jotaiStore.get(wagmiReadyAtom)) {
     // Already initialized
     return;
   }
@@ -59,13 +124,13 @@ export function initializeWagmiWatcher() {
       if (!jotaiStore.get(wagmiConnectionAttemptedAtom) && data.isConnecting) {
         jotaiStore.set(wagmiConnectionAttemptedAtom, true);
       } else if (!jotaiStore.get(wagmiReadyAtom) && !data.isConnecting) {
-        jotaiStore.set(wagmiReadyAtom, true);
-
-        if (unwatchAccount) {
-          unwatchAccount();
-          unwatchAccount = null;
-        }
+        markWagmiReady();
       }
     },
   });
+
+  readyTimeout = setTimeout(
+    () => void onReadyTimeout(),
+    WAGMI_READY_TIMEOUT_MS,
+  );
 }

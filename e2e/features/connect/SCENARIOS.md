@@ -29,3 +29,6 @@ a self-funded user operation): re-read `src/lib/outpost-routing.ts` before autom
 | B-10 | Contract wallet acts as itself: no owner row, no Light Account | CW | W C | @edge | `connect/identity.spec.ts`, identity only: code is put at the test wallet's address |
 | B-11 | 7702-delegated EOA still gets a Light Account identity | NEW | W C | @edge | `connect/identity.spec.ts`, identity only |
 | B-12 | Bytecode read fails: falls back to the Light Account, no infinite skeleton | NEW | W | @edge | `connect/identity.spec.ts` |
+| B-13 | A wallet that never answers `eth_accounts` on load: a visitor who never connected gets `/user/<address>` and the `/profile` connect card after the 3 s fallback, and can still connect | LO | W | @core | `connect/session-restore.spec.ts` |
+| B-14 | A returning member whose wallet answers only after the 3 s fallback: skeleton, never the logged-out card, then the restored session | MEM | W | @core | `connect/session-restore.spec.ts` |
+| B-15 | A returning member whose wallet never answers: the logged-out page after the 15 s wait, not a skeleton for good | MEM | W | @edge | `connect/session-restore.spec.ts` |

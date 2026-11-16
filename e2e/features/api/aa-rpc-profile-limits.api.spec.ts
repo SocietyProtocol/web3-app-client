@@ -49,7 +49,7 @@ test.describe("/api/aa/rpc: one sponsored new account per visitor IP per day", (
   test.use({ appEnv: { SPONSORED_PROFILES_PER_IP_PER_DAY: "1", SPONSORED_PROFILE_INTERVAL_SECONDS: "0" } });
 
   test(
-    "P9: a visitor's first new account of the day is sponsored; the second is refused on the signing call, and other visitors are still served",
+    "P11: a visitor's first new account of the day is sponsored; the second is refused on the signing call, and other visitors are still served",
     { tag: ["@core", "@sponsored"] },
     async ({ api, chain, nextAccount }) => {
       const ask = { api, chain, nextAccount };
@@ -70,7 +70,7 @@ test.describe("/api/aa/rpc: one sponsored new account per visitor IP per day", (
   );
 
   test(
-    "P9: an IPv6 visitor is counted per /64, so a new address in the same block does not buy another account",
+    "P11: an IPv6 visitor is counted per /64, so a new address in the same block does not buy another account",
     { tag: ["@edge", "@sponsored"] },
     async ({ api, chain, nextAccount }) => {
       const ask = { api, chain, nextAccount };
@@ -87,7 +87,7 @@ test.describe("/api/aa/rpc: one sponsored new account app-wide per interval", ()
   test.use({ appEnv: { SPONSORED_PROFILES_PER_IP_PER_DAY: "0", SPONSORED_PROFILE_INTERVAL_SECONDS: "300" } });
 
   test(
-    "P10: a new account from another visitor inside the interval is refused, while that visitor's other sponsored calls are served",
+    "P12: a new account from another visitor inside the interval is refused, while that visitor's other sponsored calls are served",
     { tag: ["@core", "@sponsored"] },
     async ({ api, chain, nextAccount }) => {
       const ask = { api, chain, nextAccount };
@@ -107,7 +107,7 @@ test.describe("/api/aa/rpc: the limits follow the environment", () => {
     test.use({ appEnv: { SPONSORED_PROFILES_PER_IP_PER_DAY: "2", SPONSORED_PROFILE_INTERVAL_SECONDS: "0" } });
 
     test(
-      "P11: SPONSORED_PROFILES_PER_IP_PER_DAY=2 sponsors a visitor's first two new accounts and refuses the third",
+      "P13: SPONSORED_PROFILES_PER_IP_PER_DAY=2 sponsors a visitor's first two new accounts and refuses the third",
       { tag: ["@core", "@sponsored"] },
       async ({ api, chain, nextAccount }) => {
         const ask = { api, chain, nextAccount };
@@ -121,7 +121,7 @@ test.describe("/api/aa/rpc: the limits follow the environment", () => {
   });
 
   test(
-    "P11: with both limits at 0 (the suite's own app) a visitor's new accounts are all sponsored, back to back",
+    "P13: with both limits at 0 (the suite's own app) a visitor's new accounts are all sponsored, back to back",
     { tag: ["@core", "@sponsored"] },
     async ({ api, chain, nextAccount, testIp }) => {
       // The stack's app, which every other test uses. Three new accounts

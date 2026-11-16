@@ -220,6 +220,67 @@ describe("/api/graphql", () => {
     });
   });
 
+  describe("rate limit", () => {
+    // A text body is refused with 415 after the rate-limit check, so a
+    // served request makes no upstream call. The clock is frozen, so no
+    // token refills while a loop runs.
+    const fromVisitor = (ip: string, forwardedFor = "route-test-edge") =>
+      POST(
+        new Request("http://localhost/api/graphql", {
+          method: "POST",
+          headers: {
+            "content-type": "text/plain",
+            "cf-connecting-ip": ip,
+            "x-forwarded-for": forwardedFor,
+          },
+          body: "{}",
+        }),
+      );
+    const useUp = async (ip: string) => {
+      for (let i = 0; i < 60; i += 1) {
+        expect((await fromVisitor(ip)).status).toBe(415);
+      }
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("keys on the visitor IP, not on the Cloudflare edge or a forwarded hop", async () => {
+      const upstreamFetch = vi.spyOn(globalThis, "fetch");
+
+      await useUp("route-test-visitor-a");
+      const refused = await fromVisitor("route-test-visitor-a");
+      expect(refused.status).toBe(429);
+      expect(refused.headers.get("retry-after")).toBe("60");
+      // Another forwarded hop does not give the visitor a fresh bucket.
+      expect((await fromVisitor("route-test-visitor-a", "route-test-other-edge")).status).toBe(429);
+      // Another visitor behind the same edge is served.
+      expect((await fromVisitor("route-test-visitor-b")).status).toBe(415);
+      expect(upstreamFetch).not.toHaveBeenCalled();
+    });
+
+    it("serves a burst of sixty, then one request a second, and the whole burst after a minute", async () => {
+      await useUp("route-test-refill");
+      expect((await fromVisitor("route-test-refill")).status).toBe(429);
+
+      vi.advanceTimersByTime(999);
+      expect((await fromVisitor("route-test-refill")).status).toBe(429);
+      vi.advanceTimersByTime(1);
+      expect((await fromVisitor("route-test-refill")).status).toBe(415);
+      expect((await fromVisitor("route-test-refill")).status).toBe(429);
+
+      vi.advanceTimersByTime(60_000);
+      await useUp("route-test-refill");
+      expect((await fromVisitor("route-test-refill")).status).toBe(429);
+    });
+  });
+
   it("limits request bodies and accepts POST only", async () => {
     const tooLarge = new Request("http://localhost/api/graphql", {
       method: "POST",

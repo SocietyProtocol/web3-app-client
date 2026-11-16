@@ -394,7 +394,10 @@ test.describe("community detail: looking at a community", () => {
     { tag: ["@core"] },
     async ({ page, subgraph }) => {
       const detail = new CommunityDetailPage(page);
-      const guild = fakeCommunity({ id: 9_100_511, name: "K5 Search Guild", members: 23 });
+      // Names on profile Metadata, as the real subgraph has them: graph-node
+      // cannot reach them from a membership filter (user_.metadata_ is two
+      // child-filter levels), so the search must find them another way.
+      const guild = fakeCommunity({ id: 9_100_511, name: "K5 Search Guild", members: 23, namesInMetadata: true });
       await subgraph.overlay(guild.ops);
       const newestFirst = [...guild.members].reverse();
       const addresses = (members: typeof guild.members) => members.map((member) => member.address);

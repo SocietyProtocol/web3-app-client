@@ -26,7 +26,7 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   } | null>(null);
 
   const user = useUserQuery(userAddress);
-  const profileId = useProfileId(userAddress);
+  const onChainProfileId = useProfileId(userAddress);
 
   const username = useMemo(
     () =>
@@ -89,7 +89,7 @@ export const useProfileMutation = (overrideAddress?: Address) => {
       ["user", userAddress?.toLowerCase()],
       ["users"],
       // The on-chain read decides the setup prompt while the subgraph lags.
-      profileId.queryKey,
+      onChainProfileId.queryKey,
     ],
     onSuccess: (transactionReceipt) => {
       const pendingProfileEvent = pendingProfileEventRef.current;

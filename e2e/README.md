@@ -661,11 +661,11 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 367 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
+of every run: 367 tests. 42 of them are expected to fail on confirmed app bugs (29 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 320 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 321 passed, 29 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 

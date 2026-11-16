@@ -125,20 +125,13 @@ test.describe("badge actions: mint", () => {
       expect(await chain.badgeBalance(holder.address, badge.id)).toBe(BigInt(2));
       expect(await chain.badgeTotalSupply(badge.id)).toBe(BigInt(2));
 
-      // APP BUG, expected to fail until it is fixed: the page keeps showing
-      // "1 / 1" for the holder after "Badge minted successfully", until it is
-      // reloaded. useMintBadgeMutation invalidates the subgraph queries
-      // (["badge", id], ...), but the amounts come from the chain reads of
-      // useBadgeQuantities (balanceOf / totalSupply through wagmi's
-      // useReadContracts), which nothing refetches: the holder list is the
-      // same, so their query keys do not change either. Everything above
-      // this line must pass; only the assertion below is expected to fail.
-      test.fail(true, "holder amounts are not refetched after a mint (useBadgeQuantities)");
-      // Short on purpose: a known failure should not cost a long wait. Five
-      // seconds is still many times what a fixed app needs here (one chain read after the success toast),
-      // so a fix shows up as an unexpected pass. Remove this timeout
-      // together with test.fail.
-      await expect(holderChip).toHaveText("2 / 2", { timeout: 5_000 });
+      // The page shows the new amount without a reload. The amounts come
+      // from the chain reads of useBadgeQuantities (balanceOf / totalSupply
+      // through wagmi's useReadContracts), whose query keys do not change
+      // when the holder list stays the same, so this holds only because the
+      // mint invalidates the badge contract's chain reads (it once
+      // invalidated the subgraph queries only, and the card kept "1 / 1").
+      await expect(holderChip).toHaveText("2 / 2");
     },
   );
 });

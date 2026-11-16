@@ -6,6 +6,7 @@ import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeMintTransfers } from "@/data/badges/decodeUtils";
+import { badgeContractReadsQueryKeys } from "@/data/badges/queryKeys";
 
 interface BadgeMintData {
   id: bigint;
@@ -24,8 +25,9 @@ export const useMintBadgeMutation = ({
   args,
 }: UseMintBadgeMutationProps) => {
   const { address } = useOutpostAccount();
+  const badges = useChainVar(contracts.badges);
   return useTransaction({
-    address: useChainVar(contracts.badges),
+    address: badges,
     abi: SocietyProtocolBadgesABI,
     functionName: "mintToMultiple",
     args: args
@@ -39,6 +41,8 @@ export const useMintBadgeMutation = ({
       ["community"],
       ["community-members"],
       ["community-members-infinite"],
+      // The holders' amounts and the total supply are chain reads.
+      ...badgeContractReadsQueryKeys(badges),
     ],
     onSuccess: (receipt) => {
       const mints = decodeMintTransfers(receipt);

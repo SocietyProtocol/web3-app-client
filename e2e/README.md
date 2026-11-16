@@ -679,16 +679,17 @@ Say so in the pull request: this branch is not test-only.
 ## CI
 
 `.github/workflows/e2e.yml` runs the suite on `ubuntu-24.04` without any secret, so it also
-runs for pull requests from forks. It never deploys.
+runs for pull requests from forks. It never deploys anything itself.
 
 | Event | Tests |
 |---|---|
 | Pull request | The `@smoke` tests, plus every test of a spec file the pull request added or changed (`support/ci/pr-grep.mjs` turns the changed files into one `--grep`). |
-| Push to `staging` | Everything. |
+| Push to `main` or `staging` | Everything. Started by `deploy-aws.yml` (see "Tests before a deploy"), not by a trigger of its own. |
 | Run by hand (`workflow_dispatch`) | Everything, with the number of workers you enter. |
 
 `@unverified` tests run in none of them. A pull request that changes only app code or the
-suite's support code runs the smoke tests only; the full set follows on `staging`. Cached
+suite's support code runs the smoke tests only; the full set follows on the push to `main`
+or `staging`, before that commit is deployed. Cached
 between runs: yarn's download cache, `e2e/aa-stack/node_modules`, Chromium
 (`~/.cache/ms-playwright`) and the Next compiler cache (`.next/cache`). The app is still
 built from the commit's sources every time. A failed run keeps the HTML report and the
@@ -706,8 +707,29 @@ repository has four); more would show up as timeouts and killed processes that l
 flaky tests.
 
 The projects depend on each other (see "Run it"), so one test of `hermetic` that stays red
-skips `hermetic-serial` and `hermetic-timetravel` in that run. The deploy workflow
-(`deploy-aws.yml`) is separate and does not wait for this one.
+skips `hermetic-serial` and `hermetic-timetravel` in that run, and the commit is not deployed.
+
+### Tests before a deploy
+
+`.github/workflows/deploy-aws.yml` is the only workflow a push to `main` or `staging` starts.
+It calls `ci.yml` (lint, type-check, unit tests) and `e2e.yml` (this suite, every test) as
+reusable workflows on the pushed commit, and its deploy job runs only when both succeed for
+that same commit. A red, cancelled or skipped test run means no deploy; nothing is deployed
+untested, and there is no way to skip the tests for a push. `ci.yml` and `e2e.yml` keep their
+own `pull_request` trigger, so a pull request still gets both, without a deploy.
+
+- **Pull requests** cancel their older runs when a new commit is pushed to them.
+- **Pushes** are never cancelled once their tests have started, so every pushed commit gets a
+  verdict. While one push's tests run, a second push to the same branch waits; a third
+  replaces the second in that queue, and the replaced commit is not deployed.
+- **Only the branch tip deploys.** When its tests pass, the deploy job first checks that the
+  commit is still the tip of its branch. If the branch has moved on, it skips the deploy
+  (a notice in the run says so): the newer commit deploys after its own tests pass, and an
+  older one never overwrites it. If the newer commit's tests fail, the box keeps the last
+  version that passed.
+- **One deploy per branch at a time**, never cancelled half-way; a newer deploy of the same
+  branch waits for the running one. `main` (prod) and `staging` deploy independently, and
+  the two builds take turns on the shared box (a lock in `.github/scripts/deploy-outpost.sh`).
 
 The workflows use the action versions the repository already used (`actions/checkout@v4`
 and so on). Pinning each action to a commit is left to do: it needs a look at the actions'

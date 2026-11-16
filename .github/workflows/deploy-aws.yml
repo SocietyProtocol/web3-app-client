@@ -26,10 +26,13 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    # One box serves both branches: one deploy at a time, never cancelled
-    # half-way.
+    # One deploy per branch at a time, never cancelled half-way; a newer one of
+    # the same branch waits. Per branch, because GitHub drops a pending job when
+    # another one joins its group: with one group for both branches a staging
+    # push could silently drop a waiting prod deploy. The two branches' builds
+    # take turns on the shared box through a lock in deploy-outpost.sh.
     concurrency:
-      group: aws-outpost-web
+      group: aws-outpost-web-${{ github.ref_name }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4

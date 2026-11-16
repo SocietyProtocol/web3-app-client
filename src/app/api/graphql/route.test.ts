@@ -220,6 +220,31 @@ describe("/api/graphql", () => {
     });
   });
 
+  it("rate-limits per visitor IP, not per Cloudflare edge", async () => {
+    const upstreamFetch = vi.spyOn(globalThis, "fetch");
+    // A text body is refused with 415 after the rate-limit check, so no
+    // upstream call is made.
+    const fromVisitor = (ip: string) =>
+      POST(
+        new Request("http://localhost/api/graphql", {
+          method: "POST",
+          headers: {
+            "content-type": "text/plain",
+            "cf-connecting-ip": ip,
+            "x-forwarded-for": "route-test-edge",
+          },
+          body: "{}",
+        }),
+      );
+
+    for (let i = 0; i < 60; i += 1) {
+      expect((await fromVisitor("route-test-visitor-a")).status).toBe(415);
+    }
+    expect((await fromVisitor("route-test-visitor-a")).status).toBe(429);
+    expect((await fromVisitor("route-test-visitor-b")).status).toBe(415);
+    expect(upstreamFetch).not.toHaveBeenCalled();
+  });
+
   it("limits request bodies and accepts POST only", async () => {
     const tooLarge = new Request("http://localhost/api/graphql", {
       method: "POST",

@@ -1,4 +1,5 @@
 import { parse, print, type DocumentNode } from "graphql";
+import { clientIp } from "@/lib/aa/rate-limit";
 import { getGraphGatewayEnv } from "@/lib/server-env";
 import { PERSISTED_GRAPH_DOCUMENTS } from "@/lib/persisted-graphql.generated";
 import { stripDataUriImages } from "@/lib/strip-data-uri";
@@ -30,16 +31,9 @@ function jsonError(message: string, status: number, headers?: HeadersInit) {
   );
 }
 
-function getClientKey(request: Request) {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",", 1)[0]?.trim() ||
-    "unknown"
-  );
-}
-
 function isRateLimited(request: Request) {
   const now = Date.now();
-  const key = getClientKey(request);
+  const key = clientIp(request.headers);
   const current = requestCounts.get(key);
 
   if (!current || current.resetAt <= now) {

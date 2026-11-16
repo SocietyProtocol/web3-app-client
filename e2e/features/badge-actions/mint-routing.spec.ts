@@ -184,22 +184,13 @@ test.describe("badge actions: who sends a mint and who pays", () => {
       const newHolderChip = pages.badge.holderAmountChip(pages.badge.holders.row(recipient.address));
       await expect(newHolderChip).toHaveAttribute("data-count", "1");
 
-      // APP BUG, expected to fail until it is fixed (the one of H2 in
-      // mint.spec.ts, seen from a new recipient): both cards read "1 / 1"
-      // after "Badge minted successfully", although the supply is 2 now.
-      // The new holder's balance is a new chain read, so it is right; the
-      // total supply is not read again, because useMintBadgeMutation
-      // invalidates the subgraph queries only and the totalSupply read of
-      // useBadgeQuantities keeps its key. A reload shows "1 / 2" (previous
-      // test). Everything above this line must pass; only the assertions
-      // below are expected to fail.
-      test.fail(true, "the total supply on the holder cards is not refetched after a mint (useBadgeQuantities)");
-      // Short on purpose: a known failure should not cost a long wait. Five
-      // seconds is still many times what a fixed app needs here (one chain read after the success toast),
-      // so a fix shows up as an unexpected pass. Remove this timeout
-      // together with test.fail.
-      await expect(newHolderChip).toHaveText("1 / 2", { timeout: 5_000 });
-      await expect(firstHolderChip).toHaveText("1 / 2", { timeout: 5_000 });
+      // Both cards show the new total supply without a reload. The
+      // totalSupply read of useBadgeQuantities keeps its query key (same
+      // badge), so this holds only because the mint invalidates the badge
+      // contract's chain reads (it once invalidated the subgraph queries
+      // only, and both cards kept reading "1 / 1").
+      await expect(newHolderChip).toHaveText("1 / 2");
+      await expect(firstHolderChip).toHaveText("1 / 2");
     },
   );
 

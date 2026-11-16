@@ -100,7 +100,9 @@ test.describe("badge actions: burn and transfer", () => {
       await expect(actions.burnSubmit).toBeDisabled();
 
       // Still a holder, with one unit of one, as the page shows once it is
-      // loaded again (without the reload the amount is stale: the app bug of H2).
+      // loaded again (without the reload the amount is stale: the burn does
+      // not invalidate the chain reads of useBadgeQuantities, the bug H2 had
+      // before the mint was fixed).
       await page.reload();
       await expect(pages.shell.accountButton).toBeVisible();
       await expect(pages.badge.holders.section).toContainText("Holders (1)");

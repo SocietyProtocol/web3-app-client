@@ -19,7 +19,7 @@ import { OverridableStringUnion } from "@mui/types";
 import { ConnectButton as RainbowConnectButton } from "@rainbow-me/rainbowkit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ErrorIcon from "@mui/icons-material/Error";
-import { Avatar } from "../Avatar/Avatar";
+import { UserAvatar } from "../Avatar/UserAvatar";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { mergeSx } from "@/utils/sx";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
@@ -168,9 +168,13 @@ export const ConnectButton = ({
                   flexGrow={1}
                   spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                 >
-                  <Avatar
+                  {/* Not <Avatar>: it would ask for this same User query
+                      with an observer of its own, and a new observer on a
+                      failed query fetches it again on mount, which puts this
+                      button back into its skeleton, and so on forever. */}
+                  <UserAvatar
                     address={societyAddress}
-                    ensImage={data?.imageUrl}
+                    imageUrl={data?.imageUrl}
                     size={24}
                     loading={isLoading}
                   />

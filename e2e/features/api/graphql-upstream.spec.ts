@@ -48,10 +48,11 @@ test.describe("pages while the subgraph is down", () => {
 
       // The page settles: the header shows the account button once the
       // member's query has ended, here once the app has given up retrying it
-      // (three retries, 1 + 2 + 4 s). Until a fix, /profile mounted
-      // ContentGuard on the failed query, whose new observer made TanStack
-      // Query fetch it again on mount (`retryOnMount`), so the page and the
-      // header stayed skeletons and the query was sent forever.
+      // (three retries, 1 + 2 + 4 s). Until a fix, two components mounted a
+      // new observer on the failed query, and TanStack Query fetches a failed
+      // query again when an observer mounts (`retryOnMount`): /profile's
+      // ContentGuard, and the Avatar inside the header's account button. The
+      // page and the header stayed skeletons and the query was sent forever.
       await expect(pages.shell.accountButton).toBeVisible();
 
       // Nothing pretends: no profile made of nothing, and no invitation to
@@ -64,7 +65,14 @@ test.describe("pages while the subgraph is down", () => {
       // The page says that the profile could not be loaded and offers a
       // retry; it is not an empty page (ContentGuard's "no profile" branch).
       await expect(errorState(page)).toBeVisible({ timeout: 2_000 });
-      await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+      const retry = page.getByRole("button", { name: "Retry" });
+      await expect(retry).toBeVisible();
+
+      // The subgraph is back: Retry loads the profile.
+      await subgraph.clearFaults();
+      await retry.click();
+      await expect(pages.profile.details).toBeVisible();
+      await expect(errorState(page)).toBeHidden();
     },
   );
 

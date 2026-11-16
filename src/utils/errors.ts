@@ -4,9 +4,12 @@ import {
   ValidationErrorDetails,
 } from "@/errors/ValidationError";
 import {
+  Abi,
+  Address,
   BaseError,
   ContractFunctionExecutionError,
   ContractFunctionRevertedError,
+  getContractError,
 } from "viem";
 
 /**
@@ -244,6 +247,36 @@ export function parseErrorMessage(
   }
 
   return defaultMessage;
+}
+
+/**
+ * Names the contract error in a failure that only carries the raw revert data.
+ *
+ * wagmi's wait for a receipt replays a reverted transaction without an ABI,
+ * so its error reads "custom error 0x...". Decoding that data with the ABI of
+ * the call that was sent gives the error parseErrorMessage maps to the app's
+ * wording. Any other error, or data the ABI does not know, is returned as is.
+ */
+export function withDecodedRevert(
+  error: unknown,
+  call: {
+    abi: readonly unknown[];
+    functionName: string;
+    args?: readonly unknown[];
+    address?: Address;
+  },
+): unknown {
+  if (!(error instanceof BaseError)) return error;
+  const contractError = getContractError(error, {
+    abi: call.abi as Abi,
+    functionName: call.functionName,
+    args: call.args,
+    address: call.address,
+  });
+  return contractError.cause instanceof ContractFunctionRevertedError &&
+    contractError.cause.data
+    ? contractError
+    : error;
 }
 
 /**

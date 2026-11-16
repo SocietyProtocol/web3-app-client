@@ -1,15 +1,16 @@
 "use client";
 
 import { BadgeCard } from "./BadgeCard";
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { useLoadingBar } from "react-top-loading-bar";
 import { Stack, Box, Tabs, Tab, Typography, Button } from "@mui/material";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
-import { isAddress } from "viem";
 import { FilterSelect } from "../FilterSelect/FilterSelect";
 import { CreatedByOption, TabOption } from "../../data/badges/types";
 import { useBadges } from "@/data/badges/useBadges";
 import { filterOptions, sortOptions } from "../../data/badges/consts";
+import { createdByAddressText } from "@/data/badges/utils";
+import { addressParser } from "@/lib/nuqs";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 import { SearchBox } from "@/components/Common/SearchBox";
 import { BadgeCategoryFilter } from "./BadgeCategoryFilter";
@@ -82,8 +83,15 @@ export const Badges = () => {
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+  // The page address holds only a whole address; the text typed so far
+  // is kept here so the field does not drop each key.
+  const [typedCreatedByAddress, setTypedCreatedByAddress] = useState(
+    createdByAddress ?? "",
+  );
+
   const onCreatedByAddressChange = (value: string) => {
-    setCreatedByAddress(isAddress(value) ? value : null);
+    setTypedCreatedByAddress(value);
+    setCreatedByAddress(addressParser.parse(value));
   };
 
   return (
@@ -173,11 +181,15 @@ export const Badges = () => {
               onChange={(value) => {
                 setCreatedBy(value);
                 if (value !== CreatedByOption.Address) {
+                  setTypedCreatedByAddress("");
                   setCreatedByAddress(null);
                 }
               }}
               customOption={CreatedByOption.Address}
-              customInputValue={createdByAddress ?? undefined}
+              customInputValue={createdByAddressText(
+                typedCreatedByAddress,
+                createdByAddress,
+              )}
               onCustomInputChange={onCreatedByAddressChange}
               customInputPlaceholder="0x..."
             />

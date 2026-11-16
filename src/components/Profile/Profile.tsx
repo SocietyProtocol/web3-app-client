@@ -7,9 +7,12 @@ import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
+import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
+import { Button } from "@mui/material";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { profileView } from "./profileView";
 
 export const Profile = () => {
   const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
@@ -34,8 +37,28 @@ export const Profile = () => {
     setAccountSetupOpen(false);
   }, [isConnected, address, setAccountSetupOpen]);
 
-  if (!wagmiReady || user.isLoading) {
+  const view = profileView({
+    wagmiReady,
+    isLoading: user.isLoading,
+    isError: user.isError,
+    hasData: user.data !== undefined,
+  });
+
+  if (view === "loading") {
     return <AccountSkeleton />;
+  }
+
+  if (view === "error") {
+    return (
+      <ErrorDisplay
+        error={user.error}
+        action={
+          <Button onClick={() => user.refetch()} variant="contained">
+            Retry
+          </Button>
+        }
+      />
+    );
   }
 
   return (

@@ -32,3 +32,4 @@ a self-funded user operation): re-read `src/lib/outpost-routing.ts` before autom
 | B-13 | A wallet that never answers `eth_accounts` on load: a visitor who never connected gets `/user/<address>` and the `/profile` connect card after the 3 s fallback, and can still connect | LO | W | @core | `connect/session-restore.spec.ts` |
 | B-14 | A returning member whose wallet answers only after the 3 s fallback: skeleton, never the logged-out card, then the restored session | MEM | W | @core | `connect/session-restore.spec.ts` |
 | B-15 | A returning member whose wallet never answers: the logged-out page after the 15 s wait, not a skeleton for good | MEM | W | @edge | `connect/session-restore.spec.ts` |
+| B-16 | Phone inside a wallet's in-app browser (iPhone, 390 px, Rabby): the picker lists the injected wallet once, and tapping it asks the wallet for accounts | LO | W | @core | `connect/mobile.spec.ts`, @unverified |

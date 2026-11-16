@@ -6,6 +6,7 @@ import {
   wagmiReadyAtom,
 } from "@/atoms/wagmiReady";
 import { jotaiStore } from "./jotai";
+import { walletList } from "./wallets";
 
 import { env } from "@/lib/env";
 import { e2ePollingOption } from "@/lib/e2e-timing";
@@ -28,6 +29,10 @@ export const transports = {
 export const wagmiConfig = getDefaultConfig({
   appName: "Society Protocol",
   projectId: env.wcProjectId,
+  // An explicit list: RainbowKit builds the connectors with
+  // connectorsForWallets(wallets, ...). Its default list has no injected
+  // wallet, which phones need (see ./wallets).
+  wallets: walletList,
   chains: SUPPORTED_CHAINS,
   ssr: true,
   // Empty in every real deployment: wagmi keeps its own polling interval.

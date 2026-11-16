@@ -97,8 +97,15 @@ const PROVIDER_ICON =
  * "generic": an EIP-6963 wallet RainbowKit has never heard of. It is listed
  *   under "Installed" as rk-wallet-option-<rdns> and uses wagmi's plain
  *   injected connector.
+ * "rabby": what Rabby's own provider looks like (isRabby, and isMetaMask for
+ *   sites that only know MetaMask), announced through EIP-6963 as io.rabby.
+ *   Meant for phone tests: there RainbowKit drops EIP-6963 wallets, and the
+ *   app's wallet list (src/lib/wallets.ts) shows its Rabby entry because the
+ *   provider is injected, as rk-wallet-option-rabby. (On a desktop the
+ *   EIP-6963 entry would replace it; check its test id before using this
+ *   identity there.)
  */
-export type WalletIdentity = "metamask" | "generic";
+export type WalletIdentity = "metamask" | "generic" | "rabby";
 
 export const WALLET_IDENTITIES: Record<WalletIdentity, InjectedProviderInfo & { pickerTestId: string }> = {
   metamask: {
@@ -116,6 +123,15 @@ export const WALLET_IDENTITIES: Record<WalletIdentity, InjectedProviderInfo & { 
     rdns: "io.societyprotocol.e2e-wallet",
     isMetaMask: false,
     pickerTestId: "rk-wallet-option-io.societyprotocol.e2e-wallet",
+  },
+  rabby: {
+    uuid: "6f0d1b4e-2e2e-4e2e-9e2e-e2e000000003",
+    name: "Rabby Wallet",
+    icon: PROVIDER_ICON,
+    rdns: "io.rabby",
+    isMetaMask: true,
+    flags: { isRabby: true },
+    pickerTestId: "rk-wallet-option-rabby",
   },
 };
 
@@ -237,8 +253,8 @@ export class TestWallet {
     await context.exposeBinding("__e2eWalletRequest", (_source, request) =>
       this.handle(request as { method: string; params?: unknown }),
     );
-    const { uuid, name, icon, rdns, isMetaMask } = WALLET_IDENTITIES[this.identity];
-    await context.addInitScript(injectedProvider, { uuid, name, icon, rdns, isMetaMask });
+    const { uuid, name, icon, rdns, isMetaMask, flags } = WALLET_IDENTITIES[this.identity];
+    await context.addInitScript(injectedProvider, { uuid, name, icon, rdns, isMetaMask, flags });
   }
 
   // ---- what the "user" does in the wallet -------------------------------

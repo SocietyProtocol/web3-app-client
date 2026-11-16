@@ -51,21 +51,21 @@ export function mintCall(badgeId: bigint, recipients: Address[]): Hex {
   });
 }
 
-/** burn(holder, badgeId, 1): the call the Burn tab makes. */
-export function burnCall(badgeId: bigint, holder: Address): Hex {
+/** burn(holder, badgeId, amount): the call the Burn tab makes (amount 1 unless one is chosen). */
+export function burnCall(badgeId: bigint, holder: Address, amount = BigInt(1)): Hex {
   return encodeFunctionData({
     abi: SocietyProtocolBadgesABI,
     functionName: "burn",
-    args: [holder, badgeId, BigInt(1)],
+    args: [holder, badgeId, amount],
   });
 }
 
-/** safeTransferFrom(from, to, badgeId, 1, "0x"): the call the Transfer tab makes. */
-export function transferCall(badgeId: bigint, from: Address, to: Address): Hex {
+/** safeTransferFrom(from, to, badgeId, amount, "0x"): the call the Transfer tab makes (amount 1 unless one is chosen). */
+export function transferCall(badgeId: bigint, from: Address, to: Address, amount = BigInt(1)): Hex {
   return encodeFunctionData({
     abi: SocietyProtocolBadgesABI,
     functionName: "safeTransferFrom",
-    args: [from, to, badgeId, BigInt(1), "0x"],
+    args: [from, to, badgeId, amount, "0x"],
   });
 }
 

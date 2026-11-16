@@ -118,6 +118,7 @@ worker; with several workers, stack `i` uses each of them plus `100 * i`.
 | 14350 | Subgraph fake | `POST /graphql`; control API under `/__control/`. |
 | 14351 | S3 fake | Stands in for the Filebase bucket; also serves `/ipfs/<cid>`. |
 | 14359 | Supervisor | `GET /health`, `POST /stop`. |
+| 13050 | A second app server, only while a test that sets `appEnv` runs | The same build and stack, with server settings of the test's own (see "Server settings of one test"). |
 
 The browser never leaves the machine (`support/backends/routes.ts`): the RPC host compiled
 into the bundle is answered by Anvil, the IPFS gateway by the S3 fake, and every other host
@@ -143,6 +144,25 @@ watches a page's answers (P8 to P10). One limit still applies inside a test: fiv
 paymaster calls a minute per sender, two per sponsored send, so a persona's third sponsored
 send in quick succession is refused. Split such a scenario, or seed with `chain.sendSponsored`,
 which does not go through the proxy.
+
+The limits on sponsored account creation (`SPONSORED_PROFILES_PER_IP_PER_DAY`, default one new
+account per visitor IP a day, and `SPONSORED_PROFILE_INTERVAL_SECONDS`, default one every five
+minutes app-wide) are **off** in the stack's app (both `0` in `APP_RUNTIME_ENV`): the app-wide
+one would refuse nearly every test that creates a profile, and the daily one any test that
+asks for sponsorship of a new account twice (a declined signature, then Finish again). Their
+own tests run on a second app server with real values (next section).
+
+### Server settings of one test
+
+`test.use({ appEnv: { NAME: "value" } })` starts, for each test of that scope, a second
+`next start` of the same build on the stack's `appVariant` port (13050 plus `100 * i`), with
+the stack's runtime environment plus these values, and points `baseURL`, the network rules and
+`api` at it. The chain, bundler, paymaster and fakes are the stack's. Only server-side values
+can be given (no `NEXT_PUBLIC_*`, which the build fixes, and no `E2E_*`). The server starts
+with empty in-memory counts and stops at the end of the test, which costs a few seconds; its
+log is attached to a failed test. It stops by itself when the worker that started it is gone
+(`support/stack/app-variant.mjs`). Used by `features/api/aa-rpc-profile-limits.api.spec.ts`
+(P11 to P13) and `features/onboarding/onboarding-sponsorship-limits.spec.ts` (C17 to C19).
 
 **Keys.** All test keys derive from the TEST-ONLY mnemonic in `env/hermetic.json`. It is
 public on purpose and only ever used on the local fork. Never fund those addresses on a real
@@ -292,6 +312,7 @@ e2e/
     pages/                    page objects
     flows/                    steps that scenarios of several areas start with (openWizard, reachReview)
     personas.ts               the kinds of user a scenario starts from
+    app-variant.ts            a second app server with server settings of one test (`appEnv`)
     stack/                    the launcher: config, processes, app build and start, CLI
     ci/                       which tests a pull request runs
   aa-stack/                   package.json + lockfile for anvil, alto and the mock paymaster
@@ -399,9 +420,11 @@ side changes (A5, A11).
 | `seenText` | `SeenText`: every text the pages have shown, including toasts and notices that are gone again. `all()`, `matching(pattern)`. For "the app never said X during this flow", and for text that is on screen too briefly for a locator. |
 | `browserErrors` | Uncaught exceptions and console errors of the page. |
 | `testIp` | This test's client IP. |
+| `appVariant` | With the `appEnv` option: the test's second app server (`url`, `log()`); undefined otherwise. See "Server settings of one test". |
 
-Options, set with `test.use({ ... })`: `walletIdentity: "metamask" | "generic"` and
-`walletCapabilities: "none" | "atomic"`.
+Options, set with `test.use({ ... })`: `walletIdentity: "metamask" | "generic"`,
+`walletCapabilities: "none" | "atomic"` and `appEnv` (server settings of a second app server,
+see "Server settings of one test").
 
 ### Personas
 
@@ -584,7 +607,10 @@ in `support/write-route.ts`; `amountNamed(message)` reads the amount back out of
 Pimlico and the bundler without having been recorded. The proxy's two rate limits are real
 in the stack: `features/api/aa-rpc.api.spec.ts` (P7) and O15 in
 `features/tx-failures/sponsorship-refused.spec.ts` use them up with requests built by
-`support/aa/requests.ts` and compare the real answer with the copy.
+`support/aa/requests.ts` and compare the real answer with the copy. So are the limits on
+sponsored account creation, on a second app server (P11 to P13, C17 to C19). A refusal with
+code -32005 reaches the page up to four times: viem's transport repeats a "limit exceeded"
+call three times before the app sees the error.
 
 A two-step write shows "Step 1 of 2: ..." and "Step 2 of 2: ..." in
 `pages.shell.transactionStepNotice`. The second goes away early at the moment (an app bug, see
@@ -626,11 +652,11 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 347 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
+of every run: 363 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 300 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 316 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
@@ -638,7 +664,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 |---|---|---|---|---|
 | A Shell, navigation, static content | `shell` | 19 tests: A1 to A9, A10 (Welcome card), A11 (one A5 and one A11 test are fixme: the "What is this?" copy and the X/Discord links, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
 | B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
-| C Onboarding | `onboarding` | 19 tests: C1 to C16 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
+| C Onboarding | `onboarding` | 22 tests: C1 to C19 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
 | F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 on its own bug: expected failures) | – | – |
@@ -651,7 +677,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
 | O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
-| P Server routes | `api` | 73 tests: P1 to P10 | – | The proxy's daily limits for profile updates and invites. |
+| P Server routes | `api` | 78 tests: P1 to P13 | – | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
 | The foundation itself | `stack` | 23 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
 

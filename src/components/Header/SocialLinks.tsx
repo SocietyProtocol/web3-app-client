@@ -104,6 +104,7 @@ interface CircleProps {
 const Circle = ({ size, surface, children }: CircleProps) => (
   <Box
     className="social-circle"
+    data-testid="shell-social-circle"
     sx={{
       position: "relative",
       boxSizing: "border-box",
@@ -143,6 +144,7 @@ const PillLink = ({ link, variant }: LinkProps) => {
     >
       <Box
         className="social-pill"
+        data-testid="shell-social-pill"
         aria-hidden
         sx={{
           position: "absolute",

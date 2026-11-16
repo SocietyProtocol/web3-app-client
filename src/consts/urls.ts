@@ -18,6 +18,7 @@ export const URLS = {
   // Social
   TWITTER: "https://x.com/ProtocolSociety",
   DISCORD: "https://discord.com/invite/fpk7eH7aWQ",
-  // A link whose URL is null is hidden in the top bar and the drawer.
-  YOUTUBE: "https://www.youtube.com/@SocietyProtocolStream" as string | null,
+  // TODO: set the Society Protocol YouTube channel URL. The YouTube link
+  // stays hidden in the top bar and drawer until this is set.
+  YOUTUBE: null as string | null,
 } as const;

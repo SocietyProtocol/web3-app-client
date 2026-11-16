@@ -463,6 +463,7 @@ whichever it is.
 | `emitProviderDisconnect()`, `emitProviderConnect()` | The raw EIP-1193 `disconnect` / `connect` events. |
 | `setCapabilities("atomic")` | Answer EIP-5792 (`wallet_sendCalls`). The calls are sent one after another, not as a real atomic batch. |
 | `setAllowSendTransaction(false)` | Refuse transactions and record them as `refused`. |
+| `stopAnswering(method)` | Every request of that method stays unanswered (a hung wallet) until the handle's `release()`; `hits()` counts them. Released after each test. |
 
 The request log is how a test knows who paid. `wallet.requests` holds every request with its
 outcome (`ok`, `error`, `rejected`, `refused`); `signatureRequests()`,
@@ -622,18 +623,18 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 341 tests. 44 of them are expected to fail on confirmed app bugs (31 in the
+of every run: 345 tests. 44 of them are expected to fail on confirmed app bugs (31 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 293 passed, 31 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 297 passed, 31 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
 | Area | Folder | Verified | Written, unverified | Not written, and why |
 |---|---|---|---|---|
 | A Shell, navigation, static content | `shell` | 19 tests: A1 to A9, A10 (Welcome card), A11 (one A5 and one A11 test are fixme: the "What is this?" copy and the X/Discord links, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
-| B Wallet connection and network | `connect` | 17 tests: B-1 to B-9, B-12; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
+| B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
 | C Onboarding | `onboarding` | 19 tests: C1 to C16 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
@@ -649,7 +650,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
 | P Server routes | `api` | 69 tests: P1 to P8 | – | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
-| The foundation itself | `stack` | 22 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
+| The foundation itself | `stack` | 23 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
 
 Every expected failure was seen failing at its marked assertion in a run. One suspected bug
 is not marked: M6's bid that may not be placed by itself after the approval

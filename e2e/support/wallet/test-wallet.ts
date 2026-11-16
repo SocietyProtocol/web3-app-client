@@ -138,6 +138,21 @@ export type HeldPrompt = {
   reject(): void;
 };
 
+/** Requests of one method that the wallet leaves unanswered: see TestWallet.stopAnswering. */
+export type UnansweredMethod = {
+  /** How many requests of the method have been caught so far. */
+  hits(): number;
+  /** Answers the caught requests (as if the wallet woke up) and stops catching new ones. */
+  release(): void;
+};
+
+type Silence = {
+  method: string;
+  hits: number;
+  released: Promise<void>;
+  release(): void;
+};
+
 type Hold = {
   kind: PromptKind;
   announce: () => void;
@@ -181,6 +196,7 @@ export class TestWallet {
     chainSwitch: 0,
   };
   private readonly holds: Hold[] = [];
+  private readonly silences = new Set<Silence>();
   private readonly supportedChains = new Set<number>([sepolia.id, mainnet.id]);
   private readonly callBundles = new Map<string, Hex[]>();
   private delayMs = 0;
@@ -295,6 +311,36 @@ export class TestWallet {
     return { requested, approve: () => decide("approve"), reject: () => decide("reject") };
   }
 
+  /**
+   * Leaves every request of `method` unanswered until release(), like a
+   * wallet extension that has hung: the page's promise neither resolves nor
+   * rejects. Unlike holdNext this is not a prompt the user is looking at,
+   * and it catches every request of the method, also ones the page makes
+   * without asking the user (eth_accounts while wagmi restores a session).
+   * The fixture releases what is left after the test.
+   *
+   *   const hung = wallet.stopAnswering("eth_accounts");
+   */
+  stopAnswering(method: string): UnansweredMethod {
+    let resolveReleased!: () => void;
+    const silence: Silence = {
+      method,
+      hits: 0,
+      released: new Promise<void>((resolve) => (resolveReleased = resolve)),
+      release: () => {
+        this.silences.delete(silence);
+        resolveReleased();
+      },
+    };
+    this.silences.add(silence);
+    return { hits: () => silence.hits, release: silence.release };
+  }
+
+  /** Releases every stopAnswering() that is still active. */
+  releaseUnanswered() {
+    for (const silence of [...this.silences]) silence.release();
+  }
+
   /** Every prompt waits this long before the wallet answers. 0 switches it off. */
   setResponseDelay(milliseconds: number) {
     this.delayMs = milliseconds;
@@ -381,6 +427,11 @@ export class TestWallet {
     // Params of signing calls are messages, never keys.
     const entry: WalletRequest = { method, params, at: Date.now(), outcome: "ok" };
     this.requests.push(entry);
+    const silence = [...this.silences].find((candidate) => candidate.method === method);
+    if (silence) {
+      silence.hits += 1;
+      await silence.released;
+    }
     try {
       const result = await this.dispatch(method, params);
       if (method === "eth_sendTransaction" && typeof result === "string" && isHex(result)) entry.hash = result;

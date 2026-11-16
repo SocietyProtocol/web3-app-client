@@ -14,7 +14,8 @@ import { badgeMovementsIn, burnCall, throughAccount, transferCall } from "./step
  * Like a mint, neither is sponsored: the member's Light Account (the
  * Society address) is what the badges contract sees acting, and the owner
  * wallet pays with one ordinary transaction to the Light Account's execute.
- * Each takes one unit of the badge from a holder.
+ * Each takes one unit of the badge from a holder here: Amount is only
+ * offered to a holder of several copies (burn-transfer-amount.spec.ts).
  */
 
 test.describe("badge actions: burn and transfer", () => {

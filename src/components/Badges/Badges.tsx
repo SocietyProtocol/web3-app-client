@@ -186,6 +186,7 @@ export const Badges = () => {
 
         {/* Badge Grid */}
         <Box
+          data-testid="badges-grid"
           sx={{
             display: "grid",
             gridTemplateColumns:

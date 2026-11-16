@@ -88,6 +88,7 @@ export const Accounts = () => {
       <Stack spacing={3} width="100%">
         {/* Controls */}
         <Box
+          data-testid="accounts-controls"
           sx={{
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
@@ -137,6 +138,7 @@ export const Accounts = () => {
 
         {/* Accounts Grid */}
         <Box
+          data-testid="accounts-grid"
           sx={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",

@@ -72,6 +72,7 @@ const WalletHint = ({
   return (
     <Alert
       severity="info"
+      data-testid="recipient-wallet-hint"
       action={
         allowReplace && knownWallet ? (
           <Button
@@ -127,7 +128,7 @@ export const RecipientAddressHints = ({
   return (
     <Stack spacing={1}>
       {visibleMapped.length > 0 && (
-        <Alert severity="success">
+        <Alert severity="success" data-testid="recipient-mapped-notice">
           {visibleMapped.length === 1 ? (
             <Typography variant="body2">
               <span style={mono}>{truncateAddress(visibleMapped[0].from)}</span>{" "}

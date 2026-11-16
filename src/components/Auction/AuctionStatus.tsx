@@ -73,6 +73,7 @@ export const AuctionStatus = ({ size = "small" }: AuctionStatusProps) => {
 
   return (
     <Chip
+      data-testid="auction-status-chip"
       color={mapStatusToColor(status)}
       size={size}
       label={

@@ -21,7 +21,7 @@ export const AuctionStat = ({
   loading,
 }: AuctionStatProps) => {
   return (
-    <Stack spacing={1} alignItems="center">
+    <Stack spacing={1} alignItems="center" data-testid="auction-stat">
       {loading ? (
         <Skeleton variant="rectangular" width={100} height={24} />
       ) : (

@@ -44,6 +44,8 @@ export function CommunityBadge({
     <Stack
       spacing={0.75}
       alignItems="center"
+      data-testid={loading ? undefined : "community-badge"}
+      data-badge-id={loading ? undefined : id}
       sx={{
         width: "fit-content",
         maxWidth: "200px",

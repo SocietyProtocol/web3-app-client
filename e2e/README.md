@@ -405,7 +405,8 @@ regression of the same kind, in every test that uses the step. It waits for the 
 which a user is not affected instead, and then acts once. Example: a click on "Setup your
 Account" made while the page still has a URL write pending (the reset of `setupOpen` after
 an account switch) is undone, so `pages.onboarding.start()` first waits until nuqs has none
-(`waitForUrlWritesToSettle`). C16 pins that connecting no longer queues such a reset.
+(`waitForUrlWritesToSettle`). C16 pins that connecting, or a reload restoring the connection,
+no longer queues such a reset.
 
 Only real defects are expected failures. A scenario row the app never implemented, or one
 that may be out of date, is `test.fixme` with "owner to decide" until the owner has said which
@@ -662,11 +663,11 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 377 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
-committed build; the other 13 are auction tests that only run in a build with an auction id),
+of every run: 377 tests. 13 of them are expected to fail on confirmed app bugs (none in the
+committed build; all 13 are auction tests that only run in a build with an auction id),
 and 1 is `test.fixme` until the owner decides on a scenario the app never implemented (A5).
 In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 331 passed, 30 failed as expected and 16 skipped. No test is `@unverified` at the
+reports 361 passed, 0 failed as expected and 16 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
@@ -677,11 +678,11 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | C Onboarding | `onboarding` | 22 tests: C1 to C19 | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
-| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (one F7 fails on its own bug: an expected failure) | – | – |
+| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 | – | G12 with only `totalSupply` failing. |
 | H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 | – | H12 declined signature: a mint asks for none. H13 for Burn. |
 | I Badge create and edit | `badge-create` | 18 tests: I1 to I10 | – | – |
-| J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
+| J Communities: list, creation | `communities` | 17 tests: J1 to J8 | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
 | L Governance | `governance` | 8 tests: L1 to L7 | – | – |
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests are expected failures. All eleven tests of M3 to M10 failed then on a crash of the running auction's page; the app is fixed and their `test.fail` marks are removed, but their steps after the page opens have not been run yet. | – | Bid statuses other than "Placed": the app never shows them. |

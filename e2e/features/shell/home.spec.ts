@@ -278,12 +278,9 @@ test.describe("home", () => {
       await expect(nav.homeConnectButton).toHaveCount(0);
 
       // While the code is read, useOutpostAccount reports a connected wallet
-      // without an address. Home.tsx then asks useProfileId(undefined), a
-      // disabled query that is not "loading" and has no data, and takes that
-      // for "no profile": the card shows "Claim your account" to a member
-      // until the read returns. Remove the timeout together with test.fail.
-      test.fail(true, "the identity card shows \"Claim your account\" to everyone until eth_getCode returns");
-      await expect(nav.claimAccountButton).toHaveCount(0, { timeout: 2_000 });
+      // without an address. That is not "no profile": the card must not
+      // offer "Claim your account" to a member before the read returns.
+      await expect(nav.claimAccountButton).toHaveCount(0);
 
       codeRead.release();
       await expect(pages.shell.accountButton).toContainText(me.profile!.name);

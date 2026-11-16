@@ -18,7 +18,11 @@ export const Profile = () => {
   );
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useOutpostAccount();
+  const {
+    address,
+    isConnected,
+    isLoading: identityLoading,
+  } = useOutpostAccount();
   const user = useUserQuery(address);
   const isInitialMount = useRef(true);
 
@@ -34,7 +38,7 @@ export const Profile = () => {
     setAccountSetupOpen(false);
   }, [isConnected, address, setAccountSetupOpen]);
 
-  if (!wagmiReady || user.isLoading) {
+  if (!wagmiReady || identityLoading || user.isLoading) {
     return <AccountSkeleton />;
   }
 

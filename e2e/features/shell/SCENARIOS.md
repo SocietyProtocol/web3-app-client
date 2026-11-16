@@ -25,6 +25,6 @@ a self-funded user operation): re-read `src/lib/outpost-routing.ts` before autom
 | A6 | /badges-faq, /communities-faq, /spec-token (markdown and distribution chart) render | LO | – | @smoke | `shell/static-pages.spec.ts` |
 | A7 | Unknown route shows "Page Not Found" and "Back to Home" | LO | – | @core | `shell/navigation.spec.ts` |
 | A8 | Home identity card: "Claim your account" goes to `/profile?setupOpen=true` | NEW | W C | @core | `shell/home.spec.ts` |
-| A9 | Home identity card: "Check your profile" | MEM | W C | @core | `shell/home.spec.ts`; one `test.fail`: "Claim your account" shows while the wallet's code is read |
+| A9 | Home identity card: "Check your profile" | MEM | W C | @core | `shell/home.spec.ts`; also checks that "Claim your account" is not offered while the wallet's code is read |
 | A10 | Hero video plays and closes when `NEXT_PUBLIC_HERO_VIDEO_URL` is set; Welcome card otherwise | LO | – | @edge | `shell/home.spec.ts`, Welcome card only: the suite's build has no hero video |
 | A11 | Footer and header logo links; external X/Discord links carry `target=_blank` | LO | – | @edge | `shell/home.spec.ts`; the X/Discord half is **fixme** until the owner decides: the shell never had such links (not counted as an app bug) |

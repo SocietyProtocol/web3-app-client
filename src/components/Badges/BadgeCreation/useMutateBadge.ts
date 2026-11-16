@@ -7,7 +7,13 @@ import { TransactionReceipt, zeroAddress } from "viem";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { PREVIEW_METADATA_URI, WritePayment } from "@/lib/payment-label";
+import type { WritePayment } from "@/lib/payment-label";
+import {
+  BadgeDraft,
+  badgeCreatePreviewArgs,
+  communityBadgePreviewArgs,
+} from "@/lib/write-previews";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import {
@@ -20,12 +26,15 @@ interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
   communityId?: string;
+  /** The form as typed so far, to price the write before submit. */
+  draft?: BadgeDraft;
 }
 
 export const useMutateBadge = ({
   onSuccess,
   onError,
   communityId,
+  draft,
 }: UseMutateBadgeProps) => {
   const contractAddress = useChainVar(
     communityId ? contracts.communityRegistry : contracts.badges,
@@ -35,25 +44,17 @@ export const useMutateBadge = ({
 
   const uploadIpfsResult = useMutateMetadata({ onError });
 
-  // The real call needs the uploaded metadata URI; preview a minimal badge
-  // so the button can say who pays and about how much.
+  // The real call needs the uploaded metadata URI; preview the badge as
+  // typed so far so the button can say who pays and about how much.
+  const draftKey = useDebounceValue(JSON.stringify(draft ?? {}), 400);
   const preview = useMemo(() => {
+    const typed = JSON.parse(draftKey) as BadgeDraft;
     if (!communityId) {
       return {
         address: contractAddress,
         abi: SocietyProtocolBadgesABI,
         functionName: "createBadge",
-        args: [
-          "Badge",
-          false,
-          false,
-          zeroAddress,
-          PREVIEW_METADATA_URI,
-          [],
-          [],
-          [],
-          [],
-        ],
+        args: [...badgeCreatePreviewArgs(typed)],
       };
     }
     if (!/^\d+$/.test(communityId)) return undefined;
@@ -61,9 +62,9 @@ export const useMutateBadge = ({
       address: contractAddress,
       abi: CommunityRegistryAbi,
       functionName: "createCommunityBadge",
-      args: [BigInt(communityId), "Badge", PREVIEW_METADATA_URI, [], [], []],
+      args: [...communityBadgePreviewArgs(BigInt(communityId), typed)],
     };
-  }, [communityId, contractAddress]);
+  }, [communityId, contractAddress, draftKey]);
 
   const transaction = useTransaction({
     preview,

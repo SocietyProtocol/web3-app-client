@@ -6,7 +6,12 @@ import { TransactionReceipt } from "viem";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { PREVIEW_METADATA_URI, WritePayment } from "@/lib/payment-label";
+import type { WritePayment } from "@/lib/payment-label";
+import {
+  CommunityDraft,
+  communityCreatePreviewArgs,
+} from "@/lib/write-previews";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeCommunityDetailsUpdated } from "@/data/communities/decodeUtils";
@@ -14,11 +19,14 @@ import { decodeCommunityDetailsUpdated } from "@/data/communities/decodeUtils";
 interface UseMutateCommunityProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
+  /** The form as typed so far, to price the write before submit. */
+  draft?: CommunityDraft;
 }
 
 export const useMutateCommunity = ({
   onSuccess,
   onError,
+  draft,
 }: UseMutateCommunityProps) => {
   const contractAddress = useChainVar(contracts.communityRegistry);
   const { address } = useOutpostAccount();
@@ -32,22 +40,19 @@ export const useMutateCommunity = ({
     [],
   );
 
-  // The real call needs the uploaded badge URIs; preview a minimal
-  // community so the button can say who pays and about how much.
+  // The real call needs the uploaded badge URIs; preview the community as
+  // typed so far so the button can say who pays and about how much.
+  const draftKey = useDebounceValue(JSON.stringify(draft ?? {}), 400);
   const preview = useMemo(
     () => ({
       address: contractAddress,
       abi: CommunityRegistryAbi,
       functionName: "createCommunity",
       args: [
-        "Community",
-        "Community",
-        PREVIEW_METADATA_URI,
-        PREVIEW_METADATA_URI,
-        PREVIEW_METADATA_URI,
+        ...communityCreatePreviewArgs(JSON.parse(draftKey) as CommunityDraft),
       ],
     }),
-    [contractAddress],
+    [contractAddress, draftKey],
   );
 
   const transaction = useTransaction({

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode, useMemo, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm, UseFormReturn, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutateCommunity } from "./useMutateCommunity";
 import {
@@ -78,6 +78,12 @@ export const CommunityCreationProvider = ({
 
   const { enqueueSnackbar } = useSnackbar();
 
+  const [name, description] = useWatch({
+    control: form.control,
+    name: ["name", "description"],
+  });
+  const draft = useMemo(() => ({ name, description }), [name, description]);
+
   const {
     mutate: createCommunity,
     isMutating,
@@ -87,6 +93,7 @@ export const CommunityCreationProvider = ({
     isTransactionPending,
     payment,
   } = useMutateCommunity({
+    draft,
     onSuccess: async (receipt: TransactionReceipt) => {
       const communityCreated = decodeCommunityCreated(receipt);
 

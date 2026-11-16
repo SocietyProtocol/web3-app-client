@@ -44,7 +44,11 @@ export const AcceptInvitation = () => {
     return parsed.data;
   }, [address, referralCode]);
 
-  const hasInvited = useHasInvited(address, parsedReferral?.inviter);
+  const hasInvited = useHasInvited({
+    wallet: ownerAddress,
+    address,
+    codeInviter: parsedReferral?.inviter,
+  });
 
   useEffect(() => {
     if (!referralCode) {

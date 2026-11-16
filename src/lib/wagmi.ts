@@ -8,6 +8,7 @@ import {
 import { jotaiStore } from "./jotai";
 
 import { env } from "@/lib/env";
+import { e2ePollingOption } from "@/lib/e2e-timing";
 
 export const isProd = env.environment === "production";
 
@@ -29,6 +30,8 @@ export const wagmiConfig = getDefaultConfig({
   projectId: env.wcProjectId,
   chains: SUPPORTED_CHAINS,
   ssr: true,
+  // Empty in every real deployment: wagmi keeps its own polling interval.
+  ...e2ePollingOption(),
   transports: SUPPORTED_CHAINS.reduce(
     (acc, chain) => {
       acc[chain.id] = transports[chain.id];

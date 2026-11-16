@@ -99,6 +99,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                 disabled={transaction.isLoading || holders.length === 0}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
+                inputTestId="transfer-from-input"
               />
             )}
           />
@@ -132,6 +133,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                 disabled={transaction.isLoading}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
+                inputTestId="transfer-to-input"
               />
             )}
           />
@@ -163,6 +165,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Transferring..."
+          data-testid="transfer-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}
           gasError={transaction.gasError}

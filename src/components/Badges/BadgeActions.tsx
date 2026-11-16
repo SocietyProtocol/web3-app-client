@@ -56,7 +56,7 @@ export const BadgeActions = ({
 
   if (loading) {
     return (
-      <Box padding={1}>
+      <Box padding={1} data-testid="badge-actions">
         <WithTooltip
           variant="body1"
           sx={{
@@ -86,7 +86,7 @@ export const BadgeActions = ({
 
   if (!validTab) {
     return (
-      <Box padding={1}>
+      <Box padding={1} data-testid="badge-actions">
         <WithTooltip
           variant="body1"
           sx={{
@@ -105,7 +105,7 @@ export const BadgeActions = ({
   }
 
   return (
-    <Box padding={1}>
+    <Box padding={1} data-testid="badge-actions">
       <WithTooltip
         variant="body1"
         sx={{

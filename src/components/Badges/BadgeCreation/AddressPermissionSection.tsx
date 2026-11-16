@@ -42,6 +42,7 @@ export const BadgeEditorsField = ({
       tooltip={description}
       value={values}
       onChange={handleOnChange}
+      inputTestId="badge-create-editors-input"
     />
   );
 };

@@ -7,6 +7,7 @@ import {
   lightAccountAddress,
   supportedAaChainId,
 } from "@/lib/smart-account";
+import { e2eOverride } from "@/lib/e2e-overrides";
 
 const RPC_TIMEOUT_MS = 8_000;
 const MAX_CACHED_SENDERS = 10_000;
@@ -28,6 +29,9 @@ const ALCHEMY_NETWORK: Record<number, string> = {
  * node when the key is not set (local dev, tests).
  */
 export function serverRpcUrl(chainId: number) {
+  // Hermetic browser tests only: a local fork. Ignored in production.
+  const override = e2eOverride("E2E_RPC_URL");
+  if (override) return override;
   const key = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
   const network = ALCHEMY_NETWORK[chainId];
   if (key && network) return `https://${network}.g.alchemy.com/v2/${key}`;

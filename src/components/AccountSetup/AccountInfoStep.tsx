@@ -10,7 +10,7 @@ export const AccountInfoStep = () => {
   const { address } = useOutpostAccount();
 
   return (
-    <Stack spacing={{ xs: 2, sm: 3 }}>
+    <Stack spacing={{ xs: 2, sm: 3 }} data-testid="onboarding-form">
       {/* Account Details Header */}
       <Typography variant="h6">
         Account details {address && truncateAddress(address)}
@@ -67,6 +67,9 @@ export const AccountInfoStep = () => {
                 helperText={
                   error || `${(form.watch("name") || "").length}/100 characters`
                 }
+                slotProps={{
+                  htmlInput: { "data-testid": "onboarding-name-input" },
+                }}
               />
             );
           }}
@@ -103,6 +106,9 @@ export const AccountInfoStep = () => {
                 helperText={
                   error || `${(form.watch("bio") || "").length}/500 characters`
                 }
+                slotProps={{
+                  htmlInput: { "data-testid": "onboarding-bio-input" },
+                }}
               />
             );
           }}

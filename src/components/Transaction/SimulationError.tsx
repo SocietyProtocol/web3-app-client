@@ -13,6 +13,8 @@ export const SimulationError = ({
   if (!error) return null;
 
   return (
-    <Alert severity="error">{parseErrorMessage(error, defaultMessage)}</Alert>
+    <Alert severity="error" data-testid="transaction-simulation-error">
+      {parseErrorMessage(error, defaultMessage)}
+    </Alert>
   );
 };

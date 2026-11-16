@@ -1,4 +1,9 @@
-import { Address, parseEventLogs, TransactionReceipt } from "viem";
+import {
+  Address,
+  isAddress,
+  parseEventLogs,
+  TransactionReceipt,
+} from "viem";
 import {
   Badge_filter,
   BadgeDocument,
@@ -12,7 +17,6 @@ import { defaultOptions } from "./consts";
 import { BadgeCategory, BadgeQueryOptions, FullBadgeData } from "./types";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { requireGraphData } from "@/lib/graph-response";
-import { addressParser } from "@/lib/nuqs";
 
 /**
  * Lower-cases one address or a list of them. A list of one collapses to
@@ -36,12 +40,18 @@ export const normalizeAddresses = (
  * keeps only a whole address, so the typed text is kept beside it: it is
  * shown while it stands for the stored address (a partial text stands for
  * none), and the stored address wins once it changes from elsewhere (a
- * link, back/forward).
+ * link, back/forward). The text is read as `addressParser` (src/lib/nuqs.ts)
+ * reads it; that parser is not imported here because this module is also
+ * loaded on the server (the badge page's metadata), where nuqs's
+ * createParser cannot be called.
  */
 export const createdByAddressText = (
   typed: string,
   stored: Address | null,
-): string => (addressParser.parse(typed) === stored ? typed : (stored ?? ""));
+): string => {
+  const typedAddress = isAddress(typed) ? typed.trim().toLowerCase() : null;
+  return typedAddress === stored ? typed : (stored ?? "");
+};
 
 /**
  * Merges the provided options with the default options.

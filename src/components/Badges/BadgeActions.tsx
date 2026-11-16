@@ -100,6 +100,14 @@ export const BadgeActions = ({
         </WithTooltip>
 
         {badgeSelector && <Box marginTop={2}>{badgeSelector}</Box>}
+
+        {/* Permissions depend on the connected wallet: without one, ask to connect. */}
+        <ContentGuard
+          connectWalletMessage="Connect your wallet to perform badge actions"
+          sx={{
+            marginTop: 2,
+          }}
+        />
       </Box>
     );
   }

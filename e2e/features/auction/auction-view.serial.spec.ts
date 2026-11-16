@@ -11,7 +11,7 @@ import {
 } from "../../support/builders/auction";
 import { decimalString, tokenBalance } from "../../support/builders/auction-tokens";
 import { AuctionPage } from "../../support/pages/auction";
-import { NO_AUCTION_BUILD, RUNNING_AUCTION_CRASH, runningAuction, shown, validBid } from "./steps";
+import { NO_AUCTION_BUILD, runningAuction, shown, validBid } from "./steps";
 
 /**
  * /auction as a visitor sees it: the page of a build without an auction,
@@ -219,10 +219,7 @@ test.describe("auction: the configured auction", () => {
 
       await auctionPage.open();
 
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.heading).toHaveText("SPEC Token Auction", { timeout: 5_000 });
+      await expect(auctionPage.heading).toHaveText("SPEC Token Auction");
       await expect(auctionPage.auctionIdLine).toHaveText(`Sepolia - Auction id #${AUCTION_ID}`);
       await expect(auctionPage.statusChip).toHaveText("Active");
 
@@ -267,10 +264,7 @@ test.describe("auction: the configured auction", () => {
       await auctionPage.open();
 
       // Logged out: the auction's numbers are public, the form is not there.
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await expect(pages.shell.connectPrompt).toContainText("Connect your wallet to place a bid.");
       await expect(auctionPage.bidForm).toHaveCount(0);
       await expect(auctionPage.yourBids).toHaveCount(0);
@@ -312,10 +306,7 @@ test.describe("auction: the configured auction", () => {
       await chain.setErc20Balance(token, me.ownerAddress, balance);
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       wallet.clearRequests();
 
@@ -377,10 +368,7 @@ test.describe("auction: the configured auction", () => {
       const { decimals, symbol } = auction.biddingToken;
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       await expect(auctionPage.noBids).toBeVisible();
       await expect(auctionPage.bidRows).toHaveCount(0);

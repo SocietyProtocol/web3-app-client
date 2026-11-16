@@ -100,7 +100,11 @@ export const ActiveAuction = () => {
           value={
             <FormattedNumber
               value={totalAuctioned}
-              scaleDownDecimals={decimalsAuctioningToken}
+              scaleDownDecimals={
+                decimalsAuctioningToken === undefined
+                  ? undefined
+                  : Number(decimalsAuctioningToken)
+              }
               maxDecimals={4}
               minThreshold={0.0001}
               suffix={symbolAuctioningToken}
@@ -121,7 +125,11 @@ export const ActiveAuction = () => {
           value={
             <FormattedNumber
               value={minPrice}
-              scaleDownDecimals={decimalsBiddingToken}
+              scaleDownDecimals={
+                decimalsBiddingToken === undefined
+                  ? undefined
+                  : Number(decimalsBiddingToken)
+              }
               maxDecimals={4}
               minThreshold={0.0001}
               suffix={`${symbolBiddingToken}/${symbolAuctioningToken}`}

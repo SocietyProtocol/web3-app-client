@@ -18,7 +18,6 @@ import {
 } from "../../support/write-route";
 import {
   NO_AUCTION_BUILD,
-  RUNNING_AUCTION_CRASH,
   indexCancelledBid,
   indexPlacedBid,
   runningAuction,
@@ -60,10 +59,7 @@ test.describe("auction: bids", () => {
       const ownerBalanceBefore = await chain.balance(me.ownerAddress);
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       await expect(auctionPage.noBids).toBeVisible();
       await auctionPage.fillBid(bid.amount, bid.priceTyped);
@@ -106,12 +102,12 @@ test.describe("auction: bids", () => {
       // approval is still "approving"; placeBid() returns at once in exactly
       // that state (`transaction.isLoading` is true as long as the approval
       // executes), and when the approval is done the effect's condition is
-      // no longer met. Found by reading only: no run has got this far,
-      // because the page crashes first (RUNNING_AUCTION_CRASH above). So it
-      // is not marked test.fail here. Once the crash is fixed, run this: if
-      // it fails at this poll, that confirms it, and the poll gets
-      // test.fail with a 5 s timeout (a fixed app asks the wallet right
-      // after the approval's receipt, which it has by now).
+      // no longer met. Found by reading only: until the running auction's
+      // page stopped crashing (string decimals from the subgraph), no run
+      // got this far. So it is not marked test.fail here. Run this: if it
+      // fails at this poll, that confirms it, and the poll gets test.fail
+      // with a 5 s timeout (a fixed app asks the wallet right after the
+      // approval's receipt, which it has by now).
       await expect.poll(() => bidAsked, { message: "the wallet is asked for the bid" }).toBe(true);
 
       // Step two: the bid itself, and the wait for the subgraph.
@@ -167,10 +163,7 @@ test.describe("auction: bids", () => {
       const ownerBalanceBefore = await chain.balance(me.ownerAddress);
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       await expect(auctionPage.noBids).toBeVisible();
       await auctionPage.fillBid(bid.amount, bid.priceTyped);
@@ -240,10 +233,7 @@ test.describe("auction: bids", () => {
       const ownerBalanceBefore = await chain.balance(me.ownerAddress);
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       const row = auctionPage.bidRow(bid.amountShown);
       await expect(row).toContainText("Placed");
@@ -303,10 +293,7 @@ test.describe("auction: bids", () => {
       await subgraph.overlay(auctionOrder(auction, placed.order, { user: me.ownerAddress, timestamp: placed.timestamp }));
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       wallet.clearRequests();
       const row = auctionPage.bidRow(bid.amountShown);
@@ -334,10 +321,7 @@ test.describe("auction: bids", () => {
       await subgraph.overlay(auctionOrder(auction, placed.order, { user: me.ownerAddress, timestamp: placed.timestamp }));
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       const row = auctionPage.bidRow(bid.amountShown);
       await expect(auctionPage.cancelButton(row)).toBeEnabled();
@@ -369,10 +353,7 @@ test.describe("auction: bids", () => {
       const ownerBalanceBefore = await chain.balance(me.ownerAddress);
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       await auctionPage.fillBid(bid.amount, bid.priceTyped);
       await expect(auctionPage.submit).toHaveText("Approve");
@@ -416,10 +397,7 @@ test.describe("auction: bids", () => {
       const ownerBalanceBefore = await chain.balance(me.ownerAddress);
 
       await auctionPage.open();
-      // APP BUG (RUNNING_AUCTION_CRASH in steps.ts): the running auction's
-      // page crashes here. Remove this test.fail and the timeout when it is fixed.
-      test.fail(true, RUNNING_AUCTION_CRASH);
-      await expect(auctionPage.stat("Min Price")).toBeVisible({ timeout: 5_000 });
+      await expect(auctionPage.stat("Min Price")).toBeVisible();
       await pages.shell.connect();
       await auctionPage.fillBid(bid.amount, bid.priceTyped);
       await expect(auctionPage.submit).toHaveText("Place Bid");

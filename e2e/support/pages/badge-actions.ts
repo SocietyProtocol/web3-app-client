@@ -1,6 +1,9 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { BROWSER_RPC_HOST } from "../../env/hermetic";
 
+/** balanceOf(address,uint256) of ERC-1155. */
+const BALANCE_OF_SELECTOR = "00fdd58e";
+
 /**
  * The Actions area of /badges/<id> beyond a single mint: batch minting
  * (typed addresses or a CSV file), the hints under a recipient, and the
@@ -135,6 +138,35 @@ export class BadgeActionsPanel {
   /** "Replace" on a wallet hint: only there when the app knows the address is a wallet. */
   replaceButton(hint: Locator): Locator {
     return hint.getByRole("button", { name: "Replace" });
+  }
+
+  // ---- amount (burn and transfer) ------------------------------------------------
+
+  /**
+   * "Amount" of the Burn and the Transfer tab. Only there once the chosen
+   * holder is known to have more than one copy; its description is "Holds n"
+   * or the reason the amount is refused.
+   */
+  get amountInput(): Locator {
+    return this.area.getByRole("textbox", { name: "Amount", exact: true });
+  }
+
+  /**
+   * Resolves when the chain has answered a read of `holder`'s balance of a
+   * badge (ERC-1155 balanceOf, alone or in a Multicall3 batch). Whether
+   * "Amount" is offered is only decided after the read of the chosen
+   * holder's balance, so its absence proves nothing before. Start it BEFORE
+   * the holder is chosen, await it after (like codeRead).
+   */
+  async balanceRead(holder: string): Promise<void> {
+    const wanted = holder.slice(2).toLowerCase();
+    const response = await this.page.waitForResponse((candidate) => {
+      const request = candidate.request();
+      if (request.method() !== "POST" || new URL(request.url()).host !== BROWSER_RPC_HOST) return false;
+      const body = (request.postData() ?? "").toLowerCase();
+      return body.includes("eth_call") && body.includes(BALANCE_OF_SELECTOR) && body.includes(wanted);
+    });
+    await response.finished();
   }
 
   // ---- burn ---------------------------------------------------------------------

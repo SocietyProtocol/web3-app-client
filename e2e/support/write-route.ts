@@ -3,11 +3,14 @@ import {
   encodeFunctionData,
   erc20Abi,
   formatEther,
+  formatUnits,
   isAddressEqual,
   type Address,
   type Hex,
   type TransactionReceipt,
 } from "viem";
+import { ChainLinkFeedABI } from "../../src/abis/ChainlinkFeed";
+import { contracts } from "../../src/consts/contracts";
 import { LIGHT_ACCOUNT_FACTORY, encodeCreateAccount } from "../../src/lib/smart-account";
 import type { AaTraffic, SentUserOperation } from "./aa/traffic";
 import type { Chain } from "./chain/chain";
@@ -187,6 +190,19 @@ export async function expectedCost(chain: Chain, transaction: { from: Address; t
     chain.public.getGasPrice(),
   ]);
   return gas * gasPrice;
+}
+
+/**
+ * A fee in wei as the gas label's tooltip states it: in USD at the chain's
+ * ETH price feed, eight decimals ("$0.00123456").
+ */
+export async function feeInUsd(chain: Chain, wei: bigint): Promise<string> {
+  const price = await chain.public.readContract({
+    address: contracts.chainlinkFeed.sepolia,
+    abi: ChainLinkFeedABI,
+    functionName: "latestAnswer",
+  });
+  return `$${formatUnits((wei * price) / BigInt(10) ** BigInt(18), 8)}`;
 }
 
 /** An amount of wei the way the app's messages show it: in ETH, rounded up to five decimals. */

@@ -235,6 +235,37 @@ export function createExecutor({ store, resolveMissing }) {
     }
   }
 
+  /**
+   * graph-node runs one level of child filter ("user_: {...}"): a child
+   * filter inside another one, even under and/or, fails the whole query
+   * whatever the data, with this error.
+   */
+  function rejectNestedChildFilters(typeName, where, parentField = null) {
+    for (const [key, expected] of Object.entries(where ?? {})) {
+      if (expected == null) continue;
+      if (key === "and" || key === "or") {
+        for (const part of expected) rejectNestedChildFilters(typeName, part, parentField);
+        continue;
+      }
+      const parsed = splitFilterKey(typeName, key);
+      if (parsed?.suffix !== "_") continue;
+      const { named } = unwrap(fieldDefinition(typeName, parsed.field).type);
+      if (parentField !== null) {
+        const conditions = Object.entries(expected)
+          .map(([inner, value]) =>
+            inner.endsWith("_contains_nocase")
+              ? `${inner.slice(0, -"_contains_nocase".length)} ~ *${value}*i`
+              : `${inner} = ${JSON.stringify(value)}`,
+          )
+          .join(" and ");
+        throw new Error(
+          `Child filter nesting not supported by value ${parsed.field}: join on ${parsed.field} with ${named.name}(${conditions})`,
+        );
+      }
+      rejectNestedChildFilters(named.name, expected, parsed.field);
+    }
+  }
+
   /** orderBy may reach through references: "createdBy__name". */
   function sortKey(entity, orderBy) {
     let typeName = entity.__typename;
@@ -257,9 +288,12 @@ export function createExecutor({ store, resolveMissing }) {
     return { value: null, numeric };
   }
 
-  function applyListArgs(items, args) {
+  function applyListArgs(items, args, named) {
     let result = items;
-    if (args.where) result = result.filter((item) => matches(item.__typename, item, args.where));
+    if (args.where) {
+      rejectNestedChildFilters(named.name, args.where);
+      result = result.filter((item) => matches(item.__typename, item, args.where));
+    }
     const orderBy = args.orderBy ?? "id";
     const direction = args.orderDirection === "desc" ? -1 : 1;
     result = [...result].sort((left, right) => {
@@ -282,7 +316,7 @@ export function createExecutor({ store, resolveMissing }) {
       if (!isEntityType(named)) {
         throw new Error(`The subgraph fake does not implement Query.${info.fieldName}`);
       }
-      if (list) return applyListArgs(collection(named), args);
+      if (list) return applyListArgs(collection(named), args, named);
       return lookup(named, args.id);
     }
 
@@ -292,7 +326,7 @@ export function createExecutor({ store, resolveMissing }) {
     if (!isEntityType(named)) return raw === undefined ? null : raw;
     if (list) {
       const entities = (raw ?? []).map((id) => lookup(named, id)).filter(Boolean);
-      return applyListArgs(entities, args);
+      return applyListArgs(entities, args, named);
     }
     return lookup(named, raw);
   }

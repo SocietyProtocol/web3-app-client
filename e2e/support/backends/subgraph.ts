@@ -24,6 +24,12 @@ export type SubgraphRequest = {
   at: number;
   /** The fake's own error messages for this request. The app replaces them with a generic one. */
   errors?: string[];
+  /**
+   * Set when the query gateway would have refused the request (its
+   * variablePolicy or its persisted documents, e2e/support/backends/gateway):
+   * the fake answered with this status and message, like the gateway does.
+   */
+  refused?: { status: number; message: string };
 };
 
 /**

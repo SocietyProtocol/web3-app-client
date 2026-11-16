@@ -7,9 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import {
   OutpostRoute,
-  callShape,
-  chooseWriteSender,
   resolveOutpostRoute,
+  routeWithoutChain,
 } from "@/lib/outpost-routing";
 
 /**
@@ -42,15 +41,14 @@ export function useOutpostRouting(params: {
 
   const immediate = useMemo(() => {
     if (!to || !data || outpost.isLoading) return undefined;
-    const shape = callShape({ chainId, to, data, value });
-    const needsChain =
-      !!owner && !!smartAccount && shape.relayable && !shape.sponsored;
-    if (needsChain) return undefined;
-    return chooseWriteSender({
+    return routeWithoutChain({
+      chainId,
+      to,
+      data,
+      value,
       owner,
       smartAccount,
       isContractWallet: outpost.isContractWallet,
-      ...shape,
     });
   }, [to, data, value, chainId, owner, smartAccount, outpost.isLoading, outpost.isContractWallet]);
 

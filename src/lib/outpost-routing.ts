@@ -215,6 +215,28 @@ export function chooseWriteSender(input: {
   };
 }
 
+/**
+ * The route when it is known without the chain: sponsored calls, calls the
+ * Light Account cannot relay, and any call from a wallet without a Light
+ * Account. Undefined when the chain has to decide (an unsponsored Outpost
+ * call from an EOA with a Light Account).
+ */
+export function routeWithoutChain(input: {
+  chainId: number;
+  to: Address;
+  data: Hex;
+  value?: bigint;
+  owner?: Address;
+  smartAccount?: Address;
+  isContractWallet: boolean;
+}): OutpostRoute | undefined {
+  const shape = callShape(input);
+  const needsChain =
+    !!input.owner && !!input.smartAccount && shape.relayable && !shape.sponsored;
+  if (needsChain) return undefined;
+  return chooseWriteSender({ ...input, ...shape });
+}
+
 export type RoutingClient = Pick<
   PublicClient,
   "simulateContract" | "estimateGas" | "getGasPrice" | "getBalance" | "getCode"

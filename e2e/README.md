@@ -118,6 +118,7 @@ worker; with several workers, stack `i` uses each of them plus `100 * i`.
 | 14350 | Subgraph fake | `POST /graphql`; control API under `/__control/`. |
 | 14351 | S3 fake | Stands in for the Filebase bucket; also serves `/ipfs/<cid>`. |
 | 14359 | Supervisor | `GET /health`, `POST /stop`. |
+| 13050 | A second app server, only while a test that sets `appEnv` runs | The same build and stack, with server settings of the test's own (see "Server settings of one test"). |
 
 The browser never leaves the machine (`support/backends/routes.ts`): the RPC host compiled
 into the bundle is answered by Anvil, the IPFS gateway by the S3 fake, and every other host
@@ -134,12 +135,34 @@ caches verified senders, and the bundler does not survive a revert. Tests are is
 keys instead. A test must only rely on state it created for its own accounts, or on totals it
 read itself during the test.
 
-**Rate limits.** The app's limits live in the server's memory and are keyed by client IP:
-`/api/graphql` by `x-forwarded-for`, `/api/aa/rpc` by `cf-connecting-ip`. Every test gets its
-own IP in both headers (the `testIp` fixture). One limit still applies inside a test: five
+**Rate limits.** The app's limits live in the server's memory and are keyed by the visitor's IP
+as Cloudflare reports it (`cf-connecting-ip`, then `x-real-ip`, then the last `x-forwarded-for`
+hop: `clientIp` in `src/lib/aa/rate-limit.ts`), for `/api/graphql` and `/api/aa/rpc` alike. Every
+test gets its own IP in both headers (the `testIp` fixture). `/api/graphql` allows a visitor a
+burst of sixty requests that refills one a second; `support/graphql-limit.ts` uses it up and
+watches a page's answers (P8 to P10). One limit still applies inside a test: five
 paymaster calls a minute per sender, two per sponsored send, so a persona's third sponsored
 send in quick succession is refused. Split such a scenario, or seed with `chain.sendSponsored`,
 which does not go through the proxy.
+
+The limits on sponsored account creation (`SPONSORED_PROFILES_PER_IP_PER_DAY`, default one new
+account per visitor IP a day, and `SPONSORED_PROFILE_INTERVAL_SECONDS`, default one every five
+minutes app-wide) are **off** in the stack's app (both `0` in `APP_RUNTIME_ENV`): the app-wide
+one would refuse nearly every test that creates a profile, and the daily one any test that
+asks for sponsorship of a new account twice (a declined signature, then Finish again). Their
+own tests run on a second app server with real values (next section).
+
+### Server settings of one test
+
+`test.use({ appEnv: { NAME: "value" } })` starts, for each test of that scope, a second
+`next start` of the same build on the stack's `appVariant` port (13050 plus `100 * i`), with
+the stack's runtime environment plus these values, and points `baseURL`, the network rules and
+`api` at it. The chain, bundler, paymaster and fakes are the stack's. Only server-side values
+can be given (no `NEXT_PUBLIC_*`, which the build fixes, and no `E2E_*`). The server starts
+with empty in-memory counts and stops at the end of the test, which costs a few seconds; its
+log is attached to a failed test. It stops by itself when the worker that started it is gone
+(`support/stack/app-variant.mjs`). Used by `features/api/aa-rpc-profile-limits.api.spec.ts`
+(P11 to P13) and `features/onboarding/onboarding-sponsorship-limits.spec.ts` (C17 to C19).
 
 **Keys.** All test keys derive from the TEST-ONLY mnemonic in `env/hermetic.json`. It is
 public on purpose and only ever used on the local fork. Never fund those addresses on a real
@@ -179,7 +202,7 @@ and `src/lib/e2e-timing.ts` uses it in place of those intervals:
 | Receipt of a sponsored user operation (`send-sponsored-user-operation.ts`) | 4 s, viem's default | 200 ms |
 | Retry after AA10 (`AA10_RETRY_MS`) | 3 s | 200 ms |
 | Status of a `wallet_sendCalls` batch (`account-capabilities.ts`) | 3 s | 200 ms |
-| Subgraph sync (`useWaitForSubgraphSync`) | 1 s | 500 ms: each poll is a request to `/api/graphql`, which allows a visitor 60 a minute |
+| Subgraph sync (`useWaitForSubgraphSync`) | 1 s | 500 ms: each poll is a request to `/api/graphql`, which allows a visitor a burst of 60 that refills one a second |
 
 The value is compiled into the bundle and ignored unless the bundle is the suite's own build
 (see "The lock on the test switches"), when it is not a whole number from 50 to 1000, and when
@@ -250,6 +273,15 @@ them against the checked-in `schema.graphql`. Three sources feed the store:
 3. **Overlays**: operations a test pushes with `subgraph.overlay(...)`, dropped before the next
    test.
 
+**The query gateway.** Before it answers, the fake refuses what the real query gateway in
+front of the subgraph refuses: a document that is not in the gateway's registry, and variables
+outside the operation's `variablePolicy` (filter keys, depth, sorts, sizes). It answers those
+with the gateway's 400 and its message, records `refused` in `subgraph.requests()`, and
+`/api/graphql` passes the refusal on as a 400. The policy is a committed snapshot of the
+gateway's registry; [backends/gateway/README.md](support/backends/gateway/README.md) says
+where it comes from and how to refresh it. A test that seeds variables of its own must use
+values the gateway allows (a sort the app offers, for instance, not `orderBy: "id"` on Users).
+
 The follower is an imitation. It proves that the UI renders the state a write should produce,
 not that the real subgraph indexes it; only `live` can prove that. It knows the badges contract
 only. Communities, the auction, Lock SPEC and community activities are not followed and are not
@@ -289,6 +321,7 @@ e2e/
     pages/                    page objects
     flows/                    steps that scenarios of several areas start with (openWizard, reachReview)
     personas.ts               the kinds of user a scenario starts from
+    app-variant.ts            a second app server with server settings of one test (`appEnv`)
     stack/                    the launcher: config, processes, app build and start, CLI
     ci/                       which tests a pull request runs
   aa-stack/                   package.json + lockfile for anvil, alto and the mock paymaster
@@ -396,9 +429,11 @@ side changes (A5, A11).
 | `seenText` | `SeenText`: every text the pages have shown, including toasts and notices that are gone again. `all()`, `matching(pattern)`. For "the app never said X during this flow", and for text that is on screen too briefly for a locator. |
 | `browserErrors` | Uncaught exceptions and console errors of the page. |
 | `testIp` | This test's client IP. |
+| `appVariant` | With the `appEnv` option: the test's second app server (`url`, `log()`); undefined otherwise. See "Server settings of one test". |
 
-Options, set with `test.use({ ... })`: `walletIdentity: "metamask" | "generic"` and
-`walletCapabilities: "none" | "atomic"`.
+Options, set with `test.use({ ... })`: `walletIdentity: "metamask" | "generic"`,
+`walletCapabilities: "none" | "atomic"` and `appEnv` (server settings of a second app server,
+see "Server settings of one test").
 
 ### Personas
 
@@ -581,7 +616,10 @@ in `support/write-route.ts`; `amountNamed(message)` reads the amount back out of
 Pimlico and the bundler without having been recorded. The proxy's two rate limits are real
 in the stack: `features/api/aa-rpc.api.spec.ts` (P7) and O15 in
 `features/tx-failures/sponsorship-refused.spec.ts` use them up with requests built by
-`support/aa/requests.ts` and compare the real answer with the copy.
+`support/aa/requests.ts` and compare the real answer with the copy. So are the limits on
+sponsored account creation, on a second app server (P11 to P13, C17 to C19). A refusal with
+code -32005 reaches the page up to four times: viem's transport repeats a "limit exceeded"
+call three times before the app sees the error.
 
 A two-step write shows "Step 1 of 2: ..." and "Step 2 of 2: ..." in
 `pages.shell.transactionStepNotice`. The second goes away early at the moment (an app bug, see
@@ -623,11 +661,11 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 345 tests. 44 of them are expected to fail on confirmed app bugs (31 in the
+of every run: 367 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 297 passed, 31 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 320 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
@@ -635,20 +673,20 @@ moment; a new one would be listed in the fourth column until someone has run it 
 |---|---|---|---|---|
 | A Shell, navigation, static content | `shell` | 19 tests: A1 to A9, A10 (Welcome card), A11 (one A5 and one A11 test are fixme: the "What is this?" copy and the X/Discord links, the owner's decision) | – | A10 hero video: `NEXT_PUBLIC_HERO_VIDEO_URL` is a build-time value and the suite's build leaves it empty; it needs a second build and a served video. |
 | B Wallet connection and network | `connect` | 20 tests: B-1 to B-9, B-12 to B-15; B-10 and B-11 identity only | – | Writes as a contract wallet (ERC-1271) or a 7702 wallet: the test wallet signs as a plain key, the `contractWallet` and `eip7702` personas do not exist. Real MetaMask: the `extension` layer. WalletConnect, Coinbase, Safe: no layer. |
-| C Onboarding | `onboarding` | 19 tests: C1 to C16 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
+| C Onboarding | `onboarding` | 22 tests: C1 to C19 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
-| F Accounts directory, public profiles | `accounts` | 17 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 and one F8 on their own bugs: expected failures) | – | – |
+| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 on its own bug: expected failures) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 (G3 typing into Created by and G11 logged out are expected failures) | – | G12 with only `totalSupply` failing. |
-| H Mint, burn, transfer | `badge-actions` | 19 tests: H1 to H14 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
+| H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
 | I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug, I6 image preview and both I7: expected failures) | – | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |
 | J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 (K9 "1 holders" is an expected failure) | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
 | L Governance | `governance` | 8 tests: L1 to L7 | – | – |
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
-| O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
-| P Server routes | `api` | 69 tests: P1 to P8 | – | The proxy's daily limits for profile updates and invites. |
+| O Transactions that fail | `tx-failures` | 25 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11); O16 to O19, who pays as the page says it (`payment-label.spec.ts`) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
+| P Server routes | `api` | 78 tests: P1 to P13 | – | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
 | The foundation itself | `stack` | 23 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
 
@@ -676,16 +714,17 @@ Say so in the pull request: this branch is not test-only.
 ## CI
 
 `.github/workflows/e2e.yml` runs the suite on `ubuntu-24.04` without any secret, so it also
-runs for pull requests from forks. It never deploys.
+runs for pull requests from forks. It never deploys anything itself.
 
 | Event | Tests |
 |---|---|
 | Pull request | The `@smoke` tests, plus every test of a spec file the pull request added or changed (`support/ci/pr-grep.mjs` turns the changed files into one `--grep`). |
-| Push to `staging` | Everything. |
+| Push to `main` or `staging` | Everything. Started by `deploy-aws.yml` (see "Tests before a deploy"), not by a trigger of its own. |
 | Run by hand (`workflow_dispatch`) | Everything, with the number of workers you enter. |
 
 `@unverified` tests run in none of them. A pull request that changes only app code or the
-suite's support code runs the smoke tests only; the full set follows on `staging`. Cached
+suite's support code runs the smoke tests only; the full set follows on the push to `main`
+or `staging`, before that commit is deployed. Cached
 between runs: yarn's download cache, `e2e/aa-stack/node_modules`, Chromium
 (`~/.cache/ms-playwright`) and the Next compiler cache (`.next/cache`). The app is still
 built from the commit's sources every time. A failed run keeps the HTML report and the
@@ -703,8 +742,29 @@ repository has four); more would show up as timeouts and killed processes that l
 flaky tests.
 
 The projects depend on each other (see "Run it"), so one test of `hermetic` that stays red
-skips `hermetic-serial` and `hermetic-timetravel` in that run. The deploy workflow
-(`deploy-aws.yml`) is separate and does not wait for this one.
+skips `hermetic-serial` and `hermetic-timetravel` in that run, and the commit is not deployed.
+
+### Tests before a deploy
+
+`.github/workflows/deploy-aws.yml` is the only workflow a push to `main` or `staging` starts.
+It calls `ci.yml` (lint, type-check, unit tests) and `e2e.yml` (this suite, every test) as
+reusable workflows on the pushed commit, and its deploy job runs only when both succeed for
+that same commit. A red, cancelled or skipped test run means no deploy; nothing is deployed
+untested, and there is no way to skip the tests for a push. `ci.yml` and `e2e.yml` keep their
+own `pull_request` trigger, so a pull request still gets both, without a deploy.
+
+- **Pull requests** cancel their older runs when a new commit is pushed to them.
+- **Pushes** are never cancelled once their tests have started, so every pushed commit gets a
+  verdict. While one push's tests run, a second push to the same branch waits; a third
+  replaces the second in that queue, and the replaced commit is not deployed.
+- **Only the branch tip deploys.** When its tests pass, the deploy job first checks that the
+  commit is still the tip of its branch. If the branch has moved on, it skips the deploy
+  (a notice in the run says so): the newer commit deploys after its own tests pass, and an
+  older one never overwrites it. If the newer commit's tests fail, the box keeps the last
+  version that passed.
+- **One deploy per branch at a time**, never cancelled half-way; a newer deploy of the same
+  branch waits for the running one. `main` (prod) and `staging` deploy independently, and
+  the two builds take turns on the shared box (a lock in `.github/scripts/deploy-outpost.sh`).
 
 The workflows use the action versions the repository already used (`actions/checkout@v4`
 and so on). Pinning each action to a commit is left to do: it needs a look at the actions'

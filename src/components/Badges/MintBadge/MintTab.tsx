@@ -411,6 +411,7 @@ export const MintTab = ({ id }: MintTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Minting..."
+          routeKind={transaction.routeKind}
           data-testid="mint-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}

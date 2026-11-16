@@ -1,10 +1,12 @@
 import { addressValidationSchema } from "@/validation/address";
 import z from "zod";
+import { badgeAmountValidationSchema } from "../badgeAmount";
 
 export const transferBadgeValidationSchema = z
   .object({
     from: addressValidationSchema,
     to: addressValidationSchema,
+    amount: badgeAmountValidationSchema,
   })
   .refine(
     (data) => {

@@ -24,6 +24,7 @@ export const BadgeDetailsEdit = ({
     isWritingContract,
     isTransactionPending,
     transactionHash,
+    payment,
     handleCancelClick,
     handleSaveClick,
   } = useBadgeDetailsEdit({ onCancel, onSave });
@@ -56,6 +57,7 @@ export const BadgeDetailsEdit = ({
         isWritingContract={isWritingContract}
         isTransactionPending={isTransactionPending}
         transactionHash={transactionHash}
+        payment={payment}
         onCancel={handleCancelClick}
         onSave={handleSaveClick}
       />

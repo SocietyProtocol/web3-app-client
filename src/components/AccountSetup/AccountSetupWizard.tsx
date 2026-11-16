@@ -9,6 +9,7 @@ import { Box } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
+import { walletWaitText } from "@/lib/payment-label";
 
 const steps: WizardStep[] = [
   { label: "Account Info", description: "Set up your profile" },
@@ -111,7 +112,7 @@ const AccountSetupWizardContent = ({
     }
 
     if (isSigning) {
-      return "Signing transaction...";
+      return walletWaitText(transaction.routeKind, "Signing transaction...");
     }
 
     if (isConfirming) {
@@ -144,6 +145,7 @@ const AccountSetupWizardContent = ({
         minHeight={{ xs: 400, sm: 554 }}
         isLoading={isUploadingToIpfs || isLoading}
         loadingText={getLoadingText()}
+        payment={transaction}
         showActions={!isWrongNetwork}
         testIdPrefix="onboarding"
       >

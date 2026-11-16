@@ -1,4 +1,5 @@
 import { parse, print, type DocumentNode } from "graphql";
+import { clientIp, TokenBucketLimiter } from "@/lib/aa/rate-limit";
 import { getGraphGatewayEnv } from "@/lib/server-env";
 import { PERSISTED_GRAPH_DOCUMENTS } from "@/lib/persisted-graphql.generated";
 import { stripDataUriImages } from "@/lib/strip-data-uri";
@@ -15,7 +16,32 @@ const ALLOWED_GRAPH_OPERATIONS = new Set(
   PERSISTED_GRAPH_DOCUMENTS.keys(),
 );
 
-const requestCounts = new Map<string, { count: number; resetAt: number }>();
+// Bounded by TokenBucketLimiter's maxKeys, so one entry per visitor IP
+// cannot grow without limit on a long-running process.
+const requestLimiter = new TokenBucketLimiter(
+  RATE_LIMIT_MAX_REQUESTS,
+  RATE_LIMIT_WINDOW_MS,
+);
+
+/**
+ * Gateway answers that mean "busy, try again shortly": passed on with their
+ * status and Retry-After so the browser can retry. Answering them with 502
+ * turned a full gateway queue into what looked like an outage (and behind
+ * Cloudflare a 502 becomes an HTML error page).
+ */
+const GATEWAY_BUSY_STATUSES = new Set([429, 503]);
+const DEFAULT_BUSY_RETRY_AFTER_SECONDS = 1;
+const MAX_BUSY_RETRY_AFTER_SECONDS = 60;
+
+/**
+ * Gateway answers that refuse the request itself (its variables, its size):
+ * passed on with their status. Behind Cloudflare a 502 becomes an HTML error
+ * page, so a query the gateway does not allow looked like an outage. Every
+ * other 4xx of the gateway (401, 403, 404, 415, ...) is this server's own
+ * misconfiguration and stays a 502.
+ */
+const GATEWAY_REFUSALS_PASSED_ON = new Set([400, 413, 422]);
+const MAX_LOGGED_MESSAGE_LENGTH = 200;
 
 class RequestBodyTooLargeError extends Error {}
 class UpstreamResponseTooLargeError extends Error {}
@@ -30,25 +56,28 @@ function jsonError(message: string, status: number, headers?: HeadersInit) {
   );
 }
 
-function getClientKey(request: Request) {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",", 1)[0]?.trim() ||
-    "unknown"
-  );
+/** One log line per failed gateway call: operation and status, never variables. */
+function logGatewayFailure(operationName: string, detail: string) {
+  console.warn(`[api/graphql] ${operationName}: ${detail}`);
+}
+
+/** Retry-After in whole seconds as the gateway sent it, bounded; 1 otherwise. */
+function busyRetryAfter(upstream: Response) {
+  const value = upstream.headers.get("retry-after")?.trim() ?? "";
+  if (!/^\d{1,6}$/.test(value)) return String(DEFAULT_BUSY_RETRY_AFTER_SECONDS);
+  return String(Math.min(Number(value), MAX_BUSY_RETRY_AFTER_SECONDS));
+}
+
+async function discardBody(response: Response) {
+  try {
+    await response.body?.cancel();
+  } catch {
+    // Nothing to do: the answer is not used.
+  }
 }
 
 function isRateLimited(request: Request) {
-  const now = Date.now();
-  const key = getClientKey(request);
-  const current = requestCounts.get(key);
-
-  if (!current || current.resetAt <= now) {
-    requestCounts.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-
-  current.count += 1;
-  return current.count > RATE_LIMIT_MAX_REQUESTS;
+  return !requestLimiter.take(clientIp(request.headers));
 }
 
 async function readLimitedBody(request: Request) {
@@ -177,6 +206,42 @@ async function readLimitedResponse(response: Response) {
   return new TextDecoder().decode(body);
 }
 
+/** The first error message of a gateway answer, for the log. Never the variables. */
+function upstreamMessage(text: string) {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    const errors =
+      parsed && typeof parsed === "object" && "errors" in parsed
+        ? (parsed as { errors?: unknown }).errors
+        : undefined;
+    const first = Array.isArray(errors) ? errors[0] : undefined;
+    const message =
+      first && typeof first === "object" && "message" in first
+        ? (first as { message?: unknown }).message
+        : undefined;
+    if (typeof message === "string" && message) {
+      return message
+        // Printable ASCII only: one log line, whatever the upstream sent.
+        .replace(/[^\x20-\x7e]+/g, " ")
+        .slice(0, MAX_LOGGED_MESSAGE_LENGTH);
+    }
+  } catch {
+    // Not JSON: an HTML error page of a proxy, for instance.
+  }
+  return "no message";
+}
+
+function gatewayRefusal(status: number, operationName: string, text: string) {
+  const passedOn = GATEWAY_REFUSALS_PASSED_ON.has(status);
+  logGatewayFailure(
+    operationName,
+    `the query gateway refused the request with ${status} (${upstreamMessage(text)}); answering ${passedOn ? status : 502}`,
+  );
+  return passedOn
+    ? jsonError("GraphQL gateway refused the request", status)
+    : jsonError("GraphQL upstream request failed", 502);
+}
+
 function sanitizeError(error: unknown) {
   const source = error && typeof error === "object" ? error : undefined;
   const safe: Record<string, unknown> = {
@@ -273,25 +338,60 @@ export async function POST(request: Request) {
       signal: controller.signal,
     });
 
+    if (GATEWAY_BUSY_STATUSES.has(upstream.status)) {
+      await discardBody(upstream);
+      const retryAfter = busyRetryAfter(upstream);
+      logGatewayFailure(
+        payload.operationName,
+        `the query gateway is busy (${upstream.status}, retry-after ${retryAfter}s); answering ${upstream.status}`,
+      );
+      return jsonError("GraphQL gateway is busy, try again shortly", upstream.status, {
+        "retry-after": retryAfter,
+      });
+    }
+
+    const text = await readLimitedResponse(upstream);
+    if (upstream.status >= 400 && upstream.status < 500) {
+      return gatewayRefusal(upstream.status, payload.operationName, text);
+    }
+
     let body: unknown;
     try {
-      body = JSON.parse(await readLimitedResponse(upstream));
-    } catch (error) {
-      if (error instanceof UpstreamResponseTooLargeError) throw error;
+      body = JSON.parse(text);
+    } catch {
+      logGatewayFailure(
+        payload.operationName,
+        `the query gateway answered ${upstream.status} with a body that is not JSON; answering 502`,
+      );
       return jsonError("GraphQL upstream response was invalid", 502);
     }
 
+    if (!upstream.ok) {
+      logGatewayFailure(
+        payload.operationName,
+        `the query gateway answered ${upstream.status}; answering 502`,
+      );
+    }
     return Response.json(sanitizeResponse(body), {
       status: upstream.ok ? 200 : 502,
       headers: { "cache-control": "no-store" },
     });
   } catch (error) {
     if (error instanceof UpstreamResponseTooLargeError) {
+      logGatewayFailure(payload.operationName, "the query gateway answer is too large; answering 502");
       return jsonError("GraphQL upstream response is too large", 502);
     }
     if (controller.signal.aborted) {
+      logGatewayFailure(
+        payload.operationName,
+        `no answer from the query gateway in ${UPSTREAM_TIMEOUT_MS} ms; answering 504`,
+      );
       return jsonError("GraphQL upstream request timed out", 504);
     }
+    logGatewayFailure(
+      payload.operationName,
+      `the query gateway could not be reached (${error instanceof Error ? error.name : "unknown error"}); answering 502`,
+    );
     return jsonError("GraphQL upstream request failed", 502);
   } finally {
     clearTimeout(timeout);

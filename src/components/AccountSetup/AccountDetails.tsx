@@ -22,6 +22,7 @@ import { Page } from "../Page/Page";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useLegacyAccounts } from "../shared/useLegacyAccounts";
+import { canEditProfile, showEditForm } from "./profileEditing";
 import {
   useAccountBadgeBalances,
   useBadgeTotalSupplies,
@@ -87,12 +88,20 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
 
   const communityCount = data?.communities?.length;
 
-  const [isEditing, setIsEditing] = useQueryState(
+  const [editRequested, setIsEditing] = useQueryState(
     "edit",
     parseAsBoolean.withDefault(false).withOptions({
       history: "push",
     }),
   );
+  const editAccess = {
+    readonly,
+    profileAddress: address,
+    societyAddress: accountAddress,
+  };
+  const canEdit = canEditProfile(editAccess);
+  // `?edit=true` on a profile the viewer cannot edit shows the profile.
+  const isEditing = showEditForm({ ...editAccess, editRequested });
 
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
 
@@ -229,7 +238,7 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
               name={username}
               id={overrideAddress}
             >
-              {!readonly && (
+              {canEdit && (
                 <Button
                   onClick={toggleEditing}
                   variant="outlined"

@@ -1,17 +1,24 @@
 name: CI
 
 # Checks that need no secret, so they also run for pull requests from forks.
+#
+#   pull request          run here
+#   push to main/staging  called by deploy-aws.yml, which deploys only if this
+#                         and the browser tests pass for the same commit
 on:
   pull_request:
-  push:
-    branches: [staging]
+  workflow_call:
 
 permissions:
   contents: read
 
+# A newer commit of a pull request cancels the run of the older one. Runs
+# called for a push are never cancelled once started, so every pushed commit
+# gets a verdict; a queued one is still replaced by a newer push, and its
+# deploy is then skipped, never run untested.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   static:

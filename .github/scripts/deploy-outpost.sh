@@ -21,17 +21,23 @@ trap 'rm -rf "$WORKDIR"' EXIT
 tar --exclude-vcs -C "$CONTEXT" -czf "$WORKDIR/src.tgz" .
 aws s3 cp "$WORKDIR/src.tgz" "s3://${BUCKET}/${PREFIX}.tgz" --region "$REGION"
 
+# Deploys of different branches (staging, prod) may run at the same time: each
+# works in a directory of its own, and the builds take turns on the box's lock.
+SRC="/tmp/society-src-${SERVICE}"
 cat > "$WORKDIR/remote.sh" <<EOF
 set -eu
-rm -rf /tmp/society-src
-mkdir -p /tmp/society-src
-aws s3 cp "s3://${BUCKET}/${PREFIX}.tgz" /tmp/society-src.tgz
-tar -xzf /tmp/society-src.tgz -C /tmp/society-src
+exec 9>/tmp/society-deploy.lock
+echo "waiting for the deploy lock"
+flock 9
+rm -rf "${SRC}"
+mkdir -p "${SRC}"
+aws s3 cp "s3://${BUCKET}/${PREFIX}.tgz" "${SRC}.tgz"
+tar -xzf "${SRC}.tgz" -C "${SRC}"
 if [ -n "${ENVFILE}" ]; then
-  cp "${ENVFILE}" /tmp/society-src/.env.production
+  cp "${ENVFILE}" "${SRC}/.env.production"
 fi
-docker build --network=host ${BUILD_ARGS} -t "${IMAGE}" /tmp/society-src
-rm -rf /tmp/society-src /tmp/society-src.tgz
+docker build --network=host ${BUILD_ARGS} -t "${IMAGE}" "${SRC}"
+rm -rf "${SRC}" "${SRC}.tgz"
 cd /opt/society
 docker compose -f apps.yml up -d --no-deps --force-recreate ${SERVICE}
 echo DEPLOY_OK ${SERVICE}
@@ -42,7 +48,8 @@ PARAMS="$WORKDIR/params.json"
 python3 - "$BUCKET" "$PREFIX" "$WORKDIR/params.json" <<'PY'
 import json, sys
 bucket, prefix, path = sys.argv[1:]
-cmd = f"aws s3 cp s3://{bucket}/{prefix}.sh /tmp/society-deploy.sh && bash /tmp/society-deploy.sh && rm -f /tmp/society-deploy.sh"
+script = "/tmp/society-deploy-" + prefix.rsplit("/", 1)[-1] + ".sh"
+cmd = f"aws s3 cp s3://{bucket}/{prefix}.sh {script} && bash {script} && rm -f {script}"
 json.dump({"commands": [cmd]}, open(path, "w"))
 PY
 
@@ -56,7 +63,9 @@ COMMAND_ID="$(aws ssm send-command \
   --query Command.CommandId --output text)"
 echo "command ${COMMAND_ID}"
 
-for _ in $(seq 1 150); do
+# Up to an hour, the command's own timeout: a build may first wait for the other
+# branch's build to finish.
+for _ in $(seq 1 240); do
   STATUS="$(aws ssm get-command-invocation \
     --region "$REGION" \
     --command-id "$COMMAND_ID" \

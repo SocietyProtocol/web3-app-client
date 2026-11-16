@@ -30,7 +30,8 @@ test.describe("smart-account onboarding: waiting, declining and failing", () => 
       uploadSignature.approve();
 
       await userOperationSignature.requested;
-      await expect(finish).toHaveText("Signing transaction...");
+      // A sponsored save: the wallet is asked for a signature, not a transaction.
+      await expect(finish).toHaveText("Waiting for your signature...");
       await expect(finish).toBeDisabled();
       userOperationSignature.approve();
 

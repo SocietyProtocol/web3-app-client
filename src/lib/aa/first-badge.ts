@@ -7,6 +7,15 @@
  * off, the proxy refuses a createBadge paymaster call exactly as before and
  * GET /api/aa/first-badge answers { enabled: false }.
  *
+ * Who gets one: a Society account that already has a profile, made at
+ * least FIRST_BADGE_MIN_PROFILE_AGE_HOURS ago (default 6), from a Light
+ * Account that is already deployed (the proxy refuses a free badge that
+ * carries a factory). So a fresh key cannot deploy an account and take a
+ * free badge in one go: it needs a profile first, and has to wait. On top
+ * of that the proxy gives out at most FIRST_BADGE_DAILY_CAP free badges a
+ * day (lib/aa/rate-limit.ts), and the free badge should run on its own
+ * Pimlico policy with a low global cap (DEPLOYMENT.md).
+ *
  * There is no database. Whether a sender has used its free badge is read
  * from the subgraph and the chain each time:
  *   1. the subgraph: badges whose creatorAddress is the sender, not profiles
@@ -20,6 +29,9 @@
  *      handed out before the first one lands then shares one nonce, so at
  *      most one of them can ever execute; once it has, the nonce has moved
  *      on and step 2 sees its BadgeCreated at the same block.
+ * The profile: profileBadgeId(sender) on the badges contract at block X
+ * must not be 0, and the subgraph must list that same profile badge with a
+ * createdAt (block timestamp) at least the minimum age ago.
  * Anything that cannot be read (subgraph down, node down, the subgraph more
  * than MAX_UNINDEXED_BLOCKS behind) answers "not eligible": the owner pays,
  * exactly as without the feature. The proxy also keeps its in-memory rate
@@ -62,6 +74,28 @@ export const E2E_SPONSOR_FIRST_BADGE_COOKIE = "e2e-sponsor-first-badge";
  * at most ten calls.
  */
 export const MAX_UNINDEXED_BLOCKS = 100;
+
+/** Server variable: how old a profile must be before its free badge, in hours. */
+export const FIRST_BADGE_MIN_PROFILE_AGE_HOURS_ENV = "FIRST_BADGE_MIN_PROFILE_AGE_HOURS";
+/**
+ * Six hours: long enough that a script cannot create a profile and take a
+ * free badge in the same run (and that a wave of fresh profiles is visible
+ * before any of them pays out), short enough that a new member who comes
+ * back later the same day still gets the badge for free.
+ */
+export const DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS = 6;
+
+/**
+ * The minimum profile age in seconds. Unset, empty or not a number at
+ * least 0: the default. 0 turns the age rule off (a profile is still
+ * required).
+ */
+export function firstBadgeMinProfileAgeSeconds(): number {
+  const raw = process.env[FIRST_BADGE_MIN_PROFILE_AGE_HOURS_ENV]?.trim();
+  const hours = raw ? Number(raw) : NaN;
+  const valid = Number.isFinite(hours) && hours >= 0;
+  return Math.floor((valid ? hours : DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS) * 3600);
+}
 export const LOG_CHUNK_BLOCKS = 10;
 const GRAPH_TIMEOUT_MS = 8_000;
 const MAX_CACHED_SENDERS = 10_000;
@@ -72,6 +106,8 @@ export const FIRST_BADGE_REASONS = {
   unchecked: "Could not check this account's badges",
   behind: "Badge history is still syncing",
   nonce: "User operation nonce is not the account's next nonce",
+  noProfile: "This account has no Society profile yet",
+  profileTooNew: "This account's profile is too new for a free badge",
 } as const;
 
 export type FirstBadgeReason = keyof typeof FIRST_BADGE_REASONS;
@@ -89,6 +125,8 @@ export function sponsorFirstBadgeEnabled(request?: Request): boolean {
 export type FirstBadgeReads = {
   rpc: (chainId: number, method: string, params: unknown[]) => Promise<unknown>;
   graph: (operationName: string, variables: Record<string, unknown>) => Promise<unknown>;
+  /** Wall clock in milliseconds (Date.now unless a test sets it). */
+  now?: () => number;
 };
 
 /** Persisted queries straight to the protected query gateway (server only). */
@@ -184,6 +222,7 @@ async function chainHasBadge(
   sender: Address,
   from: bigint,
   to: bigint,
+  profileId: bigint,
 ) {
   if (from > to) return false;
   const topics = encodeEventTopics({
@@ -203,10 +242,19 @@ async function chainHasBadge(
       ids.push(quantity(idTopic));
     }
   }
-  if (ids.length === 0) return false;
   // createProfile emits BadgeCreated with the sender as creator: not a badge
   // the member made.
-  const profile = await reads.rpc(chainId, "eth_call", [
+  return ids.some((id) => id !== profileId);
+}
+
+async function profileBadgeIdAt(
+  reads: FirstBadgeReads,
+  chainId: number,
+  badges: Address,
+  sender: Address,
+  block: bigint,
+) {
+  const result = await reads.rpc(chainId, "eth_call", [
     {
       to: badges,
       data: encodeFunctionData({
@@ -215,19 +263,44 @@ async function chainHasBadge(
         args: [sender],
       }),
     },
-    toHex(to),
+    toHex(block),
   ]);
-  const profileId = decodeFunctionResult({
+  return decodeFunctionResult({
     abi: SocietyProtocolBadgesABI,
     functionName: "profileBadgeId",
-    data: profile as Hex,
+    data: result as Hex,
   }) as bigint;
-  return ids.some((id) => id !== profileId);
 }
 
 /**
- * Whether sender has not created a badge yet. With userOpNonce (a paymaster
- * call), also whether that nonce is the sender's next one at the block read.
+ * Ids of the sender's profile badges the subgraph says were created at or
+ * before `createdBefore` (unix seconds). There is one profile per account;
+ * the caller compares the id with the chain's.
+ */
+async function profileBadgesCreatedBy(
+  reads: FirstBadgeReads,
+  sender: Address,
+  createdBefore: number,
+) {
+  const data = (await reads.graph("Badges", {
+    first: 1,
+    skip: 0,
+    orderBy: "createdAt",
+    orderDirection: "asc",
+    where: {
+      creatorAddress: sender.toLowerCase(),
+      isProfile: true,
+      createdAt_lte: String(createdBefore),
+    },
+  })) as { badges?: { id?: unknown }[] };
+  if (!Array.isArray(data?.badges)) throw new Error("Subgraph answered without badges");
+  return data.badges.map((badge) => String(badge?.id));
+}
+
+/**
+ * Whether sender has not created a badge yet, and has a profile old enough
+ * (see the top of this file). With userOpNonce (a paymaster call), also
+ * whether that nonce is the sender's next one at the block read.
  */
 export async function firstBadgeEligibility(
   input: { chainId: number; sender: unknown; userOpNonce?: unknown },
@@ -255,10 +328,16 @@ export async function firstBadgeEligibility(
     if (nonce >> BigInt(64) !== BigInt(0)) return { eligible: false, reason: "nonce" };
   }
 
+  const minAge = firstBadgeMinProfileAgeSeconds();
+  const nowSeconds = Math.floor((reads.now ?? Date.now)() / 1000);
+
   try {
-    const [head, indexed] = await Promise.all([
+    const [head, indexed, oldProfiles] = await Promise.all([
       reads.rpc(input.chainId, "eth_blockNumber", []).then(quantity),
       subgraphHasBadge(reads, sender),
+      minAge > 0
+        ? profileBadgesCreatedBy(reads, sender, nowSeconds - minAge)
+        : Promise.resolve(undefined),
     ]);
     if (indexed.hasBadge) {
       remember(key);
@@ -268,8 +347,16 @@ export async function firstBadgeEligibility(
       return { eligible: false, reason: "behind" };
     }
 
+    const profileId = await profileBadgeIdAt(reads, input.chainId, badges, sender, head);
+    if (profileId === BigInt(0)) return { eligible: false, reason: "noProfile" };
+    // The age comes from the subgraph, the profile from the chain: they have
+    // to be the same badge.
+    if (oldProfiles && !oldProfiles.includes(profileId.toString())) {
+      return { eligible: false, reason: "profileTooNew" };
+    }
+
     const [created, current] = await Promise.all([
-      chainHasBadge(reads, input.chainId, badges, sender, indexed.block, head),
+      chainHasBadge(reads, input.chainId, badges, sender, indexed.block, head, profileId),
       nonce === undefined
         ? Promise.resolve(undefined)
         : reads

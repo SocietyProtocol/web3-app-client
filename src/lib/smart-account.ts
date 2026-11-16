@@ -324,11 +324,15 @@ export function isFreeBadgeShape(call: InnerCall, chainId: number): boolean {
 /**
  * The UserOp is exactly one execute call, and that call is a free-badge
  * createBadge. A batch never carries the free badge: one op, one badge.
+ * Nor does a UserOp that deploys its sender (a factory): the free badge is
+ * for accounts that already exist and have a profile, so a fresh key cannot
+ * get a free deployment and a free badge in one operation.
  */
 export function userOperationIsFreeBadge(
-  userOp: Pick<UserOperationShape, "callData">,
+  userOp: Pick<UserOperationShape, "callData" | "factory">,
   chainId: number,
 ): boolean {
+  if (userOperationHasFactory(userOp)) return false;
   if (!userOp.callData || !isHex(userOp.callData)) return false;
   const calls = accountCallsFromCallData(userOp.callData);
   return calls?.length === 1 && isFreeBadgeShape(calls[0], chainId);
@@ -480,7 +484,7 @@ export function badgesFunctionNames(callData: Hex, chainId: number): string[] {
   });
 }
 
-export function userOperationHasFactory(userOp: UserOperationShape) {
+export function userOperationHasFactory(userOp: Pick<UserOperationShape, "factory">) {
   const factory = userOp.factory;
   return !!factory && factory !== "0x" && factory !== "0x0";
 }
@@ -497,7 +501,7 @@ export function userOperationIsSponsored(
     mintBadgeIds?: readonly bigint[];
     /**
      * SPONSOR_FIRST_BADGE is on: a UserOp that is exactly one free-badge
-     * createBadge passes here. The proxy then still has to find that the
+     * createBadge, without a factory, passes here. The proxy then still has to find that the
      * sender has created no badge yet (pimlico-proxy, lib/aa/first-badge).
      */
     firstBadge?: boolean;
@@ -516,8 +520,7 @@ export function userOperationIsSponsored(
   }
 
   const mintBadgeIds = options?.mintBadgeIds ?? SPONSORED_MINT_BADGE_IDS;
-  const freeBadge =
-    !!options?.firstBadge && calls.length === 1 && isFreeBadgeShape(calls[0], chainId);
+  const freeBadge = !!options?.firstBadge && userOperationIsFreeBadge(userOp, chainId);
   const allowed =
     freeBadge ||
     calls.every((call) => innerCallIsSponsored(call, chainId, mintBadgeIds));

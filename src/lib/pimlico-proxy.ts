@@ -1,6 +1,6 @@
 import { isAddress, isAddressEqual, isHex, toHex } from "viem";
 import { userOperationWithinCaps } from "@/lib/aa/limits";
-import { aaRateLimits, clientIp } from "@/lib/aa/rate-limit";
+import { aaRateLimits, clientIp, firstBadgeDailyCap } from "@/lib/aa/rate-limit";
 import { verifyDeployedLightAccount } from "@/lib/aa/sender-check";
 import {
   FIRST_BADGE_REASONS,
@@ -121,6 +121,11 @@ export function reviewAaRpc(input: {
   policyId?: string;
   /** SPONSOR_FIRST_BADGE is on for this request. */
   sponsorFirstBadge?: boolean;
+  /**
+   * Pimlico policy for free-badge paymaster calls (PIMLICO_FIRST_BADGE_POLICY_ID),
+   * so they draw on their own capped budget. Unset: policyId.
+   */
+  firstBadgePolicyId?: string;
 }):
   | { ok: true; body: JsonRpcRequest; review: AaRpcReview }
   | { ok: false; message: string } {
@@ -207,7 +212,9 @@ export function reviewAaRpc(input: {
 
   if (isPaymaster) {
     // The client context is dropped whole: only the server policy is sent.
-    const context = { sponsorshipPolicyId: input.policyId || SPONSORSHIP_POLICY_ID };
+    const policy =
+      (review.freeBadge && input.firstBadgePolicyId) || input.policyId || SPONSORSHIP_POLICY_ID;
+    const context = { sponsorshipPolicyId: policy };
     if (ERC7677_METHODS.has(request.method)) {
       const chainSlot = params[2];
       if (
@@ -246,6 +253,11 @@ export function sponsorshipPolicyId() {
   return process.env.PIMLICO_SPONSORSHIP_POLICY_ID || SPONSORSHIP_POLICY_ID;
 }
 
+/** Separate Pimlico policy for the free first badge, if set (DEPLOYMENT.md §3.7). */
+export function firstBadgePolicyId() {
+  return process.env.PIMLICO_FIRST_BADGE_POLICY_ID || undefined;
+}
+
 /** GET /api/aa/rpc. Health only: no key material. */
 export function aaRpcHealth() {
   return Response.json(
@@ -255,6 +267,7 @@ export function aaRpcHealth() {
 }
 
 const RATE_LIMITED = -32005;
+export const FIRST_BADGE_DAILY_CAP_MESSAGE = "Today's free badges have all been given out";
 
 /** Rate limits, then the on-chain sender check. Order keeps RPC work behind the IP limit. */
 async function admitAaRpc(
@@ -315,6 +328,17 @@ async function admitAaRpc(
           code: -32602,
         };
       }
+      // The app-wide daily cap, counted last so that only senders who pass
+      // every other check use it up. A stub call only looks; the signing
+      // call takes. A sender counts once a day, retries included.
+      const capKey = `${chainId}:${String(review.sender).toLowerCase()}`;
+      const cap = firstBadgeDailyCap();
+      const admitted = review.signsFreeBadge
+        ? aaRateLimits.firstBadgesPerDay.take(capKey, cap)
+        : aaRateLimits.firstBadgesPerDay.wouldAdmit(capKey, cap);
+      if (!admitted) {
+        return { ok: false, message: FIRST_BADGE_DAILY_CAP_MESSAGE, code: RATE_LIMITED };
+      }
     }
     // One token per acceptInvite, so a batch cannot stretch the allowance.
     for (let accepted = 0; accepted < review.signedInviteAccepts; accepted += 1) {
@@ -366,6 +390,7 @@ export async function forwardAaRpc(request: Request) {
     request: parsed,
     policyId: sponsorshipPolicyId(),
     sponsorFirstBadge: sponsorFirstBadgeEnabled(request),
+    firstBadgePolicyId: firstBadgePolicyId(),
   });
   const requestId =
     parsed && typeof parsed === "object" && "id" in parsed

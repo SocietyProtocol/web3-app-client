@@ -1,5 +1,5 @@
 import { isAddress } from "viem";
-import { aaRateLimits, clientIp } from "@/lib/aa/rate-limit";
+import { aaRateLimits, clientIp, firstBadgeDailyCap } from "@/lib/aa/rate-limit";
 import {
   FirstBadgeReads,
   FirstBadgeReason,
@@ -13,7 +13,8 @@ export type FirstBadgeStatus = {
   enabled: boolean;
   /** Society would pay for this sender's next createBadge (shape permitting). */
   eligible: boolean;
-  reason?: FirstBadgeReason | "rate-limited";
+  /** capped: the app's free badges for today are given out (FIRST_BADGE_DAILY_CAP). */
+  reason?: FirstBadgeReason | "rate-limited" | "capped";
 };
 
 const NO_STORE = { "cache-control": "no-store" };
@@ -21,7 +22,10 @@ const NO_STORE = { "cache-control": "no-store" };
 /**
  * What the badge wizard asks before it picks a route. Advisory only: the
  * proxy runs the same check again (plus the nonce) when it is asked to
- * sponsor, and the wallet pays if that one says no.
+ * sponsor, and the wallet pays if that one says no. It applies every rule
+ * the proxy applies that does not depend on the UserOp (profile, profile
+ * age, badges made, the daily cap), so a member the proxy would refuse is
+ * shown the wallet-paid route from the start.
  */
 export async function firstBadgeStatus(
   request: Request,
@@ -45,8 +49,11 @@ export async function firstBadgeStatus(
     );
   }
   const result = await firstBadgeEligibility({ chainId, sender }, reads);
-  const body: FirstBadgeStatus = result.eligible
-    ? { enabled: true, eligible: true }
-    : { enabled: true, eligible: false, reason: result.reason };
+  const capKey = `${chainId}:${sender.toLowerCase()}`;
+  const body: FirstBadgeStatus = !result.eligible
+    ? { enabled: true, eligible: false, reason: result.reason }
+    : aaRateLimits.firstBadgesPerDay.wouldAdmit(capKey, firstBadgeDailyCap())
+      ? { enabled: true, eligible: true }
+      : { enabled: true, eligible: false, reason: "capped" };
   return Response.json(body, { headers: NO_STORE });
 }

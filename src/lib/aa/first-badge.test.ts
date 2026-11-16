@@ -15,24 +15,36 @@ import { custom } from "viem";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { contracts } from "@/consts/contracts";
 import {
+  DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS,
   FIRST_BADGE_REASONS,
   FirstBadgeReads,
   MAX_UNINDEXED_BLOCKS,
   firstBadgeEligibility,
+  firstBadgeMinProfileAgeSeconds,
   resetFirstBadgeCache,
   sponsorFirstBadgeEnabled,
 } from "@/lib/aa/first-badge";
 import { firstBadgeStatus } from "@/lib/aa/first-badge-status";
 import {
+  DEFAULT_FIRST_BADGE_DAILY_CAP,
   FIRST_BADGE_SIGNATURES_PER_SENDER_PER_DAY,
+  RollingWindowCap,
+  aaRateLimits,
+  firstBadgeDailyCap,
   resetAaRateLimits,
 } from "@/lib/aa/rate-limit";
 import { resetSenderCache } from "@/lib/aa/sender-check";
-import { forwardAaRpc, reviewAaRpc } from "@/lib/pimlico-proxy";
+import {
+  FIRST_BADGE_DAILY_CAP_MESSAGE,
+  forwardAaRpc,
+  reviewAaRpc,
+} from "@/lib/pimlico-proxy";
 import {
   ENTRY_POINT_V07,
+  LIGHT_ACCOUNT_FACTORY,
   LIGHT_ACCOUNT_IMPLEMENTATION,
   LIGHT_ACCOUNT_PROXY_RUNTIME_CODE,
+  encodeCreateAccount,
   encodeCreateProfile,
   encodeExecute,
   encodeExecuteBatch,
@@ -49,6 +61,10 @@ const SEPOLIA = 11155111;
 const BADGES = contracts.badges.sepolia;
 const owner = getAddress("0x0000000000000000000000000000000000000001");
 const sender = lightAccountAddress(owner);
+/** The member's profile badge, on the chain and in the subgraph. */
+const PROFILE_ID = BigInt(42);
+const HOUR = 3600;
+const DAY = 24 * HOUR;
 const URI =
   "https://ipfs.filebase.io/ipfs/bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku";
 
@@ -136,7 +152,27 @@ describe("free badge shape", () => {
     };
     expect(userOperationIsSponsored(withProfile, SEPOLIA, { firstBadge: true }).ok).toBe(false);
   });
+
+  it("never covers a UserOp that deploys its sender", () => {
+    const deploying = {
+      sender,
+      callData: encodeExecute(call(createBadge())),
+      factory: LIGHT_ACCOUNT_FACTORY,
+      factoryData: encodeCreateAccount(owner),
+    };
+    expect(userOperationIsFreeBadge(deploying, SEPOLIA)).toBe(false);
+    expect(userOperationIsSponsored(deploying, SEPOLIA, { firstBadge: true })).toEqual({
+      ok: false,
+      reason: "User operation is outside the sponsorship allowlist",
+    });
+    // The same deployment with a profile is still sponsored as before.
+    const profile = { ...deploying, callData: encodeExecute(call(encodeCreateProfile(URI))) };
+    expect(userOperationIsSponsored(profile, SEPOLIA, { firstBadge: true }).ok).toBe(true);
+  });
 });
+
+/** The fakes' wall clock (unix seconds). */
+const NOW = 1_800_000_000;
 
 /** A chain and a subgraph in memory, answering the reads first-badge makes. */
 function fakeReads(state: {
@@ -145,11 +181,18 @@ function fakeReads(state: {
   subgraphBadges?: number;
   /** Ids of BadgeCreated logs with the sender as creator, by block. */
   logs?: { block: bigint; id: bigint }[];
+  /** profileBadgeId(sender) on chain; 0 is no profile. Default PROFILE_ID. */
   profileId?: bigint;
+  /** When the subgraph says the profile badge was made (unix seconds). Default: a week ago. */
+  profileCreatedAt?: number;
+  /** The id the subgraph lists for the profile badge. Default: profileId. */
+  subgraphProfileId?: bigint;
   nonce?: bigint;
   failGraph?: boolean;
   failRpc?: string;
 }) {
+  const profileId = state.profileId ?? PROFILE_ID;
+  const profileCreatedAt = state.profileCreatedAt ?? NOW - 7 * DAY;
   const calls: { method: string; params: unknown[] }[] = [];
   const graphCalls: { operationName: string; variables: Record<string, unknown> }[] = [];
   const reads: FirstBadgeReads = {
@@ -173,7 +216,7 @@ function fakeReads(state: {
         }
         const decoded = decodeFunctionData({ abi: SocietyProtocolBadgesABI, data: tx.data });
         expect(decoded.functionName).toBe("profileBadgeId");
-        return encodeAbiParameters([{ type: "uint256" }], [state.profileId ?? BigInt(0)]);
+        return encodeAbiParameters([{ type: "uint256" }], [profileId]);
       }
       throw new Error(`unexpected ${method}`);
     },
@@ -183,8 +226,14 @@ function fakeReads(state: {
       if (operationName === "Status") {
         return { _meta: { block: { number: Number(state.indexed ?? BigInt(990)) } } };
       }
+      const where = variables.where as { isProfile: boolean; createdAt_lte?: string };
+      if (where.isProfile) {
+        const listed = profileId !== BigInt(0) && profileCreatedAt <= Number(where.createdAt_lte);
+        return { badges: listed ? [{ id: String(state.subgraphProfileId ?? profileId) }] : [] };
+      }
       return { badges: Array.from({ length: state.subgraphBadges ?? 0 }, (_, i) => ({ id: String(i) })) };
     },
+    now: () => NOW * 1000,
   };
   return { reads, calls, graphCalls };
 }
@@ -198,11 +247,23 @@ describe("firstBadgeEligibility", () => {
       eligible: true,
       blockNumber: BigInt(1000),
     });
-    expect(graphCalls[1].variables.where).toEqual({
-      creatorAddress: sender.toLowerCase(),
-      isProfile: false,
-      isCommunity: false,
-    });
+    const wheres = graphCalls.map((c) => c.variables.where).filter(Boolean);
+    expect(wheres).toHaveLength(2);
+    expect(wheres).toEqual(
+      expect.arrayContaining([
+        { creatorAddress: sender.toLowerCase(), isProfile: false, isCommunity: false },
+        {
+          creatorAddress: sender.toLowerCase(),
+          isProfile: true,
+          createdAt_lte: String(NOW - DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS * HOUR),
+        },
+      ]),
+    );
+    // The profile is read on chain at the block the check is pinned to.
+    const profileRead = calls.find(
+      (c) => c.method === "eth_call" && (c.params[0] as { to: Address }).to === BADGES,
+    );
+    expect(profileRead?.params[1]).toBe(toHex(BigInt(1000)));
     // From the subgraph's block to the node's head, both included.
     const ranges = calls
       .filter((c) => c.method === "eth_getLogs")
@@ -235,8 +296,8 @@ describe("firstBadgeEligibility", () => {
 
   it("does not count the profile badge createProfile emits", async () => {
     const { reads } = fakeReads({
-      logs: [{ block: BigInt(995), id: BigInt(42) }],
-      profileId: BigInt(42),
+      logs: [{ block: BigInt(995), id: PROFILE_ID }],
+      profileId: PROFILE_ID,
     });
     expect((await firstBadgeEligibility({ chainId: SEPOLIA, sender }, reads)).eligible).toBe(true);
   });
@@ -293,6 +354,58 @@ describe("firstBadgeEligibility", () => {
     expect(
       await firstBadgeEligibility({ chainId: SEPOLIA, sender, userOpNonce: "missing" }, at(BigInt(0))),
     ).toEqual({ eligible: false, reason: "nonce" });
+  });
+
+  it("requires a profile on chain", async () => {
+    const { reads } = fakeReads({ profileId: BigInt(0) });
+    expect(await firstBadgeEligibility({ chainId: SEPOLIA, sender }, reads)).toEqual({
+      eligible: false,
+      reason: "noProfile",
+    });
+  });
+
+  it("requires the profile to be older than the minimum age", async () => {
+    const minAge = DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS * HOUR;
+    const fresh = fakeReads({ profileCreatedAt: NOW - minAge + 60 });
+    expect(await firstBadgeEligibility({ chainId: SEPOLIA, sender }, fresh.reads)).toEqual({
+      eligible: false,
+      reason: "profileTooNew",
+    });
+    const justOldEnough = fakeReads({ profileCreatedAt: NOW - minAge });
+    expect((await firstBadgeEligibility({ chainId: SEPOLIA, sender }, justOldEnough.reads)).eligible).toBe(true);
+    // An old profile badge in the subgraph that is not the one on chain does not count.
+    const other = fakeReads({ subgraphProfileId: BigInt(7) });
+    expect(await firstBadgeEligibility({ chainId: SEPOLIA, sender }, other.reads)).toEqual({
+      eligible: false,
+      reason: "profileTooNew",
+    });
+  });
+
+  it("reads the minimum age from the environment, and 0 still requires a profile", async () => {
+    try {
+      vi.stubEnv("FIRST_BADGE_MIN_PROFILE_AGE_HOURS", "");
+      expect(firstBadgeMinProfileAgeSeconds()).toBe(DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS * HOUR);
+      vi.stubEnv("FIRST_BADGE_MIN_PROFILE_AGE_HOURS", "-1");
+      expect(firstBadgeMinProfileAgeSeconds()).toBe(DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS * HOUR);
+      vi.stubEnv("FIRST_BADGE_MIN_PROFILE_AGE_HOURS", "soon");
+      expect(firstBadgeMinProfileAgeSeconds()).toBe(DEFAULT_FIRST_BADGE_MIN_PROFILE_AGE_HOURS * HOUR);
+      vi.stubEnv("FIRST_BADGE_MIN_PROFILE_AGE_HOURS", "48");
+      expect(firstBadgeMinProfileAgeSeconds()).toBe(48 * HOUR);
+      const twoDays = fakeReads({ profileCreatedAt: NOW - DAY });
+      expect((await firstBadgeEligibility({ chainId: SEPOLIA, sender }, twoDays.reads)).eligible).toBe(false);
+
+      vi.stubEnv("FIRST_BADGE_MIN_PROFILE_AGE_HOURS", "0");
+      const justMade = fakeReads({ profileCreatedAt: NOW });
+      expect((await firstBadgeEligibility({ chainId: SEPOLIA, sender }, justMade.reads)).eligible).toBe(true);
+      expect(justMade.graphCalls.filter((c) => (c.variables.where as { isProfile?: boolean })?.isProfile)).toHaveLength(0);
+      const none = fakeReads({ profileId: BigInt(0) });
+      expect(await firstBadgeEligibility({ chainId: SEPOLIA, sender }, none.reads)).toEqual({
+        eligible: false,
+        reason: "noProfile",
+      });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("refuses unsupported chains and malformed senders", async () => {
@@ -374,7 +487,19 @@ async function paymasterRequest(
 const GATEWAY = "https://graph.example.test/graphql";
 
 /** fetch for the proxy: Pimlico, the graph gateway and the server's node. */
-function mockServices(state: { subgraphBadges?: number; nonce?: bigint; logs?: bigint[] }) {
+function mockServices(
+  state: {
+    subgraphBadges?: number;
+    nonce?: bigint;
+    logs?: bigint[];
+    /** profileBadgeId(sender); 0 is no profile. Default PROFILE_ID. */
+    profileId?: bigint;
+    /** Seconds since the subgraph's profile badge was made. Default: a week. */
+    profileAge?: number;
+  } = {},
+) {
+  const profileId = state.profileId ?? PROFILE_ID;
+  const profileCreatedAt = Math.floor(Date.now() / 1000) - (state.profileAge ?? 7 * DAY);
   const upstream: { method: string }[] = [];
   const graph: string[] = [];
   vi.stubGlobal(
@@ -391,6 +516,11 @@ function mockServices(state: { subgraphBadges?: number; nonce?: bigint; logs?: b
         graph.push(body.operationName);
         if (body.operationName === "Status") {
           return Response.json({ data: { _meta: { block: { number: 100 } } } });
+        }
+        if (body.variables.where.isProfile) {
+          const listed =
+            profileId !== BigInt(0) && profileCreatedAt <= Number(body.variables.where.createdAt_lte);
+          return Response.json({ data: { badges: listed ? [{ id: String(profileId) }] : [] } });
         }
         return Response.json({
           data: { badges: Array.from({ length: state.subgraphBadges ?? 0 }, () => ({ id: "1" })) },
@@ -411,7 +541,8 @@ function mockServices(state: { subgraphBadges?: number; nonce?: bigint; logs?: b
             const to = String(body.params[0].to).toLowerCase();
             if (to === sender.toLowerCase()) return pad(owner);
             if (to === ENTRY_POINT_V07.toLowerCase()) return word(state.nonce ?? BigInt(5));
-            return word(BigInt(0));
+            expect(to).toBe(BADGES.toLowerCase());
+            return word(profileId);
           }
           default:
             throw new Error(`unexpected ${body.method}`);
@@ -471,7 +602,8 @@ describe("forwardAaRpc with the free first badge", () => {
       expect(await rpcError(await forwardAaRpc(post(await paymasterRequest(method, createBadge()))))).toBeUndefined();
     }
     expect(upstream.map((body) => body.method)).toEqual(["pm_getPaymasterStubData", "pm_getPaymasterData"]);
-    expect(graph).toEqual(["Status", "Badges", "Status", "Badges"]);
+    // Per call: Status, the member's badges, and its profile's age.
+    expect([...graph].sort()).toEqual(["Badges", "Badges", "Badges", "Badges", "Status", "Status"]);
   });
 
   it("refuses an account that has created a badge, by the subgraph or by the chain", async () => {
@@ -505,6 +637,84 @@ describe("forwardAaRpc with the free first badge", () => {
       Array(FIRST_BADGE_SIGNATURES_PER_SENDER_PER_DAY).fill(undefined),
     );
     expect(errors.at(-1)).toEqual({ code: -32005, message: "Daily free badge sponsorship limit reached" });
+  });
+
+  it("refuses a free badge for an account without a profile, or with one made just now", async () => {
+    vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
+    for (const [state, reason] of [
+      [{ profileId: BigInt(0) }, FIRST_BADGE_REASONS.noProfile],
+      [{ profileAge: HOUR }, FIRST_BADGE_REASONS.profileTooNew],
+    ] as const) {
+      const { upstream } = mockServices(state);
+      for (const method of ["pm_getPaymasterStubData", "pm_getPaymasterData"] as const) {
+        const error = await rpcError(await forwardAaRpc(post(await paymasterRequest(method, createBadge()))));
+        expect(error).toEqual({ code: -32602, message: reason });
+      }
+      expect(upstream).toHaveLength(0);
+    }
+  });
+
+  it("refuses a free badge in a UserOp that deploys the account", async () => {
+    vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
+    const { upstream } = mockServices({});
+    const request = (await paymasterRequest("pm_getPaymasterData", createBadge())) as unknown as {
+      params: [Record<string, unknown>];
+    };
+    request.params[0].factory = LIGHT_ACCOUNT_FACTORY;
+    request.params[0].factoryData = encodeCreateAccount(owner);
+    expect(await rpcError(await forwardAaRpc(post(request)))).toEqual({
+      code: -32602,
+      message: "User operation is outside the sponsorship allowlist",
+    });
+    expect(upstream).toHaveLength(0);
+  });
+
+  it("gives out at most FIRST_BADGE_DAILY_CAP free badges a day across all visitors", async () => {
+    vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "2");
+    const { upstream } = mockServices({});
+    const signing = await paymasterRequest("pm_getPaymasterData", createBadge());
+    // Our sender is the second of the day; asking again (a declined wallet
+    // prompt, another visitor) does not count it twice.
+    expect(aaRateLimits.firstBadgesPerDay.take(`${SEPOLIA}:0xearlier`, 2)).toBe(true);
+    expect(await rpcError(await forwardAaRpc(post(signing, { ip: "198.51.100.2" })))).toBeUndefined();
+    expect(await rpcError(await forwardAaRpc(post(signing, { ip: "198.51.100.3" })))).toBeUndefined();
+    expect(upstream).toHaveLength(2);
+
+    // The day's two are taken: a third account is refused, stub call first.
+    resetAaRateLimits();
+    expect(aaRateLimits.firstBadgesPerDay.take(`${SEPOLIA}:0xone`, 2)).toBe(true);
+    expect(aaRateLimits.firstBadgesPerDay.take(`${SEPOLIA}:0xtwo`, 2)).toBe(true);
+    for (const method of ["pm_getPaymasterStubData", "pm_getPaymasterData"] as const) {
+      const error = await rpcError(await forwardAaRpc(post(await paymasterRequest(method, createBadge()))));
+      expect(error).toEqual({ code: -32005, message: FIRST_BADGE_DAILY_CAP_MESSAGE });
+    }
+    expect(upstream).toHaveLength(2);
+  });
+
+  it("does not spend the daily cap on stub calls or on refused accounts", async () => {
+    vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "1");
+    mockServices({ profileAge: HOUR });
+    await forwardAaRpc(post(await paymasterRequest("pm_getPaymasterData", createBadge())));
+    mockServices({});
+    await forwardAaRpc(post(await paymasterRequest("pm_getPaymasterStubData", createBadge())));
+    expect(aaRateLimits.firstBadgesPerDay.wouldAdmit(`${SEPOLIA}:0xsomeone-else`, 1)).toBe(true);
+  });
+
+  it("sends free badges to PIMLICO_FIRST_BADGE_POLICY_ID when it is set, and nothing else", async () => {
+    vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
+    vi.stubEnv("PIMLICO_SPONSORSHIP_POLICY_ID", "sp_main");
+    vi.stubEnv("PIMLICO_FIRST_BADGE_POLICY_ID", "sp_free_badge");
+    const { upstream } = mockServices({});
+    for (const method of ["pm_getPaymasterStubData", "pm_getPaymasterData"] as const) {
+      await forwardAaRpc(post(await paymasterRequest(method, createBadge())));
+    }
+    await forwardAaRpc(post(await paymasterRequest("pm_getPaymasterStubData", encodeCreateProfile(URI))));
+    const policies = (upstream as unknown as { params: { sponsorshipPolicyId?: string }[] }[]).map(
+      (body) => body.params[3]?.sponsorshipPolicyId,
+    );
+    expect(policies).toEqual(["sp_free_badge", "sp_free_badge", "sp_main"]);
   });
 
   it("still refuses an official badge or a batch of two badges with the switch on", async () => {
@@ -555,6 +765,51 @@ describe("GET /api/aa/first-badge", () => {
     expect(await used.json()).toEqual({ enabled: true, eligible: false, reason: "used" });
   });
 
+  it("says ineligible exactly when the proxy would refuse, so the wizard shows the wallet paying", async () => {
+    vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
+    vi.stubEnv("PIMLICO_API_KEY", "pim_test_key");
+    vi.stubEnv("NEXT_PUBLIC_ALCHEMY_API_KEY", "");
+    vi.stubEnv("GRAPH_QUERY_GATEWAY_URL", GATEWAY);
+    vi.stubEnv("GRAPH_QUERY_GATEWAY_TOKEN", "gateway-token");
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "1");
+    const cases = [
+      { name: "eligible", state: {}, reason: undefined },
+      { name: "no profile", state: { profileId: BigInt(0) }, reason: "noProfile" },
+      { name: "new profile", state: { profileAge: HOUR }, reason: "profileTooNew" },
+      { name: "used", state: { subgraphBadges: 1 }, reason: "used" },
+      { name: "capped", state: {}, reason: "capped", fill: true },
+    ] as const;
+    try {
+      for (const testCase of cases) {
+        resetAaRateLimits();
+        resetSenderCache();
+        resetFirstBadgeCache();
+        if ("fill" in testCase) aaRateLimits.firstBadgesPerDay.take(`${SEPOLIA}:0xother`, 1);
+        mockServices(testCase.state);
+        const status = await (await firstBadgeStatus(get(`chainId=${SEPOLIA}&sender=${sender}`))).json();
+        const routed = callShape({
+          chainId: SEPOLIA,
+          to: BADGES,
+          data: createBadge(),
+          firstBadge: status.eligible,
+        });
+        const proxyError = await rpcError(
+          await forwardAaRpc(post(await paymasterRequest("pm_getPaymasterData", createBadge()))),
+        );
+        expect({ case: testCase.name, status, sponsored: routed.sponsored, refused: !!proxyError }).toEqual({
+          case: testCase.name,
+          status: testCase.reason
+            ? { enabled: true, eligible: false, reason: testCase.reason }
+            : { enabled: true, eligible: true },
+          sponsored: !testCase.reason,
+          refused: !!testCase.reason,
+        });
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("rejects a bad chain or sender", async () => {
     vi.stubEnv("SPONSOR_FIRST_BADGE", "true");
     expect((await firstBadgeStatus(get(`chainId=10&sender=${sender}`))).status).toBe(400);
@@ -572,5 +827,39 @@ describe("fetchFirstBadgeStatus", () => {
     expect(await fetchFirstBadgeStatus(SEPOLIA, sender, server500)).toEqual({ enabled: false, eligible: false });
     const ok = vi.fn(async () => Response.json({ enabled: true, eligible: true })) as unknown as typeof fetch;
     expect(await fetchFirstBadgeStatus(SEPOLIA, sender, ok)).toEqual({ enabled: true, eligible: true });
+  });
+});
+
+describe("the app-wide daily cap", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("reads FIRST_BADGE_DAILY_CAP, falling back to the default", () => {
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "");
+    expect(firstBadgeDailyCap()).toBe(DEFAULT_FIRST_BADGE_DAILY_CAP);
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "2.5");
+    expect(firstBadgeDailyCap()).toBe(DEFAULT_FIRST_BADGE_DAILY_CAP);
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "-3");
+    expect(firstBadgeDailyCap()).toBe(DEFAULT_FIRST_BADGE_DAILY_CAP);
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "0");
+    expect(firstBadgeDailyCap()).toBe(0);
+    vi.stubEnv("FIRST_BADGE_DAILY_CAP", "5");
+    expect(firstBadgeDailyCap()).toBe(5);
+  });
+
+  it("admits at most cap distinct keys per rolling window, each counted once", () => {
+    const cap = new RollingWindowCap(DAY * 1000);
+    const t0 = 1_000_000;
+    expect(cap.take("a", 2, t0)).toBe(true);
+    expect(cap.take("a", 2, t0 + 1)).toBe(true);
+    expect(cap.take("b", 2, t0 + 2)).toBe(true);
+    expect(cap.wouldAdmit("c", 2, t0 + 3)).toBe(false);
+    expect(cap.take("c", 2, t0 + 3)).toBe(false);
+    expect(cap.take("b", 2, t0 + 4)).toBe(true);
+    // A day after "a" was admitted its slot is free again; "b"'s is not yet.
+    expect(cap.take("c", 2, t0 + DAY * 1000)).toBe(true);
+    expect(cap.take("d", 2, t0 + DAY * 1000)).toBe(false);
+    expect(cap.take("x", 0, t0)).toBe(false);
   });
 });

@@ -80,7 +80,7 @@ export const UserTag = ({
             {/* Avatar and Name Section */}
 
             <Avatar
-              ensImage={imageUrl}
+              userImageUrl={imageUrl}
               address={id}
               size={42}
               loading={loading}

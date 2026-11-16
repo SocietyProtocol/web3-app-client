@@ -51,46 +51,40 @@ test.describe("smart-account onboarding", () => {
   );
 
   test(
-    "C16: a click on the setup prompt while the wallet is still being read keeps the wizard open",
+    "C16: the wizard open in the URL stays open when a reload restores the connection and the identity settles",
     { tag: ["@edge"] },
     async ({ persona, pages, page, network }) => {
       await persona("new");
-      // The app reads the wallet's code to decide which identity applies.
-      // Keep that read open: this is the moment right after connecting, on a
-      // slow RPC. The setup prompt is already offered then.
-      const codeRead = network.holdRpc({ method: "eth_getCode" });
       await pages.onboarding.open();
-      await pages.shell.connectButton.click();
-      await pages.shell.walletOption.click();
-      await expect.poll(() => codeRead.hits()).toBeGreaterThan(0);
+      await pages.shell.connect();
       await expect(pages.onboarding.setupPrompt).toBeVisible();
-      await expect(pages.shell.accountButton).toHaveCount(0);
 
-      await pages.onboarding.startButton.click();
-      await expect(page).toHaveURL(/setupOpen=true/);
-      await expect(pages.onboarding.form).toBeVisible();
+      // Reload into the wizard (a click on the prompt, then a reload). The
+      // app reads the wallet's code to decide which identity applies: keep
+      // that read open, as on a slow RPC. While it runs the identity is not
+      // known, so no setup prompt is offered (A9, B-4) and the wizard cannot
+      // be opened by a click; the URL is what asks for it.
+      const codeRead = network.holdRpc({ method: "eth_getCode" });
+      await page.goto("/profile?setupOpen=true");
+      await expect.poll(() => codeRead.hits()).toBeGreaterThan(0);
+      await expect(pages.onboarding.setupPrompt).toBeHidden();
+      await expect(pages.shell.accountButton).toHaveCount(0);
 
       codeRead.release();
       await expect(pages.shell.accountButton).toBeVisible();
-      // The reset below is a URL write that nuqs applies up to about 150 ms
-      // after the address changed: wait until it has landed (or, in a fixed
-      // app, until none is pending), so that the checks below see the state
-      // after it and cannot pass on the state before it.
+      // A reset of setupOpen is a URL write that nuqs applies up to about
+      // 150 ms after the address changed: wait until none is pending, so
+      // that the checks below see the state after any such write and cannot
+      // pass on the state before it.
       await pages.onboarding.waitForUrlWritesToSettle();
 
-      // APP BUG, expected to fail until it is fixed: Profile.tsx (the effect
-      // on isConnected and address, lines 26-35) sets setupOpen to false on
-      // every address change after mount. The address goes from undefined
-      // to the Light Account when the code read returns, so the wizard the
-      // user just opened closes and the URL loses setupOpen. The same reset,
-      // landing just after a click, is what made O7 and O13 fail in
-      // onboarding.start() under load. Remove the timeouts with test.fail:
-      // 2 s for the URL, which a fixed app keeps; 5 s for the form, which a
-      // fixed app hides behind the skeleton while it asks the subgraph for
-      // the Light Account's User.
-      test.fail(true, "Profile.tsx closes the wizard when the wallet's identity settles after the click");
-      await expect(page).toHaveURL(/setupOpen=true/, { timeout: 2_000 });
-      await expect(pages.onboarding.form).toBeVisible({ timeout: 5_000 });
+      // The connection coming back and the address going from undefined to
+      // the Light Account is the identity settling, not a change of account:
+      // the wizard the URL asks for stays open (it may sit behind the skeleton while the subgraph
+      // is asked for the Light Account's User). Profile.tsx used to reset
+      // setupOpen here, which also made O7 and O13 flaky under load.
+      await expect(page).toHaveURL(/setupOpen=true/);
+      await expect(pages.onboarding.form).toBeVisible();
     },
   );
 

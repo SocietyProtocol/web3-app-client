@@ -16,7 +16,20 @@ describe("resolveImageSrc", () => {
     );
   });
 
-  it("drops inlined data-URI photos", () => {
-    expect(resolveImageSrc("data:image/png;base64,abc")).toBeUndefined();
+  it("keeps a data-URI image, such as a file just chosen for a preview", () => {
+    expect(resolveImageSrc("data:image/png;base64,abc")).toBe(
+      "data:image/png;base64,abc",
+    );
+  });
+
+  it("does not rewrite a data-URI image whose base64 contains /ipfs/", () => {
+    const src = "data:image/png;base64,iVBORw0/ipfs/QmNotACid";
+    expect(resolveImageSrc(src)).toBe(src);
+  });
+
+  it("returns undefined for an empty reference", () => {
+    expect(resolveImageSrc(undefined)).toBeUndefined();
+    expect(resolveImageSrc(null)).toBeUndefined();
+    expect(resolveImageSrc("")).toBeUndefined();
   });
 });

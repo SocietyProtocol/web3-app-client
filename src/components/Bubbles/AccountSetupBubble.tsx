@@ -11,7 +11,11 @@ interface AccountSetupBubbleProps {
 export const AccountSetupBubble = ({
   onActionClick,
 }: AccountSetupBubbleProps) => {
-  const { isConnected, address } = useOutpostAccount();
+  const {
+    isConnected,
+    address,
+    isLoading: identityLoading,
+  } = useOutpostAccount();
   const { data: profileId, isLoading } = useProfileId(address);
   const { isWrongNetwork } = useCheckWrongNetwork();
 
@@ -31,6 +35,7 @@ export const AccountSetupBubble = ({
       }
       show={
         isConnected &&
+        !identityLoading &&
         !isWrongNetwork &&
         (profileId === undefined || profileId === BigInt(0)) &&
         !isLoading

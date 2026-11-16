@@ -104,6 +104,16 @@ export function outpostIdentity(input: {
   };
 }
 
+/**
+ * Whether the page has lost the identity it was showing: a known address
+ * went away (disconnect, account or chain switch, or a new code read) or was
+ * replaced. Gaining one (connecting, or the code read settling) is not a
+ * loss, so state the user set while the identity was unknown is kept.
+ */
+export function identityLeft(previous: Address | undefined, current: Address | undefined): boolean {
+  return !!previous && previous !== current;
+}
+
 /** Whether the Light Account may relay this call, and whether Society pays. */
 export function callShape(input: {
   chainId: number;

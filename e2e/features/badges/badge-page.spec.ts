@@ -271,20 +271,9 @@ test.describe("badge page", () => {
       await expect(detail.actionTabs).toHaveCount(0);
       await expect(pages.badge.mintRecipientInput).toHaveCount(0);
 
-      // APP BUG, expected to fail until it is fixed: a logged-out visitor
-      // gets the bare "Actions" title and no prompt. BadgeActions returns
-      // early when the visitor has no permission, before it reaches the
-      // ContentGuard that holds the prompt ("Connect your wallet to perform
-      // badge actions"), and without a wallet nobody has a permission: that
-      // prompt can never be shown. Everything above this line must pass;
-      // only the assertions below are expected to fail.
-      test.fail(true, "logged out, the Actions area shows no prompt to connect (BadgeActions returns before its ContentGuard)");
-      // Short on purpose: a fixed app has the prompt on screen already.
-      // Remove these timeouts together with test.fail.
-      await expect(detail.actionsConnectPrompt).toBeVisible({ timeout: 2_000 });
-      await expect(detail.actionsConnectPrompt).toContainText("Connect your wallet to perform badge actions", {
-        timeout: 2_000,
-      });
+      // In their place, the prompt to connect.
+      await expect(detail.actionsConnectPrompt).toBeVisible();
+      await expect(detail.actionsConnectPrompt).toContainText("Connect your wallet to perform badge actions");
     },
   );
 

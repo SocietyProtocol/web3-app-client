@@ -46,22 +46,14 @@ test.describe("pages while the subgraph is down", () => {
         )
         .toBeGreaterThan(0);
 
-      // APP BUG (seen in a trace), expected to fail until it is fixed: the
-      // page never settles. Profile.tsx renders a skeleton while
-      // `user.isLoading`; once the query has failed it mounts ContentGuard,
-      // whose own useUserQuery observer mounts on a failed query without
-      // data, and TanStack Query fetches again on mount (`retryOnMount`
-      // defaults to true). The query is loading again, Profile unmounts
-      // ContentGuard, and so on: the User query is sent four times every
-      // seven seconds for as long as the page is open, /profile stays a
-      // skeleton and the header never shows the account button (it waits
-      // for the same query). Everything above this line must pass.
-      test.fail(true, "a failed User query makes /profile refetch it forever behind a skeleton");
-      // The header shows the account button once the member's query has
-      // ended, here: once the app has given up retrying it (three retries,
-      // 1 + 2 + 4 s). Fifteen seconds leave a fixed app time for that on a
-      // busy machine. Remove the timeout together with test.fail.
-      await expect(pages.shell.accountButton).toBeVisible({ timeout: 15_000 });
+      // The page settles: the header shows the account button once the
+      // member's query has ended, here once the app has given up retrying it
+      // (three retries, 1 + 2 + 4 s). Until a fix, two components mounted a
+      // new observer on the failed query, and TanStack Query fetches a failed
+      // query again when an observer mounts (`retryOnMount`): /profile's
+      // ContentGuard, and the Avatar inside the header's account button. The
+      // page and the header stayed skeletons and the query was sent forever.
+      await expect(pages.shell.accountButton).toBeVisible();
 
       // Nothing pretends: no profile made of nothing, and no invitation to
       // set up an account that exists (the chain knows the profile).
@@ -70,13 +62,17 @@ test.describe("pages while the subgraph is down", () => {
       expect(wallet.signatureRequests()).toHaveLength(0);
       expect(wallet.sendTransactionRequests()).toHaveLength(0);
 
-      // Not reached while the bug above is there, from reading the code:
-      // Profile.tsx and ContentGuard.tsx only look at `user.data?.profile`,
-      // which is undefined after a failed query as well, so ContentGuard
-      // takes its "no profile" branch and renders AccountSetupBubble, which
-      // hides itself because the chain says the account has a profile:
-      // an empty page. Neither component reads `user.isError`.
+      // The page says that the profile could not be loaded and offers a
+      // retry; it is not an empty page (ContentGuard's "no profile" branch).
       await expect(errorState(page)).toBeVisible({ timeout: 2_000 });
+      const retry = page.getByRole("button", { name: "Retry" });
+      await expect(retry).toBeVisible();
+
+      // The subgraph is back: Retry loads the profile.
+      await subgraph.clearFaults();
+      await retry.click();
+      await expect(pages.profile.details).toBeVisible();
+      await expect(errorState(page)).toBeHidden();
     },
   );
 
@@ -99,18 +95,20 @@ test.describe("pages while the subgraph is down", () => {
       expect(asked.length, "the page asked for the Governor badge and was refused").toBeGreaterThan(0);
       await expect(pages.governance.governors.rows).toHaveCount(0);
 
-      // APP BUG (seen running: the list settles on "No governors found"),
-      // expected to fail until it is fixed: Governance.tsx reads only `data` and
-      // `isLoading` of the badge query. When the query fails, the list of
-      // holders is empty and the section reads "Governors (0)" and "No
-      // governors found", which is false: the Governors are on chain, the
-      // page just could not load them. Everything above this line must pass.
-      test.fail(true, "a failed Badge query is shown as an empty list of Governors");
-      // Short on purpose: the page has settled (awaited above). Remove the
-      // timeouts together with test.fail.
-      await expect(errorState(page)).toBeVisible({ timeout: 2_000 });
-      await expect(pages.governance.emptyState).toBeHidden({ timeout: 2_000 });
-      await expect(pages.governance.governors.section).not.toContainText("Governors (0)", { timeout: 2_000 });
+      // A failed query is not an empty list: the Governors are on chain, the
+      // page just could not load them, and it says so and offers a retry.
+      await expect(errorState(page)).toBeVisible();
+      await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+      await expect(pages.governance.emptyState).toBeHidden();
+      await expect(pages.governance.governors.section).toBeVisible();
+      await expect(pages.governance.governors.section).not.toContainText("Governors (0)");
+
+      // The subgraph is back: Retry loads the Governors.
+      await subgraph.clearFaults();
+      await page.getByRole("button", { name: "Retry" }).click();
+      await expect(pages.governance.governors.rows.first()).toBeVisible();
+      await expect(errorState(page)).toBeHidden();
+      await expect(page.getByRole("button", { name: "Retry" })).toBeHidden();
     },
   );
 });

@@ -11,6 +11,7 @@ vi.mock("../../../.graphclient", () => ({
 import { Address } from "viem";
 import {
   buildWhereClause,
+  createdByAddressText,
   fetchBadge,
   getBadgePermissions,
   mergeOptions,
@@ -96,5 +97,38 @@ describe("legacy manager wallets", () => {
       canBurn: true,
       canTransfer: false,
     });
+  });
+});
+
+describe("createdByAddressText", () => {
+  const address = "0x1111111111111111111111111111111111111111" as Address;
+  const other = "0x2222222222222222222222222222222222222222" as Address;
+
+  it("keeps every prefix of an address while it is typed key by key", () => {
+    for (let i = 0; i < address.length; i++) {
+      const typed = address.slice(0, i);
+      expect(createdByAddressText(typed, null)).toBe(typed);
+    }
+    expect(createdByAddressText(address, address)).toBe(address);
+  });
+
+  it("keeps the typed case of a whole address stored in lower case", () => {
+    const checksummed = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+    expect(
+      createdByAddressText(checksummed, checksummed.toLowerCase() as Address),
+    ).toBe(checksummed);
+  });
+
+  it("keeps a text that is no longer an address after a key is removed", () => {
+    expect(createdByAddressText(address.slice(0, -1), null)).toBe(
+      address.slice(0, -1),
+    );
+  });
+
+  it("shows the stored address when it changed from elsewhere", () => {
+    expect(createdByAddressText("", address)).toBe(address);
+    expect(createdByAddressText("0x12", address)).toBe(address);
+    expect(createdByAddressText(other, address)).toBe(address);
+    expect(createdByAddressText(address, null)).toBe("");
   });
 });

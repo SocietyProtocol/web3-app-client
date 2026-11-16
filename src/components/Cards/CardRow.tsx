@@ -47,7 +47,8 @@ export const CardRow = <T extends { id: string }>({
           </Button>
         )}
       </Stack>
-      {items?.length === 0 ? (
+      {/* While loading the items are not known yet: skeletons, not "none found". */}
+      {!loading && items?.length === 0 ? (
         <Stack justifyContent="center" alignItems="center" minHeight={100}>
           <Typography variant="body1" color="text.secondary">
             {noneFoundText}

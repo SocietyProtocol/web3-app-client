@@ -1,4 +1,9 @@
-import { Address, decodeEventLog, TransactionReceipt } from "viem";
+import {
+  Address,
+  isAddress,
+  parseEventLogs,
+  TransactionReceipt,
+} from "viem";
 import {
   Badge_filter,
   BadgeDocument,
@@ -28,6 +33,24 @@ export const normalizeAddresses = (
   );
   if (list.length === 0) return undefined;
   return list.length === 1 ? list[0] : list;
+};
+
+/**
+ * The text to show in the "Created by: Address" field. The page address
+ * keeps only a whole address, so the typed text is kept beside it: it is
+ * shown while it stands for the stored address (a partial text stands for
+ * none), and the stored address wins once it changes from elsewhere (a
+ * link, back/forward). The text is read as `addressParser` (src/lib/nuqs.ts)
+ * reads it; that parser is not imported here because this module is also
+ * loaded on the server (the badge page's metadata), where nuqs's
+ * createParser cannot be called.
+ */
+export const createdByAddressText = (
+  typed: string,
+  stored: Address | null,
+): string => {
+  const typedAddress = isAddress(typed) ? typed.trim().toLowerCase() : null;
+  return typedAddress === stored ? typed : (stored ?? "");
 };
 
 /**
@@ -252,23 +275,9 @@ export const getBadgePermissions = (
  * @param receipt Transaction receipt
  * @returns Created badge ID or null if not found
  */
-export const decodeBadgeId = (receipt: TransactionReceipt) => {
-  let id: bigint | null = null;
-
-  for (const log of receipt.logs) {
-    try {
-      const decoded = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "BadgeCreated",
-      });
-
-      id = decoded.args.id;
-    } catch {
-      // Ignore errors for logs that are not BadgeCreated events
-    }
-  }
-
-  return id;
-};
+export const decodeBadgeId = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "BadgeCreated",
+  }).at(-1)?.args.id ?? null;

@@ -110,15 +110,8 @@ test.describe("/api/copywriting", () => {
     "P5: a slug that is the name of a built-in object property is 404 as well",
     { tag: ["@edge"] },
     async ({ api }) => {
-      // APP BUG (seen running: a 500, and the server logs that the "path"
-      // argument must be a string but was undefined), expected to
-      // fail until it is fixed: the route looks the slug up in a plain
-      // object (`SLUG_MAP[slug]`, src/app/api/copywriting/[slug]/route.ts),
-      // so "constructor", "toString" and the like find the property the
-      // object inherits. That is not a list entry, has no `file`, and
-      // joining the working directory with `undefined` throws: the visitor
-      // gets a 500 for an address that simply does not exist.
-      test.fail(true, "inherited object properties pass the slug lookup and the route answers 500");
+      // The route looks the slug up in a plain object; an inherited
+      // property ("constructor", "toString") must not count as an entry.
       for (const slug of ["constructor", "toString", "hasOwnProperty", "valueOf"]) {
         const response = await api.get(`/api/copywriting/${slug}`);
         expect(response.status(), slug).toBe(404);

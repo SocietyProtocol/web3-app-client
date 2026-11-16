@@ -313,23 +313,11 @@ test.describe("smart-account onboarding: waiting, declining and failing", () => 
       await expect(pages.onboarding.form).toBeHidden();
       expect(await subgraph.entity("User", me.address), "the subgraph still has not indexed the profile").toBeNull();
 
-      // APP BUG, expected to fail until it is fixed: right after "Transaction
-      // successful!" the page shows "Welcome! Let's get started by setting up
-      // your account" with "Setup your Account" again, although the profile
-      // exists on chain. The page decides from the subgraph's User (still
-      // without a profile) and from useProfileId, an on-chain read with
-      // staleTime Infinity that nothing invalidates after createProfile, so
-      // it still says 0. A user who follows the prompt signs and uploads
-      // again and then gets "Profile already exists". The prompt also stays
-      // after the subgraph has caught up, until the page is reloaded.
-      // Everything above this line must pass; only the assertion below is
-      // expected to fail.
-      test.fail(true, "after a save the subgraph has not indexed yet, the page offers the account setup again");
-      // Short on purpose: a known failure should not cost a long wait. A
-      // fixed app either never shows the prompt or takes it away after one
-      // chain read, well within three seconds, so a fix shows up as an
-      // unexpected pass. Remove this timeout together with test.fail.
-      await expect(pages.onboarding.setupPrompt).toBeHidden({ timeout: 3_000 });
+      // Right after "Transaction successful!" the page must not offer the
+      // account setup again: the profile exists on chain, and the on-chain
+      // profile read is refreshed with the save even though the subgraph
+      // still has no profile.
+      await expect(pages.onboarding.setupPrompt).toBeHidden();
     },
   );
 });

@@ -13,13 +13,15 @@ import {
 } from "@mui/material";
 import { MouseEvent, useState } from "react";
 import { ConnectButtonSkeleton } from "./ConnectButtonSkeleton";
+import { connectButtonView } from "./connectButtonView";
+import { useWagmiReady } from "@/atoms/wagmiReady";
 import type { SxProps } from "@mui/system";
 import type { ButtonPropsVariantOverrides } from "@mui/material/Button";
 import { OverridableStringUnion } from "@mui/types";
 import { ConnectButton as RainbowConnectButton } from "@rainbow-me/rainbowkit";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ErrorIcon from "@mui/icons-material/Error";
-import { Avatar } from "../Avatar/Avatar";
+import { UserAvatar } from "../Avatar/UserAvatar";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { mergeSx } from "@/utils/sx";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
@@ -73,6 +75,7 @@ export const ConnectButton = ({
   variant,
 }: ConnectButtonProps) => {
   const outpost = useOutpostAccount();
+  const wagmiReady = useWagmiReady();
   const { data, isLoading } = useUserQuery(outpost.address);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const showOwner =
@@ -87,23 +90,25 @@ export const ConnectButton = ({
         chain,
         openAccountModal,
         openChainModal,
-        mounted: wagmiReady,
+        mounted,
         openConnectModal,
       }) => {
-        // Until the Society address is known, show nothing copyable: the
-        // wallet address is not the member's identity.
-        if (
-          !wagmiReady ||
-          isLoading ||
-          (account && (outpost.isLoading || !outpost.address))
-        ) {
+        const view = connectButtonView({
+          mounted,
+          wagmiReady,
+          hasAccount: !!account,
+          userLoading: isLoading,
+          identityLoading: outpost.isLoading,
+          address: outpost.address,
+        });
+
+        if (view === "skeleton") {
           return <ConnectButtonSkeleton fullWidth={fullWidth} sx={sx} />;
         }
 
-        if (!account) {
+        if (view === "connect") {
           return (
             <Button
-              disabled={!wagmiReady}
               variant={variant || "outlined"}
               onClick={openConnectModal}
               data-testid="wallet-connect"
@@ -169,9 +174,13 @@ export const ConnectButton = ({
                   minWidth={0}
                   spacing={{ xs: 0.5, sm: 0.75, md: 1 }}
                 >
-                  <Avatar
+                  {/* Not <Avatar>: it would ask for this same User query
+                      with an observer of its own, and a new observer on a
+                      failed query fetches it again on mount, which puts this
+                      button back into its skeleton, and so on forever. */}
+                  <UserAvatar
                     address={societyAddress}
-                    ensImage={data?.imageUrl}
+                    imageUrl={data?.imageUrl}
                     size={24}
                     loading={isLoading}
                   />

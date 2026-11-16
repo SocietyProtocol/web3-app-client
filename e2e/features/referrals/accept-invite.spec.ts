@@ -204,22 +204,14 @@ test.describe("accepting an invitation", () => {
       wallet.clearRequests();
       await referrals.codeInput.fill(fromFriend.code);
 
-      // Known app bug: the guard never matches for smart accounts. An
-      // invitation is recorded as hasInvited[inviter's WALLET][invitee's
-      // SOCIETY ADDRESS] (the contract recovers the inviter from the wallet's
-      // signature; the invitee is the Light Account that calls). The app asks
-      // hasInvited(my Society address, the code's inviter = the friend's
-      // wallet) (AcceptInvitation.tsx, useHasInvited(address, inviter)), and
-      // the contract's own CircularInvitation check reads the same pair.
-      // Neither my Society address as inviter nor the friend's wallet as
-      // invitee ever appears on chain, so the message is not shown, the
-      // simulation passes and the circular invitation can be accepted.
-      // Remove the timeouts together with test.fail.
-      test.fail(true, "the circular-invitation guard compares a Society address with a wallet and never matches");
+      // An invitation is recorded as hasInvited[inviter's WALLET][invitee's
+      // SOCIETY ADDRESS]. The contract's own CircularInvitation check reads
+      // hasInvited[caller][code's inviter], a pair that never exists for
+      // Light Accounts, so only the app's guard stops this one.
       await expect(
         referrals.codeMessage("You cannot use a referral code from someone you have already invited."),
-      ).toBeVisible({ timeout: 5_000 });
-      await expect(referrals.acceptButton).toBeDisabled({ timeout: 2_000 });
+      ).toBeVisible();
+      await expect(referrals.acceptButton).toBeDisabled();
     },
   );
 

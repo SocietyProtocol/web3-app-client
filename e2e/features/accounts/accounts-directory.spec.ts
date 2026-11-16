@@ -20,26 +20,11 @@ import { onlyShortAddress } from "../../support/pages/connect-wallet";
  */
 
 /**
- * Known app bug, several tests below: every card's avatar asks /api/graphql
- * for its own User (src/components/Avatar/Avatar.tsx:22, useUserQuery), so
- * one load of the directory is 2 + 50 requests, and the route allows a
- * visitor a burst of 60 that refills one a second
- * (src/app/api/graphql/route.ts). The next page, a reload, a new search,
- * sort or filter soon after is answered 429 "Too many GraphQL requests".
- * TanStack Query retries a failed query three times (after 1, 2 and 4
- * seconds), and each retry can take a token that refilled meanwhile, so
- * whether the grid then shows "Users data is unavailable" or, late, the
- * cards depends on timing: with few requests missing (F2, F3) the cards
- * sometimes arrive. So each of these tests also ends with what browsing the
- * directory should never meet: a request refused with 429
- * (`expectNoGraphqlRefused`). Where in a test the first 429 falls depends
- * on how many members the chain has (other tests add some), so `test.fail`
- * is put above the first step that can be the one, and every check after it
- * has a short timeout. Remove both when the bug is fixed.
+ * Browsing the directory stays within the visitor's /api/graphql allowance, a
+ * burst of 60 that refills one a second (src/app/api/graphql/route.ts): no
+ * request of the page is refused with 429. The cards' avatars use the image
+ * of the directory's own pages and ask for no User of their own.
  */
-const RATE_LIMIT_BUG = "the directory's avatars use up the visitor's /api/graphql allowance, a burst of 60 that refills one a second (Avatar.tsx useUserQuery per card)";
-
-/** Browsing the directory stays within the visitor's /api/graphql allowance (see RATE_LIMIT_BUG). */
 function expectNoGraphqlRefused(answers: ReturnType<typeof watchGraphqlAnswers>) {
   expect(answers.refused(), "requests of the directory to /api/graphql refused with 429").toBe(0);
 }
@@ -89,10 +74,7 @@ test.describe("accounts directory", () => {
       await expect(accounts.card(newest.address)).toContainText("Listed as number 109.");
 
       // Scrolling to the end loads the rest, page by page, until every account is listed once.
-      // Known app bug (see RATE_LIMIT_BUG): the third page is refused with
-      // 429 and the grid shows the error instead of the cards.
-      test.fail(true, RATE_LIMIT_BUG);
-      await accounts.scrollUntilLoaded(listed.size, { timeout: 5_000 });
+      await accounts.scrollUntilLoaded(listed.size);
       const all = await accounts.addresses();
       expect(new Set(all).size).toBe(all.length);
       expect(new Set(all)).toEqual(listed);
@@ -105,13 +87,15 @@ test.describe("accounts directory", () => {
       expect(skips).toEqual(
         Array.from({ length: Math.floor(listed.size / PAGE_SIZE) + 1 }, (_, index) => index * PAGE_SIZE),
       );
+      // The cards' avatars use the images of those pages: no card asks for its
+      // own User, so browsing stays within the visitor's /api/graphql limit.
+      const userRequests = (await subgraph.requests()).filter((request) => request.operationName === "User");
+      expect(userRequests).toEqual([]);
 
       // A card is a link to the account's public profile.
-      await accounts.card(newest.address).click({ timeout: 5_000 });
-      await expect(page).toHaveURL(new RegExp(`/user/${newest.address}$`), { timeout: 5_000 });
-      await expect(page.getByRole("heading", { name: "Scroll 109's Profile", exact: true })).toBeVisible({
-        timeout: 5_000,
-      });
+      await accounts.card(newest.address).click();
+      await expect(page).toHaveURL(new RegExp(`/user/${newest.address}$`));
+      await expect(page.getByRole("heading", { name: "Scroll 109's Profile", exact: true })).toBeVisible();
       expectNoGraphqlRefused(graphqlAnswers);
     },
   );
@@ -156,38 +140,32 @@ test.describe("accounts directory", () => {
       await expect(accounts.card(someone.address)).toBeVisible();
       await expect.poll(() => accounts.urlParam("search") ?? "").toBe("");
 
-      // Known app bug (see RATE_LIMIT_BUG): the cards of the whole list
-      // after the reload use up the minute's requests, and the next search
-      // is refused.
-      test.fail(true, RATE_LIMIT_BUG);
-      const short = { timeout: 5_000 };
-
       // By a part of the name.
       await accounts.search(salt);
-      await expect(accounts.cards).toHaveCount(1, short);
-      await expect(accounts.card(someone.address)).toBeVisible(short);
+      await expect(accounts.cards).toHaveCount(1);
+      await expect(accounts.card(someone.address)).toBeVisible();
 
       // By the Society address, pasted with its checksum.
       await accounts.search(someone.address);
-      await expect.poll(() => accounts.urlParam("search"), short).toBe(someone.address);
-      await expect(accounts.cards).toHaveCount(1, short);
-      await expect(accounts.card(someone.address)).toContainText(name, short);
+      await expect.poll(() => accounts.urlParam("search")).toBe(someone.address);
+      await expect(accounts.cards).toHaveCount(1);
+      await expect(accounts.card(someone.address)).toContainText(name);
 
       // The profile is not on the owner wallet. Each "nobody" below follows
       // a search with one card on screen: the page keeps the last result up
       // until the next one is in, so an empty list after an empty list would
       // prove nothing.
       await accounts.search(someone.ownerAddress);
-      await expect(accounts.emptyState).toBeVisible(short);
-      await expect(accounts.cards).toHaveCount(0, short);
+      await expect(accounts.emptyState).toBeVisible();
+      await expect(accounts.cards).toHaveCount(0);
 
       // An address is matched as a whole.
       await accounts.search(someone.address);
-      await expect(accounts.cards).toHaveCount(1, short);
-      await expect(accounts.emptyState).toBeHidden(short);
+      await expect(accounts.cards).toHaveCount(1);
+      await expect(accounts.emptyState).toBeHidden();
       await accounts.search(someone.address.slice(0, 22));
-      await expect(accounts.emptyState).toBeVisible(short);
-      await expect(accounts.cards).toHaveCount(0, short);
+      await expect(accounts.emptyState).toBeVisible();
+      await expect(accounts.cards).toHaveCount(0);
       expectNoGraphqlRefused(graphqlAnswers);
     },
   );
@@ -233,19 +211,14 @@ test.describe("accounts directory", () => {
       const byName = pageRequests(await subgraph.requests()).at(-1)!;
       expect(byName.variables).toMatchObject({ orderBy: "name", orderDirection: "asc", skip: 0 });
 
-      // Known app bug (see RATE_LIMIT_BUG): with more than a page of members
-      // the reload is refused, with fewer the sort after it.
-      test.fail(true, RATE_LIMIT_BUG);
-      const short = { timeout: 5_000 };
-
       // The choice is in the address: a reload keeps it.
       await page.reload();
-      await expect(accounts.sortSelect).toHaveText("Name", short);
-      await expect.poll(orderOfMine, short).toEqual([alpha, bravo, charlie]);
+      await expect(accounts.sortSelect).toHaveText("Name");
+      await expect.poll(orderOfMine).toEqual([alpha, bravo, charlie]);
 
       // And back.
       await accounts.sortBy("Newest");
-      await expect.poll(async () => (await accounts.addresses()).slice(0, 3), short).toEqual([bravo, charlie, alpha]);
+      await expect.poll(async () => (await accounts.addresses()).slice(0, 3)).toEqual([bravo, charlie, alpha]);
       const byAge = pageRequests(await subgraph.requests()).at(-1)!;
       expect(byAge.variables).toMatchObject({ orderBy: "profile__createdAt", orderDirection: "desc", skip: 0 });
       expectNoGraphqlRefused(graphqlAnswers);
@@ -313,29 +286,24 @@ test.describe("accounts directory", () => {
         await expect.poll(shown, `accounts listed after ${filter} is switched off`).toEqual(keys);
       }
 
-      // Known app bug (see RATE_LIMIT_BUG): with more than a page of members
-      // the two filters are refused, with fewer the last ones after the reload.
-      test.fail(true, RATE_LIMIT_BUG);
-      const short = { timeout: 5_000 };
-
       // Two filters: accounts with either role.
       await accounts.toggleRole("Governors");
       await accounts.toggleRole("Basic accounts");
-      await expect.poll(shown, short).toEqual(["governor", "basic", "governorAndModerator"]);
-      await expect.poll(() => accounts.urlParam("roles"), short).toBe("governor,basic");
+      await expect.poll(shown).toEqual(["governor", "basic", "governorAndModerator"]);
+      await expect.poll(() => accounts.urlParam("roles")).toBe("governor,basic");
 
       // The filter is in the address: a reload keeps it.
       await page.reload();
-      await expect(accounts.roleButton("Governors")).toHaveAttribute("aria-pressed", "true", short);
-      await expect(accounts.roleButton("Basic accounts")).toHaveAttribute("aria-pressed", "true", short);
-      await expect(accounts.roleButton("Moderators")).toHaveAttribute("aria-pressed", "false", short);
-      await expect.poll(shown, short).toEqual(["governor", "basic", "governorAndModerator"]);
+      await expect(accounts.roleButton("Governors")).toHaveAttribute("aria-pressed", "true");
+      await expect(accounts.roleButton("Basic accounts")).toHaveAttribute("aria-pressed", "true");
+      await expect(accounts.roleButton("Moderators")).toHaveAttribute("aria-pressed", "false");
+      await expect.poll(shown).toEqual(["governor", "basic", "governorAndModerator"]);
 
       // All six chosen is the same as none.
       for (const filter of ["Contributors", "Core Team", "Advisors", "Moderators"] as const) {
         await accounts.toggleRole(filter);
       }
-      await expect.poll(shown, short).toEqual(keys);
+      await expect.poll(shown).toEqual(keys);
       expectNoGraphqlRefused(graphqlAnswers);
     },
   );
@@ -367,11 +335,7 @@ test.describe("accounts directory", () => {
 
       await accounts.open();
       await accounts.loaded();
-      // Known app bug (see RATE_LIMIT_BUG): the third page is refused with
-      // 429 and the grid shows the error instead of the cards.
-      test.fail(true, RATE_LIMIT_BUG);
-      const short = { timeout: 5_000 };
-      await accounts.scrollUntilLoaded(listed.size, short);
+      await accounts.scrollUntilLoaded(listed.size);
       const shown = await accounts.addresses();
       expect(new Set(shown).size, "every account is listed once").toBe(shown.length);
 
@@ -387,17 +351,17 @@ test.describe("accounts directory", () => {
 
       // A search for a hidden wallet finds nothing either.
       await accounts.search(migrated[0].wallet);
-      await expect(accounts.emptyState).toBeVisible(short);
-      await expect(accounts.cards).toHaveCount(0, short);
+      await expect(accounts.emptyState).toBeVisible();
+      await expect(accounts.cards).toHaveCount(0);
       await accounts.search(migrated[0].society);
-      await expect(accounts.cards).toHaveCount(1, short);
-      await expect(accounts.card(migrated[0].society)).toBeVisible(short);
+      await expect(accounts.cards).toHaveCount(1);
+      await expect(accounts.card(migrated[0].society)).toBeVisible();
 
       // One of the others gets a profile on its Society address: from then on
       // the directory lists that address and no longer the old wallet.
       const [mover] = pending;
       await accounts.search(mover.wallet);
-      await expect(accounts.card(mover.wallet)).toBeVisible(short);
+      await expect(accounts.card(mover.wallet)).toBeVisible();
       await subgraph.overlay(
         directoryMember({
           address: mover.society,
@@ -407,11 +371,11 @@ test.describe("accounts directory", () => {
         }),
       );
       await page.reload();
-      await expect(accounts.searchInput).toHaveValue(mover.wallet, short);
-      await expect(accounts.emptyState).toBeVisible(short);
+      await expect(accounts.searchInput).toHaveValue(mover.wallet);
+      await expect(accounts.emptyState).toBeVisible();
       await accounts.search(mover.society);
-      await expect(accounts.cards).toHaveCount(1, short);
-      await expect(accounts.card(mover.society)).toContainText("Moved Over", short);
+      await expect(accounts.cards).toHaveCount(1);
+      await expect(accounts.card(mover.society)).toContainText("Moved Over");
       expectNoGraphqlRefused(graphqlAnswers);
     },
   );

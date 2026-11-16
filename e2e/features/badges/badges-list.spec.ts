@@ -321,7 +321,7 @@ test.describe("badges list", () => {
       await expect(list.createdByAddressInput).toHaveCount(0);
 
       // "Address" opens a field; the whole address is put in at once, as a
-      // paste does (key by key: see the next test).
+      // paste does (key by key: see "an address can be typed into Created by").
       await list.chooseCreatedBy("Address");
       await expect.poll(() => list.param("createdBy")).toBe("address");
       await list.createdByAddressInput.fill(creatorAddress);
@@ -389,18 +389,11 @@ test.describe("badges list", () => {
       await expect(list.createdByAddressInput).toBeVisible();
       await list.createdByAddressInput.pressSequentially(creatorAddress);
 
-      // APP BUG, expected to fail until it is fixed: the field cannot be
-      // typed into. Badges.onCreatedByAddressChange keeps a value only when
-      // it is a complete address and stores null otherwise, and the field
-      // shows what is stored: after each key the text is not an address
-      // yet, null is stored, and the key is gone. Only a paste of a whole
-      // address gets through (previous tests). Everything above this line
-      // must pass; only the assertions below are expected to fail.
-      test.fail(true, "the Created by address field drops every key until the text is a complete address (Badges.tsx)");
-      // Short on purpose: a fixed app has the typed text in the field
-      // already. Remove these timeouts together with test.fail.
-      await expect(list.createdByAddressInput).toHaveValue(creatorAddress, { timeout: 2_000 });
-      await expect.poll(() => list.ids(), { timeout: 5_000 }).toEqual([creator.badge!.id.toString()]);
+      // Every key stays in the field, and the list is narrowed once the
+      // text is a whole address.
+      await expect(list.createdByAddressInput).toHaveValue(creatorAddress);
+      await expect.poll(() => list.ids()).toEqual([creator.badge!.id.toString()]);
+      await expect.poll(() => list.param("createdByAddress")).toBe(creatorAddress);
     },
   );
 

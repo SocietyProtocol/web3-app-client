@@ -45,6 +45,16 @@ export const BidControl = () => {
     [decimalsBiddingToken],
   );
 
+  // The subgraph's BigInt fields come as strings ("18"): convert them before
+  // they reach scaleUp or formatUnits, which throws on a string decimals.
+  const auctioningTokenDecimals = useMemo(
+    () =>
+      decimalsAuctioningToken === undefined
+        ? undefined
+        : Number(decimalsAuctioningToken),
+    [decimalsAuctioningToken],
+  );
+
   const validationSchema = useMemo(() => {
     if (
       minBid === undefined ||
@@ -125,7 +135,7 @@ export const BidControl = () => {
 
   const amountSpecBigInt = useMemo(() => {
     if (
-      decimalsAuctioningToken === undefined ||
+      auctioningTokenDecimals === undefined ||
       values.sellAmount === undefined ||
       values.price === undefined ||
       values.price === BigInt(0) ||
@@ -134,8 +144,8 @@ export const BidControl = () => {
       return undefined;
     }
 
-    return scaleUp(values.sellAmount, decimalsAuctioningToken) / values.price;
-  }, [values, decimalsAuctioningToken]);
+    return scaleUp(values.sellAmount, auctioningTokenDecimals) / values.price;
+  }, [values, auctioningTokenDecimals]);
 
   return (
     <ContentGuard
@@ -251,7 +261,7 @@ export const BidControl = () => {
             You will receive approximately{" "}
             <FormattedNumber
               value={amountSpecBigInt}
-              scaleDownDecimals={decimalsAuctioningToken}
+              scaleDownDecimals={auctioningTokenDecimals}
               maxDecimals={4}
               minThreshold={0.0001}
               suffix="SPEC"

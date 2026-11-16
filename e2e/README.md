@@ -645,7 +645,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 (K9 "1 holders" is an expected failure) | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
 | L Governance | `governance` | 8 tests: L1 to L7 | – | – |
-| M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
+| M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests are expected failures. All eleven tests of M3 to M10 failed then on a crash of the running auction's page; the app is fixed and their `test.fail` marks are removed, but their steps after the page opens have not been run yet. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
 | O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
 | P Server routes | `api` | 69 tests: P1 to P8 | – | The proxy's daily limits for profile updates and invites. |
@@ -654,9 +654,9 @@ moment; a new one would be listed in the fourth column until someone has run it 
 
 Every expected failure was seen failing at its marked assertion in a run. One suspected bug
 is not marked: M6's bid that may not be placed by itself after the approval
-(`useBidMutation`), found by reading only. No run reaches it, because the running auction's
-page crashes first; M6 is an expected failure on that crash. Once the crash is fixed, run M6:
-if it then fails at "the wallet is asked for the bid", mark that with `test.fail`.
+(`useBidMutation`), found by reading only. No run has reached it yet: until the crash of the
+running auction's page was fixed, M6 failed before it. Run M6: if it fails at "the wallet is
+asked for the bid", mark that with `test.fail`.
 
 ### What this branch changes in the app
 

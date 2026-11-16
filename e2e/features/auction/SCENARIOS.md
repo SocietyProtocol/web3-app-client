@@ -25,17 +25,19 @@ from what is on chain.
 
 M2 to M10 were run with `auction.id` set to 7 (the fork's `auctionCounter()` is 6) in a local build that
 was not committed: M2 passes, and the other tests fail as expected at the lines their `test.fail` names,
-3 of 3 runs each.
+3 of 3 runs each. M3 to M10 then failed on a crash of the running auction's page (string `decimals` from
+the subgraph reaching viem's `formatUnits`); the app now converts them, the `test.fail` marks are gone, and
+M3 to M10 have not yet been run against the fix.
 
 | ID | Scenario | Persona | Needs | Tag | Test |
 |---|---|---|---|---|---|
 | M1 | No auction id configured: "SPEC ICO Auction" with "Coming soon" | LO | – | @smoke | `auction-view.serial.spec.ts` (runs only in a build without an auction id) |
 | M2 | Auction configured but not started or ended: inactive view with kickoff date; sidebar status chip | LO | G | @core | `auction-view.serial.spec.ts` (four tests, two of them `test.fail`: the kickoff date and the sidebar chip of an auction that has not started) |
-| M3 | Active auction: clearing price, bidding token, countdown, totals, chart | LO | G C | @core | `auction-view.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run) |
-| M4 | Bid control guard: logged out, then wrong network | LO, MEM | W | @core | `auction-view.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run) |
-| M5 | Bid validation: below min bid or min price, insufficient balance | MEM | W C | @core | `auction-view.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run) |
-| M6 | Place bid with approval: approve transaction, "Approval confirmed, placing bid…", second transaction, "Bid Placed!", appears in Your Bids | MEM (tokens on wallet) | W T T G C | @core | `auction-bids.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run, including the second `test.fail`, the bid that is not placed by itself after the approval, which is found by reading only) |
-| M7 | Place bid with existing allowance: one transaction | MEM | W T G | @edge | `auction-bids.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run) |
-| M8 | Cancel bid; disabled with a tooltip after the cancellation period or on the wrong network | MEM | W T G | @core | `auction-bids.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run; three tests) |
-| M9 | Reject the approval or the bid transaction | MEM | W T | @edge | `auction-bids.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run; two tests) |
-| M10 | Your Bids empty state; bid statuses | MEM | W G | @edge | `auction-view.serial.spec.ts` (`test.fail`: the running auction's page crashes, see `RUNNING_AUCTION_CRASH` in `steps.ts`; the rest has never run; the app only ever shows the status "Placed") |
+| M3 | Active auction: clearing price, bidding token, countdown, totals, chart | LO | G C | @core | `auction-view.serial.spec.ts` |
+| M4 | Bid control guard: logged out, then wrong network | LO, MEM | W | @core | `auction-view.serial.spec.ts` |
+| M5 | Bid validation: below min bid or min price, insufficient balance | MEM | W C | @core | `auction-view.serial.spec.ts` |
+| M6 | Place bid with approval: approve transaction, "Approval confirmed, placing bid…", second transaction, "Bid Placed!", appears in Your Bids | MEM (tokens on wallet) | W T T G C | @core | `auction-bids.serial.spec.ts` (the bid that may not be placed by itself after the approval is suspected by reading only and not marked; see the comment at the wallet poll) |
+| M7 | Place bid with existing allowance: one transaction | MEM | W T G | @edge | `auction-bids.serial.spec.ts` |
+| M8 | Cancel bid; disabled with a tooltip after the cancellation period or on the wrong network | MEM | W T G | @core | `auction-bids.serial.spec.ts` (three tests) |
+| M9 | Reject the approval or the bid transaction | MEM | W T | @edge | `auction-bids.serial.spec.ts` (two tests) |
+| M10 | Your Bids empty state; bid statuses | MEM | W G | @edge | `auction-view.serial.spec.ts` (the app only ever shows the status "Placed") |

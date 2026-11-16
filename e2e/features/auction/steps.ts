@@ -28,25 +28,6 @@ export const NO_AUCTION_BUILD =
   "(see e2e/support/builders/auction.ts)";
 
 /**
- * APP BUG, the reason of the expected failures in M3 to M10: the page of a
- * running auction crashes ("Something went wrong: `decimals` must be a
- * non-negative integer. Got `18`.") as soon as its numbers render.
- * decimalsAuctioningToken and decimalsBiddingToken are BigInt fields of the
- * subgraph, which come as strings ("18"), and the graph client types them as
- * `any`. ActiveAuction.tsx passes them unconverted to FormattedNumber's
- * scaleDownDecimals (Total Auctioned, Min Price; BidControl.tsx does the same
- * for "You will receive approximately"), FormattedNumber calls viem's
- * formatUnits with them, and the viem the lockfile resolves (2.56.3) throws
- * on a decimals that is not an integer. Each of those tests is marked
- * test.fail at the first step that needs the running auction's page, with a
- * 5 second timeout (the page needs the subgraph's answer first). What comes
- * after that step has never run: remove the test.fail and the timeout when
- * the page is fixed, and verify the rest then.
- */
-export const RUNNING_AUCTION_CRASH =
-  'the page of a running auction crashes: a string "decimals" from the subgraph reaches formatUnits (ActiveAuction.tsx)';
-
-/**
  * The auction the app was built for, open on chain, and in the subgraph
  * fake as a running auction (or with the dates and totals of `fields`).
  */

@@ -1,5 +1,5 @@
 import { parse, print, type DocumentNode } from "graphql";
-import { clientIp } from "@/lib/aa/rate-limit";
+import { clientIp, TokenBucketLimiter } from "@/lib/aa/rate-limit";
 import { getGraphGatewayEnv } from "@/lib/server-env";
 import { PERSISTED_GRAPH_DOCUMENTS } from "@/lib/persisted-graphql.generated";
 import { stripDataUriImages } from "@/lib/strip-data-uri";
@@ -16,7 +16,12 @@ const ALLOWED_GRAPH_OPERATIONS = new Set(
   PERSISTED_GRAPH_DOCUMENTS.keys(),
 );
 
-const requestCounts = new Map<string, { count: number; resetAt: number }>();
+// Bounded by TokenBucketLimiter's maxKeys, so one entry per visitor IP
+// cannot grow without limit on a long-running process.
+const requestLimiter = new TokenBucketLimiter(
+  RATE_LIMIT_MAX_REQUESTS,
+  RATE_LIMIT_WINDOW_MS,
+);
 
 class RequestBodyTooLargeError extends Error {}
 class UpstreamResponseTooLargeError extends Error {}
@@ -32,17 +37,7 @@ function jsonError(message: string, status: number, headers?: HeadersInit) {
 }
 
 function isRateLimited(request: Request) {
-  const now = Date.now();
-  const key = clientIp(request.headers);
-  const current = requestCounts.get(key);
-
-  if (!current || current.resetAt <= now) {
-    requestCounts.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-
-  current.count += 1;
-  return current.count > RATE_LIMIT_MAX_REQUESTS;
+  return !requestLimiter.take(clientIp(request.headers));
 }
 
 async function readLimitedBody(request: Request) {

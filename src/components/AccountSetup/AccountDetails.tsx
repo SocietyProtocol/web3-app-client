@@ -22,7 +22,7 @@ import { Page } from "../Page/Page";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { isEqualCaseInsensitive, truncateAddress } from "@/utils/string";
 import { useLegacyAccounts } from "../shared/useLegacyAccounts";
-import { canEditProfile } from "./profileEditing";
+import { canEditProfile, showEditForm } from "./profileEditing";
 import {
   useAccountBadgeBalances,
   useBadgeTotalSupplies,
@@ -94,13 +94,14 @@ export const AccountDetails = ({ address, readonly }: AccountDetailsProps) => {
       history: "push",
     }),
   );
-  const canEdit = canEditProfile({
+  const editAccess = {
     readonly,
     profileAddress: address,
     societyAddress: accountAddress,
-  });
+  };
+  const canEdit = canEditProfile(editAccess);
   // `?edit=true` on a profile the viewer cannot edit shows the profile.
-  const isEditing = canEdit && editRequested;
+  const isEditing = showEditForm({ ...editAccess, editRequested });
 
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
 

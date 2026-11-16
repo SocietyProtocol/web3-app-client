@@ -26,3 +26,13 @@ export const canEditProfile = ({
     !!societyAddress && isEqualCaseInsensitive(profileAddress, societyAddress)
   );
 };
+
+/**
+ * Whether the page shows the edit form: `?edit=true` was asked for and the
+ * viewer may edit this profile. Otherwise the profile is shown read-only.
+ */
+export const showEditForm = ({
+  editRequested,
+  ...input
+}: CanEditProfileInput & { editRequested: boolean }): boolean =>
+  editRequested && canEditProfile(input);

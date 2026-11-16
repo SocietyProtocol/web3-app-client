@@ -91,6 +91,13 @@ export const dark: PaletteOptions = {
     hover: alpha(colors.PRIMARY_MAIN, 0.11),
     selected: alpha(colors.PRIMARY_MAIN, 0.047),
   },
+  brand: {
+    outline: colors.BRAND_OUTLINE,
+    teal: colors.BRAND_TEAL,
+    youtube: colors.BRAND_YOUTUBE,
+    discord: colors.BRAND_DISCORD,
+    x: colors.BRAND_OUTLINE,
+  },
   chart: {
     stroke: colors.CHART_STROKE,
     fill: colors.CHART_FILL,

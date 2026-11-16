@@ -175,4 +175,52 @@ describe("sendSponsoredUserOperation", () => {
       vi.useRealTimers();
     }
   });
+
+  /** Milliseconds between a refused first attempt (AA10) and the second one. */
+  async function aa10RetryDelay(): Promise<number> {
+    vi.useFakeTimers();
+    try {
+      const attemptedAt: number[] = [];
+      const started = Date.now();
+      behave(async () => {
+        attemptedAt.push(Date.now() - started);
+        if (attemptedAt.length === 1) throw refusal("AA10 sender already constructed");
+        return USER_OP_HASH;
+      });
+      const pending = sendSponsoredUserOperation(createProfile);
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(await pending).toBe(USER_OP_HASH);
+      expect(attemptedAt).toHaveLength(2);
+      return attemptedAt[1] - attemptedAt[0];
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllEnvs();
+    }
+  }
+
+  it("waits three seconds before retrying an AA10 when no e2e interval is set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_E2E_POLL_MS", "");
+    expect(await aa10RetryDelay()).toBe(3_000);
+  });
+
+  it("waits three seconds before retrying an AA10 in production, whatever the e2e interval says", async () => {
+    vi.stubEnv("NEXT_PUBLIC_E2E_POLL_MS", "200");
+    vi.stubEnv("NEXT_PUBLIC_E2E_BUILD", "1");
+    vi.stubEnv("NEXT_PUBLIC_ENVIRONMENT", "production");
+    expect(await aa10RetryDelay()).toBe(3_000);
+  });
+
+  it("waits three seconds before retrying an AA10 in a deployment built without the e2e marker", async () => {
+    vi.stubEnv("NEXT_PUBLIC_E2E_POLL_MS", "200");
+    vi.stubEnv("NEXT_PUBLIC_E2E_BUILD", "");
+    vi.stubEnv("NEXT_PUBLIC_ENVIRONMENT", "development");
+    expect(await aa10RetryDelay()).toBe(3_000);
+  });
+
+  it("retries an AA10 after the e2e interval in the e2e build", async () => {
+    vi.stubEnv("NEXT_PUBLIC_E2E_POLL_MS", "200");
+    vi.stubEnv("NEXT_PUBLIC_E2E_BUILD", "1");
+    vi.stubEnv("NEXT_PUBLIC_ENVIRONMENT", "development");
+    expect(await aa10RetryDelay()).toBe(200);
+  });
 });

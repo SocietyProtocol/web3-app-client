@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import path from "path";
 
 export default defineConfig({
@@ -10,5 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: false,
+    // e2e/ holds Playwright specs: they run with `yarn test:e2e`, not vitest.
+    exclude: [...configDefaults.exclude, "e2e/**"],
   },
 });

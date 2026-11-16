@@ -41,6 +41,8 @@ interface WizardProps {
       };
   isLoading?: boolean;
   loadingText?: string;
+  /** Prefix for the data-testid of Back, Next and Finish, for browser tests. */
+  testIdPrefix?: string;
 }
 
 export const Wizard = ({
@@ -60,6 +62,7 @@ export const Wizard = ({
   minHeight,
   isLoading = false,
   loadingText = "Saving...",
+  testIdPrefix,
 }: WizardProps) => {
   const isMobile = useIsMobile();
 
@@ -153,6 +156,7 @@ export const Wizard = ({
                   onClick={onBack}
                   sx={{ width: { xs: "100%", sm: "auto" } }}
                   disabled={backDisabled || isLoading}
+                  data-testid={testIdPrefix && `${testIdPrefix}-back`}
                 >
                   Back
                 </WizardButton>
@@ -180,6 +184,7 @@ export const Wizard = ({
                     loadingText={loadingText}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     component={WizardButton}
+                    data-testid={testIdPrefix && `${testIdPrefix}-submit`}
                   >
                     Finish
                   </TransactionButton>
@@ -189,6 +194,7 @@ export const Wizard = ({
                     onClick={onNext}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     disabled={nextDisabled}
+                    data-testid={testIdPrefix && `${testIdPrefix}-next`}
                   >
                     Next
                   </WizardButton>

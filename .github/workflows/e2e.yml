@@ -1,0 +1,141 @@
+name: Browser tests
+
+# The hermetic browser suite (e2e/README.md): the production build against a
+# local chain, bundler, paymaster and fakes. It needs no secret, so it also
+# runs for pull requests from forks. It never deploys anything.
+#
+#   pull request      the @smoke tests, plus every spec file the pull request changed
+#   push to staging   every test
+#   run by hand       every test, optionally with several workers
+on:
+  pull_request:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+    inputs:
+      workers:
+        description: "Workers, each with a stack of its own (1 to 4, and no more than the runner has cores). Leave 1 until several are proven green."
+        default: "1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hermetic:
+    name: Browser tests (hermetic)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # A pull request is checked out as its merge commit. Two commits
+          # deep is enough to compare it with its first parent, the base.
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          # Same major as the Dockerfile.
+          node-version: 22
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # anvil, alto and the mock paymaster, from their own lockfile.
+      - name: Restore the local chain stack
+        id: aa-stack
+        uses: actions/cache@v4
+        with:
+          path: e2e/aa-stack/node_modules
+          key: e2e-aa-stack-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('e2e/aa-stack/package-lock.json') }}
+
+      - name: Install the local chain stack
+        if: steps.aa-stack.outputs.cache-hit != 'true'
+        run: npm ci --prefix e2e/aa-stack --ignore-scripts
+
+      - name: Restore Chromium
+        id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # A new Playwright version wants a new browser build.
+          key: e2e-playwright-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
+
+      - name: Install Chromium
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: yarn playwright install --with-deps chromium
+
+      # The cache holds the browser, not the system libraries it needs.
+      - name: Install Chromium's system libraries
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: yarn playwright install-deps chromium
+
+      # The compiler's cache, so that `next build` only redoes what changed.
+      # The build itself is always made here, from this commit's sources.
+      - name: Restore the Next build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: e2e-next-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('src/**', 'public/**', 'next.config.ts', 'tsconfig.json', 'schema.graphql') }}
+          restore-keys: |
+            e2e-next-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-
+            e2e-next-${{ runner.os }}-
+
+      - name: Choose the tests
+        id: choose
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          grep=""
+          if [ "$EVENT" = "pull_request" ] && git rev-parse --verify --quiet "HEAD^2" > /dev/null; then
+            grep="$(git diff --name-only --diff-filter=d "HEAD^1" HEAD | node e2e/support/ci/pr-grep.mjs)"
+            echo "Pull request: tests matching $grep"
+          else
+            echo "Every test"
+          fi
+          echo "grep=$grep" >> "$GITHUB_OUTPUT"
+
+      - name: Run the browser tests
+        env:
+          E2E_GREP: ${{ steps.choose.outputs.grep }}
+          # Empty unless the run was started by hand with a number.
+          E2E_WORKERS: ${{ inputs.workers }}
+        run: |
+          # Each worker is a chain, a bundler, a paymaster, an app server and
+          # a browser. More of them than cores shows up as timeouts and
+          # killed processes that look like flaky tests, so refuse it here.
+          if [ -n "$E2E_WORKERS" ]; then
+            case "$E2E_WORKERS" in
+              *[!0-9]*) echo "::error::workers must be a whole number, got '$E2E_WORKERS'"; exit 1 ;;
+            esac
+            limit="$(nproc)"
+            if [ "$limit" -gt 4 ]; then limit=4; fi
+            if [ "$E2E_WORKERS" -lt 1 ] || [ "$E2E_WORKERS" -gt "$limit" ]; then
+              echo "::error::workers must be from 1 to $limit on this runner ($(nproc) cores), got '$E2E_WORKERS'"
+              exit 1
+            fi
+          fi
+          if [ -n "$E2E_GREP" ]; then
+            yarn test:e2e --grep "$E2E_GREP"
+          else
+            yarn test:e2e
+          fi
+
+      # The logs hold nothing private: the stack runs on dummy values only.
+      - name: Keep the report and the stack's logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-tests-${{ github.run_attempt }}
+          path: |
+            e2e/playwright-report/
+            e2e/.stack/**/*.log
+          if-no-files-found: ignore
+          include-hidden-files: true
+          retention-days: 7

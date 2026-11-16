@@ -283,10 +283,10 @@ export const useTransaction = ({
           isContractWallet: outpost.isContractWallet,
         });
 
-        const notify = (message: string) => {
+        const notify = (message: string, testId = "transaction-step-notice") => {
           closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
           closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
-          enqueueSnackbar(message, {
+          enqueueSnackbar(<span data-testid={testId}>{message}</span>, {
             key: `${snackbarKeyPrefixFinal}-notice`,
             variant: "info",
             persist: true,
@@ -382,7 +382,10 @@ export const useTransaction = ({
             onSponsorshipUnavailable: (quote, reason) => {
               console.warn("Sponsorship unavailable; the owner wallet pays instead:", reason);
               fellBack = true;
-              notify(freeGasUnavailableNotice(quote));
+              notify(
+                freeGasUnavailableNotice(quote),
+                "transaction-sponsorship-fallback",
+              );
             },
             onOwnerPaysStep: (step, { steps }) => {
               if (steps < 2) return;

@@ -42,6 +42,7 @@ import {
 import { sendOutpostWrite } from "@/lib/outpost-send";
 import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
 import { ownerWalletClient } from "@/lib/owner-wallet";
+import { createTransactionNotices } from "@/lib/transaction-notices";
 import { wagmiConfig } from "@/lib/wagmi";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
@@ -268,6 +269,11 @@ export const useTransaction = ({
         setStatus("idle");
       }
 
+      const notices = createTransactionNotices(snackbarKeyPrefixFinal, {
+        enqueueSnackbar,
+        closeSnackbar,
+      });
+
       try {
         setStatus("executing");
         setSponsorshipRefused(false);
@@ -311,12 +317,7 @@ export const useTransaction = ({
 
         const notify = (message: string, testId = "transaction-step-notice") => {
           closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
-          closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
-          enqueueSnackbar(<span data-testid={testId}>{message}</span>, {
-            key: `${snackbarKeyPrefixFinal}-notice`,
-            variant: "info",
-            persist: true,
-          });
+          notices.show(<span data-testid={testId}>{message}</span>);
         };
         const accountCall = () => ({
           to: finalAddress,
@@ -439,7 +440,7 @@ export const useTransaction = ({
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
-        closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
+        notices.close();
         enqueueSnackbar(submittedMessage, {
           variant: "info",
           key: `${snackbarKeyPrefixFinal}-submitted`,
@@ -453,7 +454,7 @@ export const useTransaction = ({
       } catch (error) {
         setStatus("error");
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
-        closeSnackbar(`${snackbarKeyPrefixFinal}-notice`);
+        notices.close();
 
         if (!suppressErrorSnackbar) {
           enqueueSnackbar(parseErrorMessage(error, errorMessage), {

@@ -622,8 +622,8 @@ code -32005 reaches the page up to four times: viem's transport repeats a "limit
 call three times before the app sees the error.
 
 A two-step write shows "Step 1 of 2: ..." and "Step 2 of 2: ..." in
-`pages.shell.transactionStepNotice`. The second goes away early at the moment (an app bug, see
-I7 in `features/badge-create`), so read it with `seenText.matching(/^Step 2 of 2/)`.
+`pages.shell.transactionStepNotice`. Each notice has a snackbar key of its own, so the second
+stays while its wallet prompt is open (I7 in `features/badge-create`, J8 in `features/communities`).
 
 ### Chain reads that fail
 

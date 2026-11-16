@@ -134,9 +134,12 @@ caches verified senders, and the bundler does not survive a revert. Tests are is
 keys instead. A test must only rely on state it created for its own accounts, or on totals it
 read itself during the test.
 
-**Rate limits.** The app's limits live in the server's memory and are keyed by client IP:
-`/api/graphql` by `x-forwarded-for`, `/api/aa/rpc` by `cf-connecting-ip`. Every test gets its
-own IP in both headers (the `testIp` fixture). One limit still applies inside a test: five
+**Rate limits.** The app's limits live in the server's memory and are keyed by the visitor's IP
+as Cloudflare reports it (`cf-connecting-ip`, then `x-real-ip`, then the last `x-forwarded-for`
+hop: `clientIp` in `src/lib/aa/rate-limit.ts`), for `/api/graphql` and `/api/aa/rpc` alike. Every
+test gets its own IP in both headers (the `testIp` fixture). `/api/graphql` allows a visitor a
+burst of sixty requests that refills one a second; `support/graphql-limit.ts` uses it up and
+watches a page's answers (P8 to P10). One limit still applies inside a test: five
 paymaster calls a minute per sender, two per sponsored send, so a persona's third sponsored
 send in quick succession is refused. Split such a scenario, or seed with `chain.sendSponsored`,
 which does not go through the proxy.
@@ -179,7 +182,7 @@ and `src/lib/e2e-timing.ts` uses it in place of those intervals:
 | Receipt of a sponsored user operation (`send-sponsored-user-operation.ts`) | 4 s, viem's default | 200 ms |
 | Retry after AA10 (`AA10_RETRY_MS`) | 3 s | 200 ms |
 | Status of a `wallet_sendCalls` batch (`account-capabilities.ts`) | 3 s | 200 ms |
-| Subgraph sync (`useWaitForSubgraphSync`) | 1 s | 500 ms: each poll is a request to `/api/graphql`, which allows a visitor 60 a minute |
+| Subgraph sync (`useWaitForSubgraphSync`) | 1 s | 500 ms: each poll is a request to `/api/graphql`, which allows a visitor a burst of 60 that refills one a second |
 
 The value is compiled into the bundle and ignored unless the bundle is the suite's own build
 (see "The lock on the test switches"), when it is not a whole number from 50 to 1000, and when
@@ -623,11 +626,11 @@ app server, the chain and the test keep real time.
 ## Coverage
 
 Scenario IDs are those of each area's `SCENARIOS.md`. **Verified** tests have run and are part
-of every run: 345 tests. 44 of them are expected to fail on confirmed app bugs (31 in the
+of every run: 347 tests. 43 of them are expected to fail on confirmed app bugs (30 in the
 committed build; the other 13 are auction tests that only run in a build with an auction id),
 and 2 are `test.fixme` until the owner decides on a scenario the app never implemented (A5,
 A11). In the committed build 15 auction tests skip themselves (see M below), so a default run
-reports 297 passed, 31 failed as expected and 17 skipped. No test is `@unverified` at the
+reports 300 passed, 30 failed as expected and 17 skipped. No test is `@unverified` at the
 moment; a new one would be listed in the fourth column until someone has run it (see
 "Unverified specs"). The last column is what no test covers.
 
@@ -638,9 +641,9 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | C Onboarding | `onboarding` | 19 tests: C1 to C16 (C16, a click while the wallet is read, is an expected failure) | – | A profile signature by another key through the UI (C13): the wallet signs with its own key; the route's answer is P4. |
 | D Profile view and edit | `profile` | 7 tests: D1 to D4, D7; D5 (as G8 in `badges`), D6 (in `tx-failures`) | – | – |
 | E Invites and referrals | `referrals` | 15 tests: E1 to E10 (E6 circular invitation is an expected failure) | – | E11 (a legacy inviter): by reading it is the same path as E2 and E5, so no test claims it. The "Invitation Accepted!" label of E5: whether it is ever painted could not be settled by reading. |
-| F Accounts directory, public profiles | `accounts` | 17 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 and one F8 on their own bugs: expected failures) | – | – |
+| F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (F1 to F5 fail on the /api/graphql rate limit, one F7 on its own bug: expected failures) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 (G3 typing into Created by and G11 logged out are expected failures) | – | G12 with only `totalSupply` failing. |
-| H Mint, burn, transfer | `badge-actions` | 19 tests: H1 to H14 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
+| H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 (H4 over 2 MB is an expected failure) | – | H12 declined signature: a mint asks for none. H13 for Burn. |
 | I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug, I6 image preview and both I7: expected failures) | – | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |
 | J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 (K9 "1 holders" is an expected failure) | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
@@ -648,7 +651,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | M Auction | `auction` | 16 tests: M1 to M10. As committed only M1 runs: M2 to M10 skip themselves until `auction.id` is set in `env/hermetic.json`, and M1 skips itself once it is. M2 to M10 were run in a local build with `auction.id` 7: two M2 tests and all eleven of M3 to M10 are expected failures, the latter because the page of a running auction crashes, so their steps after the page opens have never run. | – | Bid statuses other than "Placed": the app never shows them. |
 | N Lock SPEC | `lock-spec` | 10 tests: N1 to N8 (N6 in `hermetic-timetravel`) | – | N4 "the community tier reflects it": a wallet's own lock names no community, and no page shows a tier that results from it. |
 | O Transactions that fail | `tx-failures` | 21 tests: O1 to O8, O10 to O15, D6; O9 sponsored label; O9 wallet-paid label (as H1, H11) | – | O4 with two real saves at once: whether the bundler answers AA25 or queues cannot be known without a run. |
-| P Server routes | `api` | 69 tests: P1 to P8 | – | The proxy's daily limits for profile updates and invites. |
+| P Server routes | `api` | 73 tests: P1 to P10 | – | The proxy's daily limits for profile updates and invites. |
 | Q Forum | – | – | – | A separate origin (the Discourse plugin); not hermetic. A `live` journey. |
 | The foundation itself | `stack` | 23 tests: wallet fixture (FX), route helpers (RC), personas (PS), the subgraph fake (SG-1 to SG-4) | – | – |
 

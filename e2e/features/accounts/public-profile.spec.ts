@@ -69,26 +69,75 @@ test.describe("public profiles", () => {
   );
 
   test(
-    "F8: ?edit=true on someone else's profile does not open an edit form",
-    { tag: ["@edge"] },
-    async ({ persona, actor, pages, page }) => {
-      const someone = await actor("member", { name: "Public Pia" });
-      await persona("member", { name: "Viewer Val" });
+    "F8: ?edit=true on someone else's profile shows the profile, not an edit form, to a connected member",
+    { tag: ["@core"] },
+    async ({ persona, actor, pages, page, wallet }) => {
+      const someone = await actor("member", { name: "Public Pia", bio: "Not yours to edit." });
+      const viewer = await persona("member", { name: "Viewer Val", bio: "The viewer's own bio." });
+      const profile = new ProfileDetails(page);
 
       await page.goto(`/user/${someone.address.toLowerCase()}?edit=true`);
       await pages.shell.connect();
 
-      // Known app bug: AccountDetails opens the edit form whenever the
-      // address says edit=true, also when it is read-only
-      // (src/components/AccountSetup/AccountDetails.tsx: `isEditing ?`
-      // without a look at `readonly`). On someone else's page the form then
-      // holds the viewer's own profile, under the other member's heading,
-      // and a visitor without a wallet gets a prompt to connect instead of
-      // the public profile. Remove the timeouts together with test.fail.
-      test.fail(true, "AccountDetails ignores `readonly` when the address has edit=true");
-      await expect(pages.profile.details).toBeVisible({ timeout: 5_000 });
-      await expect(pages.profile.editForm).toHaveCount(0, { timeout: 2_000 });
-      await expect(pages.profile.details).toContainText("Public Pia", { timeout: 2_000 });
+      // The form would save the viewer's own profile under Pia's heading:
+      // the page ignores the parameter and shows Pia's profile, read-only.
+      await expect(pages.profile.details).toBeVisible();
+      await expect(profile.heading("Public Pia")).toBeVisible();
+      await expect(pages.profile.details).toContainText("Not yours to edit.");
+      await expect(profile.associatedAddress(someone.address)).toBeVisible();
+      await expect(pages.profile.editForm).toHaveCount(0);
+      await expect(profile.editButton).toHaveCount(0);
+      await expect(profile.manageReferralsLink).toHaveCount(0);
+      await expect(pages.profile.details).not.toContainText("Viewer Val");
+      await expect(profile.associatedAddress(viewer.address)).toHaveCount(0);
+      await expect(page).toHaveURL(new RegExp(`/user/${someone.address.toLowerCase()}\\?edit=true$`));
+
+      expect(wallet.signatureRequests()).toHaveLength(0);
+      expect(wallet.sendTransactionRequests()).toHaveLength(0);
+    },
+  );
+
+  test(
+    "F8: ?edit=true on a member's profile shows the profile to a visitor without a wallet, not a prompt to connect",
+    { tag: ["@core"] },
+    async ({ actor, pages, page }) => {
+      const someone = await actor("member", { name: "Public Petra", bio: "Read by a visitor." });
+      const profile = new ProfileDetails(page);
+
+      await page.goto(`/user/${someone.address.toLowerCase()}?edit=true`);
+
+      await expect(pages.profile.details).toBeVisible();
+      await expect(profile.heading("Public Petra")).toBeVisible();
+      await expect(pages.profile.details).toContainText("Read by a visitor.");
+      await expect(profile.associatedAddress(someone.address)).toBeVisible();
+      await expect(pages.shell.connectPrompt).toHaveCount(0);
+      await expect(pages.profile.editForm).toHaveCount(0);
+      await expect(profile.editButton).toHaveCount(0);
+      await expect(profile.manageReferralsLink).toHaveCount(0);
+    },
+  );
+
+  test(
+    "F8: ?edit=true on the address of the member's own owner wallet does not open an edit form",
+    { tag: ["@edge"] },
+    async ({ persona, pages, page, wallet }) => {
+      const me = await persona("member", { name: "Owner Otto" });
+      const profile = new ProfileDetails(page);
+
+      // The wallet is not the member (F9): the form saves the Society address,
+      // so it is not offered on the wallet's page either.
+      await page.goto(`/user/${me.ownerAddress.toLowerCase()}?edit=true`);
+      await pages.shell.connect();
+
+      await expect(pages.profile.details).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`/user/${me.ownerAddress.toLowerCase()}\\?edit=true$`));
+      await expect(profile.heading(shortAddress(me.ownerAddress.toLowerCase()))).toBeVisible();
+      await expect(pages.profile.details).not.toContainText("Owner Otto");
+      await expect(pages.profile.editForm).toHaveCount(0);
+      await expect(profile.editButton).toHaveCount(0);
+
+      expect(wallet.signatureRequests()).toHaveLength(0);
+      expect(wallet.sendTransactionRequests()).toHaveLength(0);
     },
   );
 

@@ -379,6 +379,18 @@ GraphQL errors, or introspection responses without `data.__schema`.
 
 ## 11. CI/CD Pipeline
 
+### This repository's pipeline
+
+- **Pull request:** `.github/workflows/ci.yml` (lint, type-check, unit tests) and
+  `.github/workflows/e2e.yml` (the hermetic browser tests: `@smoke` plus the spec files the
+  pull request changed). Nothing is deployed.
+- **Push to `main` or `staging`:** `.github/workflows/deploy-aws.yml` runs `ci.yml` and the
+  full `e2e.yml` on the pushed commit, and deploys it (`main` to prod, `staging` to staging)
+  only if both pass and the commit is still the tip of its branch.
+
+Details, including how runs queue and cancel, are in `e2e/README.md` under "CI". The example
+below is a generic template for other setups, not what this repository runs.
+
 ### GitHub Actions Example
 
 ```yaml

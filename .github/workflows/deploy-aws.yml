@@ -1,27 +1,63 @@
 name: Deploy to AWS
 
+# A push to main or staging runs CI and the browser tests on that commit, and
+# deploys it only if both pass. The deploy job also skips a commit that is no
+# longer the tip of its branch by the time it runs: the newer commit deploys
+# itself once its own tests pass, and an older one never overwrites it.
 on:
   push:
     branches: [main, staging]
 
 permissions:
-  id-token: write
   contents: read
 
-concurrency:
-  group: aws-outpost-web
-  cancel-in-progress: false
-
 jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  e2e:
+    name: Browser tests
+    uses: ./.github/workflows/e2e.yml
+
   deploy:
+    needs: [ci, e2e]
     runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      contents: read
+    # One deploy per branch at a time, never cancelled half-way; a newer one of
+    # the same branch waits. Per branch, because GitHub drops a pending job when
+    # another one joins its group: with one group for both branches a staging
+    # push could silently drop a waiting prod deploy. The two branches' builds
+    # take turns on the shared box through a lock in deploy-outpost.sh.
+    concurrency:
+      group: aws-outpost-web-${{ github.ref_name }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+
+      - name: Still the tip of the branch
+        id: tip
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          tip="$(git ls-remote --exit-code origin "refs/heads/$BRANCH" | cut -f1)"
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$BRANCH is now at $tip, not $GITHUB_SHA. Skipping; the newer commit deploys after its own tests."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: aws-actions/configure-aws-credentials@v4
+        if: steps.tip.outputs.deploy == 'true'
         with:
           role-to-assume: arn:aws:iam::019141478782:role/society-github-deploy
           aws-region: us-east-1
+
       - name: Deploy the web app
+        if: steps.tip.outputs.deploy == 'true'
         env:
           IMAGE: ${{ github.ref_name == 'staging' && 'society-web:staging' || 'society-web:prod' }}
           SERVICE: ${{ github.ref_name == 'staging' && 'staging-web' || 'prod-web' }}

@@ -63,6 +63,8 @@ export const AvatarInput = ({
     >
       <Avatar
         src={value || "/icons/upload-img.svg"}
+        data-testid="avatar-input-preview"
+        data-has-image={value ? "true" : "false"}
         sx={{
           width: { xs: 64, sm: 80 },
           height: { xs: 64, sm: 80 },
@@ -106,6 +108,7 @@ export const AvatarInput = ({
             type="file"
             accept="image/*"
             style={{ display: "none" }}
+            data-testid="avatar-input-file"
             onChange={handleFileChange}
           />
           {/* <Button variant="outlined" onClick={handleUseNFT} size="small">
@@ -124,6 +127,7 @@ export const AvatarInput = ({
         {helperText && (
           <FormHelperText
             error={error}
+            data-testid="avatar-input-message"
             sx={{ textAlign: { xs: "center", sm: "left" } }}
           >
             {helperText}

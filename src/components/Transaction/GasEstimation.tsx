@@ -22,6 +22,7 @@ export const GasEstimation = ({
 
   return (
     <Box
+      data-testid="transaction-gas-estimate"
       sx={mergeSx(
         {
           display: "flex",

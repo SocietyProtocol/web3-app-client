@@ -117,6 +117,7 @@ export const BurnTab = ({ id }: BurnTabProps) => {
                 disabled={transaction.isLoading || holders.length === 0}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
+                inputTestId="burn-holder-input"
               />
             )}
           />
@@ -192,6 +193,7 @@ export const BurnTab = ({ id }: BurnTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Burning..."
+          data-testid="burn-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}
           gasError={transaction.gasError}

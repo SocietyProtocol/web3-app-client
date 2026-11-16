@@ -29,6 +29,10 @@ export const useCurrentLock = ({ address }: UseCurrentLockParams) => {
 
   const hasLock =
     amount !== undefined && amount > BigInt(0) && unlockTime !== undefined;
+  // Reads the clock on every render, so a lock that has ended shows as
+  // claimable on the next render (a timer would miss an end that passes
+  // while the device sleeps).
+  // eslint-disable-next-line react-hooks/purity -- see above; a re-render at the lock's end is an app change for its own pull request
   const nowSeconds = BigInt(Math.floor(Date.now() / 1000));
   const isLocked =
     hasLock && unlockTime !== undefined && unlockTime > nowSeconds;

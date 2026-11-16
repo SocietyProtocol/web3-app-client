@@ -55,7 +55,12 @@ export function CommunityMemberRow({
   );
 
   return (
-    <Tr isManager={isManager} role="row">
+    <Tr
+      isManager={isManager}
+      role="row"
+      data-testid="community-member-row"
+      data-address={member.user.id.toLowerCase()}
+    >
       <Stack role="cell" direction="row" alignItems="center" gap={1}>
         <UserHandle
           id={member.user.id as Hex}

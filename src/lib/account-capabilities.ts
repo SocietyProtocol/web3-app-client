@@ -1,4 +1,5 @@
 import { Hex } from "viem";
+import { pollMs } from "@/lib/e2e-timing";
 
 const POLL_MS = 3000;
 const WAIT_MS = 8 * 60 * 1000;
@@ -38,7 +39,7 @@ export async function waitForCallTransactionHash(
   readStatus: () => Promise<CallStatus>,
   options?: { intervalMs?: number; timeoutMs?: number },
 ): Promise<Hex> {
-  const intervalMs = options?.intervalMs ?? POLL_MS;
+  const intervalMs = options?.intervalMs ?? pollMs(POLL_MS);
   const deadline = Date.now() + (options?.timeoutMs ?? WAIT_MS);
 
   while (Date.now() < deadline) {

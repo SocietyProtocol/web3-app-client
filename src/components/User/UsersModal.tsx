@@ -24,6 +24,8 @@ interface UsersModalProps {
   highlightYou?: boolean;
   link?: boolean;
   renderUserExtra?: (user: UsersModalProps["users"][number]) => ReactNode;
+  /** See UserList: the dialog gets `${testId}-modal`, cards `${testId}-row`. */
+  testId?: string;
 }
 
 export const UsersModal = ({
@@ -35,11 +37,17 @@ export const UsersModal = ({
   highlightYou = false,
   link = true,
   renderUserExtra,
+  testId,
 }: UsersModalProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
-    <Dialog open={open} onClose={onClose} aria-labelledby="users-modal-title">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      aria-labelledby="users-modal-title"
+      data-testid={testId && `${testId}-modal`}
+    >
       <DialogTitle id="users-modal-title">
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
           {title}
@@ -95,6 +103,7 @@ export const UsersModal = ({
                     size="small"
                     highlightYou={highlightYou}
                     link={link}
+                    testId={testId && `${testId}-row`}
                   >
                     {renderUserExtra?.(user)}
                   </UserCard>

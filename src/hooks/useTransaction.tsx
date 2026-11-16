@@ -34,7 +34,8 @@ import { submitAccountWrite } from "@/lib/account-capabilities";
 import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useOutpostRouting } from "@/hooks/useOutpostRouting";
-import { resolveOutpostRoute } from "@/lib/outpost-routing";
+import { resolveOutpostRoute, routeWithoutChain } from "@/lib/outpost-routing";
+import { walletPrompt } from "@/lib/payment-label";
 import { sendOutpostWrite } from "@/lib/outpost-send";
 import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
 import { ownerWalletClient } from "@/lib/owner-wallet";
@@ -49,6 +50,11 @@ interface UseTransactionParams {
   functionName?: string;
   args?: unknown[];
   value?: bigint;
+
+  // A representative call for writes whose arguments are only known at
+  // execute time (e.g. an IPFS URI uploaded on submit). Used only to work
+  // out who pays and the fee before the click; never simulated or sent.
+  preview?: ExecuteTransactionParams;
 
   // Simulation options
   simulate?: boolean;
@@ -130,6 +136,29 @@ const TransactionNotificationActions = ({
   );
 };
 
+/** The route when it is known without the chain, to pick the wallet prompt. */
+const expectedRoute = ({
+  abi,
+  functionName,
+  args,
+  ...input
+}: Omit<Parameters<typeof routeWithoutChain>[0], "data"> & {
+  abi: readonly unknown[];
+  functionName: string;
+  args?: unknown[];
+}) => {
+  try {
+    const data = encodeFunctionData({
+      abi: abi as Abi,
+      functionName,
+      args: args ?? [],
+    });
+    return routeWithoutChain({ ...input, data });
+  } catch {
+    return undefined;
+  }
+};
+
 export const useTransaction = ({
   // Transaction parameters
   address,
@@ -137,6 +166,7 @@ export const useTransaction = ({
   functionName,
   args,
   value,
+  preview,
 
   // Options
   simulate = true,
@@ -150,7 +180,7 @@ export const useTransaction = ({
   onError,
 
   // Messages
-  pendingMessage = "Please confirm the transaction in your wallet",
+  pendingMessage,
   submittedMessage = "Transaction submitted",
   successMessage = "Transaction successful!",
   errorMessage = "Transaction failed",
@@ -177,14 +207,16 @@ export const useTransaction = ({
   const chainId = useChainId();
   const outpost = useOutpostAccount();
 
+  // Who pays is worked out from the configured call, or from the preview
+  // when the call is only known at execute time.
+  const priced = address
+    ? { address, abi, functionName, args, value }
+    : (preview ?? {});
+
   // Pick the sender first. Calls the Light Account makes simulate as it,
   // whether Society or the owner wallet pays.
   const routing = useOutpostRouting({
-    address,
-    abi,
-    functionName,
-    args,
-    value,
+    ...priced,
     enabled: enabled && simulate,
   });
   const route = routing.route;
@@ -224,11 +256,7 @@ export const useTransaction = ({
 
   // Estimate gas for the transaction
   const gasEstimation = useEstimateGas({
-    address,
-    abi,
-    functionName,
-    args,
-    value,
+    ...priced,
     enabled: enabled && simulate && route?.kind === "owner",
   });
 
@@ -260,10 +288,26 @@ export const useTransaction = ({
       try {
         setStatus("executing");
         closeSnackbar(`${snackbarKeyPrefixFinal}-error`);
-        enqueueSnackbar(pendingMessage, {
-          key: `${snackbarKeyPrefixFinal}-pending`,
-          variant: "info",
-        });
+        enqueueSnackbar(
+          pendingMessage ??
+            walletPrompt(
+              expectedRoute({
+                chainId,
+                to: finalAddress,
+                abi: finalAbi,
+                functionName: finalFunctionName,
+                args: finalArgs,
+                value: finalValue,
+                owner: outpost.ownerAddress,
+                smartAccount: outpost.isSmartAccount ? outpost.address : undefined,
+                isContractWallet: outpost.isContractWallet,
+              })?.kind,
+            ),
+          {
+            key: `${snackbarKeyPrefixFinal}-pending`,
+            variant: "info",
+          },
+        );
 
         if (outpost.isLoading) {
           throw new Error("Your account is still loading. Please try again in a moment.");
@@ -567,6 +611,7 @@ export const useTransaction = ({
     // the connected wallet pays for the other two.
     sender: route?.sender,
     route,
+    routeKind: route?.kind,
 
     // Gas estimation
     gas:

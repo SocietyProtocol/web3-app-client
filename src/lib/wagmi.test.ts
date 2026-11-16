@@ -62,8 +62,7 @@ describe("initializeWagmiWatcher", () => {
     expect(mocks.unwatch).toHaveBeenCalledTimes(1);
 
     // The fallback was cleared with the watcher.
-    vi.runAllTimers();
-    expect(mocks.unwatch).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("is ready at once for a saved session that is reconnecting", async () => {
@@ -72,6 +71,8 @@ describe("initializeWagmiWatcher", () => {
 
     mocks.onChange?.({ isConnecting: false });
     expect(ready()).toBe(true);
+    expect(mocks.unwatch).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("stops waiting when a connector never answers", async () => {

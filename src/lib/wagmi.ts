@@ -38,15 +38,41 @@ export const wagmiConfig = getDefaultConfig({
   ),
 });
 
+/**
+ * How long pages wait for wagmi's reconnect before rendering anyway.
+ * reconnect() awaits every connector's provider with no timeout, so one
+ * wallet that never answers would otherwise keep pages loading for good.
+ */
+export const WAGMI_READY_TIMEOUT_MS = 3_000;
+
 let unwatchAccount: (() => void) | null = null;
+let readyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function markWagmiReady() {
+  jotaiStore.set(wagmiReadyAtom, true);
+
+  if (unwatchAccount) {
+    unwatchAccount();
+    unwatchAccount = null;
+  }
+  if (readyTimeout) {
+    clearTimeout(readyTimeout);
+    readyTimeout = null;
+  }
+}
 
 /**
  * Initializes wagmi account watching to track connection state.
  * Should be called once during app initialization.
- * Automatically unwatches once wagmi is ready.
+ * Automatically unwatches once wagmi is ready, or after
+ * WAGMI_READY_TIMEOUT_MS if the reconnect attempt has not settled by then.
+ * A saved session reconnects as "reconnecting", which counts as ready at
+ * once, so the timeout only cuts short a visitor with no saved session;
+ * pages read the account from wagmi and still update if a wallet connects
+ * later.
  */
 export function initializeWagmiWatcher() {
-  if (unwatchAccount) {
+  if (unwatchAccount || jotaiStore.get(wagmiReadyAtom)) {
     // Already initialized
     return;
   }
@@ -56,13 +82,10 @@ export function initializeWagmiWatcher() {
       if (!jotaiStore.get(wagmiConnectionAttemptedAtom) && data.isConnecting) {
         jotaiStore.set(wagmiConnectionAttemptedAtom, true);
       } else if (!jotaiStore.get(wagmiReadyAtom) && !data.isConnecting) {
-        jotaiStore.set(wagmiReadyAtom, true);
-
-        if (unwatchAccount) {
-          unwatchAccount();
-          unwatchAccount = null;
-        }
+        markWagmiReady();
       }
     },
   });
+
+  readyTimeout = setTimeout(markWagmiReady, WAGMI_READY_TIMEOUT_MS);
 }

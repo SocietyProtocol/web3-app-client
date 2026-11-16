@@ -75,6 +75,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                       <IconButton
                         onClick={() => closeSnackbar(key)}
                         size="small"
+                        aria-label="Close notification"
                       >
                         <CloseOutlinedIcon fontSize="small" />
                       </IconButton>

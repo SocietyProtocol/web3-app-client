@@ -1,8 +1,8 @@
 /**
  * In-memory token buckets for the sponsorship proxy.
- * Per instance only: each serverless instance keeps its own counts and a
- * cold start resets them. This blunts casual abuse; the Pimlico policy
- * limits remain the real spending ceiling.
+ * Per instance only: each serverless instance or server process keeps its
+ * own counts, and a cold start, restart or deploy resets them. This blunts
+ * casual abuse; the Pimlico policy limits remain the real spending ceiling.
  */
 export class TokenBucketLimiter {
   private readonly buckets = new Map<string, { tokens: number; at: number }>();
@@ -13,13 +13,22 @@ export class TokenBucketLimiter {
     private readonly maxKeys = 10_000,
   ) {}
 
+  private tokens(key: string, now: number) {
+    const bucket = this.buckets.get(key);
+    if (!bucket) return this.capacity;
+    const perMs = this.capacity / this.refillMs;
+    return Math.min(this.capacity, bucket.tokens + (now - bucket.at) * perMs);
+  }
+
+  /** Whether take(key) would find a token, without spending it. */
+  has(key: string, now = Date.now()) {
+    return this.tokens(key, now) >= 1;
+  }
+
   /** Takes one token for key. Returns false when the bucket is empty. */
   take(key: string, now = Date.now()) {
-    const perMs = this.capacity / this.refillMs;
     const bucket = this.buckets.get(key);
-    const tokens = bucket
-      ? Math.min(this.capacity, bucket.tokens + (now - bucket.at) * perMs)
-      : this.capacity;
+    const tokens = this.tokens(key, now);
     if (tokens < 1) {
       this.buckets.set(key, { tokens, at: now });
       return false;
@@ -97,8 +106,86 @@ export const aaRateLimits = {
   ),
 };
 
+/** Sponsored createProfile calls per visitor IP per day, by default. */
+export const PROFILE_CREATES_PER_IP_PER_DAY = 1;
+/** Minimum spacing of sponsored createProfile calls across the whole app, by default. */
+export const PROFILE_CREATE_APP_INTERVAL_SECONDS = 300;
+
+function limitFromEnv(value: string | undefined, fallback: number) {
+  if (value === undefined || value.trim() === "") return fallback;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+/**
+ * Limits on sponsored account creation (createProfile), from the environment:
+ *   SPONSORED_PROFILES_PER_IP_PER_DAY (default 1; 0 turns the limit off)
+ *   SPONSORED_PROFILE_INTERVAL_SECONDS (default 300, one create per 5 minutes
+ *     app-wide; 0 turns the limit off)
+ * A value that is not a whole number >= 0 keeps the default.
+ * Like every limiter here, the counts live in this process's memory: a
+ * restart or deploy forgets them, and each running instance counts on its own.
+ */
+export function profileCreateLimitsFromEnv(env: Record<string, string | undefined> = process.env) {
+  return {
+    perIpPerDay: limitFromEnv(
+      env.SPONSORED_PROFILES_PER_IP_PER_DAY,
+      PROFILE_CREATES_PER_IP_PER_DAY,
+    ),
+    appIntervalSeconds: limitFromEnv(
+      env.SPONSORED_PROFILE_INTERVAL_SECONDS,
+      PROFILE_CREATE_APP_INTERVAL_SECONDS,
+    ),
+  };
+}
+
+/** The app-wide bucket has a single key. */
+const APP_KEY = "app";
+
+function buildProfileCreateLimiters() {
+  const limits = profileCreateLimitsFromEnv();
+  return {
+    byIp:
+      limits.perIpPerDay > 0
+        ? new TokenBucketLimiter(limits.perIpPerDay, DAY_MS)
+        : undefined,
+    app:
+      limits.appIntervalSeconds > 0
+        ? new TokenBucketLimiter(1, limits.appIntervalSeconds * 1_000)
+        : undefined,
+  };
+}
+
+let profileCreateLimiters: ReturnType<typeof buildProfileCreateLimiters> | undefined;
+
+/**
+ * Spends one sponsored createProfile for this visitor IP and one app-wide.
+ * Both are checked before either is spent, so a refusal by one limit does
+ * not use up the other.
+ */
+export function takeProfileCreate(
+  ip: string,
+  now = Date.now(),
+): { ok: true } | { ok: false; message: string } {
+  profileCreateLimiters ??= buildProfileCreateLimiters();
+  const { byIp, app } = profileCreateLimiters;
+  if (byIp && !byIp.has(ip, now)) {
+    return { ok: false, message: "Daily sponsored profile limit reached" };
+  }
+  if (app && !app.has(APP_KEY, now)) {
+    return { ok: false, message: "Sponsored profile limit reached, try again in a few minutes" };
+  }
+  if (byIp && !byIp.take(ip, now)) {
+    return { ok: false, message: "Daily sponsored profile limit reached" };
+  }
+  app?.take(APP_KEY, now);
+  return { ok: true };
+}
+
+/** Clears every count. The createProfile limits re-read the environment. */
 export function resetAaRateLimits() {
   Object.values(aaRateLimits).forEach((limiter) => limiter.reset());
+  profileCreateLimiters = undefined;
 }
 
 /**

@@ -292,6 +292,18 @@ describe("reviewAaRpc", () => {
     expect(data.ok && data.review.signsProfileUpdate).toBe(true);
   });
 
+  it("flags signing calls that create a profile", async () => {
+    const stub = reviewAaRpc({ chainId: SEPOLIA, request: await stubDataRequest() });
+    const data = reviewAaRpc({ chainId: SEPOLIA, request: await paymasterDataRequest() });
+    const update = reviewAaRpc({
+      chainId: SEPOLIA,
+      request: await paymasterDataRequest({ callData: updateCallData }),
+    });
+    expect(stub.ok && stub.review.signsProfileCreate).toBe(false);
+    expect(data.ok && data.review.signsProfileCreate).toBe(true);
+    expect(update.ok && update.review.signsProfileCreate).toBe(false);
+  });
+
   it("counts the invites a signing call accepts", async () => {
     const review = async (request: Promise<{ method: string; params: unknown[] }>) => {
       const reviewed = reviewAaRpc({ chainId: SEPOLIA, request: await request });
@@ -562,6 +574,80 @@ describe("forwardAaRpc", () => {
     // The account's own visitor is untouched.
     expect(await rpcError(await forwardAaRpc(post(invite)))).toBeUndefined();
     expect(await rpcError(await forwardAaRpc(post(update)))).toBeUndefined();
+  });
+
+  it("allows one sponsored profile per visitor IP per day", async () => {
+    // The app-wide spacing is tested on its own below.
+    vi.stubEnv("SPONSORED_PROFILE_INTERVAL_SECONDS", "0");
+    resetAaRateLimits();
+    const { upstream } = mockFetch(canonical);
+    const create = await paymasterDataRequest();
+    const stub = await stubDataRequest();
+    // The stub call that precedes the signing call does not count.
+    expect(await rpcError(await forwardAaRpc(post(stub, "198.51.100.10")))).toBeUndefined();
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.10")))).toBeUndefined();
+    vi.useFakeTimers({ now: Date.now() + 60_000 });
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.10")))).toEqual({
+      code: -32005,
+      message: "Daily sponsored profile limit reached",
+    });
+    vi.useRealTimers();
+    expect(upstream).toHaveLength(2);
+    // Another visitor still gets theirs; the refused one gets it back a day later.
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.11")))).toBeUndefined();
+    vi.useFakeTimers({ now: Date.now() + 24 * 60 * 60_000 });
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.10")))).toBeUndefined();
+    vi.useRealTimers();
+  });
+
+  it("spaces sponsored profiles app-wide", async () => {
+    const { upstream } = mockFetch(canonical);
+    const create = await paymasterDataRequest();
+    const start = Date.now();
+    vi.useFakeTimers({ now: start });
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.20")))).toBeUndefined();
+    vi.setSystemTime(start + 60_000);
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.21")))).toEqual({
+      code: -32005,
+      message: "Sponsored profile limit reached, try again in a few minutes",
+    });
+    // Other sponsored calls are not held back.
+    expect(
+      await rpcError(await forwardAaRpc(post(await paymasterDataRequest({ callData: updateCallData }), "198.51.100.21"))),
+    ).toBeUndefined();
+    vi.setSystemTime(start + 5 * 60_000);
+    // The refusal did not spend the second visitor's daily allowance.
+    expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.21")))).toBeUndefined();
+    vi.useRealTimers();
+    expect(upstream).toHaveLength(3);
+  });
+
+  it("reads the createProfile limits from the environment", async () => {
+    mockFetch(canonical);
+    const create = await paymasterDataRequest();
+    vi.stubEnv("SPONSORED_PROFILES_PER_IP_PER_DAY", "2");
+    vi.stubEnv("SPONSORED_PROFILE_INTERVAL_SECONDS", "60");
+    resetAaRateLimits();
+    const start = Date.now();
+    vi.useFakeTimers({ now: start });
+    const results = [];
+    for (let i = 0; i < 3; i += 1) {
+      vi.setSystemTime(start + i * 60_000);
+      results.push(await rpcError(await forwardAaRpc(post(create, "198.51.100.30"))));
+    }
+    vi.useRealTimers();
+    expect(results.slice(0, 2)).toEqual([undefined, undefined]);
+    expect(results[2]?.message).toBe("Daily sponsored profile limit reached");
+
+    // 0 turns both limits off.
+    vi.stubEnv("SPONSORED_PROFILES_PER_IP_PER_DAY", "0");
+    vi.stubEnv("SPONSORED_PROFILE_INTERVAL_SECONDS", "0");
+    resetAaRateLimits();
+    for (let i = 0; i < 3; i += 1) {
+      vi.useFakeTimers({ now: start + i * 60_000 });
+      expect(await rpcError(await forwardAaRpc(post(create, "198.51.100.31")))).toBeUndefined();
+      vi.useRealTimers();
+    }
   });
 
   it("refuses when Pimlico is not configured", async () => {

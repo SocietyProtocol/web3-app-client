@@ -1,6 +1,6 @@
 import { isAddress, isAddressEqual, isHex, toHex } from "viem";
 import { userOperationWithinCaps } from "@/lib/aa/limits";
-import { aaRateLimits, clientIp } from "@/lib/aa/rate-limit";
+import { aaRateLimits, clientIp, takeProfileCreate } from "@/lib/aa/rate-limit";
 import { verifyDeployedLightAccount } from "@/lib/aa/sender-check";
 import {
   ENTRY_POINT_V07,
@@ -72,6 +72,8 @@ export type AaRpcReview = {
   needsDeployedSender: boolean;
   /** Paymaster call that signs an updateProfileURI sponsorship. */
   signsProfileUpdate: boolean;
+  /** Paymaster call that signs a createProfile sponsorship (a new account). */
+  signsProfileCreate: boolean;
   /** acceptInvite calls in a paymaster call that signs their sponsorship. */
   signedInviteAccepts: number;
 };
@@ -119,6 +121,7 @@ export function reviewAaRpc(input: {
     kind: isPaymaster ? "paymaster" : isBundler ? "bundler" : "read",
     needsDeployedSender: false,
     signsProfileUpdate: false,
+    signsProfileCreate: false,
     signedInviteAccepts: 0,
   };
 
@@ -160,6 +163,7 @@ export function reviewAaRpc(input: {
         ? badgesFunctionNames(op.callData, input.chainId)
         : [];
     review.signsProfileUpdate = signedFunctions.includes("updateProfileURI");
+    review.signsProfileCreate = signedFunctions.includes("createProfile");
     review.signedInviteAccepts = signedFunctions.filter(
       (name) => name === "acceptInvite",
     ).length;
@@ -266,6 +270,16 @@ async function admitAaRpc(
           code: RATE_LIMITED,
         };
       }
+    }
+    // Sponsored account creation, checked last because its allowance is the
+    // scarcest: per visitor IP per day and app-wide (see
+    // takeProfileCreate). Only the signing call counts, so the stub call that
+    // precedes it does not spend the allowance. A refusal here comes before
+    // the owner signs, so the client sends createProfile paid by the owner
+    // wallet instead (sponsorshipIsUnavailable in lib/aa/errors).
+    if (review.signsProfileCreate) {
+      const created = takeProfileCreate(ip);
+      if (!created.ok) return { ok: false, message: created.message, code: RATE_LIMITED };
     }
   }
   return { ok: true };

@@ -55,6 +55,11 @@ describe("sponsorshipIsUnavailable", () => {
     ["the proxy's per-IP rate limit", rpcError("Too many requests")],
     ["the daily profile update limit", rpcError("Daily sponsored profile update limit reached")],
     ["the daily invite limit", rpcError("Daily sponsored invite limit reached")],
+    ["the daily per-IP profile limit", rpcError("Daily sponsored profile limit reached")],
+    [
+      "the app-wide profile limit",
+      rpcError("Sponsored profile limit reached, try again in a few minutes"),
+    ],
     ["a proxy without a Pimlico key", rpcError("Sponsorship is not configured")],
     ["a silent provider", rpcError("Sponsorship provider did not respond")],
     ["an exhausted Pimlico policy", rpcError("sponsorship policy has reached its spending limit")],

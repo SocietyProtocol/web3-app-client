@@ -20,6 +20,15 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { useBurnBadgeMutation } from "./useBurnBadgeMutation";
 import { Hex } from "viem";
 import { SimulationError } from "@/components/Transaction/SimulationError";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import { BadgeAmountField } from "../BadgeAmountField";
+import {
+  badgeAmountMaxError,
+  badgeActionAmount,
+  canChooseBadgeAmount,
+  DEFAULT_BADGE_AMOUNT,
+  maxBadgeAmount,
+} from "../badgeAmount";
 
 interface BurnTabProps {
   id: string;
@@ -46,6 +55,7 @@ export const BurnTab = ({ id }: BurnTabProps) => {
     resolver: zodResolver(burnBadgeValidationSchema),
     defaultValues: {
       holder: undefined,
+      amount: DEFAULT_BADGE_AMOUNT,
       confirmed: false,
     },
     mode: "onChange",
@@ -53,10 +63,23 @@ export const BurnTab = ({ id }: BurnTabProps) => {
 
   const formValues = useWatch({ control: form.control });
 
+  // The holder's copies of this badge cap the amount.
+  const { data: holderBalance } = useBadgeBalanceOf(
+    formValues.holder as Hex | undefined,
+    id,
+  );
+  const maxAmount = maxBadgeAmount(holderBalance, !!data?.badge?.profileUser);
+  const showAmount = canChooseBadgeAmount(maxAmount);
+  const amount = badgeActionAmount(formValues.amount, maxAmount);
+  const amountMaxError = badgeAmountMaxError(amount, maxAmount);
+
   const transaction = useBurnBadgeMutation({
     args:
-      formValues.holder && form.formState.isValid
-        ? { id: BigInt(id), holder: formValues.holder as Hex }
+      formValues.holder &&
+      form.formState.isValid &&
+      amount !== undefined &&
+      !amountMaxError
+        ? { id: BigInt(id), holder: formValues.holder as Hex, amount }
         : undefined,
     onSuccess: () => form.reset(),
   });
@@ -79,6 +102,9 @@ export const BurnTab = ({ id }: BurnTabProps) => {
                   const newId =
                     typeof newValue === "string" ? newValue : newValue?.id;
                   field.onChange(newId ?? "");
+                  form.setValue("amount", DEFAULT_BADGE_AMOUNT, {
+                    shouldValidate: true,
+                  });
                 }}
                 filterOptions={filterOptions}
                 disabled={transaction.isLoading || holders.length === 0}
@@ -87,6 +113,24 @@ export const BurnTab = ({ id }: BurnTabProps) => {
               />
             )}
           />
+
+          {showAmount && maxAmount !== undefined && (
+            <Controller
+              name="amount"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <BadgeAmountField
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  max={maxAmount}
+                  tooltip="How many of the holder's copies to burn"
+                  disabled={transaction.isLoading}
+                  error={fieldState.error?.message ?? amountMaxError}
+                />
+              )}
+            />
+          )}
 
           <Stack direction="row" spacing={1} alignItems="flex-start">
             <WarningAmberIcon sx={{ color: "error.main" }} />
@@ -125,6 +169,7 @@ export const BurnTab = ({ id }: BurnTabProps) => {
           color="error"
           disabled={
             !form.formState.isValid ||
+            !!amountMaxError ||
             transaction.simulation.isFetching ||
             transaction.simulation.isError
           }

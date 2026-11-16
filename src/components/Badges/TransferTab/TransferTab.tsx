@@ -18,6 +18,15 @@ import {
   MappedRecipient,
   RecipientAddressHints,
 } from "@/components/shared/RecipientAddressHints";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import { BadgeAmountField } from "../BadgeAmountField";
+import {
+  badgeAmountMaxError,
+  badgeActionAmount,
+  canChooseBadgeAmount,
+  DEFAULT_BADGE_AMOUNT,
+  maxBadgeAmount,
+} from "../badgeAmount";
 
 interface TransferTabProps {
   id: string;
@@ -54,20 +63,40 @@ export const TransferTab = ({ id }: TransferTabProps) => {
     defaultValues: {
       from: undefined,
       to: undefined,
+      amount: DEFAULT_BADGE_AMOUNT,
     },
     mode: "onChange",
   });
 
   // Watch form values for simulation
-  const { from: fromValue, to: toValue } = useWatch({ control: form.control });
+  const {
+    from: fromValue,
+    to: toValue,
+    amount: amountValue,
+  } = useWatch({ control: form.control });
+
+  // The sender's copies of this badge cap the amount.
+  const { data: senderBalance } = useBadgeBalanceOf(
+    fromValue as Hex | undefined,
+    id,
+  );
+  const maxAmount = maxBadgeAmount(senderBalance, !!data?.badge?.profileUser);
+  const showAmount = canChooseBadgeAmount(maxAmount);
+  const amount = badgeActionAmount(amountValue, maxAmount);
+  const amountMaxError = badgeAmountMaxError(amount, maxAmount);
 
   const transaction = useTransferBadgeMutation({
     args:
-      fromValue && toValue && form.formState.isValid
+      fromValue &&
+      toValue &&
+      form.formState.isValid &&
+      amount !== undefined &&
+      !amountMaxError
         ? {
             id: BigInt(id),
             from: fromValue as Hex,
             to: toValue as Hex,
+            amount,
           }
         : undefined,
     onSuccess: () => {
@@ -94,6 +123,9 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                   const newId =
                     typeof newValue === "string" ? newValue : newValue?.id;
                   field.onChange(newId ?? "");
+                  form.setValue("amount", DEFAULT_BADGE_AMOUNT, {
+                    shouldValidate: true,
+                  });
                 }}
                 filterOptions={filterFromOptions}
                 disabled={transaction.isLoading || holders.length === 0}
@@ -144,6 +176,24 @@ export const TransferTab = ({ id }: TransferTabProps) => {
             }
             disabled={transaction.isLoading}
           />
+
+          {showAmount && maxAmount !== undefined && (
+            <Controller
+              name="amount"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <BadgeAmountField
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  max={maxAmount}
+                  tooltip="How many of the sender's copies to transfer"
+                  disabled={transaction.isLoading}
+                  error={fieldState.error?.message ?? amountMaxError}
+                />
+              )}
+            />
+          )}
         </Stack>
       </Box>
 
@@ -154,6 +204,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           variant="outlined"
           disabled={
             !form.formState.isValid ||
+            !!amountMaxError ||
             transaction.simulation.isFetching ||
             transaction.simulation.isError
           }

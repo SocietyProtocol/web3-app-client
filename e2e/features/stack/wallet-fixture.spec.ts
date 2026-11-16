@@ -211,6 +211,44 @@ test.describe("test wallet fixture", () => {
     expect((await request(page, "wallet_sendCalls", [{ calls: [] }])).error?.code).toBe(4200);
   });
 
+  test("FX-8: stopAnswering leaves every request of one method unanswered until it is released", {
+    tag: ["@core"],
+  }, async ({ page, wallet }) => {
+    await request(page, "eth_requestAccounts");
+    /** Starts eth_accounts in the page without waiting; the answer lands in window.__hung[slot]. */
+    const startAccounts = (slot: number) =>
+      page.evaluate((index) => {
+        const target = window as unknown as {
+          __hung?: Record<number, unknown>;
+          ethereum: { request(args: unknown): Promise<unknown> };
+        };
+        target.__hung ??= {};
+        void target.ethereum.request({ method: "eth_accounts" }).then(
+          (result) => (target.__hung![index] = { result }),
+          (error: { code?: number }) => (target.__hung![index] = { code: error.code }),
+        );
+      }, slot);
+    const answers = () =>
+      page.evaluate(() => (window as unknown as { __hung?: Record<number, unknown> }).__hung ?? {});
+
+    const hung = wallet.stopAnswering("eth_accounts");
+    await startAccounts(1);
+    await startAccounts(2);
+    // At least these two: the app on the page may ask for the accounts itself.
+    await expect.poll(() => hung.hits()).toBeGreaterThanOrEqual(2);
+    // Other methods are still answered, and the two requests stay open meanwhile.
+    expect((await request(page, "eth_chainId")).result).toBe(SEPOLIA_HEX);
+    expect(await answers()).toEqual({});
+    expect(wallet.requestsOf("eth_accounts").length).toBeGreaterThanOrEqual(2);
+
+    // Released: both get the wallet's real answer, and new requests are answered at once.
+    const caught = hung.hits();
+    hung.release();
+    await expect.poll(answers).toEqual({ 1: { result: [wallet.address] }, 2: { result: [wallet.address] } });
+    expect((await request(page, "eth_accounts")).result).toEqual([wallet.address]);
+    expect(hung.hits()).toBe(caught);
+  });
+
   test.describe("with EIP-5792 switched on", () => {
     test.use({ walletCapabilities: "atomic" });
 

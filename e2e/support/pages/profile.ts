@@ -19,6 +19,14 @@ export class ProfilePage {
     return this.page.getByTestId("profile-details");
   }
 
+  /**
+   * The grey placeholder of /profile and /user/<address> while the page
+   * waits for wagmi (or the User query) before it decides what to show.
+   */
+  get skeleton(): Locator {
+    return this.page.getByTestId("account-skeleton");
+  }
+
   /** "Edit" on the member's own card. */
   get editButton(): Locator {
     return this.details.getByRole("button", { name: "Edit" });

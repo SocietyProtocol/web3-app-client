@@ -1,6 +1,14 @@
 import { PERSISTED_GRAPH_DOCUMENTS } from "../../../src/lib/persisted-graphql.generated";
 import { GOVERNOR_BADGE } from "../../env/hermetic";
 import { expect, test } from "../../fixtures";
+import {
+  GRAPHQL_BURST,
+  GRAPHQL_REFILL_MS,
+  cheapGraphqlRequest,
+  mostServedIn,
+  neighbourOf,
+  useUpGraphqlAllowance,
+} from "../../support/graphql-limit";
 
 /**
  * /api/graphql, the rest of its contract (graphql.api.spec.ts has the
@@ -269,37 +277,93 @@ test.describe("/api/graphql: the whole contract", () => {
   });
 
   test(
-    "P8: a visitor's sixty-first request in a minute is refused with 429, and another visitor is still served",
+    "P8: a visitor is served a burst of sixty requests at once, and the next is refused with 429, also a good query",
     { tag: ["@core"] },
-    async ({ api, graphql, testIp }) => {
-      // Sixty requests use the allowance up. Refused ones count like any
-      // other (the limit is checked first), so these do not load the subgraph.
-      const started = Date.now();
-      for (let sent = 1; sent <= 60; sent += 1) {
-        const response = await api.post(GRAPHQL, { headers: { "content-type": "text/plain" }, data: "x" });
-        expect(response.status(), `request ${sent}`).toBe(415);
-      }
-      // The window is one minute from the first request; the loop takes a second or two.
-      expect(Date.now() - started, "the sixty requests fit into the minute").toBeLessThan(50_000);
-
-      const refused = await api.post(GRAPHQL, { headers: { "content-type": "text/plain" }, data: "x" });
-      expect(refused.status()).toBe(429);
+    async ({ api, graphql }) => {
+      // Refused requests take a token like any other (the limit is checked
+      // first), so these do not load the subgraph.
+      const { served, elapsedMs, refused } = await useUpGraphqlAllowance(api);
+      // The whole burst at once, and no more than refilled meanwhile (one a second).
+      expect(served).toBeGreaterThanOrEqual(GRAPHQL_BURST);
+      expect(served, `served in ${elapsedMs} ms`).toBeLessThanOrEqual(mostServedIn(elapsedMs));
       expect(refused.headers()["retry-after"]).toBe("60");
+      expect(refused.headers()["cache-control"]).toBe("no-store");
       expect(await refused.json()).toEqual(refusal("Too many GraphQL requests"));
 
-      // A good query of the same visitor is refused as well.
+      // A good query of the same visitor, right after, is refused as well.
       const good = await graphql("Status");
       expect(good.status).toBe(429);
       expect(good.errors).toEqual([{ message: "Too many GraphQL requests" }]);
+    },
+  );
 
-      // The limit is the visitor's: someone at another address is served.
-      const elsewhere = `198.51.100.${1 + (Number(testIp.split(".")[3]) % 254)}`;
-      const served = await api.post(GRAPHQL, {
-        headers: { "x-forwarded-for": elsewhere },
-        data: { query: PERSISTED_GRAPH_DOCUMENTS.get("Status")!, operationName: "Status", variables: {} },
+  test(
+    "P8: two visitors do not share a bucket: another Cloudflare visitor IP is served, another x-forwarded-for is not",
+    { tag: ["@core"] },
+    async ({ api, testIp }) => {
+      // Behind Cloudflare and Caddy every visitor of one edge arrives with the
+      // same x-forwarded-for hop; the route tells them apart by
+      // cf-connecting-ip. Here the edge hop is the one this test sends anyway.
+      const neighbour = neighbourOf(testIp);
+      const status = { query: PERSISTED_GRAPH_DOCUMENTS.get("Status")!, operationName: "Status", variables: {} };
+      await useUpGraphqlAllowance(api);
+
+      // The neighbour at the same edge is served: their own bucket is full.
+      const neighbourServed = await api.post(GRAPHQL, {
+        headers: { "cf-connecting-ip": neighbour, "x-forwarded-for": testIp },
+        data: status,
       });
-      expect(served.status()).toBe(200);
-      expect(((await served.json()) as GraphqlBody).data).toHaveProperty("_meta");
+      expect(neighbourServed.status()).toBe(200);
+      expect(((await neighbourServed.json()) as GraphqlBody).data).toHaveProperty("_meta");
+
+      // The visitor who used theirs up cannot get a fresh one by sending
+      // another x-forwarded-for, or a list of them.
+      for (const forwarded of [neighbour, `${neighbour}, ${testIp}`, `${testIp}, ${neighbour}`]) {
+        const spoofed = await cheapGraphqlRequest(api, { "x-forwarded-for": forwarded });
+        expect(spoofed.status(), `x-forwarded-for: ${forwarded}`).toBe(429);
+      }
+
+      // And the neighbour's bucket is still their own: using it up does not
+      // touch anyone else's, and is not touched by this visitor's requests.
+      const { served } = await useUpGraphqlAllowance(api, { "cf-connecting-ip": neighbour, "x-forwarded-for": testIp });
+      expect(served, "the neighbour had the whole burst but the one Status query").toBeGreaterThanOrEqual(
+        GRAPHQL_BURST - 1,
+      );
+    },
+  );
+
+  test(
+    "P8: a visitor who used the burst up is served again one request a second, not after a whole minute",
+    { tag: ["@core"] },
+    async ({ api }) => {
+      await useUpGraphqlAllowance(api);
+
+      // The next token comes within a second of the refusal (polled; the
+      // refused polls take nothing, a bucket below one token is left as it is).
+      const servedAgain = async () => {
+        let at = 0;
+        await expect
+          .poll(
+            async () => {
+              const status = (await cheapGraphqlRequest(api)).status();
+              if (status === 415) at = Date.now();
+              return status;
+            },
+            { intervals: [50], timeout: 3 * GRAPHQL_REFILL_MS, message: "a token has refilled" },
+          )
+          .toBe(415);
+        return at;
+      };
+      const first = await servedAgain();
+      // One token, not the whole burst: the request right after is refused.
+      expect((await cheapGraphqlRequest(api)).status()).toBe(429);
+
+      // The one after that comes about a second later: the rate is sixty a minute.
+      const second = await servedAgain();
+      expect(second - first, "the second token came a refill interval after the first").toBeGreaterThanOrEqual(
+        0.8 * GRAPHQL_REFILL_MS,
+      );
+      expect((await cheapGraphqlRequest(api)).status()).toBe(429);
     },
   );
 

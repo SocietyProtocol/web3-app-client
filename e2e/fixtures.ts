@@ -160,6 +160,7 @@ export const test = base.extend<Fixtures & Options>({
     });
     await wallet.install(context);
     await provide(wallet);
+    wallet.releaseUnanswered();
     // Method names and outcomes only: enough to see what the app asked for.
     await testInfo.attach("wallet-requests.json", {
       body: JSON.stringify(wallet.summary(), null, 2),

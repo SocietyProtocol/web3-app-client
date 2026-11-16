@@ -11,6 +11,7 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { useProfileId } from "@/data/users/useProfileId";
 import { capturePostHogEvent } from "@/lib/posthog";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
@@ -24,6 +25,7 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   } | null>(null);
 
   const user = useUserQuery(userAddress);
+  const profileId = useProfileId(userAddress);
 
   const username = useMemo(
     () =>
@@ -64,6 +66,8 @@ export const useProfileMutation = (overrideAddress?: Address) => {
     queryKeysToInvalidateOnSuccess: [
       ["user", userAddress?.toLowerCase()],
       ["users"],
+      // The on-chain read decides the setup prompt while the subgraph lags.
+      profileId.queryKey,
     ],
     onSuccess: (transactionReceipt) => {
       const pendingProfileEvent = pendingProfileEventRef.current;

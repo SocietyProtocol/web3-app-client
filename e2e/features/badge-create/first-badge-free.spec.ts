@@ -7,6 +7,7 @@ import { badgesCallOf, deploysSender } from "../../support/aa/traffic";
 import {
   FIRST_BADGE_HEADER,
   FREE_BADGE_NOTICE_TEST_ID,
+  ageProfile,
   badgesCreatedBy,
   enableFreeFirstBadge,
   freeBadgeCallData,
@@ -26,6 +27,11 @@ import {
  * the switch off; each test here that wants it on sets the suite's cookie
  * (support/first-badge.ts) before the page loads.
  *
+ * Only an account whose profile is at least FIRST_BADGE_MIN_PROFILE_AGE_HOURS
+ * old (6 by default; the stack leaves it unset) gets the free badge.
+ * Personas are made during the run, so a test that expects the badge to be
+ * free makes its persona's profile look two days old (ageProfile).
+ *
  * Written without being run (the stack was in use by another run): every
  * test is @unverified until it has passed once. See "Unverified specs" in
  * e2e/README.md.
@@ -34,11 +40,12 @@ test.describe("badge creation: the free first badge", { tag: "@unverified" }, ()
   test(
     "I11: a member's first badge is sponsored: one signature, no wallet transaction, created by the Society account",
     { tag: ["@core", "@sponsored"] },
-    async ({ persona, pages, page, context, wallet, aa, chain, seenText }) => {
+    async ({ persona, pages, page, context, wallet, aa, chain, seenText, subgraph }) => {
       await enableFreeFirstBadge(context);
       // A member without ETH: if anything but the paymaster had to pay, the
       // write could not happen at all.
       const me = await persona("member");
+      await ageProfile(subgraph, me);
       expect(await chain.balance(me.ownerAddress)).toBe(BigInt(0));
       expect(await badgesCreatedBy(chain, me.address)).toHaveLength(1); // its profile badge only
       const name = `E2E Free Badge ${me.address.slice(2, 8)}`;
@@ -86,6 +93,8 @@ test.describe("badge creation: the free first badge", { tag: "@unverified" }, ()
     async ({ persona, pages, page, context, wallet, aa, chain, subgraph }) => {
       await enableFreeFirstBadge(context);
       const me = await persona("fundedMember");
+      // Old enough, so the earlier badge is the only reason it is not free.
+      await ageProfile(subgraph, me);
       // Its first badge, made before the page is opened. The subgraph fake
       // follows the chain, so the app's check finds it there.
       await chain.createBadge({ creator: me.address, name: `E2E Earlier ${me.address.slice(2, 8)}`, uri: "" });
@@ -146,6 +155,7 @@ test.describe("badge creation: the free first badge", { tag: "@unverified" }, ()
     async ({ persona, pages, page, context, wallet, aa, chain, subgraph }) => {
       await enableFreeFirstBadge(context);
       const me = await persona("fundedMember");
+      await ageProfile(subgraph, me);
       await pages.badgeCreate.open();
       await pages.shell.connect();
       await pages.badgeCreate.toPermissions(`E2E Raced ${me.address.slice(2, 8)}`);
@@ -182,9 +192,10 @@ test.describe("badge creation: the free first badge", { tag: "@unverified" }, ()
   test(
     "I15: when the proxy refuses the free badge after the wizard offered it, the wallet pays after the free-gas notice",
     { tag: ["@edge", "@owner-tx"] },
-    async ({ persona, pages, page, context, wallet, aa, chain, api }) => {
+    async ({ persona, pages, page, context, wallet, aa, chain, api, subgraph }) => {
       await enableFreeFirstBadge(context);
       const me = await persona("fundedMember");
+      await ageProfile(subgraph, me);
 
       // Use up this visitor's free-badge signatures for the account (the
       // `api` fixture sends the same test IP as the page). The status route
@@ -235,6 +246,38 @@ test.describe("badge creation: the free first badge", { tag: "@unverified" }, ()
       // The user operation was never signed: the refusal came first.
       await expectOwnerPaidThroughAccount({ wallet, chain }, { persona: me, ownerBalanceBefore });
       expect(aa.userOperations()).toHaveLength(0);
+    },
+  );
+
+  test(
+    "I17: a profile made just now does not get the free badge: no notice, the wallet pays, nothing goes to the proxy",
+    { tag: ["@core", "@owner-tx"] },
+    async ({ persona, pages, page, context, wallet, aa, chain }) => {
+      await enableFreeFirstBadge(context);
+      // Not aged: the persona's profile is minutes old, under the 6 hours
+      // the free badge needs.
+      const me = await persona("fundedMember");
+      const statusResponse = await page.request.get(`/api/aa/first-badge?chainId=${CHAIN_ID}&sender=${me.address}`, {
+        headers: FIRST_BADGE_HEADER,
+      });
+      expect(await statusResponse.json()).toEqual({ enabled: true, eligible: false, reason: "profileTooNew" });
+
+      await pages.badgeCreate.open();
+      await pages.shell.connect();
+      await pages.badgeCreate.toPermissions(`E2E Too New ${me.address.slice(2, 8)}`);
+      await expect(pages.badgeCreate.finishButton).toBeEnabled();
+      await expect(page.getByTestId(FREE_BADGE_NOTICE_TEST_ID)).toHaveCount(0);
+
+      const ownerBalanceBefore = await chain.balance(me.ownerAddress);
+      wallet.clearRequests();
+      aa.clear();
+      await pages.badgeCreate.finishButton.click();
+      await expect(pages.shell.transactionToast("success")).toHaveText("Badge created successfully", {
+        timeout: 60_000,
+      });
+      await expect(pages.shell.sponsorshipFallbackNotice).toHaveCount(0);
+      await expectOwnerPaidThroughAccount({ wallet, chain }, { persona: me, ownerBalanceBefore });
+      expect(aa.calls, "nothing was sent to the sponsorship proxy").toHaveLength(0);
     },
   );
 

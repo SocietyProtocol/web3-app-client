@@ -4,6 +4,9 @@ import { SocietyProtocolBadgesABI } from "../../src/abis/SocietyProtocolBadges";
 import { encodeExecute } from "../../src/lib/smart-account";
 import { BADGES_ADDRESS, ENTRY_POINT_ADDRESS, FORK_BLOCK, URLS } from "../env/hermetic";
 import type { Chain } from "./chain/chain";
+import type { SubgraphFake } from "./backends/subgraph";
+import { badge } from "./builders/entities";
+import type { Persona } from "./personas";
 
 /**
  * The free first badge (src/lib/aa/first-badge.ts) is off unless the
@@ -34,7 +37,26 @@ export const FIRST_BADGE_REASONS = {
   unchecked: "Could not check this account's badges",
   behind: "Badge history is still syncing",
   nonce: "User operation nonce is not the account's next nonce",
+  noProfile: "This account has no Society profile yet",
+  profileTooNew: "This account's profile is too new for a free badge",
 } as const;
+
+/** The proxy's refusal once the app's free badges for the day are given out (pimlico-proxy.ts). */
+export const FIRST_BADGE_DAILY_CAP_MESSAGE = "Today's free badges have all been given out";
+
+/**
+ * Makes the persona's profile look two days old to the app. The free badge
+ * needs a profile at least FIRST_BADGE_MIN_PROFILE_AGE_HOURS old (6 by
+ * default, and the stack leaves it unset), but personas are made during the
+ * run. The app reads the age from the subgraph's Badge.createdAt, so this
+ * overlays that one field; the chain and the profile itself are untouched.
+ * Overlays are dropped before the next test.
+ */
+export async function ageProfile(subgraph: SubgraphFake, persona: Pick<Persona, "address" | "profile">) {
+  if (!persona.profile) throw new Error(`ageProfile: ${persona.address} has no profile`);
+  const twoDaysAgo = Math.floor(Date.now() / 1000) - 2 * 24 * 3600;
+  await subgraph.overlay(badge(persona.profile.badgeId, { createdAt: String(twoDaysAgo) }));
+}
 
 /** The wizard's notice on the Permissions step while the badge would be free. */
 export const FREE_BADGE_NOTICE_TEST_ID = "badge-create-free-badge-notice";

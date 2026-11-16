@@ -5,6 +5,7 @@ import { AA_RPC_PATH, paymasterStubCall, unsignedUserOperation, type JsonRpcRepl
 import {
   FIRST_BADGE_HEADER,
   FIRST_BADGE_REASONS,
+  ageProfile,
   freeBadgeCallData,
   nextNonce,
 } from "../../support/first-badge";
@@ -44,8 +45,10 @@ test.describe("free first badge: server", { tag: "@unverified" }, () => {
     api,
     actor,
     chain,
+    subgraph,
   }) => {
     const member = await actor("member");
+    await ageProfile(subgraph, member);
     const status = await api.get(statusPath(member.address), { headers: FIRST_BADGE_HEADER });
     expect(await status.json()).toEqual({ enabled: true, eligible: true });
 
@@ -61,8 +64,9 @@ test.describe("free first badge: server", { tag: "@unverified" }, () => {
     expect(reply.result).toBeDefined();
   });
 
-  test("P9: on: an operation at a stale or foreign nonce is refused", { tag: ["@edge"] }, async ({ api, actor, chain }) => {
+  test("P9: on: an operation at a stale or foreign nonce is refused", { tag: ["@edge"] }, async ({ api, actor, chain, subgraph }) => {
     const member = await actor("member");
+    await ageProfile(subgraph, member);
     const next = await nextNonce(chain, member.address);
     for (const nonce of [next + BigInt(1), (BigInt(1) << BigInt(64)) | next]) {
       const userOperation = unsignedUserOperation({
@@ -81,8 +85,10 @@ test.describe("free first badge: server", { tag: "@unverified" }, () => {
     api,
     actor,
     chain,
+    subgraph,
   }) => {
     const member = await actor("member");
+    await ageProfile(subgraph, member);
     await chain.createBadge({ creator: member.address, name: "E2E P9 earlier", uri: "" });
 
     const status = await api.get(statusPath(member.address), { headers: FIRST_BADGE_HEADER });
@@ -97,6 +103,31 @@ test.describe("free first badge: server", { tag: "@unverified" }, () => {
       await api.post(AA_RPC_PATH, { headers: FIRST_BADGE_HEADER, data: paymasterStubCall(userOperation) })
     ).json()) as JsonRpcReply;
     expect(reply.error).toEqual({ code: -32602, message: FIRST_BADGE_REASONS.used });
+  });
+
+  test("P9: on: no free badge without a profile, or with a profile made just now", { tag: ["@core"] }, async ({
+    api,
+    actor,
+    chain,
+  }) => {
+    for (const [kind, reason] of [
+      ["new", "noProfile"],
+      ["member", "profileTooNew"],
+    ] as const) {
+      const someone = await actor(kind);
+      const status = await api.get(statusPath(someone.address), { headers: FIRST_BADGE_HEADER });
+      expect(await status.json()).toEqual({ enabled: true, eligible: false, reason });
+      if (kind === "new") continue; // not deployed: the proxy refuses it before any free-badge check
+      const userOperation = unsignedUserOperation({
+        sender: someone.address,
+        callData: freeBadgeCallData("E2E P9 too new"),
+        nonce: toHex(await nextNonce(chain, someone.address)),
+      });
+      const reply = (await (
+        await api.post(AA_RPC_PATH, { headers: FIRST_BADGE_HEADER, data: paymasterStubCall(userOperation) })
+      ).json()) as JsonRpcReply;
+      expect(reply.error).toEqual({ code: -32602, message: FIRST_BADGE_REASONS[reason] });
+    }
   });
 
   test("P9: the status route refuses a bad chain or sender", { tag: ["@edge"] }, async ({ api }) => {

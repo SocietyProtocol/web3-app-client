@@ -14,6 +14,8 @@ export type InjectedProviderInfo = {
   rdns: string;
   /** Sets window.ethereum.isMetaMask, which RainbowKit's built-in MetaMask option looks for. */
   isMetaMask: boolean;
+  /** Further flags set on window.ethereum, such as isRabby, which RainbowKit's wallet entries look for. */
+  flags?: Record<string, boolean>;
 };
 
 export function injectedProvider(info: InjectedProviderInfo) {
@@ -30,6 +32,7 @@ export function injectedProvider(info: InjectedProviderInfo) {
   let connected = true;
 
   const provider = {
+    ...info.flags,
     isMetaMask: info.isMetaMask,
     isE2ETestWallet: true,
     _events: {},

@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@rainbow-me/rainbowkit", () => ({
   getDefaultConfig: () => ({ storage: { getItem: mocks.getItem } }),
 }));
+vi.mock("@/lib/wallets", () => ({ walletList: [] }));
 vi.mock("@wagmi/core", () => ({
   http: () => ({}),
   watchAccount: mocks.watchAccount,

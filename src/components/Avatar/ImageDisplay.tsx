@@ -4,10 +4,18 @@ import { mergeSx } from "@/utils/sx";
 
 const IPFS_CID_IN_URL = /\/ipfs\/([^/?#]+)/;
 
+/**
+ * Turn a stored image reference into a URL the browser can load. IPFS
+ * references are pointed at the Filebase gateway. A data: image is returned
+ * as is: the only ones that reach the browser are files the user has just
+ * chosen in a form (Graph responses drop stored data-URI photos on the
+ * server, see lib/strip-data-uri), and previews must show them.
+ */
 export function resolveImageSrc(src?: string | null): string | undefined {
   if (!src) return undefined;
+  // Checked before the IPFS rules: base64 can contain "/ipfs/".
   if (src.startsWith("data:image/")) {
-    return undefined;
+    return src;
   }
   if (src.startsWith("ipfs://")) {
     return `${URLS.IPFS_GATEWAY}/${src.slice("ipfs://".length)}`;

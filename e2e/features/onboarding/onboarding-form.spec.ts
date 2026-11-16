@@ -68,22 +68,9 @@ test.describe("smart-account onboarding: the form", () => {
     await expect(pages.onboarding.review).toContainText("Pixel");
     await expect(pages.onboarding.reviewAvatar).toBeVisible();
 
-    // APP BUG, expected to fail until it is fixed: the review card shows the
-    // coloured placeholder instead of the picture that was just chosen.
-    // ReviewStep passes the form's imageUrl (a data: URI at this point) to
-    // UserCard, whose avatar goes through resolveImageSrc
-    // (components/Avatar/ImageDisplay), and that drops every data:image/ URI.
-    // The picture itself is fine: it is pinned and shown on the profile
-    // after the save (see the test above). Everything above this line must
-    // pass; only the assertion below is expected to fail.
-    test.fail(true, "the review step does not show the chosen avatar (resolveImageSrc drops data: URIs)");
-    // Short on purpose: a known failure should not cost a long wait. A
-    // fixed app has this on screen already when the assertion starts
-    // (the picture is a data: URI, decoded without a request), so the wait only covers a render. Remove this timeout
-    // together with test.fail.
-    await expect(pages.onboarding.reviewAvatar.getByRole("img")).toHaveJSProperty("naturalWidth", 1, {
-      timeout: 2_000,
-    });
+    // The review card shows the picture that was just chosen, not the
+    // coloured placeholder.
+    await expect(pages.onboarding.reviewAvatar.getByRole("img")).toHaveJSProperty("naturalWidth", 1);
   });
 
   test(

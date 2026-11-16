@@ -10,15 +10,19 @@ const attentionPulse = keyframes`
 import { navigationItems } from "./navigationItems";
 import { NavigationItem } from "./NavigationItem";
 import { DocsBanner } from "./DocsBanner";
+import { SocialLinks } from "@/components/Header/SocialLinks";
 
 interface SidebarContentProps {
   isExpanded: boolean;
   onToggle?: () => void;
+  /** Show the Society Protocol links (the header hides them below md). */
+  showSocialLinks?: boolean;
 }
 
 export const SidebarContent = ({
   isExpanded,
   onToggle,
+  showSocialLinks = false,
 }: SidebarContentProps) => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -30,6 +34,9 @@ export const SidebarContent = ({
 
       <Box sx={{ flexGrow: 1 }} />
 
+      {showSocialLinks && (
+        <SocialLinks variant="drawer" sx={{ mb: 2, flexShrink: 0 }} />
+      )}
       <DocsBanner isExpanded={isExpanded} />
 
       {onToggle && (

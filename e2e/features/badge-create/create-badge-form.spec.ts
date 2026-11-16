@@ -192,21 +192,9 @@ test.describe("badge creation: the form", () => {
     const previewImage = form.preview.getByRole("img", { name: "Pictured", exact: true });
     await expect(previewImage).toBeVisible();
 
-    // APP BUG, expected to fail until it is fixed: the preview card keeps
-    // the default badge picture (/badge.svg) instead of the image that was
-    // just chosen. BadgePreview passes the form's imageUrl (a data: URI at
-    // this point) to BadgeCard, whose Avatar goes through resolveImageSrc
-    // (components/Avatar/ImageDisplay), and that drops every data:image/
-    // URI. The same cause as C5 in onboarding-form.spec.ts. Everything
-    // above this line must pass; only the assertions below are expected to
-    // fail.
-    test.fail(true, "the preview card does not show the chosen image (resolveImageSrc drops data: URIs)");
-    // Short on purpose: a known failure should not cost a long wait. A
-    // fixed app has this on screen already when the assertion starts (the
-    // picture is a data: URI, decoded without a request), so the wait only
-    // covers a render. Remove this timeout together with test.fail.
-    await expect(previewImage).toHaveAttribute("src", /^data:image\/png;base64,/, { timeout: 2_000 });
-    await expect(previewImage).toHaveJSProperty("naturalWidth", 1, { timeout: 2_000 });
+    // The preview card shows the chosen picture, not the default one.
+    await expect(previewImage).toHaveAttribute("src", /^data:image\/png;base64,/);
+    await expect(previewImage).toHaveJSProperty("naturalWidth", 1);
   });
 
   test(

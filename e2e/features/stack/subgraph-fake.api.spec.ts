@@ -5,8 +5,9 @@ import { badge, link, memberWithProfile, newBadge } from "../../support/builders
 /**
  * The subgraph fake itself, seen through /api/graphql: overlays and their
  * reset, the entity builders and the schema check, a lagging or stalled
- * subgraph. These are checks of the foundation, not of the route: the
- * route's contract is P1 to P8 in features/api.
+ * subgraph, the query gateway's refusals. These are checks of the
+ * foundation, not of the route: the route's contract is P1 to P8 in
+ * features/api.
  */
 test.describe("subgraph fake", () => {
   test("SG-1: an overlay changes what the next query returns, for this test only", { tag: ["@core"] }, async ({
@@ -64,7 +65,7 @@ test.describe("subgraph fake", () => {
     const found = await graphql<{ users: { id: string }[] }>("Users", {
       first: 10,
       skip: 0,
-      orderBy: "id",
+      orderBy: "name",
       orderDirection: "asc",
       where: { metadata_: { name_contains_nocase: "overlay ada" } },
     });
@@ -116,6 +117,37 @@ test.describe("subgraph fake", () => {
       await subgraph.unfreeze();
       expect((await graphql<Status>("Status")).data!._meta.block.number).toBeGreaterThan(stalledAt);
       expect((await graphql<User>("User", { id })).data!.user?.profile?.id).toBe(String(member.profile!.badgeId));
+    },
+  );
+
+  test(
+    "SG-5: the fake refuses what the query gateway refuses, and /api/graphql passes that on as a 400",
+    { tag: ["@core", "@unverified"] },
+    async ({ graphql, subgraph }) => {
+      // A filter key the gateway's CommunityMembers policy does not list.
+      const refused = await graphql("CommunityMembers", {
+        first: 10,
+        skip: 0,
+        where: { community_: { id: "1" }, user_: { bio_contains: "x" } },
+      });
+      expect(refused.status).toBe(400);
+      expect(refused.errors).toEqual([{ message: "GraphQL gateway refused the request" }]);
+      expect(refused.data).toBeUndefined();
+      const [request] = await subgraph.requests();
+      expect(request).toMatchObject({
+        operationName: "CommunityMembers",
+        refused: { status: 400, message: "GraphQL variables exceed operation limits" },
+      });
+
+      // A sort the gateway does not list for Users.
+      const badSort = await graphql("Users", { first: 1, skip: 0, orderBy: "id", orderDirection: "asc" });
+      expect(badSort.status).toBe(400);
+
+      // The same queries within the policy are answered.
+      const allowed = await graphql("CommunityMembers", { first: 10, skip: 0, where: { community_: { id: "1" } } });
+      expect(allowed.status).toBe(200);
+      expect(allowed.errors).toBeUndefined();
+      expect((await subgraph.requests()).at(-1)?.refused).toBeUndefined();
     },
   );
 });

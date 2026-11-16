@@ -8,7 +8,7 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm, UseFormReturn, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUpdateBadge } from "./useUpdateBadge";
 import {
@@ -19,6 +19,8 @@ import {
 import { ValidationError } from "@/errors/ValidationError";
 import { useFetch } from "@/hooks/useFetch";
 import { useBadge } from "@/data/badges/useBadge";
+import type { WritePayment } from "@/lib/payment-label";
+import type { BadgeDraft } from "@/lib/write-previews";
 
 interface BadgeEditContextType {
   form: UseFormReturn<BadgeEditInputData, unknown, BadgeEditTransformedData>;
@@ -35,6 +37,7 @@ interface BadgeEditContextType {
   isTransactionPending: boolean;
   isTransactionConfirmed: boolean;
   transactionHash: `0x${string}` | undefined;
+  payment: WritePayment;
   getServerFieldError: (field: keyof BadgeEditInputData) => string | undefined;
   reset: () => void;
   badge?: ReturnType<typeof useBadge>;
@@ -97,6 +100,15 @@ export const BadgeEditProvider = ({
     metadata.data,
   ]);
 
+  const [name, isOfficial, imageUrl, metadataText] = useWatch({
+    control: form.control,
+    name: ["name", "isOfficial", "imageUrl", "metadata"],
+  });
+  const draft = useMemo<BadgeDraft>(
+    () => ({ name, isOfficial, hasMetadata: !!imageUrl || !!metadataText }),
+    [name, isOfficial, imageUrl, metadataText],
+  );
+
   const {
     mutate: updateBadge,
     isMutating,
@@ -105,10 +117,12 @@ export const BadgeEditProvider = ({
     isTransactionPending,
     isTransactionConfirmed,
     transactionHash,
+    payment,
     error: serverError,
     reset,
   } = useUpdateBadge({
     badgeId,
+    draft,
   });
 
   const onSubmit = form.handleSubmit(updateBadge);
@@ -134,6 +148,7 @@ export const BadgeEditProvider = ({
       isTransactionPending,
       isTransactionConfirmed,
       transactionHash,
+      payment,
       getServerFieldError,
       reset,
       badge,
@@ -148,6 +163,7 @@ export const BadgeEditProvider = ({
       isTransactionPending,
       isTransactionConfirmed,
       transactionHash,
+      payment,
       getServerFieldError,
       reset,
       badge,

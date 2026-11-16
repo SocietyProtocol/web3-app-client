@@ -36,7 +36,7 @@ export function workersFromEnv(): number {
 
 export function stackPorts(index: number) {
   const offset = index * settings.stacks.portStep;
-  const { app, anvil, alto, paymaster, subgraph, s3, control } = settings.ports;
+  const { app, anvil, alto, paymaster, subgraph, s3, control, appVariant } = settings.ports;
   return {
     app: app + offset,
     anvil: anvil + offset,
@@ -45,6 +45,7 @@ export function stackPorts(index: number) {
     subgraph: subgraph + offset,
     s3: s3 + offset,
     control: control + offset,
+    appVariant: appVariant + offset,
   };
 }
 
@@ -59,6 +60,7 @@ export function stackUrls(index: number) {
     subgraph: url(ports.subgraph),
     s3: url(ports.s3),
     control: url(ports.control),
+    appVariant: url(ports.appVariant),
   };
 }
 

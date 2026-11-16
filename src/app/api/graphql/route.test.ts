@@ -220,6 +220,225 @@ describe("/api/graphql", () => {
     });
   });
 
+  describe("gateway refusals", () => {
+    const refusedBy = (status: number, body: string) =>
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(body, {
+          status,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    const communities = (ip: string) =>
+      POST(
+        request(
+          { query: communitiesQuery, operationName: "Communities" },
+          { "x-forwarded-for": ip },
+        ),
+      );
+    const gatewayError = (message: string) =>
+      JSON.stringify({ errors: [{ message }] });
+
+    it("passes a refused query on as a 400 and logs why, not as a 502", async () => {
+      refusedBy(400, gatewayError("GraphQL variables exceed operation limits"));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities("route-test-gateway-400");
+
+      expect(response.status).toBe(400);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(await response.json()).toEqual({
+        errors: [{ message: "GraphQL gateway refused the request" }],
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toBe(
+        "[api/graphql] Communities: the query gateway refused the request with 400 (GraphQL variables exceed operation limits); answering 400",
+      );
+    });
+
+    it.each([413, 422])("passes a %i of the gateway on", async (status) => {
+      refusedBy(status, gatewayError("GraphQL query is too large"));
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities(`route-test-gateway-${status}`);
+
+      expect(response.status).toBe(status);
+      expect(await response.json()).toEqual({
+        errors: [{ message: "GraphQL gateway refused the request" }],
+      });
+    });
+
+    it.each([401, 403, 404, 415])(
+      "answers a %i of the gateway (this server's own misconfiguration) with a 502, and logs it",
+      async (status) => {
+        refusedBy(status, gatewayError("Unauthorized"));
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+        const response = await communities(`route-test-gateway-${status}`);
+
+        expect(response.status).toBe(502);
+        expect(await response.json()).toEqual({
+          errors: [{ message: "GraphQL upstream request failed" }],
+        });
+        expect(warn.mock.calls[0][0]).toBe(
+          `[api/graphql] Communities: the query gateway refused the request with ${status} (Unauthorized); answering 502`,
+        );
+      },
+    );
+
+    it("logs a refusal that is not JSON without its body, and one line only", async () => {
+      refusedBy(400, "<html>\n<title>400 Bad Request</title>\n</html>");
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities("route-test-refusal-html");
+
+      expect(response.status).toBe(400);
+      expect(warn.mock.calls[0][0]).toBe(
+        "[api/graphql] Communities: the query gateway refused the request with 400 (no message); answering 400",
+      );
+    });
+
+    it("keeps a gateway message to one printable line in the log", async () => {
+      refusedBy(400, gatewayError(`bad\nline\u0007 ${"x".repeat(300)}`));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      await communities("route-test-gateway-multiline");
+
+      const line = String(warn.mock.calls[0][0]);
+      expect(line).not.toMatch(/[\n\u0007]/);
+      expect(line).toContain("(bad line ");
+      expect(line.length).toBeLessThan(320);
+    });
+  });
+
+  describe("gateway failures", () => {
+    const communities = (visitor: string) =>
+      POST(
+        request(
+          {
+            query: communitiesQuery,
+            operationName: "Communities",
+            variables: { first: 5, skip: 0, where: { name_contains_nocase: "private-search" } },
+          },
+          { "x-forwarded-for": visitor },
+        ),
+      );
+    const gatewayAnswer = (status: number, headers: Record<string, string> = {}) =>
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({ errors: [{ message: "Query gateway is busy" }] }), {
+          status,
+          headers: { "content-type": "application/json", ...headers },
+        }),
+      );
+    const loggedLines = (warn: { mock: { calls: unknown[][] } }) =>
+      warn.mock.calls.map((call) => call.map(String).join(" "));
+
+    it("passes a busy gateway 503 on with its Retry-After, and logs it", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      gatewayAnswer(503, { "retry-after": "1" });
+
+      const response = await communities("route-test-busy-503");
+
+      expect(response.status).toBe(503);
+      expect(response.headers.get("retry-after")).toBe("1");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(await response.json()).toEqual({
+        errors: [{ message: "GraphQL gateway is busy, try again shortly" }],
+      });
+      expect(loggedLines(warn)).toEqual([
+        "[api/graphql] Communities: the query gateway is busy (503, retry-after 1s); answering 503",
+      ]);
+    });
+
+    it("passes a gateway 429 on and bounds or defaults its Retry-After", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      gatewayAnswer(429, { "retry-after": "3600" });
+      const capped = await communities("route-test-busy-429-capped");
+      expect(capped.status).toBe(429);
+      expect(capped.headers.get("retry-after")).toBe("60");
+
+      vi.restoreAllMocks();
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      gatewayAnswer(429, { "retry-after": "Wed, 21 Oct 2026 07:28:00 GMT" });
+      const dated = await communities("route-test-busy-429-date");
+      expect(dated.status).toBe(429);
+      expect(dated.headers.get("retry-after")).toBe("1");
+
+      vi.restoreAllMocks();
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      gatewayAnswer(503);
+      const missing = await communities("route-test-busy-503-missing");
+      expect(missing.status).toBe(503);
+      expect(missing.headers.get("retry-after")).toBe("1");
+    });
+
+    it("still answers 502 for other gateway errors, and logs them", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      gatewayAnswer(500);
+
+      const response = await communities("route-test-gateway-500");
+
+      expect(response.status).toBe(502);
+      expect(loggedLines(warn)).toEqual([
+        "[api/graphql] Communities: the query gateway answered 500; answering 502",
+      ]);
+    });
+
+    it("logs a gateway answer that is not JSON", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response("<html>bad gateway</html>", { status: 502 }),
+      );
+
+      const response = await communities("route-test-gateway-html");
+
+      expect(response.status).toBe(502);
+      expect(loggedLines(warn)).toEqual([
+        "[api/graphql] Communities: the query gateway answered 502 with a body that is not JSON; answering 502",
+      ]);
+    });
+
+    it("logs a gateway that cannot be reached, without the error message", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.spyOn(globalThis, "fetch").mockRejectedValue(
+        new TypeError("fetch failed: connect ECONNREFUSED gateway.internal:8080"),
+      );
+
+      const response = await communities("route-test-gateway-down");
+
+      expect(response.status).toBe(502);
+      expect(loggedLines(warn)).toEqual([
+        "[api/graphql] Communities: the query gateway could not be reached (TypeError); answering 502",
+      ]);
+    });
+
+    it("never logs variables or the gateway token", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      gatewayAnswer(503, { "retry-after": "1" });
+      await communities("route-test-busy-private");
+      gatewayAnswer(500);
+      await communities("route-test-500-private");
+
+      const lines = loggedLines(warn);
+      expect(lines).toHaveLength(2);
+      for (const line of lines) {
+        expect(line).not.toContain("private-search");
+        expect(line).not.toContain("test-token");
+        expect(line).not.toContain(gatewayUrl);
+      }
+    });
+
+    it("does not log a successful answer", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({ data: { communities: [] } }), { status: 200 }),
+      );
+
+      expect((await communities("route-test-ok-quiet")).status).toBe(200);
+      expect(warn).not.toHaveBeenCalled();
+    });
+  });
+
   describe("rate limit", () => {
     // A text body is refused with 415 after the rate-limit check, so a
     // served request makes no upstream call. The clock is frozen, so no

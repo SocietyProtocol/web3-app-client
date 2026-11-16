@@ -1,6 +1,5 @@
 import {
   encodeFunctionData,
-  formatUnits,
   isAddressEqual,
   parseEventLogs,
   zeroAddress,
@@ -8,18 +7,16 @@ import {
   type Hex,
   type TransactionReceipt,
 } from "viem";
-import { ChainLinkFeedABI } from "../../../src/abis/ChainlinkFeed";
 import { SocietyProtocolBadgesABI } from "../../../src/abis/SocietyProtocolBadges";
-import { contracts } from "../../../src/consts/contracts";
 import { encodeExecute } from "../../../src/lib/smart-account";
 import { BADGES_ADDRESS } from "../../env/hermetic";
 import { expect, test } from "../../fixtures";
-import type { Chain } from "../../support/chain/chain";
 import {
   expectNeverAskedToFundSocietyAccount,
   expectOwnerPaidThroughAccount,
   expectOwnerSentDirectly,
   expectedCost,
+  feeInUsd,
   shownEth,
 } from "../../support/write-route";
 
@@ -50,16 +47,6 @@ function mintCall(badgeId: bigint, recipient: Address): Hex {
     functionName: "mintToMultiple",
     args: [[recipient], badgeId, BigInt(1), "0x"],
   });
-}
-
-/** A fee in wei as the gas label's tooltip states it: in USD at the chain's ETH price feed, eight decimals. */
-async function inUsd(chain: Chain, wei: bigint): Promise<string> {
-  const price = await chain.public.readContract({
-    address: contracts.chainlinkFeed.sepolia,
-    abi: ChainLinkFeedABI,
-    functionName: "latestAnswer",
-  });
-  return `$${formatUnits((wei * price) / BigInt(10) ** BigInt(18), 8)}`;
 }
 
 /** The one mint in a receipt: who the badges contract saw as the minter, and to whom. */
@@ -112,8 +99,8 @@ test.describe("badge actions: who sends a mint and who pays", () => {
         to: me.address,
         data: encodeExecute({ to: BADGES_ADDRESS, value: BigInt(0), data: mintCall(badge.id, recipient.address) }),
       });
-      await expect(pages.badge.gasEstimate).toHaveText(/^(< \$0\.01|\$\d[\d,]*(\.\d+)?)\s*$/);
-      await expect(pages.badge.gasEstimate.getByLabel(await inUsd(chain, cost), { exact: true })).toBeVisible();
+      await expect(pages.badge.gasEstimate).toHaveText(/^Paid by your wallet, about\s*(< \$0\.01|\$\d[\d,]*(\.\d+)?)\s*$/);
+      await expect(pages.badge.gasEstimate.getByLabel(await feeInUsd(chain, cost), { exact: true })).toBeVisible();
 
       // O8: the "submitted" toast links to the wallet's transaction. The
       // page's read of the receipt is held so that the toast stays.
@@ -299,7 +286,7 @@ test.describe("badge actions: who sends a mint and who pays", () => {
       // O9: the fee shown is that of the wallet's own call to the badges contract.
       const data = mintCall(badgeId, recipient.address);
       const cost = await expectedCost(chain, { from: me.ownerAddress, to: BADGES_ADDRESS, data });
-      await expect(pages.badge.gasEstimate.getByLabel(await inUsd(chain, cost), { exact: true })).toBeVisible();
+      await expect(pages.badge.gasEstimate.getByLabel(await feeInUsd(chain, cost), { exact: true })).toBeVisible();
 
       wallet.clearRequests();
       aa.clear();

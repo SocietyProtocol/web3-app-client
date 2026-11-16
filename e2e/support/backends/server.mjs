@@ -3,6 +3,8 @@
 //   subgraph fake  POST /graphql on the "subgraph" port. Speaks what
 //                  /api/graphql and the SSR gateway client send:
 //                  { query, operationName, variables } with a Bearer token.
+//                  Refuses what the real query gateway refuses (see
+//                  gateway/policy.mjs), with the gateway's 400.
 //   S3 fake        the "s3" port. Path-style PutObject / HeadObject, answering
 //                  with x-amz-meta-cid like a Filebase IPFS bucket, plus
 //                  GET /ipfs/<cid> so the tests can serve the IPFS gateway.
@@ -14,6 +16,7 @@ import fs from "node:fs";
 import http from "node:http";
 import { CONTRACTS, FORK_BLOCK, HOST, PORTS, URLS, baselineFile } from "../stack/config.mjs";
 import { jsonRpc } from "../stack/processes.mjs";
+import { gatewayRefusal } from "./gateway/policy.mjs";
 import { createIndexer } from "./indexer.mjs";
 import { createExecutor } from "./query.mjs";
 import { EntityStore } from "./store.mjs";
@@ -267,6 +270,13 @@ function createSubgraphFake({ s3Objects }) {
           at: Date.now(),
         };
         requests.push(record);
+        // The query gateway sits between the app and the subgraph and refuses
+        // what its registry does not allow, before any subgraph fault applies.
+        const refusal = gatewayRefusal(body);
+        if (refusal) {
+          record.refused = { status: refusal.status, message: refusal.message };
+          return sendJson(response, refusal.status, { errors: [{ message: refusal.message }] });
+        }
         const fault = takeFault(body.operationName);
         if (fault?.kind === "http-error") {
           response.writeHead(fault.status ?? 500, { "content-type": "text/plain" });

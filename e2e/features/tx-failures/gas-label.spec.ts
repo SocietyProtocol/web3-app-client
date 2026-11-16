@@ -8,10 +8,10 @@ import { expectNeverAskedToFundSocietyAccount, expectSponsoredThroughAccount } f
 
 /**
  * O9, the part H1 and H11 do not cover: the gas label next to the button
- * of a write that Society sponsors. Only the accept-invitation form shows
- * a label for a sponsored write (the profile forms show none), so this is
- * that form. The label of a write the wallet pays for is in
- * features/badge-actions/mint-routing.spec.ts.
+ * of a write that Society sponsors, on the accept-invitation form. The
+ * profile forms show the same label (payment-label.spec.ts, O16 and O18).
+ * The label of a write the wallet pays for is in
+ * features/badge-actions/mint-routing.spec.ts and payment-label.spec.ts.
  */
 
 const SECONDS_PER_DAY = 24 * 60 * 60;
@@ -45,7 +45,7 @@ async function referralCodeFor(chain: Chain, inviter: Persona, invitee: Address)
 
 test.describe("the gas label", () => {
   test(
-    "O9: a write that Society sponsors is labelled $0, also for a wallet that holds ETH, and it costs the wallet nothing",
+    "O9: a write that Society sponsors is labelled free, also for a wallet that holds ETH, and it costs the wallet nothing",
     { tag: ["@core", "@sponsored"] },
     async ({ persona, actor, pages, page, wallet, aa, chain, seenText }) => {
       const [me, inviter] = await Promise.all([persona("fundedMember"), actor("member")]);
@@ -68,7 +68,7 @@ test.describe("the gas label", () => {
       // label says what it will cost the user: nothing.
       await codeInput.fill(code);
       await expect(acceptButton).toBeEnabled();
-      await expect(gasLabel).toHaveText("$0");
+      await expect(gasLabel).toHaveText("Free - you only sign");
       // Showing the price asked the wallet for nothing.
       expect(wallet.signatureRequests()).toHaveLength(0);
       expect(wallet.sendTransactionRequests()).toHaveLength(0);

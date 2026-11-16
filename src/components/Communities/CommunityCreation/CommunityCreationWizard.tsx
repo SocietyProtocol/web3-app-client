@@ -31,6 +31,7 @@ const CommunityCreationWizardContent = () => {
     isUploadingToIpfs,
     isWritingContract,
     createdCommunity,
+    payment,
   } = useCommunityCreation();
 
   const { address } = useOutpostAccount();
@@ -129,6 +130,7 @@ const CommunityCreationWizardContent = () => {
           finishDisabled={!name || !description}
           isLoading={isMutating || isSyncing}
           loadingText={loadingText}
+          payment={payment}
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
           {activeStep === 0 && <CommunityInfoStep />}

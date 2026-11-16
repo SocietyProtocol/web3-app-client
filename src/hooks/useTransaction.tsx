@@ -35,6 +35,10 @@ import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation"
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useOutpostRouting } from "@/hooks/useOutpostRouting";
 import { resolveOutpostRoute } from "@/lib/outpost-routing";
+import {
+  pendingWalletPrompt,
+  routeKindAfterRefusal,
+} from "@/lib/payment-label";
 import { sendOutpostWrite } from "@/lib/outpost-send";
 import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
 import { ownerWalletClient } from "@/lib/owner-wallet";
@@ -49,6 +53,11 @@ interface UseTransactionParams {
   functionName?: string;
   args?: unknown[];
   value?: bigint;
+
+  // A representative call for writes whose arguments are only known at
+  // execute time (e.g. an IPFS URI uploaded on submit). Used only to work
+  // out who pays and the fee before the click; never simulated or sent.
+  preview?: ExecuteTransactionParams;
 
   // Simulation options
   simulate?: boolean;
@@ -137,6 +146,7 @@ export const useTransaction = ({
   functionName,
   args,
   value,
+  preview,
 
   // Options
   simulate = true,
@@ -150,7 +160,7 @@ export const useTransaction = ({
   onError,
 
   // Messages
-  pendingMessage = "Please confirm the transaction in your wallet",
+  pendingMessage,
   submittedMessage = "Transaction submitted",
   successMessage = "Transaction successful!",
   errorMessage = "Transaction failed",
@@ -159,6 +169,9 @@ export const useTransaction = ({
 }: UseTransactionParams = {}) => {
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
+  // Society refused to sponsor the last attempt and the wallet was asked to
+  // pay instead. Until the next attempt, who pays is shown as the wallet.
+  const [sponsorshipRefused, setSponsorshipRefused] = useState(false);
   const handledTxHashRef = useRef<Hex | undefined>(undefined);
 
   const invalidateOnSuccessStable = useStableArray(
@@ -177,14 +190,16 @@ export const useTransaction = ({
   const chainId = useChainId();
   const outpost = useOutpostAccount();
 
+  // Who pays is worked out from the configured call, or from the preview
+  // when the call is only known at execute time.
+  const priced = address
+    ? { address, abi, functionName, args, value }
+    : (preview ?? {});
+
   // Pick the sender first. Calls the Light Account makes simulate as it,
   // whether Society or the owner wallet pays.
   const routing = useOutpostRouting({
-    address,
-    abi,
-    functionName,
-    args,
-    value,
+    ...priced,
     enabled: enabled && simulate,
   });
   const route = routing.route;
@@ -224,11 +239,7 @@ export const useTransaction = ({
 
   // Estimate gas for the transaction
   const gasEstimation = useEstimateGas({
-    address,
-    abi,
-    functionName,
-    args,
-    value,
+    ...priced,
     enabled: enabled && simulate && route?.kind === "owner",
   });
 
@@ -259,11 +270,26 @@ export const useTransaction = ({
 
       try {
         setStatus("executing");
+        setSponsorshipRefused(false);
         closeSnackbar(`${snackbarKeyPrefixFinal}-error`);
-        enqueueSnackbar(pendingMessage, {
-          key: `${snackbarKeyPrefixFinal}-pending`,
-          variant: "info",
-        });
+        enqueueSnackbar(
+          pendingMessage ??
+            pendingWalletPrompt({
+              chainId,
+              to: finalAddress,
+              abi: finalAbi,
+              functionName: finalFunctionName,
+              args: finalArgs,
+              value: finalValue,
+              owner: outpost.ownerAddress,
+              smartAccount: outpost.isSmartAccount ? outpost.address : undefined,
+              isContractWallet: outpost.isContractWallet,
+            }),
+          {
+            key: `${snackbarKeyPrefixFinal}-pending`,
+            variant: "info",
+          },
+        );
 
         if (outpost.isLoading) {
           throw new Error("Your account is still loading. Please try again in a moment.");
@@ -382,6 +408,7 @@ export const useTransaction = ({
             onSponsorshipUnavailable: (quote, reason) => {
               console.warn("Sponsorship unavailable; the owner wallet pays instead:", reason);
               fellBack = true;
+              setSponsorshipRefused(true);
               notify(
                 freeGasUnavailableNotice(quote),
                 "transaction-sponsorship-fallback",
@@ -466,6 +493,7 @@ export const useTransaction = ({
   const reset = useCallback(() => {
     setStatus("idle");
     setTxHash(undefined);
+    setSponsorshipRefused(false);
   }, []);
 
   // Handle transaction success/error
@@ -543,6 +571,9 @@ export const useTransaction = ({
     }
   }, [simulation.isError, simulation.error]);
 
+  // The fee shown for a sponsored call is 0; once the wallet pays it is not known.
+  const paidAfterRefusal = sponsorshipRefused && route?.kind === "sponsored";
+
   return {
     execute,
     reset,
@@ -570,10 +601,13 @@ export const useTransaction = ({
     // the connected wallet pays for the other two.
     sender: route?.sender,
     route,
+    // After a refused sponsorship the wallet pays, whatever the route says.
+    routeKind: routeKindAfterRefusal(route?.kind, sponsorshipRefused),
 
     // Gas estimation
-    gas:
-      route?.kind === "sponsored"
+    gas: paidAfterRefusal
+      ? undefined
+      : route?.kind === "sponsored"
         ? BigInt(0)
         : route?.kind === "owner-through-account"
           ? throughAccountGasUsd

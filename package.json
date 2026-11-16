@@ -23,7 +23,8 @@
     "test:e2e:stack": "node e2e/support/stack/cli.mjs up",
     "test:e2e:stack:down": "node e2e/support/stack/cli.mjs down",
     "test:e2e:stack:status": "node e2e/support/stack/cli.mjs status",
-    "test:e2e:baseline": "node e2e/support/stack/cli.mjs baseline"
+    "test:e2e:baseline": "node e2e/support/stack/cli.mjs baseline",
+    "test:e2e:gateway-snapshot": "node e2e/support/backends/gateway/refresh.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1127.0",

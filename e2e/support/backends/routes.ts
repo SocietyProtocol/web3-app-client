@@ -177,7 +177,11 @@ async function fulfillFromS3(route: Route, url: URL) {
 
 export async function installHermeticRoutes(
   context: BrowserContext,
-  options: { testIp: string },
+  options: {
+    testIp: string;
+    /** The app server the page talks to: the stack's, or a test's second one (support/app-variant.ts). */
+    appOrigin?: string;
+  },
 ): Promise<HermeticNetwork> {
   const rpcFaults = new Set<ActiveFault>();
   const addRpcFault = (kind: ActiveFault["kind"], match: RpcMatch): RpcFault => {
@@ -203,7 +207,7 @@ export async function installHermeticRoutes(
       for (const fault of [...rpcFaults]) fault.release();
     },
   };
-  const appOrigin = new URL(URLS.app).origin;
+  const appOrigin = options.appOrigin ?? new URL(URLS.app).origin;
 
   await context.route("**/*", async (route) => {
     const request = route.request();

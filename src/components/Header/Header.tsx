@@ -60,14 +60,20 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         </Link>
       </Box>
       <Box
-        sx={{ display: "flex", alignItems: "center", gap: { md: 2, lg: 3 } }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: { md: 2, lg: 3 },
+          minWidth: 0,
+        }}
       >
         {/* Below md the links live in the mobile drawer instead */}
         <SocialLinks
           variant="header"
           sx={{ display: { xs: "none", md: "flex" } }}
         />
-        <ConnectButton />
+        {/* Cap long profile names so the links and the button fit from md */}
+        <ConnectButton sx={{ minWidth: 0, maxWidth: { md: 260, lg: 360 } }} />
       </Box>
     </Box>
   );

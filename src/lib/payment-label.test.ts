@@ -13,6 +13,7 @@ import {
   SIGN_WAIT_TEXT,
   paymentLabel,
   pendingWalletPrompt,
+  routeKindAfterRefusal,
   walletPrompt,
   walletWaitText,
 } from "@/lib/payment-label";
@@ -66,6 +67,30 @@ describe("paymentLabel", () => {
 describe("PREVIEW_METADATA_URI", () => {
   it("is a profile URI Society sponsors, like the real upload", () => {
     expect(profileMetadataUriAllowed(PREVIEW_METADATA_URI)).toBe(true);
+  });
+});
+
+describe("routeKindAfterRefusal", () => {
+  it("makes a sponsored write the wallet's once Society has refused it", () => {
+    expect(routeKindAfterRefusal("sponsored", true)).toBe(
+      "owner-through-account",
+    );
+    expect(walletWaitText(routeKindAfterRefusal("sponsored", true), "Paid")).toBe(
+      "Paid",
+    );
+    expect(
+      paymentLabel({ routeKind: routeKindAfterRefusal("sponsored", true) }),
+    ).toEqual({ kind: "paid", feeUsd: undefined });
+  });
+
+  it("leaves every other case as the route says", () => {
+    expect(routeKindAfterRefusal("sponsored", false)).toBe("sponsored");
+    expect(routeKindAfterRefusal("owner", true)).toBe("owner");
+    expect(routeKindAfterRefusal("owner-through-account", true)).toBe(
+      "owner-through-account",
+    );
+    expect(routeKindAfterRefusal("blocked", true)).toBe("blocked");
+    expect(routeKindAfterRefusal(undefined, true)).toBeUndefined();
   });
 });
 

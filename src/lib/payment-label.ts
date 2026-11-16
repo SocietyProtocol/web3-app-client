@@ -55,6 +55,20 @@ export function paymentLabel(input: WritePayment): PaymentLabel | null {
   }
 }
 
+/**
+ * Who pays once Society has refused to sponsor a write and the wallet was
+ * asked to pay instead: the wallet, through its Society account, although
+ * the call alone says "sponsored". Other routes are unchanged.
+ */
+export function routeKindAfterRefusal(
+  routeKind: OutpostRouteKind | undefined,
+  sponsorshipRefused: boolean,
+): OutpostRouteKind | undefined {
+  return sponsorshipRefused && routeKind === "sponsored"
+    ? "owner-through-account"
+    : routeKind;
+}
+
 /** The wallet prompt while a write waits for the user. */
 export function walletPrompt(routeKind?: OutpostRouteKind): string {
   return routeKind === "sponsored" ? SIGN_PROMPT : CONFIRM_PROMPT;

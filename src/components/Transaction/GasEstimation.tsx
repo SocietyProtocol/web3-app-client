@@ -97,7 +97,11 @@ export const GasEstimation = ({
           )
         }
       >
-        <Box sx={boxSx} aria-label={ariaLabel(label)}>
+        <Box
+          data-testid="transaction-gas-estimate"
+          sx={boxSx}
+          aria-label={ariaLabel(label)}
+        >
           <LocalGasStationIcon sx={{ fontSize: 16 }} />
         </Box>
       </Tooltip>

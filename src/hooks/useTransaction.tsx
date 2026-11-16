@@ -35,7 +35,10 @@ import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation"
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useOutpostRouting } from "@/hooks/useOutpostRouting";
 import { resolveOutpostRoute } from "@/lib/outpost-routing";
-import { pendingWalletPrompt } from "@/lib/payment-label";
+import {
+  pendingWalletPrompt,
+  routeKindAfterRefusal,
+} from "@/lib/payment-label";
 import { sendOutpostWrite } from "@/lib/outpost-send";
 import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
 import { ownerWalletClient } from "@/lib/owner-wallet";
@@ -166,6 +169,9 @@ export const useTransaction = ({
 }: UseTransactionParams = {}) => {
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
+  // Society refused to sponsor the last attempt and the wallet was asked to
+  // pay instead. Until the next attempt, who pays is shown as the wallet.
+  const [sponsorshipRefused, setSponsorshipRefused] = useState(false);
   const handledTxHashRef = useRef<Hex | undefined>(undefined);
 
   const invalidateOnSuccessStable = useStableArray(
@@ -264,6 +270,7 @@ export const useTransaction = ({
 
       try {
         setStatus("executing");
+        setSponsorshipRefused(false);
         closeSnackbar(`${snackbarKeyPrefixFinal}-error`);
         enqueueSnackbar(
           pendingMessage ??
@@ -401,6 +408,7 @@ export const useTransaction = ({
             onSponsorshipUnavailable: (quote, reason) => {
               console.warn("Sponsorship unavailable; the owner wallet pays instead:", reason);
               fellBack = true;
+              setSponsorshipRefused(true);
               notify(
                 freeGasUnavailableNotice(quote),
                 "transaction-sponsorship-fallback",
@@ -485,6 +493,7 @@ export const useTransaction = ({
   const reset = useCallback(() => {
     setStatus("idle");
     setTxHash(undefined);
+    setSponsorshipRefused(false);
   }, []);
 
   // Handle transaction success/error
@@ -562,6 +571,9 @@ export const useTransaction = ({
     }
   }, [simulation.isError, simulation.error]);
 
+  // The fee shown for a sponsored call is 0; once the wallet pays it is not known.
+  const paidAfterRefusal = sponsorshipRefused && route?.kind === "sponsored";
+
   return {
     execute,
     reset,
@@ -589,11 +601,13 @@ export const useTransaction = ({
     // the connected wallet pays for the other two.
     sender: route?.sender,
     route,
-    routeKind: route?.kind,
+    // After a refused sponsorship the wallet pays, whatever the route says.
+    routeKind: routeKindAfterRefusal(route?.kind, sponsorshipRefused),
 
     // Gas estimation
-    gas:
-      route?.kind === "sponsored"
+    gas: paidAfterRefusal
+      ? undefined
+      : route?.kind === "sponsored"
         ? BigInt(0)
         : route?.kind === "owner-through-account"
           ? throughAccountGasUsd

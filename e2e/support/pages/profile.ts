@@ -50,6 +50,14 @@ export class ProfilePage {
     return this.editForm.getByRole("button", { name: "Update Profile" });
   }
 
+  /**
+   * The same button by its test id, which it keeps while its text says
+   * what it waits for ("Uploading to IPFS...", "Signing transaction...").
+   */
+  get submitButton(): Locator {
+    return this.page.getByTestId("profile-edit-submit");
+  }
+
   get cancelButton(): Locator {
     return this.editForm.getByRole("button", { name: "Cancel" });
   }

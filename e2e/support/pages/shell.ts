@@ -90,6 +90,15 @@ export class ShellPage {
   }
 
   /**
+   * The line next to a write's button that says who pays: "Free - you only
+   * sign" when Society sponsors it, "Paid by your wallet, about $X" when the
+   * wallet does. Absent while the route is not known yet.
+   */
+  get paymentLabel(): Locator {
+    return this.page.getByTestId("transaction-gas-estimate");
+  }
+
+  /**
    * The notice of a write that takes two wallet transactions ("Step 1 of
    * 2: ...", "Step 2 of 2: ..."): the owner wallet first deploys its Light
    * Account, then sends the action through it.

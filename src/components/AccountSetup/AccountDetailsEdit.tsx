@@ -213,6 +213,7 @@ export const AccountDetailsEdit = ({
             fontWeight: 600,
             minWidth: 140,
           }}
+          data-testid="profile-edit-submit"
         >
           Update Profile
         </TransactionButton>

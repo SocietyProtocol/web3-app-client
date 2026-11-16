@@ -1,130 +1,61 @@
-import { decodeEventLog, Hex, TransactionReceipt, zeroAddress } from "viem";
+import { parseEventLogs, TransactionReceipt, zeroAddress } from "viem";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
+
+/*
+ * viem's decodeEventLog decodes a log as whichever ABI event its topic
+ * matches and does not check `eventName` at runtime, so it cannot be used to
+ * pick one kind of event out of a receipt. parseEventLogs does filter by name.
+ */
 
 /**
  * Decodes the BadgeCreated event from a transaction receipt.
  */
-export const decodeBadgeCreatedEvents = (receipt: TransactionReceipt) => {
-  const createdBadges: Array<{
-    id: bigint;
-    name: string;
-    isOfficial: boolean;
-    isCommunityBadge: boolean;
-    creator: Hex;
-  }> = [];
-
-  for (const log of receipt.logs) {
-    try {
-      const { args } = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "BadgeCreated",
-      });
-
-      createdBadges.push(args);
-    } catch {
-      // not a BadgeCreated log
-    }
-  }
-  return createdBadges;
-};
+export const decodeBadgeCreatedEvents = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "BadgeCreated",
+  }).map((log) => log.args);
 
 /**
  * Decodes the BadgeModified event from a transaction receipt.
  */
-export const decodeBadgeModified = (receipt: TransactionReceipt) => {
-  for (const log of receipt.logs) {
-    try {
-      const { args } = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "BadgeModified",
-      });
-      return args;
-    } catch {
-      // not a BadgeModified log
-    }
-  }
-  return null;
-};
+export const decodeBadgeModified = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "BadgeModified",
+  })[0]?.args ?? null;
 
 /**
  * Decodes all TransferSingle events from a transaction receipt.
  */
-export const decodeTransferSingles = (receipt: TransactionReceipt) => {
-  const transfers: Array<{
-    operator: `0x${string}`;
-    from: `0x${string}`;
-    to: `0x${string}`;
-    id: bigint;
-    value: bigint;
-  }> = [];
-
-  for (const log of receipt.logs) {
-    try {
-      const { args } = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "TransferSingle",
-      });
-      transfers.push(args);
-    } catch {
-      // not a TransferSingle log
-    }
-  }
-
-  return transfers;
-};
+export const decodeTransferSingles = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "TransferSingle",
+  }).map((log) => log.args);
 
 /**
  * Decodes the BadgePermissions event from a transaction receipt.
  */
-export const decodeBadgePermissions = (receipt: TransactionReceipt) => {
-  for (const log of receipt.logs) {
-    try {
-      const { args } = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "BadgePermissions",
-      });
-      return args;
-    } catch {
-      // not a BadgePermissions log
-    }
-  }
-  return null;
-};
+export const decodeBadgePermissions = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "BadgePermissions",
+  })[0]?.args ?? null;
 
 /**
  * Decodes all EditorsUpdated events from a transaction receipt.
  */
-export const decodeEditorsUpdated = (receipt: TransactionReceipt) => {
-  const updates: Array<{
-    id: bigint;
-    editor: `0x${string}`;
-    isAllowed: boolean;
-  }> = [];
-
-  for (const log of receipt.logs) {
-    try {
-      const { args } = decodeEventLog({
-        abi: SocietyProtocolBadgesABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: "EditorsUpdated",
-      });
-      updates.push(args);
-    } catch {
-      // not an EditorsUpdated log
-    }
-  }
-
-  return updates;
-};
+export const decodeEditorsUpdated = (receipt: TransactionReceipt) =>
+  parseEventLogs({
+    abi: SocietyProtocolBadgesABI,
+    logs: receipt.logs,
+    eventName: "EditorsUpdated",
+  }).map((log) => log.args);
 
 export const decodeBurnTransfer = (receipt: TransactionReceipt) =>
   decodeTransferSingles(receipt).find((t) => t.to === zeroAddress) ?? null;

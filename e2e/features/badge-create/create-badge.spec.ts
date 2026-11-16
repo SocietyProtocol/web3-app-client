@@ -3,12 +3,14 @@ import { CommunityRegistryAbi } from "../../../src/abis/CommunityRegistry";
 import { BADGES_ADDRESS, CHAIN_ID, COMMUNITY_REGISTRY_ADDRESS } from "../../env/hermetic";
 import { expect, test } from "../../fixtures";
 import { cidOf } from "../../support/backends/s3";
+import { badge } from "../../support/builders/entities";
 import { BadgeCreateForm } from "../../support/pages/badge-create-form";
 import {
   expectNeverAskedToFundSocietyAccount,
   expectOwnerPaidThroughAccount,
   expectOwnerSentDirectly,
 } from "../../support/write-route";
+import { indexAfter } from "../community-detail/steps";
 import { PNG, badgeCreatedIn, uploads } from "./steps";
 
 /**
@@ -175,21 +177,8 @@ test.describe("badge creation", () => {
       expect((await subgraph.entity("User", coManager))?.managedBadges).toContain(created.id.toString());
       await expectNeverAskedToFundSocietyAccount(seenText, me, { saw: CREATED });
 
-      // APP BUG, expected to fail until it is fixed (the same as in I7 of
-      // create-badge-routing.spec.ts): after "Badge created successfully"
-      // the page stays on /create-badge instead of going to
-      // /badges/<new id>. The success handler of useMutateBadge throws
-      // before it calls the wizard's onSuccess: decodeBadgePermissions
-      // passes eventName to viem's decodeEventLog, which only uses it for
-      // typing, so it returns the first log the ABI knows, and that log has
-      // no `minters`. Everything above this line must pass; only the
-      // assertions below are expected to fail.
-      test.fail(true, "the success handler of badge creation throws, so the page never goes to the new badge");
-      // Short on purpose: a known failure should not cost a long wait. Five
-      // seconds is still many times what a fixed app needs here (a
-      // client-side navigation after the success toast), so a fix shows up
-      // as an unexpected pass. Remove this timeout together with test.fail.
-      await expect(page).toHaveURL(new RegExp(`/badges/${created.id}$`), { timeout: 5_000 });
+      // After "Badge created successfully" the wizard goes to the new badge.
+      await expect(page).toHaveURL(new RegExp(`/badges/${created.id}$`));
       await expect(page.getByRole("heading", { level: 1, name, exact: true })).toBeVisible();
       await expect(page.getByText(description, { exact: true })).toBeVisible();
       // "Who can Mint" and "Who can Burn" each link to the gate badge.
@@ -319,7 +308,7 @@ test.describe("badge creation", () => {
   test(
     "I5: a community manager creates a community badge from /communities/<id>/create-badge and lands on the community's Badges tab",
     { tag: ["@core", "@owner-tx"] },
-    async ({ persona, pages, page, wallet, aa, chain, seenText }) => {
+    async ({ persona, pages, page, wallet, aa, chain, subgraph, seenText }) => {
       // A fundedMember whose Society address manages `community`, a
       // community created on chain through the CommunityRegistry.
       const me = await persona("communityManager");
@@ -352,7 +341,18 @@ test.describe("badge creation", () => {
       const ownerBalanceBefore = await chain.balance(me.ownerAddress);
       wallet.clearRequests();
       aa.clear();
-      await form.finishButton.click();
+      // The fake follows the badges contract (the new badge and its
+      // permissions) but not the registry, so it is told what the real
+      // subgraph records for createCommunityBadge: the badge's link to the
+      // community, which is what the community's Badges tab lists.
+      await indexAfter(
+        { subgraph, wallet, chain },
+        () => form.finishButton.click(),
+        async (mined) => {
+          await subgraph.sync();
+          return [badge(badgeCreatedIn(mined).id, { community: community.id.toString() })];
+        },
+      );
       await expect(pages.shell.transactionToast("success")).toHaveText(CREATED, { timeout: 60_000 });
       await expect(pages.shell.toast("error")).toHaveCount(0);
 
@@ -369,19 +369,9 @@ test.describe("badge creation", () => {
       expect(badgesAfter, "the community's badges").toEqual([...badgesBefore, created.id]);
       await expectNeverAskedToFundSocietyAccount(seenText, me, { saw: CREATED });
 
-      // APP BUG, expected to fail until it is fixed (the same as in I2 and
-      // I7): the success handler of useMutateBadge throws (decodeBadgePermissions
-      // returns the first log the badges ABI knows, which has no `minters`;
-      // the page logs "Cannot read properties of undefined (reading 'map')")
-      // before it calls the wizard's onSuccess, so the page stays on
-      // /communities/<id>/create-badge. Seen in a run. Everything above this
-      // line must pass.
-      test.fail(true, "the success handler of badge creation throws, so the page never goes to the community's Badges tab");
-      // Short on purpose: a known failure should not cost a long wait. Five
-      // seconds is still many times what a fixed app needs here (a
-      // client-side navigation after the success toast). Remove this
-      // timeout together with test.fail.
-      await expect(page).toHaveURL(new RegExp(`/communities/${community.id}\\?tab=badges$`), { timeout: 5_000 });
+      // After "Badge created successfully" the wizard goes to the
+      // community's Badges tab, which lists the new badge.
+      await expect(page).toHaveURL(new RegExp(`/communities/${community.id}\\?tab=badges$`));
       await expect(page.locator(`[data-testid="badge-card"][data-badge-id="${created.id}"]`)).toContainText(name);
     },
   );

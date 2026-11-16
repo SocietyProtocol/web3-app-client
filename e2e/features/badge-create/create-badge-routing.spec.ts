@@ -82,23 +82,8 @@ test.describe("badge creation: a new user's unsponsored write", () => {
       expect(isAddressEqual(created[0].args.creator, me.address), "created by the Light Account").toBe(true);
       await expectNeverAskedToFundSocietyAccount(seenText, me, { saw: "Step 1 of 2: confirm setting up your Society account" });
 
-      // APP BUG, expected to fail until it is fixed (it is not about who
-      // pays: a member whose account exists gets the same): after "Badge
-      // created successfully" the page stays on /create-badge with the form
-      // still filled in, instead of going to /badges/<new id>. The success
-      // handler of useMutateBadge throws "Cannot read properties of
-      // undefined (reading 'map')" before it calls the wizard's onSuccess:
-      // decodeBadgePermissions passes eventName to viem's decodeEventLog,
-      // which only uses it for typing, so it returns the first log the ABI
-      // knows. In a createBadge receipt that is BadgeCreated, which has no
-      // `minters`. Everything above this line must pass; only the
-      // assertions below are expected to fail.
-      test.fail(true, "the success handler of badge creation throws, so the page never goes to the new badge");
-      // Short on purpose: a known failure should not cost a long wait. Five
-      // seconds is still many times what a fixed app needs here (a client-side navigation after the success toast),
-      // so a fix shows up as an unexpected pass. Remove this timeout
-      // together with test.fail.
-      await expect(page).toHaveURL(new RegExp(`/badges/${created[0].args.id}$`), { timeout: 5_000 });
+      // After "Badge created successfully" the wizard goes to the new badge.
+      await expect(page).toHaveURL(new RegExp(`/badges/${created[0].args.id}$`));
       await expect(page.getByRole("heading", { name })).toBeVisible();
     },
   );

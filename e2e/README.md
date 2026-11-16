@@ -680,7 +680,7 @@ moment; a new one would be listed in the fourth column until someone has run it 
 | F Accounts directory, public profiles | `accounts` | 19 tests: F1 to F12 (one F7 fails on its own bug: an expected failure) | – | – |
 | G Badges: list, page, amounts | `badges` | 26 tests: G1 to G12 | – | G12 with only `totalSupply` failing. |
 | H Mint, burn, transfer | `badge-actions` | 23 tests: H1 to H18 | – | H12 declined signature: a mint asks for none. H13 for Burn. |
-| I Badge create and edit | `badge-create` | 18 tests: I1 to I10 (I2 and I5 on the I7 redirect bug and both I7: expected failures) | – | What I5 asserts after its expected failure needs CommunityRegistry handlers in the fake. |
+| I Badge create and edit | `badge-create` | 18 tests: I1 to I10 | – | – |
 | J Communities: list, creation | `communities` | 17 tests: J1 to J8 (the J8 step-2 notice is an expected failure) | – | – |
 | K Community detail, members, settings | `community-detail` | 21 tests: K1 to K13 | – | K7 transfer: the registry's member and assistant badges have no transferers. K11 for the assistant badge: the same dialog as the two that are covered. |
 | L Governance | `governance` | 8 tests: L1 to L7 | – | – |

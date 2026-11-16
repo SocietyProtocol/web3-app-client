@@ -47,7 +47,7 @@ export const LockSummary = ({
   isLoading,
 }: LockSummaryProps) => {
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} data-testid="lock-spec-summary">
       <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
         Summary
       </Typography>

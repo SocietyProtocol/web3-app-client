@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { execute, StatusDocument } from "../../.graphclient";
+import { pollMs } from "@/lib/e2e-timing";
 
 interface WaitForSubgraphSyncOptions {
   interval?: number;
@@ -12,6 +13,16 @@ const defaultOptions: Required<WaitForSubgraphSyncOptions> = {
   timeout: 120_000,
   enabled: true,
 };
+
+/**
+ * The e2e build may poll faster, but not faster than this: every poll is a
+ * request to /api/graphql, which allows a visitor 60 a minute.
+ */
+const E2E_INTERVAL_FLOOR_MS = 500;
+
+/** How long to wait between two polls when the caller names no interval. */
+export const defaultSyncInterval = () =>
+  pollMs(defaultOptions.interval, { floor: E2E_INTERVAL_FLOOR_MS });
 
 enum Status {
   Idle = "idle",
@@ -31,7 +42,7 @@ export const useWaitForSubgraphSync = (
   >(Status.Waiting);
   const [indexedBlock, setIndexedBlock] = useState<bigint | null>(null);
 
-  const interval = options?.interval ?? defaultOptions.interval;
+  const interval = options?.interval ?? defaultSyncInterval();
   const timeout = options?.timeout ?? defaultOptions.timeout;
   const enabled = options?.enabled ?? defaultOptions.enabled;
 

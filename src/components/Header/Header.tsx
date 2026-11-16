@@ -31,6 +31,8 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         {/* Mobile Menu Button */}
         <IconButton
           onClick={onMenuClick}
+          aria-label="Open menu"
+          data-testid="shell-menu-button"
           sx={{
             display: { xs: "flex", md: "none" },
             color: "text.primary",

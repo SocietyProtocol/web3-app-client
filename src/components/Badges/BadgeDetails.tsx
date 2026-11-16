@@ -259,6 +259,7 @@ export const BadgeDetails = ({
         spacing={{ xs: 2, sm: 5 }}
         alignItems="center"
         justifyContent="center"
+        data-testid="badge-creator"
       >
         {data?.badge?.creatorAddress && (
           <UserTag
@@ -341,6 +342,7 @@ export const BadgeDetails = ({
       {/* Holders Section */}
       <UserList
         title="Holders"
+        testId="badge-holders"
         modalTitle={`Holders of ${data?.badge?.name ?? "Badge"}`}
         users={holders}
         renderUserExtra={(user) => {

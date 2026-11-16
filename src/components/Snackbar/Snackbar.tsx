@@ -1,8 +1,9 @@
+import { forwardRef } from "react";
 import { alpha, styled } from "@mui/material/styles";
-import { MaterialDesignContent } from "notistack";
+import { CustomContentProps, MaterialDesignContent } from "notistack";
 
 // Custom styled MaterialDesignContent for notistack toasts
-export const StyledMaterialDesignContent = styled(MaterialDesignContent)(
+const StyledContent = styled(MaterialDesignContent)(
   ({ theme }) => ({
     "&.notistack-MuiContent-success": {
       color: theme.palette.success.light,
@@ -35,3 +36,29 @@ export const StyledMaterialDesignContent = styled(MaterialDesignContent)(
     alignItems: "center",
   })
 );
+
+/**
+ * The toast, with hooks for browser tests on its message: data-testid is
+ * `snackbar-<variant>` and data-snackbar-key is the notistack key (useTransaction
+ * keys end in -pending, -notice, -submitted, -success or -error). notistack
+ * does not pass unknown props to the toast root, hence the span.
+ */
+export const StyledMaterialDesignContent = forwardRef<
+  HTMLDivElement,
+  CustomContentProps
+>(function SnackbarContent(props, ref) {
+  return (
+    <StyledContent
+      ref={ref}
+      {...props}
+      message={
+        <span
+          data-testid={`snackbar-${props.variant}`}
+          data-snackbar-key={String(props.id)}
+        >
+          {props.message}
+        </span>
+      }
+    />
+  );
+});

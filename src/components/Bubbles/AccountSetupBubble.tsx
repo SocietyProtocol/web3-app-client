@@ -18,8 +18,14 @@ export const AccountSetupBubble = ({
   return (
     <BubbleBase
       variant="info"
+      testId="onboarding-setup-prompt"
       actions={
-        <Button variant="contained" fullWidth onClick={onActionClick}>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={onActionClick}
+          data-testid="onboarding-start"
+        >
           Setup your Account
         </Button>
       }

@@ -1,3 +1,6 @@
 .git
 node_modules
 .next
+e2e
+# Funded keys for the live browser tests; never part of an image.
+.env.e2e.local

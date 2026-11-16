@@ -47,6 +47,7 @@ export const BadgePermissionsField = ({
       label={label}
       value={values}
       onChange={handleOnChange}
+      inputTestId={`badge-create-${field}-input`}
     />
   );
 };

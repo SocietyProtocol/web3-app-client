@@ -21,6 +21,7 @@ export const UserCard = ({
   size = "large",
   highlightYou = false,
   link = false,
+  testId,
 }: UserCardProps) => {
   const { address: connectedAddress } = useOutpostAccount();
 
@@ -53,6 +54,8 @@ export const UserCard = ({
         elevation={1}
         size={size}
         highlight={highlightYou && isConnectedUser}
+        data-testid={testId}
+        data-address={testId && !loading ? id?.toLowerCase() : undefined}
         sx={{
           display: "flex",
           alignItems: "center",

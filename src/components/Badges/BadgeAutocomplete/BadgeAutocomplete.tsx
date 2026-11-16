@@ -30,6 +30,8 @@ interface BadgeAutocompleteProps<
   >["onChange"];
   multiple?: Multiple;
   disableClearable?: DisableClearable;
+  /** data-testid of the text input, for browser tests. */
+  inputTestId?: string;
 }
 
 export const BadgeAutocomplete = <
@@ -44,6 +46,7 @@ export const BadgeAutocomplete = <
   onChange,
   multiple,
   disableClearable,
+  inputTestId,
 }: BadgeAutocompleteProps<Multiple, DisableClearable>) => {
   const [selectedBadgeMap, setSelectedBadgeMap] = useState<
     Map<string, BadgeOption>
@@ -118,6 +121,7 @@ export const BadgeAutocomplete = <
       loading={isLoading || isFetching}
       filterOptions={(options) => options}
       valueKey="id"
+      inputTestId={inputTestId}
       getOptionLabel={(option) =>
         typeof option === "string"
           ? option

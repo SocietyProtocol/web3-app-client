@@ -35,6 +35,7 @@ export const TransactionFeedback = ({
       variant="body2"
       color={status === "success" ? "textPrimary" : "error"}
       align="center"
+      data-testid={`transaction-feedback-${status}`}
     >
       {status === "success" ? successMessage : errorMessage}{" "}
       {explorerUrl && (

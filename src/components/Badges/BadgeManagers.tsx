@@ -18,7 +18,12 @@ export const BadgeManagers = ({
   managers,
 }: BadgeManagersProps) => {
   return (
-    <Stack spacing={1} padding={1} alignItems="flex-start">
+    <Stack
+      spacing={1}
+      padding={1}
+      alignItems="flex-start"
+      data-testid="badge-managers"
+    >
       <WithTooltip
         variant="body1"
         sx={{

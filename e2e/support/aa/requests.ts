@@ -1,6 +1,11 @@
 import { toHex, type Address, type Hex } from "viem";
-import { LIGHT_ACCOUNT_FACTORY, encodeCreateAccount } from "../../../src/lib/smart-account";
-import { CHAIN_ID, ENTRY_POINT_ADDRESS } from "../../env/hermetic";
+import {
+  LIGHT_ACCOUNT_FACTORY,
+  encodeCreateAccount,
+  encodeCreateProfile,
+  encodeExecute,
+} from "../../../src/lib/smart-account";
+import { BADGES_ADDRESS, CHAIN_ID, ENTRY_POINT_ADDRESS, IPFS_GATEWAY } from "../../env/hermetic";
 
 /**
  * Requests to /api/aa/rpc built by hand, the way viem sends them, for
@@ -44,4 +49,35 @@ export function paymasterStubCall(userOperation: ReturnType<typeof unsignedUserO
     method: "pm_getPaymasterStubData",
     params: [userOperation, ENTRY_POINT_ADDRESS, toHex(CHAIN_ID), {}],
   };
+}
+
+/**
+ * The JSON-RPC body of a pm_getPaymasterData call: the second request of a
+ * sponsored send, the one the paymaster signs. The proxy counts the daily
+ * and app-wide limits of sponsored profile creation on this call only.
+ */
+export function paymasterDataCall(userOperation: ReturnType<typeof unsignedUserOperation>, id = 1) {
+  return { ...paymasterStubCall(userOperation, id), method: "pm_getPaymasterData" };
+}
+
+/** A metadata URI on the IPFS gateway; the proxy does not read it. */
+const A_PINNED_URI = `${IPFS_GATEWAY}/bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku`;
+
+/**
+ * The first user operation of a new account that creates its profile, as
+ * the app sends it for sponsorship: the Light Account factory and
+ * createProfile through execute. `sender` is the owner's Society address
+ * (`chain.societyAddress(owner)`).
+ */
+export function newAccountProfileOperation(owner: Address, sender: Address) {
+  return unsignedUserOperation({
+    owner,
+    sender,
+    callData: encodeExecute({ to: BADGES_ADDRESS, value: BigInt(0), data: encodeCreateProfile(A_PINNED_URI) }),
+  });
+}
+
+/** Headers that make the proxy see the request as coming from this client IP. */
+export function fromIp(ip: string) {
+  return { "cf-connecting-ip": ip, "x-forwarded-for": ip };
 }

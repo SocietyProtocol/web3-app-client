@@ -193,6 +193,7 @@ export const BurnTab = ({ id }: BurnTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Burning..."
+          routeKind={transaction.routeKind}
           data-testid="burn-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}

@@ -229,6 +229,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Transferring..."
+          routeKind={transaction.routeKind}
           data-testid="transfer-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}

@@ -10,6 +10,7 @@ import { useAccountSetup } from "./AccountSetupContext";
 import { parseErrorMessage } from "@/utils/errors";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { truncateAddress } from "@/utils/string";
+import { walletWaitText } from "@/lib/payment-label";
 
 interface AccountDetailsEditProps {
   onCancel: () => void;
@@ -192,11 +193,15 @@ export const AccountDetailsEdit = ({
           variant="contained"
           disabled={disabled || !form.formState.isDirty}
           loading={isUploadingToIpfs || isLoading}
+          routeKind={transaction.routeKind}
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
           loadingText={
             isUploadingToIpfs
               ? "Uploading to IPFS..."
               : isSigning
-                ? "Signing transaction..."
+                ? walletWaitText(transaction.routeKind, "Signing transaction...")
                 : isConfirming
                   ? "Confirming transaction..."
                   : isSyncing
@@ -208,6 +213,7 @@ export const AccountDetailsEdit = ({
             fontWeight: 600,
             minWidth: 140,
           }}
+          data-testid="profile-edit-submit"
         >
           Update Profile
         </TransactionButton>

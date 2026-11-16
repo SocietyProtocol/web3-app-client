@@ -71,6 +71,7 @@ export const useClaimMutation = ({
     isSyncing: transaction.isSyncing,
     isMutating,
     simulation: transaction.simulation,
+    routeKind: transaction.routeKind,
     gas: transaction.gas,
     gasLoading: transaction.gasLoading,
     gasError: transaction.gasError,

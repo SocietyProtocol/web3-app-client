@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation";
 import { ValidationError } from "@/errors/ValidationError";
 import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
+import type { WritePayment } from "@/lib/payment-label";
+import type { BadgeDraft } from "@/lib/write-previews";
 
 interface BadgeCreationContextType {
   form: UseFormReturn<BadgeInputData, unknown, BadgeTransformedData>;
@@ -30,6 +32,7 @@ interface BadgeCreationContextType {
   >;
   isMutating: boolean;
   isSyncing: boolean;
+  payment: WritePayment;
   isUploadingToIpfs: boolean;
   isWritingContract: boolean;
   getServerFieldError: (field: keyof BadgeInputData) => string | undefined;
@@ -87,6 +90,32 @@ export const BadgeCreationProvider = ({
     name: "isOfficial",
   });
 
+  const [name, imageUrl, metadata, minters, transferers, burners, editors] =
+    useWatch({
+      control: form.control,
+      name: [
+        "name",
+        "imageUrl",
+        "metadata",
+        "minters",
+        "transferers",
+        "burners",
+        "editors",
+      ],
+    });
+  const draft = useMemo<BadgeDraft>(
+    () => ({
+      name,
+      isOfficial,
+      hasMetadata: !!imageUrl || !!metadata,
+      minters,
+      transferers,
+      burners,
+      editors,
+    }),
+    [name, isOfficial, imageUrl, metadata, minters, transferers, burners, editors],
+  );
+
   const {
     mutate: createBadge,
     isMutating,
@@ -94,9 +123,11 @@ export const BadgeCreationProvider = ({
     isWritingContract,
     isSyncing,
     isTransactionPending,
+    payment,
     error: serverError,
   } = useMutateBadge({
     communityId,
+    draft,
     onSuccess: (receipt: TransactionReceipt) => {
       form.reset();
 
@@ -150,6 +181,7 @@ export const BadgeCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       getServerFieldError,
       communityId,
     }),
@@ -161,6 +193,7 @@ export const BadgeCreationProvider = ({
       isWritingContract,
       isTransactionPending,
       isSyncing,
+      payment,
       getServerFieldError,
       communityId,
     ],

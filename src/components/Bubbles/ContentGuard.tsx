@@ -69,21 +69,28 @@ export const ContentGuard = (props: ContentGuardProps) => {
     return fallback;
   }
 
-  if (view.show === "children") {
-    return children;
-  }
-
-  const hiddenChildren = view.keepChildrenMounted && (
-    <Box sx={{ display: "none" }}>{children}</Box>
+  // The kept slot: one wrapper, always second in a fragment, so the
+  // children stay at the same place in the tree whether they are shown or
+  // hidden under the prompt, and React keeps their state across the switch.
+  // display: contents leaves the page's layout as with the bare children.
+  const withKeptChildren = (bubbles: ReactNode, visible: boolean) => (
+    <>
+      {bubbles}
+      <Box sx={{ display: visible ? "contents" : "none" }}>{children}</Box>
+    </>
   );
 
+  if (view.show === "children") {
+    return view.keptSlot ? withKeptChildren(null, true) : children;
+  }
+
   if (props.hideBubbles) {
-    return hiddenChildren || null;
+    return view.keptSlot ? withKeptChildren(null, false) : null;
   }
 
   const { showBackButton, connectWalletMessage, switchNetworkMessage } = props;
 
-  return (
+  const bubbles = (
     <Box>
       {showBackButton &&
         typeof window !== "undefined" &&
@@ -132,7 +139,8 @@ export const ContentGuard = (props: ContentGuardProps) => {
           )
         )}
       </Stack>
-      {hiddenChildren}
     </Box>
   );
+
+  return view.keptSlot ? withKeptChildren(bubbles, false) : bubbles;
 };

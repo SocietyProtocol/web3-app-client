@@ -203,8 +203,15 @@ describe("firstBadgeEligibility", () => {
       isProfile: false,
       isCommunity: false,
     });
-    const logs = calls.find((c) => c.method === "eth_getLogs")!.params[0] as Record<string, Hex>;
-    expect([BigInt(logs.fromBlock), BigInt(logs.toBlock)]).toEqual([BigInt(990), BigInt(1000)]);
+    // From the subgraph's block to the node's head, both included.
+    const ranges = calls
+      .filter((c) => c.method === "eth_getLogs")
+      .map((c) => c.params[0] as Record<string, Hex>)
+      .map((filter) => [Number(BigInt(filter.fromBlock)), Number(BigInt(filter.toBlock))]);
+    expect(ranges).toEqual([
+      [990, 999],
+      [1000, 1000],
+    ]);
   });
 
   it("is used once the subgraph lists a badge, and remembers it", async () => {
@@ -235,9 +242,17 @@ describe("firstBadgeEligibility", () => {
   });
 
   it("reads a long gap in chunks and gives up when the subgraph is too far behind", async () => {
-    const chunked = fakeReads({ head: BigInt(2000), indexed: BigInt(900) });
+    const chunked = fakeReads({ head: BigInt(1000), indexed: BigInt(975) });
     expect((await firstBadgeEligibility({ chainId: SEPOLIA, sender }, chunked.reads)).eligible).toBe(true);
-    expect(chunked.calls.filter((c) => c.method === "eth_getLogs")).toHaveLength(3);
+    const ranges = chunked.calls
+      .filter((c) => c.method === "eth_getLogs")
+      .map((c) => (c.params[0] as Record<string, Hex>))
+      .map((filter) => [Number(BigInt(filter.fromBlock)), Number(BigInt(filter.toBlock))]);
+    expect(ranges).toEqual([
+      [975, 984],
+      [985, 994],
+      [995, 1000],
+    ]);
 
     const behind = fakeReads({ head: BigInt(10_000), indexed: BigInt(10_000 - MAX_UNINDEXED_BLOCKS - 1) });
     expect(await firstBadgeEligibility({ chainId: SEPOLIA, sender }, behind.reads)).toEqual({

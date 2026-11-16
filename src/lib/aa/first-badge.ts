@@ -55,12 +55,14 @@ export const SPONSOR_FIRST_BADGE_ENV = "SPONSOR_FIRST_BADGE";
 export const E2E_SPONSOR_FIRST_BADGE_COOKIE = "e2e-sponsor-first-badge";
 
 /**
- * How far the subgraph may be behind the node before the check gives up.
- * The gap is read with eth_getLogs in chunks of LOG_CHUNK_BLOCKS (Alchemy
- * limits the range of one call on smaller plans).
+ * How far the subgraph may be behind the node before the check gives up
+ * (100 blocks: 20 minutes on Ethereum). The gap is read with eth_getLogs
+ * in chunks of LOG_CHUNK_BLOCKS: Alchemy's free plan answers at most 10
+ * blocks per call, so this works whatever plan the key is on, at a cost of
+ * at most ten calls.
  */
-export const MAX_UNINDEXED_BLOCKS = 1_500;
-const LOG_CHUNK_BLOCKS = 500;
+export const MAX_UNINDEXED_BLOCKS = 100;
+export const LOG_CHUNK_BLOCKS = 10;
 const GRAPH_TIMEOUT_MS = 8_000;
 const MAX_CACHED_SENDERS = 10_000;
 

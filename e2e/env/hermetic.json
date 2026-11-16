@@ -1,0 +1,70 @@
+{
+  "_about": "Shared, public settings of the hermetic layer. Read by the stack launcher (plain Node) and by the tests (through e2e/env/hermetic.ts). Nothing here is a secret.",
+  "chainId": 11155111,
+  "fork": {
+    "_about": "Anvil forks Sepolia at this pinned block. The default RPC is a public, keyless archive endpoint; override it with E2E_FORK_RPC_URL (never commit a URL that contains a key). When the block changes, regenerate the subgraph baseline: yarn test:e2e:baseline.",
+    "rpcUrl": "https://sepolia.gateway.tenderly.co",
+    "block": 12112800
+  },
+  "ports": {
+    "_about": "Fixed local ports, all bound on 127.0.0.1 except alto, which has no host flag and binds 0.0.0.0.",
+    "app": 13000,
+    "anvil": 18545,
+    "alto": 14337,
+    "paymaster": 14338,
+    "subgraph": 14350,
+    "s3": 14351,
+    "control": 14359
+  },
+  "stacks": {
+    "_about": "A run with several workers (E2E_WORKERS) starts one whole stack per worker. Stack i listens on every port above plus i * portStep. max is the highest number of stacks; with these values no two ports of any two stacks collide.",
+    "portStep": 100,
+    "max": 8
+  },
+  "TEST_ONLY_MNEMONIC": {
+    "_about": "TEST-ONLY. Public on purpose. Used only on the local Anvil fork. Never fund these addresses on a real network and never reuse this phrase anywhere.",
+    "phrase": "moon start hair oval upset then tip off wool castle verb bacon",
+    "indexes": {
+      "_about": "Derivation path m/44'/60'/0'/0/i. Anvil funds 0..3 with 10,000 ETH each. The `legacy` persona uses the wallets from legacyStart on (see legacyAccounts). Test personas use indexes from personaStart upwards.",
+      "altoExecutor": 0,
+      "altoUtility": 1,
+      "funder": 2,
+      "altoSecondExecutor": 3,
+      "legacyStart": 900,
+      "personaStart": 1000
+    }
+  },
+  "contracts": {
+    "_about": "Sepolia deployments the fakes need to know. e2e/env/hermetic.ts checks them against src/consts/contracts.ts.",
+    "badges": "0x12406bB6d11Cb641e100F1d8595c0C5e63F0bD47",
+    "badgesStartBlock": 10845618,
+    "entryPointV07": "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+  },
+  "legacyAccounts": {
+    "_about": "Old wallet => Society address (its Light Account v2, salt 0) of the test keys at indexes legacyStart, legacyStart + 1, ... in this order. The launcher compiles them into the tested build as NEXT_PUBLIC_E2E_LEGACY_ACCOUNTS (src/lib/e2e-legacy-accounts.ts), which adds them to the app's legacy account map: that map is fixed at build time, so these wallets are fixed too. Only for the local fork; never add them to src/consts/legacy-account-map.json. The `legacy` persona checks each pair against the key it derives.",
+    "pairs": {
+      "0x40c1eec28299bcea92a0fad4895fd64becaf9e19": "0xde61a5C753A13415E8969Ee19F47062f822D10b9",
+      "0x4edf3d1881c60060bc7861e78bfef174f43b3f0d": "0xa0C453EA697AB16fAc33e07665780FfE21Eb61DE",
+      "0x0992c302f780bcae7fc79de6b3363b7234d4201d": "0xb1A8FfDb36F6992585b2ff1BB91DEC56744F8fD3",
+      "0xccb6875165fb22b3d1a04a832b63be8aa4c50f36": "0x4Dca6c5Cde8a0184c6FCd288a91C0901D7918fB6",
+      "0x7401d00a7844de04800a7ac317b0f8cf30fd5ad2": "0xE7DcE218A16fFb04eCCDF7E04FCF7265C8c2461C",
+      "0x482083196e2b38f6b7ecea8db28b71893180f10a": "0xcd2D11C1762c2875a70f8a0315844cEfa0891C28",
+      "0x451b323b2dca8023e87ef8aacdc033ec3b56f892": "0xF57D92E323BCf3174089071932439fF72147a992",
+      "0x1546018caf20765a4dcf22476ed1fe829719b519": "0x0Fd3B547ddD2A4f0e6A4B3Bf125b16D8477769A4",
+      "0xa62f68b847923208af8b6a434284b49af8b1a007": "0x6264e701403017Be33FE5F4086aB910D308E6a07",
+      "0xfefd0011431c35207643ef5c1b0c721aea165516": "0x506b1Ff781DF86511583e51Bd15d87D544CC1e60",
+      "0xc8ceda5471c38d66b543881c07f72040450a38c1": "0xc26c07846EE2de5Afc6d78eD29142499F2945D9a",
+      "0xd3205a6f0b5c40a64bb33d7ad79f12029967d93e": "0xa044d993D91c1FB3eC0740cBD4D80c916FD0FA92",
+      "0xdaa4749a6aa725c96548fc0b281417fedacf593d": "0x18ada0d1Cd19Fa97f7554Bc45454d525FD2F40A7",
+      "0x0584d39d312312450fd115b2c6194df32c383c81": "0x30a837641566CA7A4812843594Cc08858F98fCa1",
+      "0x50e55915b2aac58a57a4d63700d9cf872d975c28": "0x4dc6Abe68877D0f63744B45A6Bf7D74c0D74eE0E",
+      "0x019f502e8db6faf261ba5b3f9a3a381db1cbad1d": "0xdF0D3230037B1E820D8f370C61a8b21a5C324432"
+    }
+  },
+  "auction": {
+    "_about": "The auction id compiled into the tested build (NEXT_PUBLIC_AUCTION_ID). null: the build has none, /auction says 'Coming soon', and the auction specs that need one (M2 to M10) skip themselves. To run them, set it to auctionCounter() + 1 of the EasyAuction contract at the fork block; e2e/support/builders/auction.ts then creates that auction on the fork. One build shows either state, never both.",
+    "id": null
+  },
+  "ipfsGateway": "https://ipfs.filebase.io/ipfs",
+  "browserRpcHost": "eth-sepolia.g.alchemy.com"
+}

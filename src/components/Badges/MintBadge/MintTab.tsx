@@ -234,6 +234,10 @@ export const MintTab = ({ id }: MintTabProps) => {
 
   const handleSubmit = form.handleSubmit(() => transaction.execute());
 
+  // The `file` field (e.g. the size rule) has no input of its own, so its
+  // error is shown here; otherwise Mint is disabled without a reason.
+  const fileError = form.formState.errors.file?.message;
+
   return (
     <Stack marginTop={3} spacing={3} sx={{ minHeight: 200 }}>
       <Tabs value={mintMode} onChange={handleToggleMintMode} className="pill">
@@ -391,6 +395,11 @@ export const MintTab = ({ id }: MintTabProps) => {
                 )}
               </Stack>
             )}
+          {mintMode === MintMode.BATCH && fileError && (
+            <Typography color="error.main" variant="body2">
+              {fileError}
+            </Typography>
+          )}
         </Stack>
       </Box>
 

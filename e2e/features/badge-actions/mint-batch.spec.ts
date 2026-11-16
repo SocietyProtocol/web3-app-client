@@ -237,18 +237,8 @@ test.describe("badge actions: batch mint", () => {
       expect(await chain.badgeBalance(first, badge.id)).toBe(BigInt(0));
       expect(await chain.badgeTotalSupply(badge.id)).toBe(BigInt(1));
 
-      // APP BUG, expected to fail until it is fixed: the page does not say
-      // why. The size rule ("File must be less than 2MB", validation.ts) is
-      // an error of the form's `file` field, and MintTab shows only the
-      // error of `fileContent`, inside the file area, which is taken off
-      // the page as soon as the file has one valid address. The user sees
-      // "Valid: 2" next to a Mint button that stays disabled. Everything
-      // above this line must pass; only the assertion below is expected to
-      // fail.
-      test.fail(true, "a file over 2 MB disables Mint without showing the reason (MintTab shows no error of the file field)");
-      // Short on purpose: a fixed app has the message on screen already.
-      // Remove this timeout together with test.fail.
-      await expect(actions.area.getByText("File must be less than 2MB")).toBeVisible({ timeout: 2_000 });
+      // The page says why Mint stays disabled.
+      await expect(actions.area.getByText("File must be less than 2MB")).toBeVisible();
     },
   );
 });

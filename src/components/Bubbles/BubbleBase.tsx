@@ -20,6 +20,8 @@ export interface BubbleBaseProps {
   showIcon?: boolean;
   variant?: "info" | "warning" | "none";
   sx?: SxProps<Theme>;
+  /** data-testid of the card, for browser tests. */
+  testId?: string;
 }
 
 export const BubbleBase = ({
@@ -30,6 +32,7 @@ export const BubbleBase = ({
   showIcon = true,
   variant = "none",
   sx,
+  testId,
 }: BubbleBaseProps) => {
   if (!show) {
     return null;
@@ -38,6 +41,7 @@ export const BubbleBase = ({
   return (
     <Card
       variant="bubble"
+      data-testid={testId}
       sx={mergeSx(
         variant === "warning" && { borderColor: "warning.light" },
         sx,

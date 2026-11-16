@@ -35,7 +35,7 @@ export const BadgesModal = ({
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} data-testid="profile-badges-modal">
       <DialogTitle>
         <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
           All Badges held by {username} ({badges.length})

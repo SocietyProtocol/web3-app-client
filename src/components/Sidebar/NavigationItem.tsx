@@ -104,6 +104,7 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
       </ListItemIcon>
       <ListItemText
         primary={item.text}
+        data-testid="shell-nav-label"
         sx={{
           opacity: isExpanded ? 1 : 0,
           whiteSpace: "nowrap",
@@ -121,7 +122,7 @@ export const NavigationItem = ({ item, isExpanded }: NavigationItemProps) => {
   );
 
   return (
-    <ListItem disablePadding>
+    <ListItem disablePadding data-testid="shell-nav-item">
       <Tooltip title={!isExpanded ? item.text : ""} placement="right" arrow>
         <Box sx={{ width: "100%" }}>
           {item.isExternal ? (

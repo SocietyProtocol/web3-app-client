@@ -10,6 +10,7 @@ export const ConnectButtonSkeleton = ({
   sx?: SxProps<Theme>;
 }) => (
   <Stack
+    data-testid="wallet-connect-skeleton"
     direction="row"
     alignItems="center"
     spacing={{ xs: 0.5, sm: 0.75, md: 1 }}

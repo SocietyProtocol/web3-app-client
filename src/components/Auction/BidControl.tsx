@@ -150,6 +150,7 @@ export const BidControl = () => {
     >
       <Paper
         elevation={0}
+        data-testid="auction-bid-form"
         sx={{
           padding: { xs: 2, sm: 3 },
           maxWidth: { xs: "100%", lg: 400 },
@@ -209,6 +210,7 @@ export const BidControl = () => {
           control={form.control}
           render={({ field, fieldState }) => (
             <AmountInput
+              data-testid="auction-bid-amount"
               label="Amount"
               tokenSymbol={symbolBiddingToken}
               decimals={biddingTokenDecimals}
@@ -229,6 +231,7 @@ export const BidControl = () => {
           control={form.control}
           render={({ field, fieldState }) => (
             <AmountInput
+              data-testid="auction-bid-price"
               label={`${symbolBiddingToken} Per ${symbolAuctioningToken} price`}
               tokenSymbol={symbolBiddingToken}
               decimals={biddingTokenDecimals}
@@ -269,6 +272,7 @@ export const BidControl = () => {
         )}
 
         <TransactionButton
+          data-testid="auction-bid-submit"
           variant="contained"
           color="primary"
           fullWidth

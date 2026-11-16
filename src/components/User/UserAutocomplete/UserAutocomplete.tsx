@@ -49,6 +49,8 @@ interface UserAutocompleteProps<
   error?: boolean;
   helperText?: string;
   freeSolo?: FreeSolo;
+  /** data-testid of the text input, for browser tests. */
+  inputTestId?: string;
 }
 
 export const UserAutocomplete = <
@@ -66,6 +68,7 @@ export const UserAutocomplete = <
   filterOptions,
   error,
   helperText,
+  inputTestId,
 }: UserAutocompleteProps<Multiple, DisableClearable, FreeSolo>) => {
   const [allUsersMap, upsertAllUserMap] = useAtom(usersAtom);
   const communityRegistry = useChainVar(contracts.communityRegistry);
@@ -175,6 +178,7 @@ export const UserAutocomplete = <
       filterOptions={filterOptions}
       error={error}
       helperText={helperText}
+      inputTestId={inputTestId}
     />
   );
 };

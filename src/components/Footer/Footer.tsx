@@ -22,7 +22,7 @@ const StyledFooter = styled(Box)(({ theme }) => ({
 
 export const Footer = () => {
   return (
-    <StyledFooter>
+    <StyledFooter data-testid="shell-footer">
       <Stack direction="column" justifyContent="center" spacing={0}>
         <Stack
           direction="row"

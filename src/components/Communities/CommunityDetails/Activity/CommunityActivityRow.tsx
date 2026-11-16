@@ -20,7 +20,14 @@ export function CommunityActivityRow({ event }: CommunityActivityRowProps) {
   const txUrl = buildExplorerLink({ tx: event.txHash as Hex });
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 1.5 }}>
+    <Stack
+      direction="row"
+      spacing={2}
+      alignItems="center"
+      sx={{ py: 1.5 }}
+      data-testid="community-activity-row"
+      data-activity-type={event.__typename}
+    >
       <Box sx={{ minWidth: 140 }}>
         <LiveRelativeTime
           timestamp={event.timestamp}

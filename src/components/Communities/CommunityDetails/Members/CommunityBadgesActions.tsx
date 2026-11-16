@@ -83,7 +83,7 @@ export function CommunityBadgesActions() {
   };
 
   return (
-    <Box>
+    <Box data-testid="community-badge-actions">
       <BadgeActions
         id={validSelectedBadgeId}
         canMint={canMint}

@@ -18,6 +18,7 @@ import {
   RoutingClient,
   callShape,
   chooseWriteSender,
+  identityLeft,
   isContractWalletCode,
   outpostIdentity,
   resolveOutpostRoute,
@@ -129,6 +130,24 @@ describe("outpostIdentity", () => {
         outpostIdentity({ owner, smartAccount, code: undefined, codeLoading: false, connectorId }),
       ).toMatchObject({ address: owner, isSmartAccount: false, isContractWallet: true });
     }
+  });
+});
+
+describe("identityLeft", () => {
+  it("is false while the identity is being gained: connecting, or the code read settling", () => {
+    expect(identityLeft(undefined, undefined)).toBe(false);
+    expect(identityLeft(undefined, smartAccount)).toBe(false);
+    expect(identityLeft(undefined, owner)).toBe(false);
+  });
+
+  it("is false while the identity stays the same", () => {
+    expect(identityLeft(smartAccount, smartAccount)).toBe(false);
+  });
+
+  it("is true when a known identity goes away or is replaced", () => {
+    expect(identityLeft(smartAccount, undefined)).toBe(true);
+    expect(identityLeft(smartAccount, lightAccountAddress(other))).toBe(true);
+    expect(identityLeft(smartAccount, owner)).toBe(true);
   });
 });
 

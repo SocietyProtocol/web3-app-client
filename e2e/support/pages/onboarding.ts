@@ -86,10 +86,10 @@ export class OnboardingPage {
   /**
    * From the setup prompt into the wizard's first step, with one click.
    *
-   * Known app bug (C16): when the wallet's identity settles after
-   * connecting, `Profile.tsx` resets `setupOpen` through nuqs, whose URL
-   * write lands up to about 150 ms later, on whatever the URL is then. A
-   * click in that gap opens the wizard and the late write closes it again.
+   * When the identity the page shows goes away (disconnect, account
+   * switch), `Profile.tsx` resets `setupOpen` through nuqs, whose URL write
+   * lands up to about 150 ms later, on whatever the URL is then. A click in
+   * that gap would be undone (before the C16 fix, connecting did this too).
    * A user who clicks once the page has settled is not affected, so this
    * waits for that first (`waitForUrlWritesToSettle`) and then clicks once,
    * with no second try: a change that undoes a settled click fails here.

@@ -1,0 +1,9 @@
+{
+  "repository": "web3-app-subgraph",
+  "path": "infra/query-gateway/generated/registry.js",
+  "ref": "origin/staging",
+  "commit": "8d467c6ccd1f90b301967d15135d3ee335566e85",
+  "registrySha256": "2aad3135b6a08c2d4fefe2677e7bb5e81efc0280acae5f4e3aa6694cbcd5d289",
+  "validatorCommit": "8d467c6ccd1f90b301967d15135d3ee335566e85",
+  "validatorSha256": "317d756e987d65835939823104d45ea5a8f22f3c80817f742b3d2db2872223d7"
+}

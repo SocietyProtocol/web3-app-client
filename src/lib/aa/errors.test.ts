@@ -4,6 +4,7 @@ import {
   BaseError,
   ContractFunctionRevertedError,
   HttpRequestError,
+  RpcRequestError,
   TimeoutError,
   UserRejectedRequestError,
 } from "viem";
@@ -42,6 +43,15 @@ describe("isUserRejection", () => {
 
   it("ignores sponsorship refusals", () => {
     expect(isUserRejection(rpcError("Too many sponsorship requests"))).toBe(false);
+    // The proxy's createProfile limits must never read as the user's answer,
+    // or the client would stop instead of falling back to owner-paid gas.
+    for (const message of [
+      "Daily sponsored profile limit reached",
+      "Sponsored profile limit reached, try again in a few minutes",
+    ]) {
+      expect(isUserRejection(rpcError(message))).toBe(false);
+      expect(isUserRejection(new Error("wrapped", { cause: rpcError(message) }))).toBe(false);
+    }
     expect(isUserRejection(new Error("Paymaster rejected the user operation"))).toBe(false);
   });
 });
@@ -68,6 +78,23 @@ describe("sponsorshipIsUnavailable", () => {
     ["a network failure", new TypeError("Failed to fetch")],
   ])("falls back on %s before the signature", (_, error) => {
     expect(sponsorshipIsUnavailable(error, before)).toBe(true);
+  });
+
+  it("falls back on the proxy's createProfile limits as viem reports them", () => {
+    for (const message of [
+      "Daily sponsored profile limit reached",
+      "Sponsored profile limit reached, try again in a few minutes",
+    ]) {
+      const refused = new RpcRequestError({
+        body: { method: "pm_getPaymasterData" },
+        error: { code: -32005, message },
+        url: "/api/aa/rpc?chainId=11155111",
+      });
+      const wrapped = new BaseError("Paymaster data failed.", { cause: refused });
+      expect(isUserRejection(wrapped)).toBe(false);
+      expect(sponsorshipIsUnavailable(wrapped, before)).toBe(true);
+      expect(sponsorshipIsUnavailable(wrapped, after)).toBe(false);
+    }
   });
 
   it("does not fall back once the wallet was asked to sign", () => {

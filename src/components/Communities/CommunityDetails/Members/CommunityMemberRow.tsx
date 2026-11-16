@@ -91,6 +91,11 @@ export function CommunityMemberRow({
             disabled={!memberBadgeId}
             loading={burnBadge.isLoading}
             loadingText="Revoking..."
+            routeKind={burnBadge.routeKind}
+            gas={burnBadge.gas}
+            gasLoading={burnBadge.gasLoading}
+            gasError={burnBadge.gasError}
+            compactGas
             onClick={() => burnBadge.execute()}
             sx={{
               minWidth: 0,

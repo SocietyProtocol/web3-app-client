@@ -11,6 +11,8 @@ interface TransactionButtonProps extends ButtonProps {
   gas?: bigint;
   gasLoading?: boolean;
   gasError?: boolean;
+  /** Show who pays as an icon with a tooltip, for tight rows. */
+  compactGas?: boolean;
 }
 
 export const TransactionButton = ({
@@ -24,12 +26,13 @@ export const TransactionButton = ({
   gas,
   gasLoading,
   gasError,
+  compactGas,
   ...props
 }: TransactionButtonProps) => {
   return (
     <Stack
       direction="row"
-      spacing={2}
+      spacing={compactGas ? 1 : 2}
       alignItems="center"
       flexWrap="wrap"
       useFlexGap
@@ -57,6 +60,7 @@ export const TransactionButton = ({
           value={gas}
           isLoading={gasLoading}
           isError={gasError}
+          compact={compactGas}
         />
       )}
     </Stack>

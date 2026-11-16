@@ -3,7 +3,7 @@ import { ProfileResponse } from "@/app/api/profile/route";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { AccountData } from "@/validation/account";
 import { throwResponseError } from "@/utils/errors";
 import { Address } from "viem";
@@ -11,11 +11,13 @@ import { useTransaction } from "@/hooks/useTransaction";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { useProfileId } from "@/data/users/useProfileId";
 import { capturePostHogEvent } from "@/lib/posthog";
+import { PREVIEW_METADATA_URI } from "@/lib/payment-label";
 
 export const useProfileMutation = (overrideAddress?: Address) => {
   const contractAddress = useChainVar(contracts.badges);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const userAddress = overrideAddress || address;
   const { generateAuthPayload } = useAuth();
   const pendingProfileEventRef = useRef<{
@@ -24,6 +26,7 @@ export const useProfileMutation = (overrideAddress?: Address) => {
   } | null>(null);
 
   const user = useUserQuery(userAddress);
+  const onChainProfileId = useProfileId(userAddress);
 
   const username = useMemo(
     () =>
@@ -60,10 +63,33 @@ export const useProfileMutation = (overrideAddress?: Address) => {
     },
   });
 
+  // The metadata URI only exists after the upload on submit; preview the
+  // call with a stand-in so the button can say who pays.
+  const profileId = user.data?.profile?.id;
+  const preview = useMemo(
+    () =>
+      user.isLoading
+        ? undefined
+        : {
+            address: contractAddress,
+            abi: SocietyProtocolBadgesABI,
+            functionName:
+              profileId !== undefined ? "updateProfileURI" : "createProfile",
+            args:
+              profileId !== undefined
+                ? [BigInt(profileId), PREVIEW_METADATA_URI]
+                : [PREVIEW_METADATA_URI],
+          },
+    [user.isLoading, contractAddress, profileId],
+  );
+
   const transaction = useTransaction({
+    preview,
     queryKeysToInvalidateOnSuccess: [
       ["user", userAddress?.toLowerCase()],
       ["users"],
+      // The on-chain read decides the setup prompt while the subgraph lags.
+      onChainProfileId.queryKey,
     ],
     onSuccess: (transactionReceipt) => {
       const pendingProfileEvent = pendingProfileEventRef.current;

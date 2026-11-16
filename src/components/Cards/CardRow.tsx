@@ -17,6 +17,8 @@ interface CardRowProps<T extends { id: string }> {
     },
   ) => ReactNode;
   sx?: SxProps<Theme>;
+  /** data-testid of the section, for browser tests. */
+  testId?: string;
 }
 
 export const CardRow = <T extends { id: string }>({
@@ -31,9 +33,10 @@ export const CardRow = <T extends { id: string }>({
   items,
   renderItem,
   sx,
+  testId,
 }: CardRowProps<T>) => {
   return (
-    <Box sx={sx}>
+    <Box sx={sx} data-testid={testId}>
       <Stack direction="row" justifyContent="space-between" mb={2}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
           {title}
@@ -44,7 +47,8 @@ export const CardRow = <T extends { id: string }>({
           </Button>
         )}
       </Stack>
-      {items?.length === 0 ? (
+      {/* While loading the items are not known yet: skeletons, not "none found". */}
+      {!loading && items?.length === 0 ? (
         <Stack justifyContent="center" alignItems="center" minHeight={100}>
           <Typography variant="body1" color="text.secondary">
             {noneFoundText}

@@ -111,6 +111,24 @@ The active network is determined solely by `NEXT_PUBLIC_ENVIRONMENT`:
 
 ---
 
+## Who pays for gas
+
+A wallet's identity in the Outpost is its Light Account (a smart account the wallet owns). Contract wallets such as a Safe act as themselves.
+
+| Route                   | Who the contracts see | Who pays                    | When                                                                                             |
+| ----------------------- | --------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
+| `sponsored`             | Light Account         | Society (Pimlico paymaster) | `createProfile`, `updateProfileURI`, `acceptInvite`                                              |
+| `owner-through-account` | Light Account         | The connected wallet        | Any other Outpost call the Light Account can make, and a sponsored call when free gas is unavailable |
+| `owner`                 | The connected wallet  | The connected wallet        | Calls only the wallet itself may make, contract wallets, and non-Outpost contracts (auction, lock) |
+
+`owner-through-account` is a normal transaction from the wallet to its Light Account's `execute(target, 0, data)`. If the Light Account is not deployed yet, the wallet first sends `LightAccountFactory.createAccount(owner, 0)`, then `execute`.
+
+When Society cannot sponsor a call (policy exhausted, a rate or daily limit on `/api/aa/rpc`, the proxy not configured, a paymaster or bundler error before the signature), the app says free gas is unavailable, shows the estimated fee and sends the call `owner-through-account`. It does not fall back when the call itself would revert or the user rejects it.
+
+The Light Account never pays and never needs ETH: the app does not ask anyone to send ETH to it. Logic: `src/lib/outpost-routing.ts`, `src/lib/outpost-send.ts`, `src/lib/owner-pays.ts`.
+
+---
+
 ## Deployment
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for full deployment instructions covering Vercel, self-hosted Node.js, Docker, Nginx, CI/CD, and troubleshooting.

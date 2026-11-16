@@ -31,14 +31,14 @@ import {
   sortCommunitiesByTier,
 } from "../../data/communities/utils";
 import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { CommunityTierFilter } from "./Tier/CommunityTierFilter";
 import { useNow } from "@/hooks/useNow";
 import { SearchBox } from "@/components/Common/SearchBox";
 import { ButtonLink } from "../ButtonLink";
 
 export const Communities = () => {
-  const { address: userAddress } = useAccount();
+  const { address: userAddress } = useOutpostAccount();
   const {
     data,
     isFetching,

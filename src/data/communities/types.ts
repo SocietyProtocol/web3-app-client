@@ -26,7 +26,8 @@ export enum CommunityTier {
 
 export interface CommunityQueryOptions {
   searchText?: string | null;
-  managerAddress?: string | null;
+  /** One address, or every address the member acts as. */
+  managerAddress?: string | string[] | null;
   memberAddress?: string | null;
   tiers?: CommunityTier[] | undefined;
   orderBy?: Community_orderBy;

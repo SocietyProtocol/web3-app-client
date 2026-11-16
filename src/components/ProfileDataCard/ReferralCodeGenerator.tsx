@@ -21,6 +21,7 @@ import { useCallback, useMemo } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { CopyButton } from "../CopyButton/CopyButton";
 import { Hex } from "viem";
 import { useSnackbar } from "notistack";
@@ -84,8 +85,10 @@ export const ReferralCodeGenerator = () => {
   } | null>(null);
 
   const { address: account } = useAccount();
-  const currentUser = useUserQuery(account);
+  const { address: societyAddress } = useOutpostAccount();
+  const currentUser = useUserQuery(societyAddress);
   const { enqueueSnackbar } = useSnackbar();
+  // acceptInvite recovers the inviter with ECDSA, so the signer stays the MetaMask address.
   const { generate, isSigning, isReady } = useGenerateReferralCode(account);
 
   const form = useForm({
@@ -93,8 +96,13 @@ export const ReferralCodeGenerator = () => {
       z.object({
         address: addressValidationSchema
           .refine(
-            (value) =>
-              account ? !isEqualCaseInsensitive(value as Hex, account) : true,
+            (value) => {
+              const own = [account, societyAddress].filter(Boolean);
+              return own.every(
+                (candidate) =>
+                  !isEqualCaseInsensitive(value as Hex, candidate as Hex),
+              );
+            },
             "You cannot generate a referral code for your own address",
           )
           .refine(
@@ -233,10 +241,11 @@ export const ReferralCodeGenerator = () => {
               : ""
         }
         autoComplete="off"
+        data-testid="referrals-generate-address"
       />
 
       {referralCode ? (
-        <Stack spacing={1} sx={{ mt: 2 }}>
+        <Stack spacing={1} sx={{ mt: 2 }} data-testid="referrals-generated">
           <Typography component="div" color="text.primary">
             Share this Referral Code:
           </Typography>
@@ -245,6 +254,7 @@ export const ReferralCodeGenerator = () => {
               component="div"
               variant="body2"
               sx={{ wordBreak: "break-all", color: "success.light" }}
+              data-testid="referrals-generated-code"
             >
               {referralCode}
             </Typography>

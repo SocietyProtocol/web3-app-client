@@ -4,9 +4,12 @@ import {
   ValidationErrorDetails,
 } from "@/errors/ValidationError";
 import {
+  Abi,
+  Address,
   BaseError,
   ContractFunctionExecutionError,
   ContractFunctionRevertedError,
+  getContractError,
 } from "viem";
 
 /**
@@ -72,6 +75,99 @@ const CONTRACT_ERROR_MESSAGES: Record<string, string> = {
 };
 
 /**
+ * Bundler, paymaster and /api/aa/rpc failures, matched against the whole
+ * error chain. Order matters: specific codes before the paymaster catch-all.
+ */
+const PAYMASTER_FAILED =
+  "Society could not sponsor this action. Please try again later or ask an admin.";
+
+const ACCOUNT_ABSTRACTION_MESSAGES: [RegExp, string][] = [
+  [
+    /\bAA21\b|didn't pay prefund|InsufficientPrefundError|does not have sufficient funds to execute the User Operation/i,
+    // Only a UserOp without a paymaster can hit this, and the app sends none:
+    // when Society cannot pay, the owner wallet pays with a normal transaction.
+    "The network fee for this action could not be covered. Please try again.",
+  ],
+  [/\bAA34\b|UserOperationPaymasterSignatureError/, PAYMASTER_FAILED],
+  [
+    /\bAA2[34]\b|signature error|UserOperationSignatureError|SmartAccountFunctionRevertedError/i,
+    "Your wallet's signature was not accepted for your Society account. Make sure the wallet that owns it is connected.",
+  ],
+  [
+    /\bAA25\b|invalid (smart )?account nonce|InvalidAccountNonceError/i,
+    "Your Society account has another action in progress. Wait for it to finish and try again.",
+  ],
+  [
+    /Sponsorship is not configured/i,
+    "Sponsored transactions are not available right now. Please try again later.",
+  ],
+  [
+    /outside the sponsorship allowlist|This call is not sponsored/i,
+    "Society does not sponsor this action.",
+  ],
+  // /api/aa/rpc refusals (lib/pimlico-proxy). A sponsored write that meets
+  // one before the signature is sent from the owner wallet instead, so these
+  // are only shown when that fallback could not run.
+  [
+    /Too many sponsorship requests/i,
+    "Too many free-gas requests in a short time. Please wait a minute and try again.",
+  ],
+  [
+    /Daily sponsored [^.\n]*limit reached/i,
+    "You have reached today's limit of free-gas transactions for this action. Please try again tomorrow.",
+  ],
+  [
+    /rate limit|too many requests|status:\s*429/i,
+    "Too many requests. Please wait a moment and try again.",
+  ],
+  [
+    /policy\b[^.\n]*\b(limit|cap|exceeded|exhausted|reached)|sponsorship (limit|cap)|spending limit|max(imum)? sponsor/i,
+    "Society's sponsorship limit for this action has been reached. Please try again later or ask an admin.",
+  ],
+  [
+    /Sponsorship provider did not respond/i,
+    "The sponsorship service did not respond. Please try again.",
+  ],
+  [/\bAA3\d\b|paymaster|pm_sponsorUserOperation|pm_getPaymaster/i, PAYMASTER_FAILED],
+];
+
+function errorChainText(error: unknown): string {
+  const parts: string[] = [];
+  let current: unknown = error;
+  for (let depth = 0; depth < 8 && current; depth++) {
+    if (typeof current === "string") {
+      parts.push(current);
+      break;
+    }
+    if (typeof current !== "object") break;
+    const record = current as Record<string, unknown>;
+    // viem's message repeats the request arguments; read its parts instead.
+    const keys =
+      typeof record.shortMessage === "string"
+        ? ["shortMessage", "details", "reason"]
+        : ["message", "details", "reason"];
+    for (const key of keys) {
+      if (typeof record[key] === "string") parts.push(record[key] as string);
+    }
+    if (typeof record.name === "string") parts.push(record.name);
+    if (record.status === 429) parts.push("status: 429");
+    current = record.cause;
+  }
+  return parts.join("\n");
+}
+
+/** A friendly message for smart account and sponsorship failures, if any. */
+export function parseAccountAbstractionError(error: unknown): string | undefined {
+  // Our own API errors already carry the message to show.
+  if (error instanceof ValidationError || error instanceof ResponseError) {
+    return undefined;
+  }
+  const text = errorChainText(error);
+  if (!text || /user rejected|user denied/i.test(text)) return undefined;
+  return ACCOUNT_ABSTRACTION_MESSAGES.find(([pattern]) => pattern.test(text))?.[1];
+}
+
+/**
  * Gets the validation error message for a specific field
  *
  * @param error - The unknown error to extract the field error from
@@ -119,6 +215,11 @@ export function parseErrorMessage(
     }
   }
 
+  const accountAbstractionMessage = parseAccountAbstractionError(error);
+  if (accountAbstractionMessage) {
+    return accountAbstractionMessage;
+  }
+
   if (error instanceof ValidationError) {
     return error.message;
   } else if (
@@ -146,6 +247,36 @@ export function parseErrorMessage(
   }
 
   return defaultMessage;
+}
+
+/**
+ * Names the contract error in a failure that only carries the raw revert data.
+ *
+ * wagmi's wait for a receipt replays a reverted transaction without an ABI,
+ * so its error reads "custom error 0x...". Decoding that data with the ABI of
+ * the call that was sent gives the error parseErrorMessage maps to the app's
+ * wording. Any other error, or data the ABI does not know, is returned as is.
+ */
+export function withDecodedRevert(
+  error: unknown,
+  call: {
+    abi: readonly unknown[];
+    functionName: string;
+    args?: readonly unknown[];
+    address?: Address;
+  },
+): unknown {
+  if (!(error instanceof BaseError)) return error;
+  const contractError = getContractError(error, {
+    abi: call.abi as Abi,
+    functionName: call.functionName,
+    args: call.args,
+    address: call.address,
+  });
+  return contractError.cause instanceof ContractFunctionRevertedError &&
+    contractError.cause.data
+    ? contractError
+    : error;
 }
 
 /**

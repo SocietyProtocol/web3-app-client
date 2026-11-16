@@ -23,7 +23,12 @@ export const BadgePermissions = ({
   permissionBadges,
 }: BadgePermissionsProps) => {
   return (
-    <Stack spacing={1} padding={1} alignItems="flex-start">
+    <Stack
+      spacing={1}
+      padding={1}
+      alignItems="flex-start"
+      data-testid="badge-permission"
+    >
       <WithTooltip
         variant="body1"
         sx={{

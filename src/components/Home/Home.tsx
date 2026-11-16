@@ -11,12 +11,13 @@ import NorthEastIcon from "@mui/icons-material/NorthEast";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useProfileId } from "@/data/users/useProfileId";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { ConnectButton } from "../Wallet/ConnectButton";
 import { FeatureCard } from "./FeatureCard";
+import { homeIdentityAction } from "./identityAction";
 import { WelcomeCard } from "./WelcomeCard";
 import { HeroVideoCard } from "./HeroVideoCard";
 import { WhyNowCard } from "./WhyNowCard";
@@ -33,18 +34,24 @@ const CardIcon = ({ src, alt }: { src: string; alt: string }) => (
 export const Home = () => {
   const router = useRouter();
   const wagmiReady = useWagmiReady();
-  const { isConnected, address } = useAccount();
+  const {
+    isConnected,
+    address,
+    isLoading: identityLoading,
+  } = useOutpostAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const { data: profileId, isLoading: profileLoading } = useProfileId(address);
 
-  const needsAccountSetup =
-    wagmiReady &&
-    isConnected &&
-    !isWrongNetwork &&
-    !profileLoading &&
-    (profileId === undefined || profileId === BigInt(0));
-
-  const needsConnect = wagmiReady && !isConnected;
+  const identityAction = homeIdentityAction({
+    wagmiReady,
+    isConnected,
+    identityLoading,
+    isWrongNetwork,
+    profileLoading,
+    profileId,
+  });
+  const needsConnect = identityAction === "connect";
+  const needsAccountSetup = identityAction === "claim";
 
   const identityHighlighted = needsConnect || needsAccountSetup;
 

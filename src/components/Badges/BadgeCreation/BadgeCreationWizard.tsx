@@ -9,7 +9,7 @@ import {
   BadgeCreationProvider,
   useBadgeCreation,
 } from "./BadgeCreationContext";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box, Stack } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
@@ -34,6 +34,7 @@ const BadgeCreationWizardContent = () => {
     isUploadingToIpfs,
     isWritingContract,
     communityId,
+    payment,
   } = useBadgeCreation();
 
   const [name, imageUrl, isOfficial] = useWatch({
@@ -41,7 +42,7 @@ const BadgeCreationWizardContent = () => {
     name: ["name", "imageUrl", "isOfficial"],
   });
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
 
   const nextDisabled = !form.formState.isValid;
@@ -144,6 +145,7 @@ const BadgeCreationWizardContent = () => {
           finishDisabled={!form.formState.isValid}
           isLoading={isMutating || isSyncing}
           loadingText={loadingText}
+          payment={payment}
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
           {activeStep === 0 && <BadgeInfoStep />}

@@ -19,6 +19,14 @@ export interface UserListProps {
   viewAllButtonText?: string;
   andMoreText?: string;
   sx?: SxProps<Theme>;
+  /** Extra content under each user card, e.g. a badge count. */
+  renderUserExtra?: (user: UserListProps["users"][number]) => ReactNode;
+  /**
+   * For browser tests: data-testid of the section. Each user card gets
+   * `${testId}-row` plus data-address, and the "view all" dialog
+   * `${testId}-modal`.
+   */
+  testId?: string;
 }
 
 export const UserList = ({
@@ -30,6 +38,8 @@ export const UserList = ({
   viewAllButtonText = "View All Users",
   andMoreText = "And {count} more...",
   sx,
+  renderUserExtra,
+  testId,
 }: UserListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -66,6 +76,7 @@ export const UserList = ({
           </>
         }
         loading={loading}
+        testId={testId}
         items={users}
         minItemWidth={140}
         renderItem={({ loading, ...user }) => (
@@ -78,7 +89,10 @@ export const UserList = ({
             size="small"
             highlightYou
             link
-          />
+            testId={testId && `${testId}-row`}
+          >
+            {!loading && renderUserExtra?.(user)}
+          </UserCard>
         )}
         andMoreText={andMoreText}
         noneFoundText={noUsersFoundText}
@@ -94,6 +108,8 @@ export const UserList = ({
         noUsersFoundText={noUsersFoundText}
         highlightYou
         link
+        renderUserExtra={renderUserExtra}
+        testId={testId}
       />
     </>
   );

@@ -10,7 +10,7 @@ import {
   CommunityCreationProvider,
   useCommunityCreation,
 } from "./CommunityCreationContext";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box, Stack } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { parseErrorMessage } from "@/utils/errors";
@@ -31,9 +31,10 @@ const CommunityCreationWizardContent = () => {
     isUploadingToIpfs,
     isWritingContract,
     createdCommunity,
+    payment,
   } = useCommunityCreation();
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
 
   const [name, creatorBadgeImageUrl, description] = useWatch({
@@ -129,6 +130,7 @@ const CommunityCreationWizardContent = () => {
           finishDisabled={!name || !description}
           isLoading={isMutating || isSyncing}
           loadingText={loadingText}
+          payment={payment}
           minHeight={{ xs: 400, sm: 500, md: 600 }}
         >
           {activeStep === 0 && <CommunityInfoStep />}

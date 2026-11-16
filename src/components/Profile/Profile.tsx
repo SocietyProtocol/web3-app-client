@@ -2,14 +2,18 @@
 
 import { AccountSetupWizard } from "@/components/AccountSetup/AccountSetupWizard";
 import { useEffect, useRef } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { AccountDetails } from "@/components/AccountSetup/AccountDetails";
 import { AccountSkeleton } from "@/components/AccountSetup/AccountSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
+import { ErrorDisplay } from "@/components/ErrorBoundary/ErrorDisplay";
+import { Button } from "@mui/material";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { ContentGuard } from "../Bubbles/ContentGuard";
 import { useUserQuery } from "@/data/users/useUserQuery";
+import { profileView } from "./profileView";
+import { identityLeft } from "@/lib/outpost-routing";
 
 export const Profile = () => {
   const [accountSetupOpen, setAccountSetupOpen] = useQueryState(
@@ -18,30 +22,49 @@ export const Profile = () => {
   );
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useAccount();
+  const { address, isLoading: identityLoading } = useOutpostAccount();
   const user = useUserQuery(address);
-  const isInitialMount = useRef(true);
+  const shownAddress = useRef(address);
 
-  // reset accountSetupOpen when user connects/disconnects or address changes
+  // Close the setup when the identity it was opened for goes away
+  // (disconnect, switching accounts). address is undefined while the wallet
+  // is being read, so connecting and the identity settling are not changes:
+  // the URL's setupOpen, or a click made meanwhile, is kept.
   useEffect(() => {
-    // Skip the initial mount to preserve setupOpen from URL
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    // Close the setup whenever connection or address changes
-    // (covers connect, disconnect, and switching accounts)
-    setAccountSetupOpen(false);
-  }, [isConnected, address, setAccountSetupOpen]);
+    const previous = shownAddress.current;
+    shownAddress.current = address;
+    if (identityLeft(previous, address)) setAccountSetupOpen(false);
+  }, [address, setAccountSetupOpen]);
 
-  if (!wagmiReady || user.isLoading) {
+  const view = profileView({
+    wagmiReady,
+    isLoading: identityLoading || user.isLoading,
+    isError: user.isError,
+    hasData: user.data !== undefined,
+  });
+
+  if (view === "loading") {
     return <AccountSkeleton />;
+  }
+
+  if (view === "error") {
+    return (
+      <ErrorDisplay
+        error={user.error}
+        action={
+          <Button onClick={() => user.refetch()} variant="contained">
+            Retry
+          </Button>
+        }
+      />
+    );
   }
 
   return (
     <ErrorBoundary>
       <ContentGuard
         requireNetwork={!user.data?.profile}
+        keepMountedOnWrongNetwork
         requireAccount={!accountSetupOpen}
         sx={{
           paddingX: { xs: 3, md: 6 },

@@ -3,7 +3,7 @@ import { HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 vi.mock("server-only", () => ({}));
 
-import { pinJson, toIndexedCid } from "./filebase";
+import { mirrorToKubo, pinJson, toIndexedCid } from "./filebase";
 
 function setFilebaseEnv() {
   process.env.FILEBASE_KEY = "key";
@@ -160,5 +160,35 @@ describe("pinJson", () => {
       "bafybeiefas6n4iw4johpoo5mmdpdhkeyjleu7bmc5cbxed7d2dgz74wcqy",
     );
     expect(send).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("mirrorToKubo", () => {
+  afterEach(() => {
+    delete process.env.KUBO_API_URL;
+  });
+
+  it("does nothing without KUBO_API_URL", async () => {
+    const fetchImpl = vi.fn();
+    expect(await mirrorToKubo("{}", "bafy", fetchImpl as unknown as typeof fetch)).toBe(false);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("adds the bytes as CIDv1 dag-pb and reports a matching CID", async () => {
+    process.env.KUBO_API_URL = "http://staging-kubo:5001/";
+    const cid = "bafybeihxrt4gppb75ditosczjwdhx3vfqtp7k2hvvvbhhg5c3czab4kb2u";
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ Hash: cid })));
+    expect(await mirrorToKubo('{"name":"a"}', cid, fetchImpl as unknown as typeof fetch)).toBe(true);
+    expect(fetchImpl.mock.calls[0][0]).toBe(
+      "http://staging-kubo:5001/api/v0/add?cid-version=1&raw-leaves=false&pin=true",
+    );
+  });
+
+  it("never throws when Kubo is down or disagrees", async () => {
+    process.env.KUBO_API_URL = "http://staging-kubo:5001";
+    const down = vi.fn().mockRejectedValue(new Error("ECONNREFUSED"));
+    expect(await mirrorToKubo("{}", "bafy", down as unknown as typeof fetch)).toBe(false);
+    const other = vi.fn().mockResolvedValue(new Response(JSON.stringify({ Hash: "bafyother" })));
+    expect(await mirrorToKubo("{}", "bafybeihxrt4gppb75ditosczjwdhx3vfqtp7k2hvvvbhhg5c3czab4kb2u", other as unknown as typeof fetch)).toBe(false);
   });
 });

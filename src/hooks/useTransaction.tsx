@@ -14,11 +14,12 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { Hex, TransactionReceipt } from "viem";
+import { Abi, Hex, TransactionReceipt, encodeFunctionData } from "viem";
+import { getPublicClient } from "wagmi/actions";
 import { useSnackbar } from "notistack";
 import { useWaitForSubgraphSync } from "@/hooks/useWaitForSubgraphSync";
 import { useEstimateGas } from "@/hooks/useEstimateGas";
-import { parseErrorMessage } from "@/utils/errors";
+import { parseErrorMessage, withDecodedRevert } from "@/utils/errors";
 import { useExplorerLinkBuilder } from "@/hooks/useExplorerLinkBuilder";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
@@ -30,6 +31,19 @@ import {
   walletSupportsSendCalls,
 } from "@/lib/account-executor";
 import { submitAccountWrite } from "@/lib/account-capabilities";
+import { sendSponsoredUserOperation } from "@/lib/send-sponsored-user-operation";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
+import { useOutpostRouting } from "@/hooks/useOutpostRouting";
+import { resolveOutpostRoute } from "@/lib/outpost-routing";
+import {
+  pendingWalletPrompt,
+  routeKindAfterRefusal,
+} from "@/lib/payment-label";
+import { sendOutpostWrite } from "@/lib/outpost-send";
+import { freeGasUnavailableNotice, quoteOwnerPays } from "@/lib/owner-pays";
+import { ownerWalletClient } from "@/lib/owner-wallet";
+import { createTransactionNotices } from "@/lib/transaction-notices";
+import { wagmiConfig } from "@/lib/wagmi";
 
 type TransactionStatus = "idle" | "executing" | "success" | "error";
 
@@ -40,6 +54,11 @@ interface UseTransactionParams {
   functionName?: string;
   args?: unknown[];
   value?: bigint;
+
+  // A representative call for writes whose arguments are only known at
+  // execute time (e.g. an IPFS URI uploaded on submit). Used only to work
+  // out who pays and the fee before the click; never simulated or sent.
+  preview?: ExecuteTransactionParams;
 
   // Simulation options
   simulate?: boolean;
@@ -128,6 +147,7 @@ export const useTransaction = ({
   functionName,
   args,
   value,
+  preview,
 
   // Options
   simulate = true,
@@ -141,7 +161,7 @@ export const useTransaction = ({
   onError,
 
   // Messages
-  pendingMessage = "Please confirm the transaction in your wallet",
+  pendingMessage,
   submittedMessage = "Transaction submitted",
   successMessage = "Transaction successful!",
   errorMessage = "Transaction failed",
@@ -150,7 +170,12 @@ export const useTransaction = ({
 }: UseTransactionParams = {}) => {
   const [status, setStatus] = useState<TransactionStatus>("idle");
   const [txHash, setTxHash] = useState<Hex>();
+  // Society refused to sponsor the last attempt and the wallet was asked to
+  // pay instead. Until the next attempt, who pays is shown as the wallet.
+  const [sponsorshipRefused, setSponsorshipRefused] = useState(false);
   const handledTxHashRef = useRef<Hex | undefined>(undefined);
+  // The call behind txHash, to name the contract error if it reverts on chain.
+  const sentCallRef = useRef<ExecuteTransactionParams | undefined>(undefined);
 
   const invalidateOnSuccessStable = useStableArray(
     queryKeysToInvalidateOnSuccess,
@@ -166,15 +191,33 @@ export const useTransaction = ({
 
   const { writeContractAsync, isPending } = useWriteContract();
   const chainId = useChainId();
+  const outpost = useOutpostAccount();
 
-  // Simulate the transaction
+  // Who pays is worked out from the configured call, or from the preview
+  // when the call is only known at execute time.
+  const priced = address
+    ? { address, abi, functionName, args, value }
+    : (preview ?? {});
+
+  // Pick the sender first. Calls the Light Account makes simulate as it,
+  // whether Society or the owner wallet pays.
+  const routing = useOutpostRouting({
+    ...priced,
+    enabled: enabled && simulate,
+  });
+  const route = routing.route;
+  const actsAsSmartAccount = !!route && route.kind !== "owner";
+
   const simulation = useSimulateContract(
-    simulate && address && abi && functionName && args && enabled
+    simulate && address && abi && functionName && args && enabled && route
       ? ({
           address,
           abi,
           functionName,
           args,
+          ...(actsAsSmartAccount && route.sender
+            ? { account: route.sender }
+            : {}),
 
           ...(value !== undefined && { value }),
 
@@ -184,6 +227,10 @@ export const useTransaction = ({
         } as Parameters<typeof useSimulateContract>[0])
       : undefined,
   );
+  const routeError =
+    route?.kind === "blocked"
+      ? (route.error ?? new Error(route.message ?? "This action would fail"))
+      : undefined;
 
   const txReceipt = useWaitForTransactionReceipt({
     hash: txHash,
@@ -195,13 +242,18 @@ export const useTransaction = ({
 
   // Estimate gas for the transaction
   const gasEstimation = useEstimateGas({
-    address,
-    abi,
-    functionName,
-    args,
-    value,
-    enabled: enabled && simulate,
+    ...priced,
+    enabled: enabled && simulate && route?.kind === "owner",
   });
+
+  // The owner wallet pays through the Light Account: show the wallet's cost.
+  const throughAccountGasUsd =
+    route?.kind === "owner-through-account" &&
+    route.gasWei !== undefined &&
+    gasEstimation.priceUsd !== undefined
+      ? (route.gasWei * gasEstimation.priceUsd) /
+        BigInt(10) ** BigInt(gasEstimation.decimalsWei)
+      : undefined;
 
   const execute = useCallback(
     async (params?: ExecuteTransactionParams) => {
@@ -212,6 +264,12 @@ export const useTransaction = ({
       const finalValue = params?.value ?? value;
 
       if (!enabled || !finalAddress || !finalAbi || !finalFunctionName) return;
+      sentCallRef.current = {
+        address: finalAddress,
+        abi: finalAbi,
+        functionName: finalFunctionName,
+        args: finalArgs,
+      };
 
       // Reset previous transaction state when starting a new transaction
       if (status === "success" || status === "error") {
@@ -219,42 +277,178 @@ export const useTransaction = ({
         setStatus("idle");
       }
 
+      const notices = createTransactionNotices(snackbarKeyPrefixFinal, {
+        enqueueSnackbar,
+        closeSnackbar,
+      });
+
       try {
         setStatus("executing");
+        setSponsorshipRefused(false);
         closeSnackbar(`${snackbarKeyPrefixFinal}-error`);
-        enqueueSnackbar(pendingMessage, {
-          key: `${snackbarKeyPrefixFinal}-pending`,
-          variant: "info",
-        });
-
-        const hash = await submitAccountWrite({
-          supportsSendCalls: await walletSupportsSendCalls(chainId),
-          write: () =>
-            writeContractAsync({
-              address: finalAddress,
+        enqueueSnackbar(
+          pendingMessage ??
+            pendingWalletPrompt({
+              chainId,
+              to: finalAddress,
               abi: finalAbi,
               functionName: finalFunctionName,
               args: finalArgs,
-              ...(finalValue !== undefined && { value: finalValue }),
-            } as Parameters<typeof writeContractAsync>[0]),
-          send: async () => {
-            enqueueSnackbar("Waiting for the transaction to execute", {
-              key: `${snackbarKeyPrefixFinal}-pending`,
-              variant: "info",
-            });
-            return sendContractCall({
-              chainId,
-              address: finalAddress,
-              abi: finalAbi as readonly unknown[],
-              functionName: finalFunctionName,
-              args: finalArgs,
               value: finalValue,
-            });
+              owner: outpost.ownerAddress,
+              smartAccount: outpost.isSmartAccount ? outpost.address : undefined,
+              isContractWallet: outpost.isContractWallet,
+            }),
+          {
+            key: `${snackbarKeyPrefixFinal}-pending`,
+            variant: "info",
           },
+        );
+
+        if (outpost.isLoading) {
+          throw new Error("Your account is still loading. Please try again in a moment.");
+        }
+        const walletChainId = chainId as 1 | 11155111;
+        const publicClient = getPublicClient(wagmiConfig, { chainId: walletChainId });
+        const smartAccount = outpost.isSmartAccount ? outpost.address : undefined;
+        const callRoute = await resolveOutpostRoute(publicClient, {
+          chainId,
+          to: finalAddress,
+          abi: finalAbi,
+          functionName: finalFunctionName,
+          args: finalArgs,
+          value: finalValue,
+          owner: outpost.ownerAddress,
+          smartAccount,
+          isContractWallet: outpost.isContractWallet,
         });
+
+        const notify = (message: string, testId = "transaction-step-notice") => {
+          closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+          notices.show(<span data-testid={testId}>{message}</span>);
+        };
+        const accountCall = () => ({
+          to: finalAddress,
+          value: BigInt(0),
+          data: encodeFunctionData({
+            abi: finalAbi as Abi,
+            functionName: finalFunctionName,
+            args: finalArgs ?? [],
+          }),
+        });
+        let fellBack = false;
+        const requirePublicClient = () => {
+          if (!publicClient) throw new Error("Network is not available");
+          return publicClient;
+        };
+
+        const hash = await sendOutpostWrite(
+          {
+            sendSponsored: () =>
+              sendSponsoredUserOperation({
+                chainId,
+                to: finalAddress,
+                abi: finalAbi,
+                functionName: finalFunctionName,
+                args: finalArgs,
+                value: finalValue,
+              }),
+            sendAsOwner: async () =>
+              submitAccountWrite({
+                supportsSendCalls: await walletSupportsSendCalls(chainId),
+                write: () =>
+                  writeContractAsync({
+                    address: finalAddress,
+                    abi: finalAbi,
+                    functionName: finalFunctionName,
+                    args: finalArgs,
+                    ...(finalValue !== undefined && { value: finalValue }),
+                  } as Parameters<typeof writeContractAsync>[0]),
+                send: async () => {
+                  enqueueSnackbar("Waiting for the transaction to execute", {
+                    key: `${snackbarKeyPrefixFinal}-pending`,
+                    variant: "info",
+                  });
+                  return sendContractCall({
+                    chainId,
+                    address: finalAddress,
+                    abi: finalAbi as readonly unknown[],
+                    functionName: finalFunctionName,
+                    args: finalArgs,
+                    value: finalValue,
+                  });
+                },
+              }),
+            simulateAsAccount: () =>
+              requirePublicClient().simulateContract({
+                address: finalAddress,
+                abi: finalAbi as Abi,
+                functionName: finalFunctionName,
+                args: finalArgs ?? [],
+                account: smartAccount,
+              }),
+            quoteOwnerPays: () => {
+              if (!outpost.ownerAddress) throw new Error("Wallet is not connected");
+              return quoteOwnerPays(requirePublicClient(), {
+                owner: outpost.ownerAddress,
+                calls: [accountCall()],
+              });
+            },
+            ownerWallet: async () => {
+              const client = requirePublicClient();
+              const wallet = await ownerWalletClient(walletChainId);
+              return {
+                sendTransaction: (transaction) => wallet.sendTransaction(transaction),
+                waitForReceipt: (receiptHash) =>
+                  client.waitForTransactionReceipt({ hash: receiptHash }),
+                getCode: (codeAddress, blockNumber) =>
+                  client.getCode({
+                    address: codeAddress,
+                    ...(blockNumber !== undefined && { blockNumber }),
+                  }),
+                estimateGas: (transaction, from, blockNumber) =>
+                  client.estimateGas({
+                    account: from,
+                    ...transaction,
+                    ...(blockNumber !== undefined && { blockNumber }),
+                  }),
+              };
+            },
+            onSponsorshipUnavailable: (quote, reason) => {
+              console.warn("Sponsorship unavailable; the owner wallet pays instead:", reason);
+              fellBack = true;
+              setSponsorshipRefused(true);
+              notify(
+                freeGasUnavailableNotice(quote),
+                "transaction-sponsorship-fallback",
+              );
+            },
+            onOwnerPaysStep: (step, { steps }) => {
+              if (steps < 2) return;
+              if (step === "deploy") {
+                // After a fallback the free-gas notice already names both steps.
+                if (!fellBack) {
+                  notify("Step 1 of 2: confirm setting up your Society account in your wallet");
+                }
+                return;
+              }
+              notify(
+                fellBack
+                  ? "Step 2 of 2: confirm the action in your wallet. Free gas is unavailable right now, so your wallet pays the network fee."
+                  : "Step 2 of 2: confirm the action in your wallet",
+              );
+            },
+          },
+          {
+            route: callRoute,
+            owner: outpost.ownerAddress,
+            call: accountCall,
+          },
+        );
 
         setTxHash(hash);
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+        notices.close();
         enqueueSnackbar(submittedMessage, {
           variant: "info",
           key: `${snackbarKeyPrefixFinal}-submitted`,
@@ -268,6 +462,7 @@ export const useTransaction = ({
       } catch (error) {
         setStatus("error");
         closeSnackbar(`${snackbarKeyPrefixFinal}-pending`);
+        notices.close();
 
         if (!suppressErrorSnackbar) {
           enqueueSnackbar(parseErrorMessage(error, errorMessage), {
@@ -292,6 +487,11 @@ export const useTransaction = ({
       pendingMessage,
       writeContractAsync,
       chainId,
+      outpost.isLoading,
+      outpost.ownerAddress,
+      outpost.address,
+      outpost.isSmartAccount,
+      outpost.isContractWallet,
       submittedMessage,
       suppressErrorSnackbar,
       onError,
@@ -302,6 +502,7 @@ export const useTransaction = ({
   const reset = useCallback(() => {
     setStatus("idle");
     setTxHash(undefined);
+    setSponsorshipRefused(false);
   }, []);
 
   // Handle transaction success/error
@@ -312,15 +513,19 @@ export const useTransaction = ({
       if (txReceipt.status === "error") {
         if (handledTxHashRef.current === txHash) return;
         handledTxHashRef.current = txHash;
+        const sentCall = sentCallRef.current;
+        const error = sentCall
+          ? withDecodedRevert(txReceipt.error, sentCall)
+          : txReceipt.error;
         queueMicrotask(async () => {
           setStatus("error");
           if (!suppressErrorSnackbar) {
-            enqueueSnackbar(parseErrorMessage(txReceipt.error, errorMessage), {
+            enqueueSnackbar(parseErrorMessage(error, errorMessage), {
               variant: "error",
               key: `${snackbarKeyPrefixFinal}-error`,
             });
           }
-          onError?.(txReceipt.error);
+          onError?.(error);
         });
       } else if (txReceipt.status === "success" && shouldWait) {
         if (handledTxHashRef.current === txHash) return;
@@ -379,6 +584,9 @@ export const useTransaction = ({
     }
   }, [simulation.isError, simulation.error]);
 
+  // The fee shown for a sponsored call is 0; once the wallet pays it is not known.
+  const paidAfterRefusal = sponsorshipRefused && route?.kind === "sponsored";
+
   return {
     execute,
     reset,
@@ -394,17 +602,33 @@ export const useTransaction = ({
 
     // Simulation state
     simulation: {
-      isError: simulation.isError,
-      error: simulation.error,
-      isFetching: simulation.isFetching,
-      isLoading: simulation.isLoading,
-      isSuccess: simulation.isSuccess,
+      isError: simulation.isError || !!routeError,
+      error: routeError ?? simulation.error,
+      isFetching: simulation.isFetching || routing.isLoading,
+      isLoading: simulation.isLoading || routing.isLoading,
+      isSuccess: simulation.isSuccess && !routeError,
     },
 
+    // Who acts: "sponsored" / "owner-through-account" act as the Light
+    // Account, "owner" as the connected wallet. Only "sponsored" is free;
+    // the connected wallet pays for the other two.
+    sender: route?.sender,
+    route,
+    // After a refused sponsorship the wallet pays, whatever the route says.
+    routeKind: routeKindAfterRefusal(route?.kind, sponsorshipRefused),
+
     // Gas estimation
-    gas: gasEstimation.totalUsd,
-    gasLoading: gasEstimation.isLoading,
-    gasError: gasEstimation.isError,
+    gas: paidAfterRefusal
+      ? undefined
+      : route?.kind === "sponsored"
+        ? BigInt(0)
+        : route?.kind === "owner-through-account"
+          ? throughAccountGasUsd
+          : gasEstimation.totalUsd,
+    gasLoading:
+      routing.isLoading ||
+      (route?.kind === "owner" && gasEstimation.isLoading),
+    gasError: route?.kind === "owner" && gasEstimation.isError,
     txReceipt,
     txHash,
   };

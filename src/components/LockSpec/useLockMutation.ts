@@ -101,6 +101,9 @@ export const useLockMutation = ({
     simulation: transaction.approveRequired
       ? transaction.approvalTransaction.simulation
       : transaction.mainTransaction.simulation,
+    routeKind: transaction.approveRequired
+      ? transaction.approvalTransaction.routeKind
+      : transaction.mainTransaction.routeKind,
     gas: transaction.approveRequired
       ? transaction.approvalTransaction.gas
       : transaction.mainTransaction.gas,

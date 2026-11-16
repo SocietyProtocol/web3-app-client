@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import { CID } from "multiformats/cid";
 
 import { URLS } from "@/consts/urls";
+import { e2eOverride } from "@/lib/e2e-overrides";
 
 /** Subgraph MetadataFile only accepts CIDv1 bafybei/bafkrei or CIDv0 Qm. */
 export function toIndexedCid(cid: string): string {
@@ -61,11 +62,16 @@ export function getFilebaseEnv() {
   return { key, secret, bucket };
 }
 
-export function createFilebaseClient(): S3Client {
+/** S3 client settings. Exported so the endpoint override can be tested. */
+export function filebaseClientConfig() {
   const { key, secret } = getFilebaseEnv();
+  // Hermetic browser tests only: a local S3 fake, which has no per-bucket
+  // host names. Ignored in production.
+  const override = e2eOverride("E2E_FILEBASE_ENDPOINT");
 
-  return new S3Client({
-    endpoint: FILEBASE_ENDPOINT,
+  return {
+    endpoint: override ?? FILEBASE_ENDPOINT,
+    ...(override ? { forcePathStyle: true } : {}),
     region: FILEBASE_REGION,
     credentials: {
       accessKeyId: key,
@@ -74,7 +80,11 @@ export function createFilebaseClient(): S3Client {
     // IPFS buckets do not support S3 checksum headers.
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
-  });
+  } as const;
+}
+
+export function createFilebaseClient(): S3Client {
+  return new S3Client(filebaseClientConfig());
 }
 
 function sleep(ms: number) {
@@ -216,6 +226,36 @@ export async function rewriteDataUriImages(
   return value;
 }
 
+const KUBO_TIMEOUT_MS = 5_000;
+
+/**
+ * Also add the bytes to our own Kubo node, which graph-node reads metadata
+ * from. Filebase announces new CIDs to the network late (often 15+ minutes),
+ * so without this the subgraph shows no name or photo for a fresh profile.
+ * Best effort: Filebase stays the source of truth and errors are ignored.
+ */
+export async function mirrorToKubo(
+  body: string,
+  cid: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
+  const api = process.env.KUBO_API_URL;
+  if (!api) return false;
+  try {
+    const form = new FormData();
+    form.append("file", new Blob([body]), "metadata.json");
+    const res = await fetchImpl(
+      `${api.replace(/\/$/, "")}/api/v0/add?cid-version=1&raw-leaves=false&pin=true`,
+      { method: "POST", body: form, signal: AbortSignal.timeout(KUBO_TIMEOUT_MS) },
+    );
+    if (!res.ok) return false;
+    const added = (await res.json()) as { Hash?: string };
+    return !!added.Hash && toIndexedCid(added.Hash) === cid;
+  } catch {
+    return false;
+  }
+}
+
 /** Pin JSON to a Filebase IPFS bucket and return the CID. */
 export async function pinJson(
   data: Record<string, unknown>,
@@ -227,11 +267,14 @@ export async function pinJson(
     string,
     unknown
   >;
+  const body = JSON.stringify(rewritten);
 
-  return putAndReadCid(s3, {
+  const cid = await putAndReadCid(s3, {
     Bucket: bucket,
     Key: objectKey("json"),
-    Body: JSON.stringify(rewritten),
+    Body: body,
     ContentType: "application/json",
   });
+  await mirrorToKubo(body, cid);
+  return cid;
 }

@@ -8,8 +8,9 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useAccountSetup } from "./AccountSetupContext";
 import { parseErrorMessage } from "@/utils/errors";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { truncateAddress } from "@/utils/string";
+import { walletWaitText } from "@/lib/payment-label";
 
 interface AccountDetailsEditProps {
   onCancel: () => void;
@@ -20,7 +21,7 @@ export const AccountDetailsEdit = ({
   onCancel,
   onSave,
 }: AccountDetailsEditProps) => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { enqueueSnackbar } = useSnackbar();
   const hasCompletedRef = useRef(false);
   const {
@@ -77,7 +78,7 @@ export const AccountDetailsEdit = ({
     isSuccess;
 
   return (
-    <Stack spacing={{ xs: 2, sm: 3 }}>
+    <Stack spacing={{ xs: 2, sm: 3 }} data-testid="profile-edit-form">
       {/* Header with Edit Button */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -192,11 +193,15 @@ export const AccountDetailsEdit = ({
           variant="contained"
           disabled={disabled || !form.formState.isDirty}
           loading={isUploadingToIpfs || isLoading}
+          routeKind={transaction.routeKind}
+          gas={transaction.gas}
+          gasLoading={transaction.gasLoading}
+          gasError={transaction.gasError}
           loadingText={
             isUploadingToIpfs
               ? "Uploading to IPFS..."
               : isSigning
-                ? "Signing transaction..."
+                ? walletWaitText(transaction.routeKind, "Signing transaction...")
                 : isConfirming
                   ? "Confirming transaction..."
                   : isSyncing
@@ -208,6 +213,7 @@ export const AccountDetailsEdit = ({
             fontWeight: 600,
             minWidth: 140,
           }}
+          data-testid="profile-edit-submit"
         >
           Update Profile
         </TransactionButton>

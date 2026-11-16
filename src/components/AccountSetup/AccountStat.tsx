@@ -6,6 +6,8 @@ interface AccountStatProps {
   value?: string | number | ReactNode;
   tooltip?: string;
   loading?: boolean;
+  /** Small line under the value, e.g. which address holds it. */
+  caption?: ReactNode;
 }
 
 export const AccountStat = ({
@@ -13,10 +15,12 @@ export const AccountStat = ({
   value,
   tooltip,
   loading,
+  caption,
 }: AccountStatProps) => {
   return (
     <Grid
       size={1}
+      data-testid={`account-stat-${label.toLowerCase().replace(/\s+/g, "-")}`}
       sx={{
         minWidth: "120px",
       }}
@@ -49,6 +53,20 @@ export const AccountStat = ({
         </Typography>
       ) : (
         value
+      )}
+      {caption && !loading && (
+        <Typography
+          component="div"
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {caption}
+        </Typography>
       )}
     </Grid>
   );

@@ -10,6 +10,8 @@ import { CommunityMember } from "@/data/community-members/types";
 import { useMemo } from "react";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { CopyButton } from "@/components/CopyButton/CopyButton";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import { burnAllBadgeArgs } from "@/components/Badges/badgeAmount";
 
 interface CommunityMemberRowProps {
   member: CommunityMember;
@@ -22,25 +24,43 @@ export function CommunityMemberRow({
   isManager,
   memberBadgeId,
 }: CommunityMemberRowProps) {
+  // Revoking burns every copy the member holds, so they stop being a member.
+  const { data: memberBalance } = useBadgeBalanceOf(
+    memberBadgeId && isManager ? (member.user.id as Hex) : undefined,
+    memberBadgeId,
+  );
+
   const burnBadge = useBurnBadgeMutation(
     useMemo(
       () => ({
         args:
           memberBadgeId && isManager
-            ? {
+            ? burnAllBadgeArgs({
                 id: BigInt(memberBadgeId),
                 holder: member.user.id as Hex,
-              }
+                balance: memberBalance,
+              })
             : undefined,
         successMessage: `Badge revoked from ${member.user.name ?? member.user.id}`,
       }),
 
-      [memberBadgeId, isManager, member.user.id, member.user.name],
+      [
+        memberBadgeId,
+        isManager,
+        member.user.id,
+        member.user.name,
+        memberBalance,
+      ],
     ),
   );
 
   return (
-    <Tr isManager={isManager} role="row">
+    <Tr
+      isManager={isManager}
+      role="row"
+      data-testid="community-member-row"
+      data-address={member.user.id.toLowerCase()}
+    >
       <Stack role="cell" direction="row" alignItems="center" gap={1}>
         <UserHandle
           id={member.user.id as Hex}
@@ -88,9 +108,14 @@ export function CommunityMemberRow({
             color="error"
             size="small"
             disableRipple
-            disabled={!memberBadgeId}
+            disabled={!memberBadgeId || !memberBalance}
             loading={burnBadge.isLoading}
             loadingText="Revoking..."
+            routeKind={burnBadge.routeKind}
+            gas={burnBadge.gas}
+            gasLoading={burnBadge.gasLoading}
+            gasError={burnBadge.gasError}
+            compactGas
             onClick={() => burnBadge.execute()}
             sx={{
               minWidth: 0,

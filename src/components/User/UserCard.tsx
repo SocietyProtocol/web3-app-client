@@ -4,7 +4,7 @@ import { UserCardProps } from "./types";
 import { UserCardPaper } from "./components";
 import { UserAvatar } from "../Avatar/UserAvatar";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useMemo } from "react";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { Hex } from "viem";
@@ -21,8 +21,9 @@ export const UserCard = ({
   size = "large",
   highlightYou = false,
   link = false,
+  testId,
 }: UserCardProps) => {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useOutpostAccount();
 
   const isConnectedUser = useMemo(
     () =>
@@ -53,6 +54,8 @@ export const UserCard = ({
         elevation={1}
         size={size}
         highlight={highlightYou && isConnectedUser}
+        data-testid={testId}
+        data-address={testId && !loading ? id?.toLowerCase() : undefined}
         sx={{
           display: "flex",
           alignItems: "center",

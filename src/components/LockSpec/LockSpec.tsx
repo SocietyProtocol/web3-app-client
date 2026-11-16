@@ -20,6 +20,7 @@ import { tokens } from "@/consts/tokens";
 import { SimulationError } from "../Transaction/SimulationError";
 import { useLockParameters } from "./useLockParameters";
 import { SECONDS_PER_YEAR_BN } from "@/consts/time";
+import { truncateAddress } from "@/utils/string";
 
 export const LockSpec = () => {
   const [selectedTierId, setSelectedTierId] = useState<TierId>(TierId.SILVER);
@@ -73,6 +74,7 @@ export const LockSpec = () => {
           Your balance
         </Typography>
         <FormattedNumber
+          data-testid="lock-spec-balance"
           value={balance}
           scaleDownDecimals={SPEC_DECIMALS}
           minThreshold={1000}
@@ -82,6 +84,12 @@ export const LockSpec = () => {
           sx={{ fontWeight: 700 }}
           hideTooltip
         />
+        {/* SPEC and VIP locks stay on the owner wallet, not the Society address. */}
+        {address && (
+          <Typography variant="caption" color="text.secondary">
+            held by your wallet {truncateAddress(address)}
+          </Typography>
+        )}
       </Stack>
 
       {/* Tier selection */}
@@ -108,9 +116,10 @@ export const LockSpec = () => {
 
       {!disabled && (
         <DataRow
-          label="Est. Gas"
+          label="Network fee"
           content={
             <GasEstimation
+              routeKind={lockMutation.routeKind}
               value={lockMutation.gas}
               isLoading={lockMutation.gasLoading}
               isError={lockMutation.gasError}
@@ -124,6 +133,7 @@ export const LockSpec = () => {
 
       {/* Lock button */}
       <TransactionButton
+        data-testid="lock-spec-submit"
         variant="contained"
         size="large"
         fullWidth

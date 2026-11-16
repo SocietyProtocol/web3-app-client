@@ -2,7 +2,7 @@
 
 import { useWagmiReady } from "@/atoms/wagmiReady";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box, Button, Stack, SxProps, Theme } from "@mui/material";
 import { ConnectWalletBubble } from "./ConnectWalletBubble";
 import { WrongNetworkBubble } from "./WrongNetworkBubble";
@@ -12,10 +12,16 @@ import { ReactNode } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useUserQuery } from "@/data/users/useUserQuery";
 import { mergeSx } from "@/utils/sx";
+import { contentGuardView } from "./contentGuardView";
 
 export type ContentGuardProps = {
   requireNetwork?: boolean;
   requireAccount?: boolean;
+  /**
+   * While the wallet is only on the wrong network, keep the children mounted
+   * (hidden) under the switch prompt, so their state survives the switch.
+   */
+  keepMountedOnWrongNetwork?: boolean;
   loading?: boolean;
   children?: ReactNode;
   fallback?: ReactNode;
@@ -36,6 +42,7 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const {
     requireNetwork,
     requireAccount,
+    keepMountedOnWrongNetwork = false,
     loading = false,
     children,
     fallback,
@@ -44,29 +51,52 @@ export const ContentGuard = (props: ContentGuardProps) => {
   const router = useRouter();
 
   const wagmiReady = useWagmiReady();
-  const { address, isConnected } = useAccount();
+  const {
+    address,
+    isConnected,
+    isLoading: identityLoading,
+  } = useOutpostAccount();
   const { isWrongNetwork } = useCheckWrongNetwork();
   const user = useUserQuery(requireAccount ? address : undefined);
 
-  if (loading || !wagmiReady || (requireAccount && user.isLoading)) {
+  const view = contentGuardView({
+    loading,
+    wagmiReady,
+    isConnected,
+    networkMissing: !!requireNetwork && isWrongNetwork,
+    // While the wallet's code is read, the address (and so the profile) is
+    // not known yet: that is not "no profile".
+    accountLoading: !!requireAccount && (identityLoading || user.isLoading),
+    accountMissing: !!requireAccount && !user.data?.profile,
+    keepMountedOnWrongNetwork,
+  });
+
+  if (view.show === "fallback") {
     return fallback;
   }
 
-  if (
-    isConnected &&
-    (!requireNetwork || !isWrongNetwork) &&
-    (!requireAccount || user.data?.profile)
-  ) {
-    return children;
+  // The kept slot: one wrapper, always second in a fragment, so the
+  // children stay at the same place in the tree whether they are shown or
+  // hidden under the prompt, and React keeps their state across the switch.
+  // display: contents leaves the page's layout as with the bare children.
+  const withKeptChildren = (bubbles: ReactNode, visible: boolean) => (
+    <>
+      {bubbles}
+      <Box sx={{ display: visible ? "contents" : "none" }}>{children}</Box>
+    </>
+  );
+
+  if (view.show === "children") {
+    return view.keptSlot ? withKeptChildren(null, true) : children;
   }
 
   if (props.hideBubbles) {
-    return null;
+    return view.keptSlot ? withKeptChildren(null, false) : null;
   }
 
   const { showBackButton, connectWalletMessage, switchNetworkMessage } = props;
 
-  return (
+  const bubbles = (
     <Box>
       {showBackButton &&
         typeof window !== "undefined" &&
@@ -117,4 +147,6 @@ export const ContentGuard = (props: ContentGuardProps) => {
       </Stack>
     </Box>
   );
+
+  return view.keptSlot ? withKeptChildren(bubbles, false) : bubbles;
 };

@@ -14,6 +14,10 @@ import {
 } from "../accounts/types";
 import { defaultOptions } from "./consts";
 import { UserQueryOptions } from "./types";
+import { appChainId, getLegacyMap } from "./legacyAccounts";
+
+/** Subgraph page cap; the migrated-account lookup pages through larger maps. */
+const MAX_PAGE = 1000;
 
 const ACCOUNT_ROLE_TO_PROTOCOL: Record<
   Exclude<AccountRole, AccountRole.Basic>,
@@ -78,8 +82,9 @@ export const buildWhereClause = (options: {
   searchText?: string | null;
   includeUnregistered?: boolean;
   roles?: AccountRole[] | null;
+  excludeIds?: string[];
 }) => {
-  const { searchText, includeUnregistered, roles } = options;
+  const { searchText, includeUnregistered, roles, excludeIds } = options;
 
   const whereClauses: InputMaybe<InputMaybe<User_filter>[]> = [];
 
@@ -98,6 +103,10 @@ export const buildWhereClause = (options: {
 
   if (!includeUnregistered) {
     whereClauses.push({ profile_not: null });
+  }
+
+  if (excludeIds && excludeIds.length > 0) {
+    whereClauses.push({ id_not_in: excludeIds });
   }
 
   if (!isUnfilteredAccountRoles(roles)) {
@@ -122,18 +131,67 @@ export const buildWhereClause = (options: {
 };
 
 /**
+ * Old wallets to hide from the directory: only those whose Light Account
+ * already has a profile, so a member never disappears (old profile shown
+ * until the new one exists) and never appears twice. Reuses the Users
+ * query with an `id_in` filter, so no new persisted operation is needed.
+ *
+ * @param chainId Chain whose legacy map applies (the app's chain)
+ * @returns Lowercase old-wallet ids
+ */
+export const fetchMigratedLegacyAccounts = async (
+  chainId: number = appChainId(),
+): Promise<string[]> => {
+  const legacy = getLegacyMap(chainId);
+  const ownerBySmart = new Map(
+    Object.entries(legacy).map(([eoa, smart]) => [smart.toLowerCase(), eoa]),
+  );
+  const smarts = [...ownerBySmart.keys()];
+  const migrated: string[] = [];
+
+  for (let index = 0; index < smarts.length; index += MAX_PAGE) {
+    const res = await execute(UsersDocument, {
+      first: MAX_PAGE,
+      skip: 0,
+      // The query gateway only allows the directory's orderings for Users.
+      orderBy: "profile__createdAt",
+      orderDirection: "asc",
+      where: {
+        id_in: smarts.slice(index, index + MAX_PAGE),
+        profile_not: null,
+      },
+    });
+    const data = requireGraphData(
+      res.data as UsersQuery | undefined,
+      "Users",
+    );
+    for (const user of data.users) {
+      const eoa = ownerBySmart.get(user.id.toLowerCase());
+      if (eoa) migrated.push(eoa);
+    }
+  }
+
+  return migrated;
+};
+
+/**
  * Fetches users based on the provided query options.
  *
  * @param options Query options
+ * @param excludeIds Old wallets to hide; looked up when not given
  * @returns Users data
  */
-export const fetchUsers = async (options?: UserQueryOptions) => {
+export const fetchUsers = async (
+  options?: UserQueryOptions,
+  excludeIds?: string[],
+) => {
   const mergedOptions = mergeOptions(options);
 
   const where = buildWhereClause({
     searchText: mergedOptions.searchText,
     includeUnregistered: mergedOptions.includeUnregistered,
     roles: mergedOptions.roles,
+    excludeIds: excludeIds ?? (await fetchMigratedLegacyAccounts()),
   });
 
   const res = await execute(UsersDocument, {

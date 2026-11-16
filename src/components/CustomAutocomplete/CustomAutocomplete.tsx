@@ -29,6 +29,8 @@ interface CustomAutocompleteProps<
   placeholder?: string;
   error?: boolean;
   helperText?: string;
+  /** data-testid of the text input, for browser tests. */
+  inputTestId?: string;
 }
 
 export const CustomAutocomplete = <
@@ -59,6 +61,7 @@ export const CustomAutocomplete = <
   filterOptions,
   error,
   helperText,
+  inputTestId,
 }: CustomAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) => {
   const [open, setOpen] = useState(false);
 
@@ -191,6 +194,12 @@ export const CustomAutocomplete = <
               },
             }}
             slotProps={{
+              ...(inputTestId && {
+                htmlInput: {
+                  ...params.inputProps,
+                  "data-testid": inputTestId,
+                },
+              }),
               input: {
                 ...params.InputProps,
                 endAdornment: (

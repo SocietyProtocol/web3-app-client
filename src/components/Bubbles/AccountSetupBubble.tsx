@@ -1,5 +1,5 @@
 import { Button, Typography } from "@mui/material";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { BubbleBase } from "./BubbleBase";
 import { useProfileId } from "@/data/users/useProfileId";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
@@ -11,20 +11,31 @@ interface AccountSetupBubbleProps {
 export const AccountSetupBubble = ({
   onActionClick,
 }: AccountSetupBubbleProps) => {
-  const { isConnected, address } = useAccount();
+  const {
+    isConnected,
+    address,
+    isLoading: identityLoading,
+  } = useOutpostAccount();
   const { data: profileId, isLoading } = useProfileId(address);
   const { isWrongNetwork } = useCheckWrongNetwork();
 
   return (
     <BubbleBase
       variant="info"
+      testId="onboarding-setup-prompt"
       actions={
-        <Button variant="contained" fullWidth onClick={onActionClick}>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={onActionClick}
+          data-testid="onboarding-start"
+        >
           Setup your Account
         </Button>
       }
       show={
         isConnected &&
+        !identityLoading &&
         !isWrongNetwork &&
         (profileId === undefined || profileId === BigInt(0)) &&
         !isLoading

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { TransactionReceipt } from "viem";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
@@ -30,7 +30,7 @@ export function useUpdateBadge({
   onError,
 }: UseUpdateBadgeProps) {
   const registryAddress = useChainVar(contracts.communityRegistry);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const uploadMetadata = useMutateMetadata({ onError });
 
@@ -112,6 +112,7 @@ export function useUpdateBadge({
     isWritingContract: transaction.isLoading,
     status: transaction.status,
     error: uploadMetadata.error ?? transaction.txReceipt.error,
+    routeKind: transaction.routeKind,
     gas: transaction.gas,
     gasLoading: transaction.gasLoading,
     gasError: transaction.gasError,

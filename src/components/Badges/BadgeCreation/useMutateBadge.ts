@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { BadgeTransformedData } from "@/validation/badge";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
@@ -7,8 +7,15 @@ import { TransactionReceipt, zeroAddress } from "viem";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
+import type { WritePayment } from "@/lib/payment-label";
+import {
+  BadgeDraft,
+  badgeCreatePreviewArgs,
+  communityBadgePreviewArgs,
+} from "@/lib/write-previews";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import {
   decodeBadgeCreatedEvents,
   decodeBadgePermissions,
@@ -19,22 +26,48 @@ interface UseMutateBadgeProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
   communityId?: string;
+  /** The form as typed so far, to price the write before submit. */
+  draft?: BadgeDraft;
 }
 
 export const useMutateBadge = ({
   onSuccess,
   onError,
   communityId,
+  draft,
 }: UseMutateBadgeProps) => {
   const contractAddress = useChainVar(
     communityId ? contracts.communityRegistry : contracts.badges,
   );
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const uploadIpfsResult = useMutateMetadata({ onError });
 
+  // The real call needs the uploaded metadata URI; preview the badge as
+  // typed so far so the button can say who pays and about how much.
+  const draftKey = useDebounceValue(JSON.stringify(draft ?? {}), 400);
+  const preview = useMemo(() => {
+    const typed = JSON.parse(draftKey) as BadgeDraft;
+    if (!communityId) {
+      return {
+        address: contractAddress,
+        abi: SocietyProtocolBadgesABI,
+        functionName: "createBadge",
+        args: [...badgeCreatePreviewArgs(typed)],
+      };
+    }
+    if (!/^\d+$/.test(communityId)) return undefined;
+    return {
+      address: contractAddress,
+      abi: CommunityRegistryAbi,
+      functionName: "createCommunityBadge",
+      args: [...communityBadgePreviewArgs(BigInt(communityId), typed)],
+    };
+  }, [communityId, contractAddress, draftKey]);
+
   const transaction = useTransaction({
+    preview,
     waitForSync: true,
     successMessage: "Badge created successfully",
     queryKeysToInvalidateOnSuccess: [
@@ -136,8 +169,15 @@ export const useMutateBadge = ({
 
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
+  const { routeKind, gas, gasLoading, gasError } = transaction;
+  const payment = useMemo<WritePayment>(
+    () => ({ routeKind, gas, gasLoading, gasError }),
+    [routeKind, gas, gasLoading, gasError],
+  );
+
   return {
     mutate,
+    payment,
     isUploadingToIpfs: uploadIpfsResult.isPending,
     isWritingContract: transaction.isExecuting,
     isTransactionPending: transaction.isLoading,

@@ -6,21 +6,30 @@ import { TransactionReceipt } from "viem";
 import { useChainVar } from "@/hooks/useChainVar";
 import { contracts } from "@/consts/contracts";
 import { capturePostHogEvent } from "@/lib/posthog";
+import type { WritePayment } from "@/lib/payment-label";
+import {
+  CommunityDraft,
+  communityCreatePreviewArgs,
+} from "@/lib/write-previews";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeCommunityDetailsUpdated } from "@/data/communities/decodeUtils";
 
 interface UseMutateCommunityProps {
   onSuccess?: (transactionReceipt: TransactionReceipt) => void;
   onError?: (error: unknown) => void;
+  /** The form as typed so far, to price the write before submit. */
+  draft?: CommunityDraft;
 }
 
 export const useMutateCommunity = ({
   onSuccess,
   onError,
+  draft,
 }: UseMutateCommunityProps) => {
   const contractAddress = useChainVar(contracts.communityRegistry);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const uploadIpfsResult = useMutateMetadata({
     onError,
@@ -31,7 +40,23 @@ export const useMutateCommunity = ({
     [],
   );
 
+  // The real call needs the uploaded badge URIs; preview the community as
+  // typed so far so the button can say who pays and about how much.
+  const draftKey = useDebounceValue(JSON.stringify(draft ?? {}), 400);
+  const preview = useMemo(
+    () => ({
+      address: contractAddress,
+      abi: CommunityRegistryAbi,
+      functionName: "createCommunity",
+      args: [
+        ...communityCreatePreviewArgs(JSON.parse(draftKey) as CommunityDraft),
+      ],
+    }),
+    [contractAddress, draftKey],
+  );
+
   const transaction = useTransaction({
+    preview,
     waitForSync: true,
     successMessage: "Community created successfully",
     queryKeysToInvalidateOnSuccess,
@@ -105,8 +130,15 @@ export const useMutateCommunity = ({
 
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
+  const { routeKind, gas, gasLoading, gasError } = transaction;
+  const payment = useMemo<WritePayment>(
+    () => ({ routeKind, gas, gasLoading, gasError }),
+    [routeKind, gas, gasLoading, gasError],
+  );
+
   return {
     mutate,
+    payment,
     reset,
     isMutating,
     isUploadingToIpfs: uploadIpfsResult.isPending,

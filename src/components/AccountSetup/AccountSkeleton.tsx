@@ -3,6 +3,7 @@ import { Paper, Stack, Skeleton } from "@mui/material";
 export const AccountSkeleton = () => {
   return (
     <Paper
+      data-testid="account-skeleton"
       elevation={1}
       sx={{
         p: { xs: 2, sm: 3 },

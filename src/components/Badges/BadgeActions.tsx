@@ -56,7 +56,7 @@ export const BadgeActions = ({
 
   if (loading) {
     return (
-      <Box padding={1}>
+      <Box padding={1} data-testid="badge-actions">
         <WithTooltip
           variant="body1"
           sx={{
@@ -86,7 +86,7 @@ export const BadgeActions = ({
 
   if (!validTab) {
     return (
-      <Box padding={1}>
+      <Box padding={1} data-testid="badge-actions">
         <WithTooltip
           variant="body1"
           sx={{
@@ -100,12 +100,20 @@ export const BadgeActions = ({
         </WithTooltip>
 
         {badgeSelector && <Box marginTop={2}>{badgeSelector}</Box>}
+
+        {/* Permissions depend on the connected wallet: without one, ask to connect. */}
+        <ContentGuard
+          connectWalletMessage="Connect your wallet to perform badge actions"
+          sx={{
+            marginTop: 2,
+          }}
+        />
       </Box>
     );
   }
 
   return (
-    <Box padding={1}>
+    <Box padding={1} data-testid="badge-actions">
       <WithTooltip
         variant="body1"
         sx={{

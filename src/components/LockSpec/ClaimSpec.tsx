@@ -66,6 +66,7 @@ export const ClaimSpec = () => {
     mutate: onClaim,
     isTransactionPending,
     simulation: { isFetching: isSimulating, isError, error: simulationError },
+    routeKind,
     gas,
     gasError,
     gasLoading,
@@ -87,7 +88,7 @@ export const ClaimSpec = () => {
     isError;
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} data-testid="lock-spec-claim">
       {/* 3-column data row */}
       <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
         <ClaimDataColumn
@@ -145,9 +146,10 @@ export const ClaimSpec = () => {
 
       {!disabled && (
         <DataRow
-          label="Est. Gas"
+          label="Network fee"
           content={
             <GasEstimation
+              routeKind={routeKind}
               value={gas}
               isLoading={gasLoading}
               isError={gasError}
@@ -161,6 +163,7 @@ export const ClaimSpec = () => {
 
       {/* Claim button */}
       <TransactionButton
+        data-testid="lock-spec-claim-submit"
         variant="contained"
         size="large"
         fullWidth

@@ -35,10 +35,17 @@ export const Bid = ({
 
   const { decimalsBiddingToken } = auctionDetail || {};
 
-  const { simulation, execute, isLoading, gas, gasError, gasLoading } =
-    useCancelBidMutation({
-      orderId,
-    });
+  const {
+    simulation,
+    execute,
+    isLoading,
+    routeKind,
+    gas,
+    gasError,
+    gasLoading,
+  } = useCancelBidMutation({
+    orderId,
+  });
 
   const handleCancelClick = useCallback(() => execute(), [execute]);
 
@@ -54,7 +61,7 @@ export const Bid = ({
   }
 
   return (
-    <Tr role="row">
+    <Tr role="row" data-testid="auction-bid-row">
       <Box
         sx={{
           display: "flex",
@@ -175,6 +182,7 @@ export const Bid = ({
             >
               <span>
                 <TransactionButton
+                  data-testid="auction-bid-cancel"
                   size="small"
                   variant="contained"
                   onClick={handleCancelClick}
@@ -187,6 +195,7 @@ export const Bid = ({
                   simulating={simulation?.isFetching}
                   loading={isLoading}
                   loadingText="Canceling..."
+                  routeKind={routeKind}
                   gas={gas}
                   gasLoading={gasLoading}
                   gasError={gasError}

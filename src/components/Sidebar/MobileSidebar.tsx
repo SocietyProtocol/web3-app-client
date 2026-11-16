@@ -32,7 +32,7 @@ export const MobileSidebar = ({ open, onClose }: MobileSidebarProps) => {
         },
       }}
     >
-      <SidebarContent isExpanded={open} onToggle={onClose} />
+      <SidebarContent isExpanded={open} onToggle={onClose} showSocialLinks />
     </Drawer>
   );
 };

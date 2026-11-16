@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { TransactionReceipt } from "viem";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { CommunityRegistryAbi } from "@/abis/CommunityRegistry";
 import { contracts } from "@/consts/contracts";
 import { useChainVar } from "@/hooks/useChainVar";
@@ -25,7 +25,7 @@ export function useUpdateCommunityInfo({
   onError,
 }: UseUpdateCommunityInfoProps) {
   const registryAddress = useChainVar(contracts.communityRegistry);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const hasArgs = !!communityId && !!name && !!description;
 

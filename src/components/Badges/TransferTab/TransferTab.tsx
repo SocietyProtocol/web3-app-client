@@ -1,5 +1,5 @@
-import { Box, Stack } from "@mui/material";
-import { useCallback, useMemo } from "react";
+import { Box, Stack, Typography } from "@mui/material";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -11,8 +11,22 @@ import z from "zod";
 import { transferBadgeValidationSchema } from "./validation";
 import { TransactionButton } from "@/components/Transaction/TransactionButton";
 import { SimulationError } from "@/components/Transaction/SimulationError";
-import { Hex } from "viem";
+import { Address, Hex } from "viem";
 import { useTransferBadgeMutation } from "./useTransferBadgeMutation";
+import { useLegacyAccounts } from "@/components/shared/useLegacyAccounts";
+import {
+  MappedRecipient,
+  RecipientAddressHints,
+} from "@/components/shared/RecipientAddressHints";
+import { useBadgeBalanceOf } from "@/data/badges/useBadgeBalanceOf";
+import { BadgeAmountField } from "../BadgeAmountField";
+import {
+  badgeAmountMaxError,
+  badgeActionAmount,
+  canChooseBadgeAmount,
+  DEFAULT_BADGE_AMOUNT,
+  maxBadgeAmount,
+} from "../badgeAmount";
 
 interface TransferTabProps {
   id: string;
@@ -23,6 +37,9 @@ type TransferFormOutput = z.output<typeof transferBadgeValidationSchema>;
 
 export const TransferTab = ({ id }: TransferTabProps) => {
   const { data } = useBadge(id);
+  const legacy = useLegacyAccounts();
+  // Set when a legacy wallet in "To" was replaced by its Society address.
+  const [mappedTo, setMappedTo] = useState<MappedRecipient | undefined>();
 
   const holders = useMemo(
     () => data?.badge?.holders.map((h) => h.id.toLowerCase()) || [],
@@ -46,24 +63,52 @@ export const TransferTab = ({ id }: TransferTabProps) => {
     defaultValues: {
       from: undefined,
       to: undefined,
+      amount: DEFAULT_BADGE_AMOUNT,
     },
     mode: "onChange",
   });
 
   // Watch form values for simulation
-  const { from: fromValue, to: toValue } = useWatch({ control: form.control });
+  const {
+    from: fromValue,
+    to: toValue,
+    amount: amountValue,
+  } = useWatch({ control: form.control });
+
+  // The sender's copies of this badge cap the amount.
+  const { data: senderBalance } = useBadgeBalanceOf(
+    fromValue as Hex | undefined,
+    id,
+  );
+  const maxAmount = maxBadgeAmount(senderBalance, !!data?.badge?.profileUser);
+  const showAmount = canChooseBadgeAmount(maxAmount);
+  const amount = badgeActionAmount(amountValue, maxAmount);
+  const amountMaxError = badgeAmountMaxError(amount, maxAmount);
+
+  // A hidden amount field must not keep the form invalid: reset it to 1.
+  useEffect(() => {
+    if (!showAmount && amountValue !== DEFAULT_BADGE_AMOUNT) {
+      form.setValue("amount", DEFAULT_BADGE_AMOUNT, { shouldValidate: true });
+    }
+  }, [showAmount, amountValue, form]);
 
   const transaction = useTransferBadgeMutation({
     args:
-      fromValue && toValue && form.formState.isValid
+      fromValue &&
+      toValue &&
+      form.formState.isValid &&
+      amount !== undefined &&
+      !amountMaxError
         ? {
             id: BigInt(id),
             from: fromValue as Hex,
             to: toValue as Hex,
+            amount,
           }
         : undefined,
     onSuccess: () => {
       form.reset();
+      setMappedTo(undefined);
     },
   });
 
@@ -85,11 +130,15 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                   const newId =
                     typeof newValue === "string" ? newValue : newValue?.id;
                   field.onChange(newId ?? "");
+                  form.setValue("amount", DEFAULT_BADGE_AMOUNT, {
+                    shouldValidate: true,
+                  });
                 }}
                 filterOptions={filterFromOptions}
                 disabled={transaction.isLoading || holders.length === 0}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
+                inputTestId="transfer-from-input"
               />
             )}
           />
@@ -105,16 +154,61 @@ export const TransferTab = ({ id }: TransferTabProps) => {
                 onChange={(_, newValue) => {
                   const newId =
                     typeof newValue === "string" ? newValue : newValue?.id;
-                  field.onChange(newId ?? "");
+                  const resolved = newId
+                    ? legacy.resolveRecipient(newId)
+                    : undefined;
+                  setMappedTo(
+                    resolved?.mappedFrom
+                      ? {
+                          from: resolved.mappedFrom,
+                          to: resolved.address as Address,
+                        }
+                      : undefined,
+                  );
+                  field.onChange(resolved?.address ?? "");
                 }}
                 freeSolo
                 filterOptions={filterToOptions}
                 disabled={transaction.isLoading}
                 error={fieldState.invalid}
                 helperText={fieldState.error?.message}
+                inputTestId="transfer-to-input"
               />
             )}
           />
+
+          <RecipientAddressHints
+            addresses={toValue ? [toValue] : []}
+            mapped={mappedTo ? [mappedTo] : []}
+            onReplace={(_, societyAddress) =>
+              form.setValue("to", societyAddress, { shouldValidate: true })
+            }
+            disabled={transaction.isLoading}
+          />
+
+          {showAmount && maxAmount !== undefined && (
+            <Controller
+              name="amount"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <BadgeAmountField
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  max={maxAmount}
+                  tooltip="How many of the sender's copies to transfer"
+                  disabled={transaction.isLoading}
+                  error={fieldState.error?.message ?? amountMaxError}
+                />
+              )}
+            />
+          )}
+
+          {!showAmount && amountMaxError && (
+            <Typography color="error.main" variant="body2">
+              {amountMaxError}
+            </Typography>
+          )}
         </Stack>
       </Box>
 
@@ -125,6 +219,7 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           variant="outlined"
           disabled={
             !form.formState.isValid ||
+            !!amountMaxError ||
             transaction.simulation.isFetching ||
             transaction.simulation.isError
           }
@@ -134,6 +229,8 @@ export const TransferTab = ({ id }: TransferTabProps) => {
           simulating={transaction.simulation.isFetching}
           loading={transaction.isLoading}
           loadingText="Transferring..."
+          routeKind={transaction.routeKind}
+          data-testid="transfer-submit"
           gas={transaction.gas}
           gasLoading={transaction.gasLoading}
           gasError={transaction.gasError}

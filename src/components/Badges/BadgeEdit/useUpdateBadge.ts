@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { BadgeEditTransformedData } from "@/validation/badgeEdit";
 import { SocietyProtocolBadgesABI } from "@/abis/SocietyProtocolBadges";
 import { useMutateMetadata } from "@/hooks/useMutateMetadata";
@@ -7,21 +7,45 @@ import { contracts } from "@/consts/contracts";
 import { useBadge } from "@/data/badges/useBadge";
 import { useTransaction } from "@/hooks/useTransaction";
 import { capturePostHogEvent } from "@/lib/posthog";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { decodeBadgeModified } from "@/data/badges/decodeUtils";
+import type { WritePayment } from "@/lib/payment-label";
+import { BadgeDraft, badgeEditPreviewArgs } from "@/lib/write-previews";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 
 interface UseUpdateBadgeProps {
   badgeId: string;
+  /** The form as typed so far, to price the write before submit. */
+  draft?: BadgeDraft;
 }
 
-export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
+export const useUpdateBadge = ({ badgeId, draft }: UseUpdateBadgeProps) => {
   const contractAddress = useChainVar(contracts.badges);
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const { data: badgeData } = useBadge(badgeId);
 
   const uploadIpfsResult = useMutateMetadata({ showNotifications: false });
 
+  // The real call needs the uploaded metadata URI; preview the badge as
+  // edited so far so the button can say who pays and about how much.
+  const draftKey = useDebounceValue(JSON.stringify(draft ?? {}), 400);
+  const preview = useMemo(() => {
+    if (!/^\d+$/.test(badgeId)) return undefined;
+    return {
+      address: contractAddress,
+      abi: SocietyProtocolBadgesABI,
+      functionName: "modifyBadge",
+      args: [
+        ...badgeEditPreviewArgs(
+          BigInt(badgeId),
+          JSON.parse(draftKey) as BadgeDraft,
+        ),
+      ],
+    };
+  }, [badgeId, contractAddress, draftKey]);
+
   const transaction = useTransaction({
+    preview,
     waitForSync: true,
     queryKeysToInvalidateOnSuccess: [["badge", badgeId], ["badges"]],
     onSuccess: (receipt) => {
@@ -77,6 +101,12 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
       : null);
   const isMutating = uploadIpfsResult.isPending || transaction.isLoading;
 
+  const { routeKind, gas, gasLoading, gasError } = transaction;
+  const payment = useMemo<WritePayment>(
+    () => ({ routeKind, gas, gasLoading, gasError }),
+    [routeKind, gas, gasLoading, gasError],
+  );
+
   return {
     isMutating,
     isUploadingToIpfs: uploadIpfsResult.isPending,
@@ -87,6 +117,7 @@ export const useUpdateBadge = ({ badgeId }: UseUpdateBadgeProps) => {
     transactionHash: transaction.txHash,
     isTransactionPending: transaction.isLoading,
     isTransactionConfirmed: transaction.isSuccess,
+    payment,
     mutate,
     reset,
   };

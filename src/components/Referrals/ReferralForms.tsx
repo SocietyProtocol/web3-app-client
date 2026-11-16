@@ -3,7 +3,7 @@
 import { Stack } from "@mui/material";
 import { ReferralCodeGenerator } from "../ProfileDataCard/ReferralCodeGenerator";
 import { AcceptInvitation } from "../ProfileDataCard/AcceptInvitation";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useUserQuery } from "@/data/users/useUserQuery";
 
 /**
@@ -14,7 +14,7 @@ import { useUserQuery } from "@/data/users/useUserQuery";
  * available, but the accept form is hidden.
  */
 export const ReferralForms = () => {
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
   const user = useUserQuery(address);
   const showAcceptInvitation = !user.isLoading && !user.data?.invitedBy;
 

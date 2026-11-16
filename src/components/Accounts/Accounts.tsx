@@ -12,13 +12,14 @@ import { truncateAddress } from "@/utils/string";
 import { Hex } from "viem";
 import { useRouter } from "next/navigation";
 import { useUserQuery } from "@/data/users/useUserQuery";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { SearchBox } from "@/components/Common/SearchBox";
 import { AccountsRoleFilter } from "./AccountsRoleFilter";
+import { offersAccountSetup } from "./accountSetup";
 
 export const Accounts = () => {
   const router = useRouter();
-  const user = useUserQuery(useAccount().address);
+  const user = useUserQuery(useOutpostAccount().address);
 
   const {
     data,
@@ -88,6 +89,7 @@ export const Accounts = () => {
       <Stack spacing={3} width="100%">
         {/* Controls */}
         <Box
+          data-testid="accounts-controls"
           sx={{
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
@@ -126,7 +128,7 @@ export const Accounts = () => {
             />
           </Box>
 
-          {!user.isLoading && !user.data && (
+          {offersAccountSetup(user) && (
             <Button variant="contained" onClick={handleSetupAccountClick}>
               Setup Account
             </Button>
@@ -137,6 +139,7 @@ export const Accounts = () => {
 
         {/* Accounts Grid */}
         <Box
+          data-testid="accounts-grid"
           sx={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",

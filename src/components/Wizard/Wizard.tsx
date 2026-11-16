@@ -10,6 +10,7 @@ import {
 import { ArrowConnector, CustomStepIcon, WizardButton } from "./styles";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { TransactionButton } from "../Transaction/TransactionButton";
+import type { WritePayment } from "@/lib/payment-label";
 
 export interface WizardStep {
   label: string;
@@ -41,6 +42,10 @@ interface WizardProps {
       };
   isLoading?: boolean;
   loadingText?: string;
+  /** Who pays for the Finish write, shown beside the button. */
+  payment?: WritePayment;
+  /** Prefix for the data-testid of Back, Next and Finish, for browser tests. */
+  testIdPrefix?: string;
 }
 
 export const Wizard = ({
@@ -60,6 +65,8 @@ export const Wizard = ({
   minHeight,
   isLoading = false,
   loadingText = "Saving...",
+  payment,
+  testIdPrefix,
 }: WizardProps) => {
   const isMobile = useIsMobile();
 
@@ -153,6 +160,7 @@ export const Wizard = ({
                   onClick={onBack}
                   sx={{ width: { xs: "100%", sm: "auto" } }}
                   disabled={backDisabled || isLoading}
+                  data-testid={testIdPrefix && `${testIdPrefix}-back`}
                 >
                   Back
                 </WizardButton>
@@ -178,8 +186,13 @@ export const Wizard = ({
                     disabled={finishDisabled}
                     loading={isLoading}
                     loadingText={loadingText}
+                    routeKind={payment?.routeKind}
+                    gas={payment?.gas}
+                    gasLoading={payment?.gasLoading}
+                    gasError={payment?.gasError}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     component={WizardButton}
+                    data-testid={testIdPrefix && `${testIdPrefix}-submit`}
                   >
                     Finish
                   </TransactionButton>
@@ -189,6 +202,7 @@ export const Wizard = ({
                     onClick={onNext}
                     sx={{ width: { xs: "100%", sm: "auto" } }}
                     disabled={nextDisabled}
+                    data-testid={testIdPrefix && `${testIdPrefix}-next`}
                   >
                     Next
                   </WizardButton>

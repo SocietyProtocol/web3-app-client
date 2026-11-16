@@ -7,10 +7,24 @@ import { env } from "@/lib/env";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer/MarkdownRenderer";
 import { useBadge } from "@/data/badges/useBadge";
 import { GOVERNOR_BADGE_ID } from "@/consts/badges";
+import {
+  useBadgeHolderBalances,
+  useBadgeTotalSupplies,
+} from "@/data/badges/useBadgeQuantities";
+import { HolderAmountChip } from "../Badges/HolderAmountChip";
+import { useChainVar } from "@/hooks/useChainVar";
+import { useMemo } from "react";
+import { ErrorDisplay } from "../ErrorBoundary/ErrorDisplay";
 
 export const Governance = () => {
-  const { data, isLoading } = useBadge(GOVERNOR_BADGE_ID);
-  const governors = data?.badge?.holders ?? [];
+  const governorBadgeId = useChainVar(GOVERNOR_BADGE_ID);
+  const { data, isLoading, isError, error, refetch } =
+    useBadge(governorBadgeId);
+  const governors = useMemo(() => data?.badge?.holders ?? [], [data]);
+  const governorIds = useMemo(() => governors.map((g) => g.id), [governors]);
+  const { balances } = useBadgeHolderBalances(governorBadgeId, governorIds);
+  const { supplies } = useBadgeTotalSupplies([governorBadgeId]);
+  const totalSupply = supplies.get(governorBadgeId);
 
   return (
     <Box>
@@ -109,18 +123,47 @@ export const Governance = () => {
         </Box>
       </Box>
 
-      <UserList
-        title="Governors"
-        users={governors}
-        loading={isLoading}
-        noUsersFoundText="No governors found"
-        modalTitle="Governors"
-        viewAllButtonText="View All Governors"
-        andMoreText="And {count} more governors..."
-        sx={{
-          marginTop: 10,
-        }}
-      />
+      {/* A failed query has no holders: show the error, not "No governors found". */}
+      {isError && !data ? (
+        <Box data-testid="governance-governors" sx={{ marginTop: 10 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+            Governors
+          </Typography>
+          <ErrorDisplay
+            error={error}
+            action={
+              <Button onClick={() => refetch()} variant="contained">
+                Retry
+              </Button>
+            }
+          />
+        </Box>
+      ) : (
+        <UserList
+          title="Governors"
+          testId="governance-governors"
+          users={governors}
+          loading={isLoading}
+          noUsersFoundText="No governors found"
+          modalTitle="Governors"
+          viewAllButtonText="View All Governors"
+          andMoreText="And {count} more governors..."
+          renderUserExtra={(user) => {
+            const count = balances.get(user.id.toLowerCase());
+            return count === undefined ? null : (
+              <HolderAmountChip
+                count={count}
+                total={totalSupply}
+                showPercent
+                testId="governance-voting-power"
+              />
+            );
+          }}
+          sx={{
+            marginTop: 10,
+          }}
+        />
+      )}
     </Box>
   );
 };

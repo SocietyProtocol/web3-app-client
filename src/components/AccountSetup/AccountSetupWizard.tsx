@@ -4,11 +4,12 @@ import { Wizard, WizardStep } from "../Wizard";
 import { AccountInfoStep } from "./AccountInfoStep";
 import { ReviewStep } from "./ReviewStep";
 import { AccountSetupProvider, useAccountSetup } from "./AccountSetupContext";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { Box } from "@mui/material";
 import { useCheckWrongNetwork } from "@/hooks/useCheckWrongNetwork";
 import { ValidationError } from "@/errors/ValidationError";
 import { parseErrorMessage } from "@/utils/errors";
+import { walletWaitText } from "@/lib/payment-label";
 
 const steps: WizardStep[] = [
   { label: "Account Info", description: "Set up your profile" },
@@ -29,7 +30,7 @@ const AccountSetupWizardContent = ({
   const { isSigning, isConfirming, isLoading, isSyncing, isSuccess } =
     transaction;
 
-  const { address } = useAccount();
+  const { address } = useOutpostAccount();
 
   const { isWrongNetwork, expectedNetwork } = useCheckWrongNetwork();
 
@@ -111,7 +112,7 @@ const AccountSetupWizardContent = ({
     }
 
     if (isSigning) {
-      return "Signing transaction...";
+      return walletWaitText(transaction.routeKind, "Signing transaction...");
     }
 
     if (isConfirming) {
@@ -144,7 +145,9 @@ const AccountSetupWizardContent = ({
         minHeight={{ xs: 400, sm: 554 }}
         isLoading={isUploadingToIpfs || isLoading}
         loadingText={getLoadingText()}
+        payment={transaction}
         showActions={!isWrongNetwork}
+        testIdPrefix="onboarding"
       >
         {activeStep === 0 && <AccountInfoStep />}
         {activeStep === 1 && <ReviewStep />}
@@ -159,7 +162,7 @@ export const AccountSetupWizard = ({
 }: {
   onComplete?: () => void;
 }) => {
-  const { isConnected } = useAccount();
+  const { isConnected } = useOutpostAccount();
 
   if (!isConnected) {
     return null;

@@ -3,13 +3,15 @@
 import { Avatar, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import NextLink from "next/link";
 import { resolveImageSrc } from "@/components/Avatar/ImageDisplay";
+import { holdersLabel } from "./holdersLabel";
 
 export interface CommunityBadgeProps {
   id?: string;
   name?: string;
   imageUrl?: string | null;
   isOfficial?: boolean;
-  holdersCount?: number | null;
+  /** A BigInt field: the subgraph sends it as a string. */
+  holdersCount?: number | string | null;
   loading?: boolean;
 }
 
@@ -44,6 +46,8 @@ export function CommunityBadge({
     <Stack
       spacing={0.75}
       alignItems="center"
+      data-testid={loading ? undefined : "community-badge"}
+      data-badge-id={loading ? undefined : id}
       sx={{
         width: "fit-content",
         maxWidth: "200px",
@@ -103,7 +107,7 @@ export function CommunityBadge({
             lineHeight: "18px",
           }}
         >
-          {holdersCount ?? 0} {(holdersCount ?? 0) === 1 ? "holder" : "holders"}
+          {holdersLabel(holdersCount)}
         </Typography>
       )}
     </Stack>

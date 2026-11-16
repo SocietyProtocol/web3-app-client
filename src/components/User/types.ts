@@ -8,6 +8,8 @@ export interface UserCardProps extends Partial<UserData> {
   children?: React.ReactNode;
   highlightYou?: boolean;
   link?: boolean;
+  /** data-testid of the card, for browser tests. */
+  testId?: string;
 }
 
 export interface UserTagProps extends Partial<UserData> {

@@ -9,12 +9,15 @@ import {
 import { Controller } from "react-hook-form";
 import { useBadgeCreation } from "./BadgeCreationContext";
 import { AvatarInput } from "../../AccountSetup/AvatarInput";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { useHasOfficialBadgeCreatorRole } from "./useHasOfficialBadgeCreatorRole";
 
 export const BadgeInfoStep = () => {
-  const { address } = useAccount();
-  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(address);
+  const { address, ownerAddress } = useOutpostAccount();
+  const hasOfficialBadgeCreatorRole = useHasOfficialBadgeCreatorRole(
+    address,
+    ownerAddress,
+  );
   const { form, getServerFieldError } = useBadgeCreation();
   const {
     register,

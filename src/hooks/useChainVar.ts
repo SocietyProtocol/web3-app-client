@@ -2,12 +2,8 @@
 
 import { ChainVariable } from "@/consts/types";
 import { expectedNetwork } from "@/lib/wagmi";
+import { pickChainVar } from "@/utils/chainVar";
 import { useMemo } from "react";
-import { sepolia } from "viem/chains";
 
 export const useChainVar = <T>(variable: ChainVariable<T>): T =>
-  useMemo(
-    () =>
-      expectedNetwork.id === sepolia.id ? variable.sepolia : variable.mainnet,
-    [variable],
-  );
+  useMemo(() => pickChainVar(variable, expectedNetwork.id), [variable]);

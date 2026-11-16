@@ -2,7 +2,7 @@ import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { Avatar } from "../Avatar/Avatar";
 import { OptionalLink } from "../OptionalLink/OptionalLink";
 import { useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useOutpostAccount } from "@/hooks/useOutpostAccount";
 import { isEqualCaseInsensitive } from "@/utils/string";
 import { UserTagProps } from "./types";
 import { UserCardPaper } from "./components";
@@ -16,7 +16,7 @@ export const UserTag = ({
   link = true,
   highlightYou,
 }: UserTagProps) => {
-  const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useOutpostAccount();
 
   const isConnectedUser = useMemo(
     () =>
@@ -38,6 +38,7 @@ export const UserTag = ({
 
   return (
     <Box
+      data-testid={loading ? "user-tag-skeleton" : "user-tag"}
       sx={{
         minWidth: 214,
         maxWidth: {
@@ -79,7 +80,7 @@ export const UserTag = ({
             {/* Avatar and Name Section */}
 
             <Avatar
-              ensImage={imageUrl}
+              userImageUrl={imageUrl}
               address={id}
               size={42}
               loading={loading}

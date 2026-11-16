@@ -220,6 +220,106 @@ describe("/api/graphql", () => {
     });
   });
 
+  describe("gateway refusals", () => {
+    const refusedBy = (status: number, body: string) =>
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(body, {
+          status,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    const communities = (ip: string) =>
+      POST(
+        request(
+          { query: communitiesQuery, operationName: "Communities" },
+          { "x-forwarded-for": ip },
+        ),
+      );
+    const gatewayError = (message: string) =>
+      JSON.stringify({ errors: [{ message }] });
+
+    it("passes a refused query on as a 400 and logs why, not as a 502", async () => {
+      refusedBy(400, gatewayError("GraphQL variables exceed operation limits"));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities("route-test-gateway-400");
+
+      expect(response.status).toBe(400);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(await response.json()).toEqual({
+        errors: [{ message: "GraphQL gateway refused the request" }],
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toBe(
+        "[api/graphql] the query gateway refused Communities with 400 (GraphQL variables exceed operation limits); answering 400",
+      );
+    });
+
+    it.each([413, 422])("passes a %i of the gateway on", async (status) => {
+      refusedBy(status, gatewayError("GraphQL query is too large"));
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities(`route-test-gateway-${status}`);
+
+      expect(response.status).toBe(status);
+      expect(await response.json()).toEqual({
+        errors: [{ message: "GraphQL gateway refused the request" }],
+      });
+    });
+
+    it.each([401, 403, 404, 415])(
+      "answers a %i of the gateway (this server's own misconfiguration) with a 502, and logs it",
+      async (status) => {
+        refusedBy(status, gatewayError("Unauthorized"));
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+        const response = await communities(`route-test-gateway-${status}`);
+
+        expect(response.status).toBe(502);
+        expect(await response.json()).toEqual({
+          errors: [{ message: "GraphQL upstream request failed" }],
+        });
+        expect(warn.mock.calls[0][0]).toBe(
+          `[api/graphql] the query gateway refused Communities with ${status} (Unauthorized); answering 502`,
+        );
+      },
+    );
+
+    it("logs a refusal that is not JSON without its body, and one line only", async () => {
+      refusedBy(400, "<html>\n<title>400 Bad Request</title>\n</html>");
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities("route-test-gateway-html");
+
+      expect(response.status).toBe(400);
+      expect(warn.mock.calls[0][0]).toBe(
+        "[api/graphql] the query gateway refused Communities with 400 (no message); answering 400",
+      );
+    });
+
+    it("keeps a gateway message to one printable line in the log", async () => {
+      refusedBy(400, gatewayError(`bad\nline\u0007 ${"x".repeat(300)}`));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      await communities("route-test-gateway-multiline");
+
+      const line = String(warn.mock.calls[0][0]);
+      expect(line).not.toMatch(/[\n\u0007]/);
+      expect(line).toContain("(bad line ");
+      expect(line.length).toBeLessThan(320);
+    });
+
+    it("still answers an upstream 5xx with a 502 without logging a refusal", async () => {
+      refusedBy(500, gatewayError("Query gateway failure"));
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      const response = await communities("route-test-gateway-500");
+
+      expect(response.status).toBe(502);
+      expect(warn).not.toHaveBeenCalled();
+    });
+  });
+
   describe("rate limit", () => {
     // A text body is refused with 415 after the rate-limit check, so a
     // served request makes no upstream call. The clock is frozen, so no

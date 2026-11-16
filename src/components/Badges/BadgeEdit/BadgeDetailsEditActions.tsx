@@ -4,6 +4,7 @@ import { Stack, Button } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SaveIcon from "@mui/icons-material/Save";
 import { TransactionButton } from "../../Transaction/TransactionButton";
+import { WritePayment, walletWaitText } from "@/lib/payment-label";
 
 interface BadgeDetailsEditActionsProps {
   isLoading: boolean;
@@ -13,6 +14,7 @@ interface BadgeDetailsEditActionsProps {
   isWritingContract: boolean;
   isTransactionPending: boolean;
   transactionHash: `0x${string}` | undefined;
+  payment: WritePayment;
   onCancel: () => void;
   onSave: () => void;
 }
@@ -25,6 +27,7 @@ export const BadgeDetailsEditActions = ({
   isWritingContract,
   isTransactionPending,
   transactionHash,
+  payment,
   onCancel,
   onSave,
 }: BadgeDetailsEditActionsProps) => (
@@ -47,11 +50,15 @@ export const BadgeDetailsEditActions = ({
       onClick={onSave}
       disabled={!isValid || isLoading || !isDirty}
       loading={isUploadingToIpfs || isWritingContract || isTransactionPending}
+      routeKind={payment.routeKind}
+      gas={payment.gas}
+      gasLoading={payment.gasLoading}
+      gasError={payment.gasError}
       loadingText={
         isUploadingToIpfs
           ? "Uploading to IPFS..."
           : isWritingContract && !transactionHash
-            ? "Confirm transaction..."
+            ? walletWaitText(payment.routeKind, "Confirm transaction...")
             : "Saving..."
       }
       startIcon={<SaveIcon />}
